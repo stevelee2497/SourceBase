@@ -1,6 +1,6 @@
-namespace API
+﻿namespace Core.DTOs
 {
-    public class TodoItem
+    internal class TodoItemDTO
     {
         public Guid Id { get; set; }
 
