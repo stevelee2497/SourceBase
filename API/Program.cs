@@ -11,7 +11,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
 
 // Add EF Services
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("Data Source=localhost;Initial Catalog=SourceBase;TrustServerCertificate=True;User ID=sa;Password=Root@123"));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("name=ConnectionStrings:DefaultConnection"));
 
 // Add application services
 builder.Services.AddScoped<ITodoService, TodoService>();

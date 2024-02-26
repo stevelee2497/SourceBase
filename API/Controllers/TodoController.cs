@@ -25,7 +25,7 @@ namespace API.Controllers
         [HttpPost]
         public void CreateTodo(TodoItemDTO todo)
         {
-            _todoService.Save(todo.Title, todo.Date);
+            _todoService.Save(todo);
         }
     }
 }

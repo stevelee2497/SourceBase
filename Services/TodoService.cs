@@ -1,4 +1,5 @@
 ﻿using Core.DbContexts;
+using Core.DTOs;
 using Core.Entities;
 
 namespace Services
@@ -6,7 +7,7 @@ namespace Services
     public interface ITodoService
     {
         IEnumerable<TodoItemEntity> GetAll();
-        void Save(string title, DateOnly date);
+        void Save(TodoItemDTO todoItem);
     }
 
     public class TodoService : ITodoService
@@ -23,9 +24,9 @@ namespace Services
             return _context.TodoItems.AsEnumerable();
         }
 
-        public void Save(string title, DateOnly date)
+        public void Save(TodoItemDTO todoItem)
         {
-            _context.TodoItems.Add(new TodoItemEntity { Title = title, Date = date });
+            _context.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date });
             _context.SaveChanges();
         }
     }

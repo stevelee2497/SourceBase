@@ -5,5 +5,7 @@ namespace Core.Entities
         public string Title { get; set; }
 
         public DateOnly Date { get; set; }
+
+        public bool IsDone { get; set; }
     }
 }
