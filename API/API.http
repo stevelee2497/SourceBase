@@ -4,3 +4,11 @@ GET {{API_HostAddress}}/todo/
 Accept: application/json
 
 ###
+
+POST {{API_HostAddress}}/todo
+Content-Type: application/json
+
+{
+  "title": "Task 4",
+  "date": "2024-02-29"
+}

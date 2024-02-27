@@ -1,6 +1,7 @@
+using Core.DTOs;
 using Core.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Services.Todo;
+using Services;
 
 namespace API.Controllers
 {
@@ -16,9 +17,15 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<TodoItemEntity> Get()
+        public IEnumerable<TodoItemEntity> GetTodoItems()
         {
-            return _todoService.Get();
+            return _todoService.GetAll();
+        }
+
+        [HttpPost]
+        public void CreateTodo(TodoItemDTO todo)
+        {
+            _todoService.Save(todo);
         }
     }
 }
