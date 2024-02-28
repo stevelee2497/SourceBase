@@ -22,10 +22,28 @@ namespace API.Controllers
             return _todoService.GetAll();
         }
 
+        [HttpGet("{id}")]
+        public TodoItemEntity GetTodo(Guid id)
+        {
+            return _todoService.Get(id);
+        }
+
         [HttpPost]
         public void CreateTodo(TodoItemDTO todo)
         {
             _todoService.Save(todo);
+        }
+
+        [HttpPut("{id}")]
+        public void UpdateTodo(Guid id, TodoItemDTO todo)
+        {
+            _todoService.Update(id, todo);
+        }
+
+        [HttpDelete("{id}")]
+        public void DeleteTodo(Guid id)
+        {
+            _todoService.Delete(id);
         }
     }
 }
