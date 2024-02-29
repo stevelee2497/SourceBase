@@ -24,6 +24,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 
 // Add application services
 builder.Services.AddScoped<ITodoService, TodoService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ISessionUserHelper, SessionUserHelper>();
 
 var app = builder.Build();
@@ -34,6 +35,6 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-app.MapIdentityApi<IdentityUser>();
+//app.MapIdentityApi<IdentityUser>();
 
 app.Run();
