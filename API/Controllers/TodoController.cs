@@ -1,11 +1,13 @@
 using Core.DTOs;
 using Core.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 
 namespace API.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
     public class TodoController : ControllerBase
     {

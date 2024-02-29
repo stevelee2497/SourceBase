@@ -55,6 +55,7 @@ namespace Services
         {
             var item = _context.TodoItems.Find(id);
             _context.TodoItems.Remove(item);
+            _context.SaveChanges();
         }
     }
 }
