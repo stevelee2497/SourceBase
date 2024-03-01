@@ -10,20 +10,18 @@ namespace API.Controllers
     [Route("api/auth")]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> userManager;
-        private readonly SignInManager<IdentityUser> signInManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
 
-        public AuthController(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager)
+        public AuthController(SignInManager<IdentityUser> signInManager)
         {
-            this.signInManager = signInManager;
-            this.userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [HttpPost("register")]
         public async Task<Ok> Register(AuthRequestDto registration)
         {
             var user = new IdentityUser() { Email = registration.Email, UserName = registration.Email };
-            var result = await userManager.CreateAsync(user, registration.Password);
+            var result = await _signInManager.UserManager.CreateAsync(user, registration.Password);
 
             if (!result.Succeeded)
             {
@@ -36,9 +34,9 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<EmptyHttpResult> Login(AuthRequestDto login)
         {
-            signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
+            _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-            var result = await signInManager.PasswordSignInAsync(login.Email, login.Password, false, true);
+            var result = await _signInManager.PasswordSignInAsync(login.Email, login.Password, false, true);
 
             if (!result.Succeeded)
             {

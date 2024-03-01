@@ -17,14 +17,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Add EF Services
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("name=ConnectionStrings:DefaultConnection"));
+builder.Services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Add application services
 builder.Services.AddScoped<ITodoService, TodoService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ISessionUserHelper, SessionUserHelper>();
 
 var app = builder.Build();
@@ -35,6 +34,6 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-//app.MapIdentityApi<IdentityUser>();
+app.MapIdentityApi<IdentityUser>();
 
 app.Run();
