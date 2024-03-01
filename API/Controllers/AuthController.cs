@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Services;
-using System.Text.Json;
 
 namespace API.Controllers
 {
@@ -11,25 +9,17 @@ namespace API.Controllers
     [Route("api/auth")]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IAuthService _authService;
 
-        public AuthController(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager)
+        public AuthController(IAuthService authService)
         {
-            _signInManager = signInManager;
-            _userManager = userManager;
+            _authService = authService;
         }
 
         [HttpPost("register")]
         public async Task<Ok> Register(AuthRequestDto registration)
         {
-            var user = new IdentityUser { Email = registration.Email, UserName = registration.Email };
-            var result = await _userManager.CreateAsync(user, registration.Password);
-
-            if (!result.Succeeded)
-            {
-                throw new Exception(JsonSerializer.Serialize(result.Errors));
-            }
+            await _authService.Register(registration);
 
             return TypedResults.Ok();
         }
@@ -37,16 +27,8 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<EmptyHttpResult> Login(AuthRequestDto login)
         {
-            _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
+            await _authService.Login(login);
 
-            var result = await _signInManager.PasswordSignInAsync(login.Email, login.Password, false, true);
-
-            if (!result.Succeeded)
-            {
-                throw new Exception(result.ToString());
-            }
-
-            // The signInManager already produced the needed response in the form of a bearer token.
             return TypedResults.Empty;
         }
 
@@ -54,9 +36,7 @@ namespace API.Controllers
         [Authorize]
         public async Task<UserInfoDto> GetUserInfo()
         {
-            var user = await _userManager.GetUserAsync(User);
-
-            return new UserInfoDto { Id = user.Id, Email = user.Email };
+            return await _authService.GetUserInfo(User);
         }
     }
 }

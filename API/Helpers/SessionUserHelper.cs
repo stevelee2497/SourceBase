@@ -1,4 +1,6 @@
 ﻿using Core.Helpers;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
 namespace API.Helpers
@@ -14,12 +16,17 @@ namespace API.Helpers
 
         public string GetUser()
         {
-            return _httpContextAccessor?.HttpContext?.User?.Identity?.Name;
+            return _httpContextAccessor.HttpContext.User?.Identity?.Name;
         }
 
         public string GetUserId()
         {
-            return _httpContextAccessor?.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            return _httpContextAccessor.HttpContext.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
+
+        public async Task SignInAsync(ClaimsPrincipal user)
+        {
+            await _httpContextAccessor.HttpContext.SignInAsync(IdentityConstants.BearerScheme, user, new AuthenticationProperties() { IsPersistent = false });
         }
     }
 }
