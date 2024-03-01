@@ -9,6 +9,13 @@ namespace Services
         public string Email { get; init; }
 
         [Required]
-        public required string Password { get; init; }
+        public string Password { get; init; }
+    }
+
+    public class UserInfoDto
+    {
+        public string Id { get; init; }
+
+        public string Email { get; init; }
     }
 }
