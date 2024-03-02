@@ -14,7 +14,7 @@ namespace Services
 
     public class UserInfoDto
     {
-        public string Id { get; init; }
+        public Guid Id { get; init; }
 
         public string Email { get; init; }
     }

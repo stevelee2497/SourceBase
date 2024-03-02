@@ -1,6 +1,6 @@
-﻿using Core.Helpers;
+﻿using Core.Entities;
+using Core.Helpers;
 using Microsoft.AspNetCore.Identity;
-using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -16,10 +16,10 @@ namespace Services
     public class AuthService : IAuthService
     {
         private readonly ISessionUserHelper _sessionUserHelper;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly IUserClaimsPrincipalFactory<IdentityUser> _claimsFactory;
+        private readonly UserManager<UserEntity> _userManager;
+        private readonly IUserClaimsPrincipalFactory<UserEntity> _claimsFactory;
 
-        public AuthService(UserManager<IdentityUser> userManager, IUserClaimsPrincipalFactory<IdentityUser> claimsFactory, ISessionUserHelper sessionUserHelper)
+        public AuthService(UserManager<UserEntity> userManager, IUserClaimsPrincipalFactory<UserEntity> claimsFactory, ISessionUserHelper sessionUserHelper)
         {
             _userManager = userManager;
             _claimsFactory = claimsFactory;
@@ -28,7 +28,7 @@ namespace Services
 
         public async Task Register(AuthRequestDto registration)
         {
-            var user = new IdentityUser { Email = registration.Email, UserName = registration.Email };
+            var user = new UserEntity { Email = registration.Email, UserName = registration.Email };
             var result = await _userManager.CreateAsync(user, registration.Password);
 
             if (!result.Succeeded)

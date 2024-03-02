@@ -1,7 +1,7 @@
 using API.Helpers;
 using Core.DbContexts;
+using Core.Entities;
 using Core.Helpers;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Services;
 using System.Text.Json.Serialization;
@@ -20,7 +20,7 @@ builder.Services.AddHttpContextAccessor();
 
 // Add EF Services
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("name=ConnectionStrings:DefaultConnection"));
-builder.Services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentityApiEndpoints<UserEntity>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Add application services
 builder.Services.AddScoped<ITodoService, TodoService>();
@@ -35,6 +35,5 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-//app.MapIdentityApi<IdentityUser>();
 
 app.Run();

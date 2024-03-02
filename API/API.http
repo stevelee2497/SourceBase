@@ -1,5 +1,5 @@
 @API_HostAddress = https://localhost:7237
-@Token = CfDJ8EYCB4DYsRJPkbRf642u2N0PA-OoaiGsOOggwezO5c5iS8zGgXM7neE43j1hVJTaaNtugR0h7GOw0g8aEV7ml-j9Dz1gtGQhCNfmZCOzc_qlzHUogFQ88NJ8JnfwfPN1hwIDOIgNH7LU5bLHd2r_L2dUvWHKWAshagVBaib3lAiDIcBP_-ZHRLUvxHNW1tZRdWyHbBIVyGofVJuNTkMMB0p2O4DIIV09Ue6UIZNQIG_zi-R2jAnjprdVhCtQDCytsKYcVGRodq7VJ27KX-ntU5PCweHRK9KByD5B03Q0eHnqFZfdNV-bGcKn7csWShuGepxpDXgml6lIKoiVenoHCN2ZJxeG22W0ghYm6EaJk6P1RCex88YD1qIiZ89bpPHXpc6CFpzRAWgRQKLLseK7xqfYfqNAB42kYCZfvwCXvSouatLzroBkf4_tYnaaXUXw70I0HO5o-bRGoN2labB_cvuzvXKYAeppjVptk8cXEaPOFcDe7sgDLaaDIg9kQ2dg3oEUIUzo-hqFJtzqn3JU7Yhc_XphEtwIn5GnxFY54aqBA1GPXlgITUfq1Ir9SvxdVZr-CWzJb0iDbpNiqVQd_UHdxPbdNXGGP7ZmhCbaJfq62hXW_d8iXFpH9WvSJL-FbpCabfQzkCSEdIV35PrCYUm-sVoCXdixYO_4jed48sy5FFnzBJWOyGBJWWKBHh0PPQ
+@Token = CfDJ8EYCB4DYsRJPkbRf642u2N0WiyHNLOs0ta-a3oDC9JxRKDqAwnVIUd2C1doHIZbot80exdigUtZWiKfo9lLy39JQNKpGLRJh_f-UTrtgpWBsjIMuSZnGhhqTHR9LTv3KoJpI5znQFzRjG5SvjeBd1TKfcfTnuZDZ1EoouzRKoUXXSsxkxrJimjS9MKc7SOLHYsSCMn4p50IFiv7vTAhUGzYtun5um-Iw9dETeDXu9etJTDQeUw-RscuLc5WEI65lEcWKNMJdOF-PuHXF3JQ6X-mTn-e98miQKTgcWl5QDRhKZmZR-fVZO3VUfsnSIO7KzxDFrjZ3MsxLHla6Y9mfaVg5gybpPej3bbiksEVxSHCkIPKB0qbh7yc2xrSnsd7qz4PbdgpUtFNoNTau4beI1TnqIBszjrwXQSktNxRLQad0PWKkBcBKCrLdXR0QNwuGYfcVH6cZWz2-mnrgem7g_gLctYP3YaT5uAWgTwpBBtFG4H4ObRIVeCOHLW6FNHhu0WTpZrrImPdR8mDE7IBXDp-z4Emj_Rs8otbKaI2Nfe8KDJBx-Ywpccf48Tj6HKdK9zc3UEVbOof2AXUPapvJPY3Q5MZp-s6xH0iht-YpHQbFyZCpUhJAN725wC5IlfyC9ltNllVIMJXBeagV7VlFcwoU7CZqYNYQ7QW-6Ccao15uHBOSSAecFGybyjgd-qNge86w_g8CkC8Ljg2TmxLoCKQ
 
 
 POST {{API_HostAddress}}/api/auth/register
@@ -16,7 +16,7 @@ POST {{API_HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "aloha@yopmail.com",
+  "email": "aloha-1@yopmail.com",
   "password": "Hello@123"
 }
 
@@ -48,7 +48,7 @@ Content-Type: application/json
 Authorization: Bearer {{Token}}
 
 {
-  "title": "Task 4",
+  "title": "Task 1",
   "date": "2024-02-29"
 }
 
