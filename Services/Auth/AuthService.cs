@@ -60,9 +60,9 @@ namespace Services.Auth
             await _sessionUserHelper.SignInAsync(userPrincipal);
         }
 
-        public async Task<UserInfoDto> GetUserInfo(ClaimsPrincipal user)
+        public async Task<UserInfoDto> GetUserInfo()
         {
-            var userEntity = await _userManager.GetUserAsync(user);
+            var userEntity = await _context.Users.FindAsync(Guid.Parse(_sessionUserHelper.UserId));
 
             return userEntity.MapTo<UserInfoDto>(_mapper);
         }

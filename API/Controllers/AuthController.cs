@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.Auth;
@@ -18,26 +17,22 @@ namespace API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<Ok> Register(AuthRequestDto registration)
+        public async Task Register(AuthRequestDto registration)
         {
             await _authService.Register(registration);
-
-            return TypedResults.Ok();
         }
 
         [HttpPost("login")]
-        public async Task<EmptyHttpResult> Login(AuthRequestDto login)
+        public async Task Login(AuthRequestDto login)
         {
             await _authService.Login(login);
-
-            return TypedResults.Empty;
         }
 
         [HttpGet("info")]
         [Authorize]
         public async Task<UserInfoDto> GetUserInfo()
         {
-            return await _authService.GetUserInfo(User);
+            return await _authService.GetUserInfo();
         }
 
         [HttpPost("info")]
