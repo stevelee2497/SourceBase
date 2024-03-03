@@ -4,7 +4,7 @@ POST {{HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "aloha-1@yopmail.com",
+  "email": "aloha@yopmail.com",
   "password": "Hello@123"
 }
 
@@ -14,7 +14,7 @@ POST {{HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "aloha-1@yopmail.com",
+  "email": "aloha@yopmail.com",
   "password": "Hello@123"
 }
 
@@ -31,7 +31,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "firstName": "Steven",
+  "firstName": "Steven - 1",
   "lastName": "Aloha"
 }
 
@@ -50,7 +50,7 @@ Authorization: Bearer {{accessToken}}
 
 {
   "title": "Task 1",
-  "date": "2024-02-29"
+  "date": "2024-03-30"
 }
 
 ###

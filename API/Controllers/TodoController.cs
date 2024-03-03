@@ -1,5 +1,4 @@
 using Core.DTOs;
-using Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Todo;
@@ -12,7 +11,7 @@ namespace API.Controllers
     public class TodoController : ControllerBase
     {
         private readonly ITodoService _todoService;
-        
+
         public TodoController(ITodoService todoService)
         {
             _todoService = todoService;
