@@ -1,28 +1,54 @@
 @API_HostAddress = https://localhost:7237
-@Token = CfDJ8EYCB4DYsRJPkbRf642u2N2sB3rlBv8DEyXpLXZQheOAEzRy-__aNvW9OpebfwEBA7BkVgGgVfJiqyDdQQOfC109zuxyjq5qfpdoChPB7O6anmrbezltWTq-WZLV4Yufn7ky2LJA_m4GKc6jFNaXAj4gQPMr-c-ApDUkYUoNHLOQ3O4gs5a0oUJ6W_4z4yCaqKonC0k_0GAnOcSU1VGL8cLXMbcswcyNloIZlT-WYAr2d69z1iQmY-R1528XFl8iYlIGeyx2-ZwgNf84ZZA2UpdJvzx9J4cBNFH7kZGEW4TjuQj49JJuggrkAMfiRSs_JDgzMJTv97xlEcw7b6L36-eM5AsG13eecFEF5Scan8G826mUdt0RDACWJxlmUw_MOMN01tqPbEAR4GXBwG34aEYFHmb961tkACUr5-YaPVixFFPUl4L60Vk8D3K-SAb_sRAetNHnfGLRzzzPjBo8SOeP1wjE7yhXp4WFFY82Lq4K3eGglYPmZUl_FKyd9iZW8YHqSl7IukotObvGEh9c5GupG6mgLysw1T7dK6-Sph5CwkbAG_s-_z2hDXWjuDudycRv_begtyS8mk7o_-EAlGnqDgVvjLVPi0PBfr6iT8U_JxLNm2-ICpXb9jSZZ_35dDyf2gqPG-eHPtFEryZiikygL3BDOfhh9nzCUzsBg2jSxusfkPWS3fu8dcQ2IYt6Gw
+@Token = CfDJ8EYCB4DYsRJPkbRf642u2N0WiyHNLOs0ta-a3oDC9JxRKDqAwnVIUd2C1doHIZbot80exdigUtZWiKfo9lLy39JQNKpGLRJh_f-UTrtgpWBsjIMuSZnGhhqTHR9LTv3KoJpI5znQFzRjG5SvjeBd1TKfcfTnuZDZ1EoouzRKoUXXSsxkxrJimjS9MKc7SOLHYsSCMn4p50IFiv7vTAhUGzYtun5um-Iw9dETeDXu9etJTDQeUw-RscuLc5WEI65lEcWKNMJdOF-PuHXF3JQ6X-mTn-e98miQKTgcWl5QDRhKZmZR-fVZO3VUfsnSIO7KzxDFrjZ3MsxLHla6Y9mfaVg5gybpPej3bbiksEVxSHCkIPKB0qbh7yc2xrSnsd7qz4PbdgpUtFNoNTau4beI1TnqIBszjrwXQSktNxRLQad0PWKkBcBKCrLdXR0QNwuGYfcVH6cZWz2-mnrgem7g_gLctYP3YaT5uAWgTwpBBtFG4H4ObRIVeCOHLW6FNHhu0WTpZrrImPdR8mDE7IBXDp-z4Emj_Rs8otbKaI2Nfe8KDJBx-Ywpccf48Tj6HKdK9zc3UEVbOof2AXUPapvJPY3Q5MZp-s6xH0iht-YpHQbFyZCpUhJAN725wC5IlfyC9ltNllVIMJXBeagV7VlFcwoU7CZqYNYQ7QW-6Ccao15uHBOSSAecFGybyjgd-qNge86w_g8CkC8Ljg2TmxLoCKQ
 
-POST {{API_HostAddress}}/login
+
+POST {{API_HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "aloha@yopmail.com",
+  "email": "aloha-1@yopmail.com",
   "password": "Hello@123"
 }
 
 ###
 
-GET {{API_HostAddress}}/todo
+POST {{API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "aloha-1@yopmail.com",
+  "password": "Hello@123"
+}
+
+###
+
+POST {{API_HostAddress}}/api/auth/logout
+Content-Type: application/json
+Authorization: Bearer {{Token}}
+
+{
+}
+
+###
+
+GET {{API_HostAddress}}/api/auth/info
 Accept: application/json
 Authorization: Bearer {{Token}}
 
 ###
 
-POST {{API_HostAddress}}/todo
+GET {{API_HostAddress}}/api/todo
+Accept: application/json
+Authorization: Bearer {{Token}}
+
+###
+
+POST {{API_HostAddress}}/api/todo
 Content-Type: application/json
 Authorization: Bearer {{Token}}
 
 {
-  "title": "Task 4",
+  "title": "Task 1",
   "date": "2024-02-29"
 }
 

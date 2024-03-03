@@ -1,7 +1,11 @@
-﻿namespace Core.Helpers
+﻿using System.Security.Claims;
+
+namespace Core.Helpers
 {
     public interface ISessionUserHelper
     {
-        public string GetUser();
+        string GetUser();
+        string GetUserId();
+        Task SignInAsync(ClaimsPrincipal user);
     }
 }

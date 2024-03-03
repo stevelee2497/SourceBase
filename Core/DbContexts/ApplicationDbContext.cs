@@ -1,12 +1,11 @@
 ﻿using Core.Entities;
 using Core.Helpers;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Core.DbContexts
 {
-    public class ApplicationDbContext : IdentityDbContext<IdentityUser>
+    public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>
     {
         private readonly ISessionUserHelper _sessionUserHelper;
 
@@ -33,7 +32,7 @@ namespace Core.DbContexts
         {
             foreach (var entry in ChangeTracker.Entries())
             {
-                if (entry is not { Entity: BaseEntity entity })
+                if (entry is not { Entity: IBaseEntity entity })
                     continue;
 
                 switch (entry.State)
@@ -49,10 +48,7 @@ namespace Core.DbContexts
                         break;
 
                     case EntityState.Deleted:
-                        entry.State = EntityState.Modified;
-                        entity.UpdatedOn = DateTime.UtcNow;
-                        entity.UpdatedBy = _sessionUserHelper.GetUser();
-                        entity.IsDeleted = true;
+                        // TODO: Add audit record to history table
                         break;
                 }
             }
