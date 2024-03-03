@@ -1,29 +1,29 @@
-﻿using Core.Entities;
+﻿using AutoMapper;
+using Core.DbContexts;
+using Core.Entities;
+using Core.Extensions;
 using Core.Helpers;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using System.Text.Json;
 
-namespace Services
+namespace Services.Auth
 {
-    public interface IAuthService
-    {
-        Task Login(AuthRequestDto login);
-        Task Register(AuthRequestDto registration);
-        Task<UserInfoDto> GetUserInfo(ClaimsPrincipal User);
-    }
-
     public class AuthService : IAuthService
     {
-        private readonly ISessionUserHelper _sessionUserHelper;
+        private readonly IMapper _mapper;
+        private readonly ApplicationDbContext _context;
         private readonly UserManager<UserEntity> _userManager;
+        private readonly ISessionUserHelper _sessionUserHelper;
         private readonly IUserClaimsPrincipalFactory<UserEntity> _claimsFactory;
 
-        public AuthService(UserManager<UserEntity> userManager, IUserClaimsPrincipalFactory<UserEntity> claimsFactory, ISessionUserHelper sessionUserHelper)
+        public AuthService(UserManager<UserEntity> userManager, IUserClaimsPrincipalFactory<UserEntity> claimsFactory, ISessionUserHelper sessionUserHelper, IMapper mapper, ApplicationDbContext context)
         {
+            _mapper = mapper;
             _userManager = userManager;
             _claimsFactory = claimsFactory;
             _sessionUserHelper = sessionUserHelper;
+            _context = context;
         }
 
         public async Task Register(AuthRequestDto registration)
@@ -62,9 +62,21 @@ namespace Services
 
         public async Task<UserInfoDto> GetUserInfo(ClaimsPrincipal user)
         {
-            var userInfo = await _userManager.GetUserAsync(user);
+            var userEntity = await _userManager.GetUserAsync(user);
 
-            return new UserInfoDto { Id = userInfo.Id, Email = userInfo.Email };
+            return userEntity.MapTo<UserInfoDto>(_mapper);
+        }
+
+        public async Task<UserInfoDto> UpdateUserInfo(UserInfoDto userInfoDto)
+        {
+            var userEntity = await _context.Users.FindAsync(Guid.Parse(_sessionUserHelper.UserId));
+
+            userEntity.FirstName = userInfoDto.FirstName;
+            userEntity.LastName = userInfoDto.LastName;
+
+            await _context.SaveChangesAsync();
+
+            return userEntity.MapTo<UserInfoDto>(_mapper);
         }
     }
 }

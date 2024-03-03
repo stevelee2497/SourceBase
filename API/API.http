@@ -1,55 +1,56 @@
-@API_HostAddress = https://localhost:7237
-@Token = CfDJ8EYCB4DYsRJPkbRf642u2N0WiyHNLOs0ta-a3oDC9JxRKDqAwnVIUd2C1doHIZbot80exdigUtZWiKfo9lLy39JQNKpGLRJh_f-UTrtgpWBsjIMuSZnGhhqTHR9LTv3KoJpI5znQFzRjG5SvjeBd1TKfcfTnuZDZ1EoouzRKoUXXSsxkxrJimjS9MKc7SOLHYsSCMn4p50IFiv7vTAhUGzYtun5um-Iw9dETeDXu9etJTDQeUw-RscuLc5WEI65lEcWKNMJdOF-PuHXF3JQ6X-mTn-e98miQKTgcWl5QDRhKZmZR-fVZO3VUfsnSIO7KzxDFrjZ3MsxLHla6Y9mfaVg5gybpPej3bbiksEVxSHCkIPKB0qbh7yc2xrSnsd7qz4PbdgpUtFNoNTau4beI1TnqIBszjrwXQSktNxRLQad0PWKkBcBKCrLdXR0QNwuGYfcVH6cZWz2-mnrgem7g_gLctYP3YaT5uAWgTwpBBtFG4H4ObRIVeCOHLW6FNHhu0WTpZrrImPdR8mDE7IBXDp-z4Emj_Rs8otbKaI2Nfe8KDJBx-Ywpccf48Tj6HKdK9zc3UEVbOof2AXUPapvJPY3Q5MZp-s6xH0iht-YpHQbFyZCpUhJAN725wC5IlfyC9ltNllVIMJXBeagV7VlFcwoU7CZqYNYQ7QW-6Ccao15uHBOSSAecFGybyjgd-qNge86w_g8CkC8Ljg2TmxLoCKQ
+@HostAddress = https://localhost:7237
 
-
-POST {{API_HostAddress}}/api/auth/register
+POST {{HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "aloha-1@yopmail.com",
+  "email": "aloha@yopmail.com",
   "password": "Hello@123"
 }
 
 ###
 
-POST {{API_HostAddress}}/api/auth/login
+POST {{HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "aloha-1@yopmail.com",
+  "email": "aloha@yopmail.com",
   "password": "Hello@123"
 }
 
 ###
 
-POST {{API_HostAddress}}/api/auth/logout
+GET {{HostAddress}}/api/auth/info
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+###
+
+POST {{HostAddress}}/api/auth/info
 Content-Type: application/json
-Authorization: Bearer {{Token}}
+Authorization: Bearer {{accessToken}}
 
 {
+  "firstName": "Steven - 1",
+  "lastName": "Aloha"
 }
 
+
 ###
 
-GET {{API_HostAddress}}/api/auth/info
+GET {{HostAddress}}/api/todo
 Accept: application/json
-Authorization: Bearer {{Token}}
+Authorization: Bearer {{accessToken}}
 
 ###
 
-GET {{API_HostAddress}}/api/todo
-Accept: application/json
-Authorization: Bearer {{Token}}
-
-###
-
-POST {{API_HostAddress}}/api/todo
+POST {{HostAddress}}/api/todo
 Content-Type: application/json
-Authorization: Bearer {{Token}}
+Authorization: Bearer {{accessToken}}
 
 {
   "title": "Task 1",
-  "date": "2024-02-29"
+  "date": "2024-03-30"
 }
 
 ###

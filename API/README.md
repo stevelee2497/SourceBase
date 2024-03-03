@@ -10,3 +10,5 @@ I've poured my heart and soul into this project, weaving in all the valuable les
 - Email service with SendGrid provider for OTP confirmation, email confirmation, forgot password, reset password
 - Audit trail for edit and delete actions
 - Payment service with Stripe
+- Auto mapper for Entity <-> DTO
+- Logging mechanism: TBD

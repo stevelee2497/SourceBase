@@ -4,8 +4,8 @@ namespace Core.Helpers
 {
     public interface ISessionUserHelper
     {
-        string GetUser();
-        string GetUserId();
+        string UserId { get; }
+        string User { get; }
         Task SignInAsync(ClaimsPrincipal user);
     }
 }

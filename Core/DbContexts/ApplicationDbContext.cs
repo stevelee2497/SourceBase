@@ -39,12 +39,12 @@ namespace Core.DbContexts
                 {
                     case EntityState.Added:
                         entity.CreatedOn = entity.UpdatedOn = DateTime.UtcNow;
-                        entity.CreatedBy = entity.UpdatedBy = _sessionUserHelper.GetUser();
+                        entity.CreatedBy = entity.UpdatedBy = _sessionUserHelper.User;
                         break;
 
                     case EntityState.Modified:
                         entity.UpdatedOn = DateTime.UtcNow;
-                        entity.UpdatedBy = _sessionUserHelper.GetUser();
+                        entity.UpdatedBy = _sessionUserHelper.User;
                         break;
 
                     case EntityState.Deleted:
