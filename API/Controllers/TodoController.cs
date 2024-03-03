@@ -2,7 +2,7 @@ using Core.DTOs;
 using Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services;
+using Services.Todo;
 
 namespace API.Controllers
 {
@@ -19,25 +19,25 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<TodoItemEntity> GetTodoItems()
+        public IEnumerable<TodoItemDetailDto> GetTodoItems()
         {
             return _todoService.GetAll();
         }
 
         [HttpGet("{id}")]
-        public TodoItemEntity GetTodo(Guid id)
+        public TodoItemDetailDto GetTodo(Guid id)
         {
             return _todoService.Get(id);
         }
 
         [HttpPost]
-        public void CreateTodo(TodoItemDTO todo)
+        public void CreateTodo(TodoItemDto todo)
         {
             _todoService.Save(todo);
         }
 
         [HttpPut("{id}")]
-        public void UpdateTodo(Guid id, TodoItemDTO todo)
+        public void UpdateTodo(Guid id, TodoItemDto todo)
         {
             _todoService.Update(id, todo);
         }

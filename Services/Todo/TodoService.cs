@@ -1,51 +1,43 @@
-﻿using Core.DbContexts;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Core.DbContexts;
 using Core.DTOs;
 using Core.Entities;
+using Core.Extensions;
 using Core.Helpers;
 
-namespace Services
+namespace Services.Todo
 {
-    public interface ITodoService
-    {
-        IEnumerable<TodoItemEntity> GetAll();
-
-        TodoItemEntity Get(Guid id);
-
-        void Save(TodoItemDTO todoItem);
-
-        void Update(Guid id, TodoItemDTO todoItem);
-
-        void Delete(Guid id);
-    }
-
     public class TodoService : ITodoService
     {
+        private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly ISessionUserHelper _sessionUserHelper;
 
-        public TodoService(ApplicationDbContext context, ISessionUserHelper sessionUserHelper)
+        public TodoService(ApplicationDbContext context, ISessionUserHelper sessionUserHelper, IMapper mapper)
         {
             _context = context;
             _sessionUserHelper = sessionUserHelper;
+            _mapper = mapper;
         }
 
-        public TodoItemEntity Get(Guid id)
+        public TodoItemDetailDto Get(Guid id)
         {
-            return _context.TodoItems.Find(id);
+            return _context.TodoItems.Find(id).MapTo<TodoItemDetailDto>(_mapper);
         }
 
-        public IEnumerable<TodoItemEntity> GetAll()
+        public IEnumerable<TodoItemDetailDto> GetAll()
         {
-            return _context.TodoItems.Where(x => x.UserId == _sessionUserHelper.UserId).AsEnumerable();
+            return _context.TodoItems.Where(x => x.UserId == _sessionUserHelper.UserId).ProjectTo<TodoItemDetailDto>(_mapper).AsEnumerable();
         }
 
-        public void Save(TodoItemDTO todoItem)
+        public void Save(TodoItemDto todoItem)
         {
             _context.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = _sessionUserHelper.UserId });
             _context.SaveChanges();
         }
 
-        public void Update(Guid id, TodoItemDTO todoItem)
+        public void Update(Guid id, TodoItemDto todoItem)
         {
             var item = _context.TodoItems.Find(id);
             item.Title = todoItem.Title;

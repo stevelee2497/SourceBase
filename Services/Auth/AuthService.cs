@@ -1,26 +1,23 @@
-﻿using Core.Entities;
+﻿using AutoMapper;
+using Core.Entities;
+using Core.Extensions;
 using Core.Helpers;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using System.Text.Json;
 
-namespace Services
+namespace Services.Auth
 {
-    public interface IAuthService
-    {
-        Task Login(AuthRequestDto login);
-        Task Register(AuthRequestDto registration);
-        Task<UserInfoDto> GetUserInfo(ClaimsPrincipal User);
-    }
-
     public class AuthService : IAuthService
     {
-        private readonly ISessionUserHelper _sessionUserHelper;
+        private readonly IMapper _mapper;
         private readonly UserManager<UserEntity> _userManager;
+        private readonly ISessionUserHelper _sessionUserHelper;
         private readonly IUserClaimsPrincipalFactory<UserEntity> _claimsFactory;
 
-        public AuthService(UserManager<UserEntity> userManager, IUserClaimsPrincipalFactory<UserEntity> claimsFactory, ISessionUserHelper sessionUserHelper)
+        public AuthService(UserManager<UserEntity> userManager, IUserClaimsPrincipalFactory<UserEntity> claimsFactory, ISessionUserHelper sessionUserHelper, IMapper mapper)
         {
+            _mapper = mapper;
             _userManager = userManager;
             _claimsFactory = claimsFactory;
             _sessionUserHelper = sessionUserHelper;
@@ -62,9 +59,9 @@ namespace Services
 
         public async Task<UserInfoDto> GetUserInfo(ClaimsPrincipal user)
         {
-            var userInfo = await _userManager.GetUserAsync(user);
+            var userEntity = await _userManager.GetUserAsync(user);
 
-            return new UserInfoDto { Id = userInfo.Id, Email = userInfo.Email, FirstName = userInfo.FirstName, LastName = userInfo.LastName };
+            return userEntity.MapTo<UserInfoDto>(_mapper);
         }
     }
 }

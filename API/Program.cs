@@ -2,8 +2,10 @@ using API.Helpers;
 using Core.DbContexts;
 using Core.Entities;
 using Core.Helpers;
+using Core.Mapper;
 using Microsoft.EntityFrameworkCore;
-using Services;
+using Services.Auth;
+using Services.Todo;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
 // Add EF Services
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("name=ConnectionStrings:DefaultConnection"));
