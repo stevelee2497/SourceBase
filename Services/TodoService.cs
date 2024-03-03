@@ -1,6 +1,7 @@
 ﻿using Core.DbContexts;
 using Core.DTOs;
 using Core.Entities;
+using Core.Helpers;
 
 namespace Services
 {
@@ -20,10 +21,12 @@ namespace Services
     public class TodoService : ITodoService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ISessionUserHelper _sessionUserHelper;
 
-        public TodoService(ApplicationDbContext context)
+        public TodoService(ApplicationDbContext context, ISessionUserHelper sessionUserHelper)
         {
             _context = context;
+            _sessionUserHelper = sessionUserHelper;
         }
 
         public TodoItemEntity Get(Guid id)
@@ -33,12 +36,12 @@ namespace Services
 
         public IEnumerable<TodoItemEntity> GetAll()
         {
-            return _context.TodoItems.AsEnumerable();
+            return _context.TodoItems.Where(x => x.UserId == _sessionUserHelper.UserId).AsEnumerable();
         }
 
         public void Save(TodoItemDTO todoItem)
         {
-            _context.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date });
+            _context.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = _sessionUserHelper.UserId });
             _context.SaveChanges();
         }
 

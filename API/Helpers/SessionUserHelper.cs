@@ -14,15 +14,9 @@ namespace API.Helpers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public string GetUser()
-        {
-            return _httpContextAccessor.HttpContext.User?.Identity?.Name;
-        }
+        public string UserId => _httpContextAccessor.HttpContext.User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        public string GetUserId()
-        {
-            return _httpContextAccessor.HttpContext.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-        }
+        public string User => _httpContextAccessor.HttpContext.User?.FindFirstValue(ClaimTypes.Name);
 
         public async Task SignInAsync(ClaimsPrincipal user)
         {

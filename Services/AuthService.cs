@@ -64,7 +64,7 @@ namespace Services
         {
             var userInfo = await _userManager.GetUserAsync(user);
 
-            return new UserInfoDto { Id = userInfo.Id, Email = userInfo.Email };
+            return new UserInfoDto { Id = userInfo.Id, Email = userInfo.Email, FirstName = userInfo.FirstName, LastName = userInfo.LastName };
         }
     }
 }

@@ -10,6 +10,8 @@ namespace Core.Entities
 
         [Column(TypeName = "nvarchar(50)")]
         public ItemStatus Status { get; set; }
+
+        public string UserId { get; set; }
     }
 
     public enum ItemStatus
