@@ -7,5 +7,6 @@ namespace Services.Auth
         Task Login(AuthRequestDto login);
         Task Register(AuthRequestDto registration);
         Task<UserInfoDto> GetUserInfo(ClaimsPrincipal User);
+        Task<UserInfoDto> UpdateUserInfo(UserInfoDto userInfoDto);
     }
 }

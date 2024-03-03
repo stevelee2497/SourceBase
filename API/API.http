@@ -26,6 +26,18 @@ Authorization: Bearer {{accessToken}}
 
 ###
 
+POST {{HostAddress}}/api/auth/info
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "firstName": "Steven",
+  "lastName": "Aloha"
+}
+
+
+###
+
 GET {{HostAddress}}/api/todo
 Accept: application/json
 Authorization: Bearer {{accessToken}}

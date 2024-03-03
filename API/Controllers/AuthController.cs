@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Services;
+using Services.Auth;
 
 namespace API.Controllers
 {
@@ -37,6 +38,13 @@ namespace API.Controllers
         public async Task<UserInfoDto> GetUserInfo()
         {
             return await _authService.GetUserInfo(User);
+        }
+
+        [HttpPost("info")]
+        [Authorize]
+        public async Task<UserInfoDto> UpdateUserInfo(UserInfoDto userInfoDto)
+        {
+            return await _authService.UpdateUserInfo(userInfoDto);
         }
     }
 }
