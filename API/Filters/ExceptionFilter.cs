@@ -18,12 +18,7 @@ namespace API.Filters
 
         public void OnException(ExceptionContext context)
         {
-            if (!_hostEnvironment.IsDevelopment())
-            {
-                // Don't display exception details unless running in Development.
-                return;
-            }
-            _logger.LogError(context.Exception, "Error on {env} at {time} with message {message}", _hostEnvironment.EnvironmentName, DateTime.Now, context.Exception.Message);
+            _logger.LogError(context.Exception, "Error on {env} at {time}: {message}", _hostEnvironment.EnvironmentName, DateTime.Now, context.Exception.Message);
 
             switch (context.Exception)
             {
