@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.DbContexts;
 using Core.Entities;
+using Core.Exceptions;
 using Core.Extensions;
 using Core.Helpers;
 using Microsoft.AspNetCore.Identity;
@@ -20,10 +21,10 @@ namespace Services.Auth
         public AuthService(UserManager<UserEntity> userManager, IUserClaimsPrincipalFactory<UserEntity> claimsFactory, ISessionUserHelper sessionUserHelper, IMapper mapper, ApplicationDbContext context)
         {
             _mapper = mapper;
+            _context = context;
             _userManager = userManager;
             _claimsFactory = claimsFactory;
             _sessionUserHelper = sessionUserHelper;
-            _context = context;
         }
 
         public async Task Register(AuthRequestDto registration)
@@ -33,7 +34,7 @@ namespace Services.Auth
 
             if (!result.Succeeded)
             {
-                throw new Exception(JsonSerializer.Serialize(result.Errors));
+                throw new SystemApiException(result.Errors.First().Description);
             }
         }
 
@@ -42,13 +43,13 @@ namespace Services.Auth
             var user = await _userManager.FindByNameAsync(login.Email);
             if (user == null)
             {
-                throw new Exception(SignInResult.Failed.ToString());
+                throw new SystemApiException("User not found");
             }
 
             var validPassword = await _userManager.CheckPasswordAsync(user, login.Password);
             if (validPassword == false)
             {
-                throw new Exception(SignInResult.Failed.ToString());
+                throw new SystemApiException("Invalid password");
             }
 
             var userPrincipal = await _claimsFactory.CreateAsync(user);
