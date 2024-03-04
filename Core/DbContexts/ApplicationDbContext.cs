@@ -63,7 +63,7 @@ namespace Core.DbContexts
                         auditHistory.Changes = JsonSerializer.Serialize(entry.Properties.Where(prop => prop.IsModified).Select(prop => new
                         {
                             Property = prop.Metadata.PropertyInfo.Name,
-                            Value = prop.CurrentValue,
+                            Current = prop.CurrentValue,
                             Original = prop.OriginalValue,
                         }));
                         break;
