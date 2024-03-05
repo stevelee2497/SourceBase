@@ -20,31 +20,31 @@ namespace API.Controllers
         [HttpGet]
         public IEnumerable<TodoItemDetailDto> GetTodoItems()
         {
-            return _todoService.GetAll();
+            return _todoService.GetTodoItems();
         }
 
         [HttpGet("{id}")]
         public TodoItemDetailDto GetTodo(Guid id)
         {
-            return _todoService.Get(id);
+            return _todoService.GetTodo(id);
         }
 
         [HttpPost]
         public void CreateTodo(TodoItemDto todo)
         {
-            _todoService.Save(todo);
+            _todoService.CreateTodo(todo);
         }
 
         [HttpPut("{id}")]
         public void UpdateTodo(Guid id, TodoItemDto todo)
         {
-            _todoService.Update(id, todo);
+            _todoService.UpdateTodo(id, todo);
         }
 
         [HttpDelete("{id}")]
         public void DeleteTodo(Guid id)
         {
-            _todoService.Delete(id);
+            _todoService.DeleteTodo(id);
         }
     }
 }
