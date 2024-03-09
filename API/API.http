@@ -31,8 +31,8 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "firstName": "Steven - 1",
-  "lastName": "Aloha"
+  "firstName": "Steven - 9",
+  "lastName": "Aloha - 1"
 }
 
 
@@ -49,8 +49,14 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "title": "Task 1",
+  "title": "Task 5",
   "date": "2024-03-30"
 }
+
+###
+
+
+DELETE {{HostAddress}}/api/todo/e839c288-9356-451f-ed99-08dc3c2576db
+Authorization: Bearer {{accessToken}}
 
 ###

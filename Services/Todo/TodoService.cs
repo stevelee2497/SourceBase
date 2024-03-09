@@ -21,23 +21,23 @@ namespace Services.Todo
             _mapper = mapper;
         }
 
-        public TodoItemDetailDto Get(Guid id)
+        public TodoItemDetailDto GetTodo(Guid id)
         {
             return _context.TodoItems.Find(id).MapTo<TodoItemDetailDto>(_mapper);
         }
 
-        public IEnumerable<TodoItemDetailDto> GetAll()
+        public IEnumerable<TodoItemDetailDto> GetTodoItems()
         {
             return _context.TodoItems.Where(x => x.UserId == _sessionUserHelper.UserId).ProjectTo<TodoItemDetailDto>(_mapper).AsEnumerable();
         }
 
-        public void Save(TodoItemDto todoItem)
+        public void CreateTodo(TodoItemDto todoItem)
         {
             _context.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = _sessionUserHelper.UserId });
             _context.SaveChanges();
         }
 
-        public void Update(Guid id, TodoItemDto todoItem)
+        public void UpdateTodo(Guid id, TodoItemDto todoItem)
         {
             var item = _context.TodoItems.Find(id);
             item.Title = todoItem.Title;
@@ -46,7 +46,7 @@ namespace Services.Todo
             _context.SaveChanges();
         }
 
-        public void Delete(Guid id)
+        public void DeleteTodo(Guid id)
         {
             var item = _context.TodoItems.Find(id);
             _context.TodoItems.Remove(item);

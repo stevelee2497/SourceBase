@@ -4,14 +4,14 @@ namespace Services.Todo
 {
     public interface ITodoService
     {
-        IEnumerable<TodoItemDetailDto> GetAll();
+        IEnumerable<TodoItemDetailDto> GetTodoItems();
 
-        TodoItemDetailDto Get(Guid id);
+        TodoItemDetailDto GetTodo(Guid id);
 
-        void Save(TodoItemDto todoItem);
+        void CreateTodo(TodoItemDto todoItem);
 
-        void Update(Guid id, TodoItemDto todoItem);
+        void UpdateTodo(Guid id, TodoItemDto todoItem);
 
-        void Delete(Guid id);
+        void DeleteTodo(Guid id);
     }
 }

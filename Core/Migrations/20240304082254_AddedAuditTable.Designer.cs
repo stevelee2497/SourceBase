@@ -4,6 +4,7 @@ using Core.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Core.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240304082254_AddedAuditTable")]
+    partial class AddedAuditTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,19 +34,15 @@ namespace Core.Migrations
                     b.Property<string>("Action")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ActionOn")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnOrder(97);
 
-                    b.Property<string>("Author")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Changes")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2")
+                        .HasColumnOrder(96);
 
                     b.Property<string>("Current")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EntityId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EntityType")
@@ -51,6 +50,14 @@ namespace Core.Migrations
 
                     b.Property<string>("Original")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnOrder(99);
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("datetime2")
+                        .HasColumnOrder(98);
 
                     b.HasKey("Id");
 
