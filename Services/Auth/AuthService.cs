@@ -1,26 +1,22 @@
-﻿using AutoMapper;
-using Core.DbContexts;
+﻿using Core.DbContexts;
 using Core.Entities;
 using Core.Exceptions;
-using Core.Extensions;
 using Core.Helpers;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
-using System.Text.Json;
+using Core.Extensions;
 
 namespace Services.Auth
 {
     public class AuthService : IAuthService
     {
-        private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<UserEntity> _userManager;
         private readonly ISessionUserHelper _sessionUserHelper;
         private readonly IUserClaimsPrincipalFactory<UserEntity> _claimsFactory;
 
-        public AuthService(UserManager<UserEntity> userManager, IUserClaimsPrincipalFactory<UserEntity> claimsFactory, ISessionUserHelper sessionUserHelper, IMapper mapper, ApplicationDbContext context)
+        public AuthService(UserManager<UserEntity> userManager, IUserClaimsPrincipalFactory<UserEntity> claimsFactory, ISessionUserHelper sessionUserHelper, ApplicationDbContext context)
         {
-            _mapper = mapper;
             _context = context;
             _userManager = userManager;
             _claimsFactory = claimsFactory;
@@ -65,7 +61,7 @@ namespace Services.Auth
         {
             var userEntity = await _context.Users.FindAsync(Guid.Parse(_sessionUserHelper.UserId));
 
-            return userEntity.MapTo<UserInfoDto>(_mapper);
+            return userEntity.ToDto();
         }
 
         public async Task<UserInfoDto> UpdateUserInfo(UserInfoDto userInfoDto)
@@ -77,7 +73,7 @@ namespace Services.Auth
 
             await _context.SaveChangesAsync();
 
-            return userEntity.MapTo<UserInfoDto>(_mapper);
+            return userEntity.ToDto();
         }
     }
 }

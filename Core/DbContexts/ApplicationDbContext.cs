@@ -21,17 +21,17 @@ namespace Core.DbContexts
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
-            OnBeforeSaving();
+            AddAuditLog();
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
         {
-            OnBeforeSaving();
+            AddAuditLog();
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
 
-        private void OnBeforeSaving()
+        private void AddAuditLog()
         {
             var auditHistories = new List<AuditHistoryEntity>();
             foreach (var entry in ChangeTracker.Entries())

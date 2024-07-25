@@ -20,6 +20,7 @@ namespace API.Filters
                 StatusCode = StatusCodes.Status400BadRequest
             };
         }
+
         private Dictionary<string, object> GetModelStateInvalidInfo(ActionContext context)
         {
             var errors = new Dictionary<string, object>();
