@@ -14,7 +14,7 @@ POST {{HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "aloha-31@yopmail.com",
+  "email": "aloha-3131@yopmail.com",
   "password": "Hello@123"
 }
 
@@ -31,8 +31,8 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "firstName": "Steven - 9",
-  "lastName": "Aloha - 1"
+  "firstName": "Steven - 1",
+  "lastName": "Aloha - 4"
 }
 
 ###
@@ -43,12 +43,18 @@ Authorization: Bearer {{accessToken}}
 
 ###
 
+GET {{HostAddress}}/api/todo/edefbc3f-213e-457b-7bec-08dcb144be12
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+###
+
 POST {{HostAddress}}/api/todo
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "title": "Task 4",
+  "title": "Task 1",
   "date": "2024-03-30"
 }
 

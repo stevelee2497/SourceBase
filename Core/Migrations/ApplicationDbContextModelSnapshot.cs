@@ -29,12 +29,14 @@ namespace Core.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Action")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("ActionOn")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Author")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Changes")
@@ -44,9 +46,11 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EntityId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EntityType")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Original")
@@ -71,7 +75,7 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(97);
 
-                    b.Property<DateTime>("CreatedOn")
+                    b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(96);
 
@@ -87,7 +91,7 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(99);
 
-                    b.Property<DateTime>("UpdatedOn")
+                    b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(98);
 
@@ -111,7 +115,7 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(97);
 
-                    b.Property<DateTime>("CreatedOn")
+                    b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(96);
 
@@ -123,17 +127,19 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(99);
 
-                    b.Property<DateTime>("UpdatedOn")
+                    b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(98);
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -158,7 +164,7 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(97);
 
-                    b.Property<DateTime>("CreatedOn")
+                    b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(96);
 
@@ -208,7 +214,7 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(99);
 
-                    b.Property<DateTime>("UpdatedOn")
+                    b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(98);
 

@@ -59,14 +59,14 @@ namespace Services.Auth
 
         public async Task<UserInfoDto> GetUserInfo()
         {
-            var userEntity = await _context.Users.FindAsync(Guid.Parse(_sessionUserHelper.UserId)) ?? throw new SystemApiException("User not found");
+            var userEntity = await _userManager.FindByIdAsync(_sessionUserHelper.UserId) ?? throw new SystemApiException("User not found");
 
             return userEntity.ToDto();
         }
 
         public async Task<UserInfoDto> UpdateUserInfo(UserInfoDto userInfoDto)
         {
-            var userEntity = await _context.Users.FindAsync(Guid.Parse(_sessionUserHelper.UserId)) ?? throw new SystemApiException("User not found");
+            var userEntity = await _userManager.FindByIdAsync(_sessionUserHelper.UserId) ?? throw new SystemApiException("User not found");
 
             userEntity.FirstName = userInfoDto.FirstName;
             userEntity.LastName = userInfoDto.LastName;

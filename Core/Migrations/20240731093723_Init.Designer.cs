@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Core.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240302074626_RemoveSoftDelete")]
-    partial class RemoveSoftDelete
+    [Migration("20240731093723_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,45 @@ namespace Core.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Core.Entities.AuditHistoryEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ActionOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Changes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Current")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Original")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditHistories");
+                });
 
             modelBuilder.Entity("Core.Entities.RoleEntity", b =>
                 {
@@ -39,7 +78,7 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(97);
 
-                    b.Property<DateTime>("CreatedOn")
+                    b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(96);
 
@@ -55,7 +94,7 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(99);
 
-                    b.Property<DateTime>("UpdatedOn")
+                    b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(98);
 
@@ -79,7 +118,7 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(97);
 
-                    b.Property<DateTime>("CreatedOn")
+                    b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(96);
 
@@ -91,15 +130,20 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(99);
 
-                    b.Property<DateTime>("UpdatedOn")
+                    b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(98);
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -123,7 +167,7 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(97);
 
-                    b.Property<DateTime>("CreatedOn")
+                    b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(96);
 
@@ -173,7 +217,7 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnOrder(99);
 
-                    b.Property<DateTime>("UpdatedOn")
+                    b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(98);
 
