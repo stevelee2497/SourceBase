@@ -1,79 +1,23 @@
 ﻿using Core.Entities;
 using Core.Helpers;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using System.Threading.Channels;
 
 namespace Core.DbContexts
 {
-    public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>
+    public class ApplicationDbContext : IdentityAuditDbContext
     {
         private readonly ISessionUserHelper _sessionUserHelper;
 
         public DbSet<TodoItemEntity> TodoItems { get; set; }
-
-        public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ISessionUserHelper sessionUserHelper) : base(options)
         {
             _sessionUserHelper = sessionUserHelper;
         }
 
-        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        public override string GetAuthor()
         {
-            AddAuditLog();
-            return base.SaveChanges(acceptAllChangesOnSuccess);
-        }
-
-        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
-        {
-            AddAuditLog();
-            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-        }
-
-        private void AddAuditLog()
-        {
-            var auditHistories = new List<AuditHistoryEntity>();
-            foreach (var entry in ChangeTracker.Entries())
-            {
-                if (entry is not { Entity: IBaseEntity entity })
-                    continue;
-
-                var auditHistory = new AuditHistoryEntity
-                {
-                    Action = entry.State.ToString(),
-                    ActionOn = DateTime.UtcNow,
-                    Author = _sessionUserHelper.User,
-                    EntityType = entity.GetType().ToString(),
-                    EntityId = entity.Id.ToString()
-                };
-
-                switch (entry.State)
-                {
-                    case EntityState.Added:
-                        entity.CreatedOn = entity.UpdatedOn = DateTime.UtcNow;
-                        entity.CreatedBy = entity.UpdatedBy = _sessionUserHelper.User;
-                        break;
-
-                    case EntityState.Modified:
-                        entity.UpdatedOn = DateTime.UtcNow;
-                        entity.UpdatedBy = _sessionUserHelper.User;
-                        auditHistory.Original = JsonSerializer.Serialize(entry.OriginalValues.ToObject());
-                        auditHistory.Changes = JsonSerializer.Serialize(entry.Properties.Where(prop => prop.IsModified).Select(prop => new
-                        {
-                            Property = prop.Metadata.PropertyInfo?.Name,
-                            Current = prop.CurrentValue,
-                            Original = prop.OriginalValue,
-                        }));
-                        break;
-                }
-
-                auditHistory.Current = JsonSerializer.Serialize(entry.CurrentValues.ToObject());
-                auditHistories.Add(auditHistory);
-            }
-
-            AuditHistories.AddRange(auditHistories);
+            return _sessionUserHelper.User;
         }
     }
 }

@@ -35,7 +35,6 @@ Authorization: Bearer {{accessToken}}
   "lastName": "Aloha - 1"
 }
 
-
 ###
 
 GET {{HostAddress}}/api/todo
@@ -49,13 +48,24 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "title": "Task 3",
+  "title": "Task 4",
   "date": "2024-03-30"
 }
 
 ###
 
-DELETE {{HostAddress}}/api/todo/e839c288-9356-451f-ed99-08dc3c2576db
+DELETE {{HostAddress}}/api/todo/2db4d350-4b52-4078-6372-08dcb13952cf
 Authorization: Bearer {{accessToken}}
+
+###
+
+PUT {{HostAddress}}/api/todo/60fe2d87-74d5-4825-3963-08dcb12d8894
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Task 5 - Edited",
+  "date": "2024-03-31"
+}
 
 ###
