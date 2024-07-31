@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Core.DbContexts;
+﻿using Core.DbContexts;
 using Core.DTOs;
 using Core.Entities;
 using Core.Extensions;
@@ -10,25 +8,23 @@ namespace Services.Todo
 {
     public class TodoService : ITodoService
     {
-        private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly ISessionUserHelper _sessionUserHelper;
 
-        public TodoService(ApplicationDbContext context, ISessionUserHelper sessionUserHelper, IMapper mapper)
+        public TodoService(ApplicationDbContext context, ISessionUserHelper sessionUserHelper)
         {
             _context = context;
             _sessionUserHelper = sessionUserHelper;
-            _mapper = mapper;
         }
 
         public TodoItemDetailDto GetTodo(Guid id)
         {
-            return _context.TodoItems.Find(id).MapTo<TodoItemDetailDto>(_mapper);
+            return _context.TodoItems.Find(id).ToDetailDto();
         }
 
         public IEnumerable<TodoItemDetailDto> GetTodoItems()
         {
-            return _context.TodoItems.Where(x => x.UserId == _sessionUserHelper.UserId).ProjectTo<TodoItemDetailDto>(_mapper).AsEnumerable();
+            return _context.TodoItems.Where(x => x.UserId == _sessionUserHelper.UserId).Select(x => x.ToDetailDto()).AsEnumerable();
         }
 
         public void CreateTodo(TodoItemDto todoItem)
