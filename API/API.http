@@ -4,7 +4,7 @@ POST {{HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "aloha-31@yopmail.com",
+  "email": "aloha-3131@yopmail.com",
   "password": "Hello@123"
 }
 
@@ -49,7 +49,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "title": "Task 5",
+  "title": "Task 3",
   "date": "2024-03-30"
 }
 

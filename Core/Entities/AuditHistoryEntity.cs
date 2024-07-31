@@ -14,10 +14,10 @@
 
         public required string EntityId { get; set; }
 
-        public required string Current {  get; set; }
+        public string? Current {  get; set; }
 
-        public required string Original { get; set; }
+        public string? Original { get; set; }
 
-        public required string Changes { get; set; }
+        public string? Changes { get; set; }
     }
 }

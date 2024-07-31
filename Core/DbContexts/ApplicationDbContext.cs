@@ -3,6 +3,7 @@ using Core.Helpers;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using System.Threading.Channels;
 
 namespace Core.DbContexts
 {
@@ -45,15 +46,7 @@ namespace Core.DbContexts
                     ActionOn = DateTime.UtcNow,
                     Author = _sessionUserHelper.User,
                     EntityType = entity.GetType().ToString(),
-                    EntityId = entity.Id.ToString(),
-                    Current = JsonSerializer.Serialize(entry.CurrentValues.ToObject()),
-                    Original = JsonSerializer.Serialize(entry.OriginalValues.ToObject()),
-                    Changes = JsonSerializer.Serialize(entry.Properties.Where(prop => prop.IsModified).Select(prop => new
-                    {
-                        Property = prop.Metadata.PropertyInfo?.Name,
-                        Current = prop.CurrentValue,
-                        Original = prop.OriginalValue,
-                    }))
+                    EntityId = entity.Id.ToString()
                 };
 
                 switch (entry.State)
@@ -66,9 +59,17 @@ namespace Core.DbContexts
                     case EntityState.Modified:
                         entity.UpdatedOn = DateTime.UtcNow;
                         entity.UpdatedBy = _sessionUserHelper.User;
+                        auditHistory.Original = JsonSerializer.Serialize(entry.OriginalValues.ToObject());
+                        auditHistory.Changes = JsonSerializer.Serialize(entry.Properties.Where(prop => prop.IsModified).Select(prop => new
+                        {
+                            Property = prop.Metadata.PropertyInfo?.Name,
+                            Current = prop.CurrentValue,
+                            Original = prop.OriginalValue,
+                        }));
                         break;
                 }
 
+                auditHistory.Current = JsonSerializer.Serialize(entry.CurrentValues.ToObject());
                 auditHistories.Add(auditHistory);
             }
 
