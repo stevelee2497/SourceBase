@@ -49,7 +49,7 @@ namespace Services.Auth
             }
 
             var userPrincipal = await _claimsFactory.CreateAsync(user);
-            foreach (var claim in new Claim[] { new Claim("amr", "pwd") })
+            foreach (var claim in new Claim[] { new("amr", "pwd") })
             {
                 userPrincipal.Identities.First().AddClaim(claim);
             }
@@ -59,14 +59,14 @@ namespace Services.Auth
 
         public async Task<UserInfoDto> GetUserInfo()
         {
-            var userEntity = await _context.Users.FindAsync(Guid.Parse(_sessionUserHelper.UserId));
+            var userEntity = await _context.Users.FindAsync(Guid.Parse(_sessionUserHelper.UserId)) ?? throw new SystemApiException("User not found");
 
             return userEntity.ToDto();
         }
 
         public async Task<UserInfoDto> UpdateUserInfo(UserInfoDto userInfoDto)
         {
-            var userEntity = await _context.Users.FindAsync(Guid.Parse(_sessionUserHelper.UserId));
+            var userEntity = await _context.Users.FindAsync(Guid.Parse(_sessionUserHelper.UserId)) ?? throw new SystemApiException("User not found");
 
             userEntity.FirstName = userInfoDto.FirstName;
             userEntity.LastName = userInfoDto.LastName;

@@ -4,20 +4,20 @@
     {
         public Guid Id { get; set; }
 
-        public string Author { get; set; }
+        public required string Author { get; set; }
 
-        public string Action { get; set; }
+        public required string Action { get; set; }
 
         public DateTime ActionOn { get; set; }
 
-        public string EntityType { get; set; }
+        public required string EntityType { get; set; }
 
-        public string EntityId { get; set; }
+        public required string EntityId { get; set; }
 
-        public string Current {  get; set; }
+        public required string Current {  get; set; }
 
-        public string Original { get; set; }
+        public required string Original { get; set; }
 
-        public string Changes { get; set; }
+        public required string Changes { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace Core.Extensions
             return new UserInfoDto
             {
                 Id = entity.Id,
-                Email = entity.Email,
+                Email = entity.Email!,
                 FirstName = entity.FirstName,
                 LastName = entity.LastName
             };

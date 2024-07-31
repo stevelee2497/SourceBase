@@ -14,13 +14,13 @@ namespace API.Helpers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public string UserId => _httpContextAccessor.HttpContext.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        public string UserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Anonymous user";
 
-        public string User => _httpContextAccessor.HttpContext.User?.FindFirstValue(ClaimTypes.Name);
+        public string User => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Name) ?? "Anonymous user";
 
-        public async Task SignInAsync(ClaimsPrincipal user)
+        public Task SignInAsync(ClaimsPrincipal user)
         {
-            await _httpContextAccessor.HttpContext.SignInAsync(IdentityConstants.BearerScheme, user, new AuthenticationProperties() { IsPersistent = false });
+            return _httpContextAccessor.HttpContext?.SignInAsync(IdentityConstants.BearerScheme, user, new AuthenticationProperties() { IsPersistent = false }) ?? Task.CompletedTask;
         }
     }
 }

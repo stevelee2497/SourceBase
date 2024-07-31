@@ -4,7 +4,7 @@ POST {{HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "aloha@yopmail.com",
+  "email": "aloha-31@yopmail.com",
   "password": "Hello@123"
 }
 
@@ -14,7 +14,7 @@ POST {{HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "aloha@yopmail.com",
+  "email": "aloha-31@yopmail.com",
   "password": "Hello@123"
 }
 
@@ -54,7 +54,6 @@ Authorization: Bearer {{accessToken}}
 }
 
 ###
-
 
 DELETE {{HostAddress}}/api/todo/e839c288-9356-451f-ed99-08dc3c2576db
 Authorization: Bearer {{accessToken}}

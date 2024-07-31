@@ -4,14 +4,14 @@ namespace Core.Entities
 {
     public class TodoItemEntity : BaseEntity
     {
-        public string Title { get; set; }
+        public required string Title { get; set; }
 
         public DateOnly Date { get; set; }
 
         [Column(TypeName = "nvarchar(50)")]
         public ItemStatus Status { get; set; }
 
-        public string UserId { get; set; }
+        public required string UserId { get; set; }
     }
 
     public enum ItemStatus

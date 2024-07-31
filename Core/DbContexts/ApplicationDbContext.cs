@@ -46,7 +46,14 @@ namespace Core.DbContexts
                     Author = _sessionUserHelper.User,
                     EntityType = entity.GetType().ToString(),
                     EntityId = entity.Id.ToString(),
-                    Current = JsonSerializer.Serialize(entry.CurrentValues.ToObject())
+                    Current = JsonSerializer.Serialize(entry.CurrentValues.ToObject()),
+                    Original = JsonSerializer.Serialize(entry.OriginalValues.ToObject()),
+                    Changes = JsonSerializer.Serialize(entry.Properties.Where(prop => prop.IsModified).Select(prop => new
+                    {
+                        Property = prop.Metadata.PropertyInfo?.Name,
+                        Current = prop.CurrentValue,
+                        Original = prop.OriginalValue,
+                    }))
                 };
 
                 switch (entry.State)
@@ -59,13 +66,6 @@ namespace Core.DbContexts
                     case EntityState.Modified:
                         entity.UpdatedOn = DateTime.UtcNow;
                         entity.UpdatedBy = _sessionUserHelper.User;
-                        auditHistory.Original = JsonSerializer.Serialize(entry.OriginalValues.ToObject());
-                        auditHistory.Changes = JsonSerializer.Serialize(entry.Properties.Where(prop => prop.IsModified).Select(prop => new
-                        {
-                            Property = prop.Metadata.PropertyInfo.Name,
-                            Current = prop.CurrentValue,
-                            Original = prop.OriginalValue,
-                        }));
                         break;
                 }
 
