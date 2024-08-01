@@ -43,5 +43,6 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+//app.MapIdentityApi(); // Add as reference
 
 app.Run();

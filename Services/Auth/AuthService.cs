@@ -1,10 +1,10 @@
 ﻿using Core.DbContexts;
 using Core.Entities;
 using Core.Exceptions;
+using Core.Extensions;
 using Core.Helpers;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
-using Core.Extensions;
 
 namespace Services.Auth
 {
@@ -49,11 +49,7 @@ namespace Services.Auth
             }
 
             var userPrincipal = await _claimsFactory.CreateAsync(user);
-            foreach (var claim in new Claim[] { new("amr", "pwd") })
-            {
-                userPrincipal.Identities.First().AddClaim(claim);
-            }
-
+            userPrincipal.Identities.First().AddClaim(new Claim("amr", "pwd")); // Adding Authentication Method Reference - Password
             await _sessionUserHelper.SignInAsync(userPrincipal);
         }
 
