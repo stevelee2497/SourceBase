@@ -3,6 +3,8 @@ using Core.Entities;
 using Core.Exceptions;
 using Core.Extensions;
 using Core.Helpers;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
@@ -13,14 +15,16 @@ namespace Services.Auth
         private readonly ApplicationDbContext _context;
         private readonly UserManager<UserEntity> _userManager;
         private readonly ISessionUserHelper _sessionUserHelper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserClaimsPrincipalFactory<UserEntity> _claimsFactory;
 
-        public AuthService(UserManager<UserEntity> userManager, IUserClaimsPrincipalFactory<UserEntity> claimsFactory, ISessionUserHelper sessionUserHelper, ApplicationDbContext context)
+        public AuthService(UserManager<UserEntity> userManager, IUserClaimsPrincipalFactory<UserEntity> claimsFactory, ISessionUserHelper sessionUserHelper, ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _userManager = userManager;
             _claimsFactory = claimsFactory;
             _sessionUserHelper = sessionUserHelper;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task Register(AuthRequestDto registration)
@@ -50,7 +54,7 @@ namespace Services.Auth
 
             var userPrincipal = await _claimsFactory.CreateAsync(user);
             userPrincipal.Identities.First().AddClaim(new Claim("amr", "pwd")); // Adding Authentication Method Reference - Password
-            await _sessionUserHelper.SignInAsync(userPrincipal);
+            await (_httpContextAccessor.HttpContext?.SignInAsync(IdentityConstants.BearerScheme, userPrincipal) ?? Task.CompletedTask);
         }
 
         public async Task<UserInfoDto> GetUserInfo()

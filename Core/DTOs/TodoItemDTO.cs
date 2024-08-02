@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Core.DTOs
@@ -7,6 +8,7 @@ namespace Core.DTOs
     {
         public DateOnly Date { get; set; }
 
+        [Required]
         public required string Title { get; set; }
 
         public ItemStatus Status { get; set; }

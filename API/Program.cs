@@ -3,6 +3,8 @@ using API.Helpers;
 using Core.DbContexts;
 using Core.Entities;
 using Core.Helpers;
+using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Services.Auth;
 using Services.Todo;
@@ -30,6 +32,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("name=ConnectionStrings:DefaultConnection"));
 builder.Services.AddIdentityApiEndpoints<UserEntity>().AddEntityFrameworkStores<ApplicationDbContext>();
 
+// Override Identity Authentication Configurations
+builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options => 
+{
+    options.BearerTokenExpiration = TimeSpan.FromDays(30);
+    options.RefreshTokenExpiration = TimeSpan.FromDays(60);
+});
+
 // Add application services
 builder.Services.AddScoped<ITodoService, TodoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -43,6 +52,5 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-//app.MapIdentityApi(); // Add as reference
 
 app.Run();
