@@ -20,7 +20,7 @@ namespace API.Helpers
 
         public Task SignInAsync(ClaimsPrincipal user)
         {
-            return _httpContextAccessor.HttpContext?.SignInAsync(IdentityConstants.BearerScheme, user, new AuthenticationProperties() { IsPersistent = false }) ?? Task.CompletedTask;
+            return _httpContextAccessor.HttpContext?.SignInAsync(IdentityConstants.BearerScheme, user) ?? Task.CompletedTask;
         }
     }
 }
