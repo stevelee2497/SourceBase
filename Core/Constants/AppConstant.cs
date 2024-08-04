@@ -2,6 +2,7 @@
 {
     public static class AppConstant
     {
-        public const int TokenDuration = 30;
+        public const int BearerTokenExpiration = 30;
+        public const int RefreshTokenExpiration = 60;
     }
 }

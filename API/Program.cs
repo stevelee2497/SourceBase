@@ -1,12 +1,14 @@
+using API.DbContexts;
 using API.Filters;
 using API.Helpers;
+using Core.Constants;
 using Core.DbContexts;
 using Core.Entities;
-using Core.Helpers;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Services.Auth;
+using Services.Helpers;
 using Services.Todo;
 using System.Text.Json.Serialization;
 
@@ -33,16 +35,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 builder.Services.AddIdentityApiEndpoints<UserEntity>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Override Identity Authentication Configurations
-builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options => 
+builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options =>
 {
-    options.BearerTokenExpiration = TimeSpan.FromDays(30);
-    options.RefreshTokenExpiration = TimeSpan.FromDays(60);
+    options.BearerTokenExpiration = TimeSpan.FromDays(AppConstant.BearerTokenExpiration);
+    options.RefreshTokenExpiration = TimeSpan.FromDays(AppConstant.RefreshTokenExpiration);
 });
 
 // Add application services
+builder.Services.AddScoped<IDbContext, ApplicationDbContext>();
 builder.Services.AddScoped<ITodoService, TodoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ISessionUserHelper, SessionUserHelper>();
+builder.Services.AddScoped<IAuthHelper, AuthHelper>();
 
 var app = builder.Build();
 
