@@ -17,7 +17,7 @@ namespace Services.Todo
 
         public TodoItemDetailDto GetTodo(Guid id)
         {
-            return _context.TodoItems.Find(id)?.ToDetailDto() ?? throw new SystemApiException("User not found");
+            return _context.TodoItems.Find(id)?.ToDetailDto() ?? throw new NotFoundException();
         }
 
         public IEnumerable<TodoItemDetailDto> GetTodoItems()
@@ -33,7 +33,7 @@ namespace Services.Todo
 
         public async Task UpdateTodo(Guid id, TodoItemDto todoItem)
         {
-            var item = _context.TodoItems.Find(id) ?? throw new SystemApiException("User not found");
+            var item = _context.TodoItems.Find(id) ?? throw new NotFoundException();
             item.Title = todoItem.Title;
             item.Status = todoItem.Status;
             item.Date = todoItem.Date;
@@ -42,7 +42,7 @@ namespace Services.Todo
 
         public async Task DeleteTodo(Guid id)
         {
-            var item = _context.TodoItems.Find(id) ?? throw new SystemApiException("Item not found");
+            var item = _context.TodoItems.Find(id) ?? throw new NotFoundException();
             _context.TodoItems.Remove(item);
             await _context.SaveChangesAsync();
         }
