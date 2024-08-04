@@ -3,19 +3,16 @@ using Core.DTOs;
 using Core.Entities;
 using Core.Exceptions;
 using Core.Extensions;
-using Core.Helpers;
 
 namespace Services.Todo
 {
     public class TodoService : ITodoService
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ISessionUserHelper _sessionUserHelper;
+        private readonly IDbContext _context;
 
-        public TodoService(ApplicationDbContext context, ISessionUserHelper sessionUserHelper)
+        public TodoService(IDbContext context)
         {
             _context = context;
-            _sessionUserHelper = sessionUserHelper;
         }
 
         public TodoItemDetailDto GetTodo(Guid id)
@@ -25,29 +22,29 @@ namespace Services.Todo
 
         public IEnumerable<TodoItemDetailDto> GetTodoItems()
         {
-            return _context.TodoItems.Where(x => x.UserId == _sessionUserHelper.UserId).Select(x => x.ToDetailDto()).AsEnumerable();
+            return _context.TodoItems.Where(x => x.UserId == _context.CurrentUserId).Select(x => x.ToDetailDto()).AsEnumerable();
         }
 
-        public void CreateTodo(TodoItemDto todoItem)
+        public async Task CreateTodo(TodoItemDto todoItem)
         {
-            _context.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = _sessionUserHelper.UserId });
-            _context.SaveChanges();
+            _context.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = _context.CurrentUserId });
+            await _context.SaveChangesAsync();
         }
 
-        public void UpdateTodo(Guid id, TodoItemDto todoItem)
+        public async Task UpdateTodo(Guid id, TodoItemDto todoItem)
         {
             var item = _context.TodoItems.Find(id) ?? throw new SystemApiException("User not found");
             item.Title = todoItem.Title;
             item.Status = todoItem.Status;
             item.Date = todoItem.Date;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void DeleteTodo(Guid id)
+        public async Task DeleteTodo(Guid id)
         {
             var item = _context.TodoItems.Find(id) ?? throw new SystemApiException("Item not found");
             _context.TodoItems.Remove(item);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

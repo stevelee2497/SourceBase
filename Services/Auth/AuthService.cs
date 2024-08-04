@@ -1,72 +1,41 @@
 ﻿using Core.DbContexts;
-using Core.Entities;
 using Core.Exceptions;
 using Core.Extensions;
-using Core.Helpers;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
+using Services.Helpers;
 
 namespace Services.Auth
 {
     public class AuthService : IAuthService
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<UserEntity> _userManager;
-        private readonly ISessionUserHelper _sessionUserHelper;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IUserClaimsPrincipalFactory<UserEntity> _claimsFactory;
+        private readonly IDbContext _context;
+        private readonly IAuthHelper _authHelper;
 
-        public AuthService(UserManager<UserEntity> userManager, IUserClaimsPrincipalFactory<UserEntity> claimsFactory, ISessionUserHelper sessionUserHelper, ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
+        public AuthService(IAuthHelper authHelper, IDbContext context)
         {
             _context = context;
-            _userManager = userManager;
-            _claimsFactory = claimsFactory;
-            _sessionUserHelper = sessionUserHelper;
-            _httpContextAccessor = httpContextAccessor;
+            _authHelper = authHelper;
         }
 
         public async Task Register(AuthRequestDto registration)
         {
-            var user = new UserEntity { Email = registration.Email, UserName = registration.Email };
-            var result = await _userManager.CreateAsync(user, registration.Password);
-
-            if (!result.Succeeded)
-            {
-                throw new SystemApiException(result.Errors.First().Description);
-            }
+            await _authHelper.RegisterAsync(registration.Email, registration.Password);
         }
 
         public async Task Login(AuthRequestDto login)
         {
-            var user = await _userManager.FindByNameAsync(login.Email);
-            if (user == null)
-            {
-                throw new SystemApiException("User not found");
-            }
-
-            var validPassword = await _userManager.CheckPasswordAsync(user, login.Password);
-            if (validPassword == false)
-            {
-                throw new SystemApiException("Invalid password");
-            }
-
-            var userPrincipal = await _claimsFactory.CreateAsync(user);
-            userPrincipal.Identities.First().AddClaim(new Claim("amr", "pwd")); // Adding Authentication Method Reference - Password
-            await (_httpContextAccessor.HttpContext?.SignInAsync(IdentityConstants.BearerScheme, userPrincipal) ?? Task.CompletedTask);
+            await _authHelper.LoginAsync(login.Email, login.Password);
         }
 
         public async Task<UserInfoDto> GetUserInfo()
         {
-            var userEntity = await _userManager.FindByIdAsync(_sessionUserHelper.UserId) ?? throw new SystemApiException("User not found");
+            var userEntity = await _context.Users.FindAsync(_context.CurrentUserId) ?? throw new SystemApiException("User not found");
 
             return userEntity.ToDto();
         }
 
         public async Task<UserInfoDto> UpdateUserInfo(UserInfoDto userInfoDto)
         {
-            var userEntity = await _userManager.FindByIdAsync(_sessionUserHelper.UserId) ?? throw new SystemApiException("User not found");
+            var userEntity = await _context.Users.FindAsync(_context.CurrentUserId) ?? throw new SystemApiException("User not found");
 
             userEntity.FirstName = userInfoDto.FirstName;
             userEntity.LastName = userInfoDto.LastName;

@@ -1,16 +1,25 @@
-﻿using Core.Entities;
+﻿using Core.DbContexts;
+using Core.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Text.Json;
 
-namespace Core.DbContexts
+namespace API.DbContexts
 {
-    public abstract class IdentityAuditDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>
+    public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>, IDbContext
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
-        public IdentityAuditDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        public DbSet<TodoItemEntity> TodoItems { get; set; }
+
+        public string CurrentUserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Anonymous user";
+
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor) : base(options)
         {
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -25,8 +34,6 @@ namespace Core.DbContexts
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
 
-        public abstract string GetAuthor();
-
         private void AddAuditLog()
         {
             var auditHistories = new List<AuditHistoryEntity>();
@@ -39,7 +46,7 @@ namespace Core.DbContexts
                 {
                     Action = entry.State.ToString(),
                     ActionOn = DateTime.UtcNow,
-                    Author = GetAuthor(),
+                    Author = CurrentUserId,
                     EntityType = entity.GetType().ToString(),
                     EntityId = entity.Id.ToString()
                 };
@@ -48,12 +55,12 @@ namespace Core.DbContexts
                 {
                     case EntityState.Added:
                         entity.CreatedOn = entity.UpdatedOn = DateTime.UtcNow;
-                        entity.CreatedBy = entity.UpdatedBy = GetAuthor();
+                        entity.CreatedBy = entity.UpdatedBy = CurrentUserId;
                         break;
 
                     case EntityState.Modified:
                         entity.UpdatedOn = DateTime.UtcNow;
-                        entity.UpdatedBy = GetAuthor();
+                        entity.UpdatedBy = CurrentUserId;
                         auditHistory.Original = JsonSerializer.Serialize(entry.OriginalValues.ToObject());
                         auditHistory.Changes = JsonSerializer.Serialize(entry.Properties.Where(prop => prop.IsModified).Select(prop => new
                         {

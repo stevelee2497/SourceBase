@@ -8,10 +8,10 @@ namespace Services.Todo
 
         TodoItemDetailDto GetTodo(Guid id);
 
-        void CreateTodo(TodoItemDto todoItem);
+        Task CreateTodo(TodoItemDto todoItem);
 
-        void UpdateTodo(Guid id, TodoItemDto todoItem);
+        Task UpdateTodo(Guid id, TodoItemDto todoItem);
 
-        void DeleteTodo(Guid id);
+        Task DeleteTodo(Guid id);
     }
 }

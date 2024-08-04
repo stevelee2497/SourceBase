@@ -14,7 +14,7 @@ POST {{HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "aloha-3131@yopmail.com",
+  "email": "aloha-31311@yopmail.com",
   "password": "Hello@123"
 }
 
@@ -31,8 +31,8 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "firstName": "Steven - 1",
-  "lastName": "Aloha - 4"
+  "firstName": "Steven",
+  "lastName": "Aloha"
 }
 
 ###
