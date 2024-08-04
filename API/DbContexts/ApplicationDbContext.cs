@@ -9,13 +9,19 @@ namespace API.DbContexts
 {
     public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>, IDbContext
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        #region DbSets
 
         public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
         public DbSet<TodoItemEntity> TodoItems { get; set; }
 
+        #endregion
+
+        #region Ctors
+
         public string CurrentUserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Anonymous user";
+
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor) : base(options)
         {
@@ -77,5 +83,7 @@ namespace API.DbContexts
 
             AuditHistories.AddRange(auditHistories);
         }
+
+        #endregion
     }
 }
