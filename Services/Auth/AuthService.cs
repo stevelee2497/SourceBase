@@ -26,16 +26,21 @@ namespace Services.Auth
             await _authHelper.LoginAsync(login.Email, login.Password);
         }
 
+        public async Task Refresh(RefreshTokenDto refreshToken)
+        {
+            await _authHelper.RefreshAsync(refreshToken.Token);
+        }
+
         public async Task<UserInfoDto> GetUserInfo()
         {
-            var userEntity = await _context.Users.FindAsync(_context.CurrentUserId) ?? throw new SystemApiException("User not found");
+            var userEntity = await _context.Users.FindAsync(Guid.Parse(_context.CurrentUserId)) ?? throw new SystemApiException("User not found");
 
             return userEntity.ToDto();
         }
 
         public async Task<UserInfoDto> UpdateUserInfo(UserInfoDto userInfoDto)
         {
-            var userEntity = await _context.Users.FindAsync(_context.CurrentUserId) ?? throw new SystemApiException("User not found");
+            var userEntity = await _context.Users.FindAsync(Guid.Parse(_context.CurrentUserId)) ?? throw new SystemApiException("User not found");
 
             userEntity.FirstName = userInfoDto.FirstName;
             userEntity.LastName = userInfoDto.LastName;

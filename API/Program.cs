@@ -37,8 +37,8 @@ builder.Services.AddIdentityApiEndpoints<UserEntity>().AddEntityFrameworkStores<
 // Override Identity Authentication Configurations
 builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options =>
 {
-    options.BearerTokenExpiration = TimeSpan.FromDays(AppConstant.BearerTokenExpiration);
-    options.RefreshTokenExpiration = TimeSpan.FromDays(AppConstant.RefreshTokenExpiration);
+    options.BearerTokenExpiration = TimeSpan.FromMinutes(AppConstant.BearerTokenExpiration);
+    options.RefreshTokenExpiration = TimeSpan.FromMinutes(AppConstant.RefreshTokenExpiration);
 });
 
 // Add application services
