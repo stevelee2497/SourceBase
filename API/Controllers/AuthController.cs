@@ -28,6 +28,12 @@ namespace API.Controllers
             await _authService.Login(login);
         }
 
+        [HttpPost("refresh")]
+        public async Task Refresh(RefreshTokenDto login)
+        {
+            await _authService.Refresh(login);
+        }
+
         [HttpGet("info")]
         [Authorize]
         public async Task<UserInfoDto> GetUserInfo()
