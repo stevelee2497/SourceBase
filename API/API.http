@@ -24,7 +24,7 @@ POST {{HostAddress}}/api/auth/refresh
 Content-Type: application/json
 
 {
-  "token": "CfDJ8BDB4tGozMBEvJrpVo3m5TMjFIi8y4yh_vz-ULUWcX9QQsPdDENi9CYjmkAJdnofVBGa9zebfTBSpxy8biBTzeJehJpCEVe1uVbfuJ2ATBXEIIzcBrIbJg4bkj513pOki_GfFVPvnyPgBKKvTZIGKpIWdJE3nftIrIByfx7BYq_uEJj7dhfkK8kIhyhKmNac4MmQ4Au8ehcE7n6vep5pDQksGtDLUJUhRnpYUcM2Pz_Ik1aluTefpERhiBKg6oamq84vnq1GqzOGUh4AED8g-n8ytJh8HNkJoOQcqgg6mtv2JDQm9-gk3CpAF8-9MO0YDVnth-V8dB0Kw3pjjS8Z11FsN9EBZPKmMKgNVYA0a2Uhzhoc0IOKKouPeG-0zdNiczYOR5q5lOdQON6mYb_iKf8a5YIjWkvs-YgmHhqH8GrjkbZeKzbTcpo9FXjKnDRjXlhTTHRuEwRn0gmskO1Qpstk5Y4qOXsMiyARaLMYuHsFt814Kd9dJ85-RPpLkDf4uNnchR0mrr31PQyH9o2jGCG_JpVDUUSH02-hDo8FZy78LWjeSpmsu5ZnYrzHNRjVfc3Ae_mIpgI63BWjQQjBPWfnAORwCKpm5sN-IcFnQYs0UiHrLp8Hlw9l1Ou_WxhYiNZII72SSMMltpcw9pnCRh6b8rOABgsOlcXyLuYeppLyIR9pmVWlsFXw-nw5WyBoboyY6D-GWTmBRawLhh7NiO0"
+  "token": "{{refreshToken}}"
 }
 
 ###
@@ -41,7 +41,7 @@ Authorization: Bearer {{accessToken}}
 
 {
   "firstName": "Steven",
-  "lastName": "Aloha"
+  "lastName": "Junior"
 }
 
 ###

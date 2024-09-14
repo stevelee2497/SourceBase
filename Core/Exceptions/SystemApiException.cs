@@ -28,4 +28,11 @@ namespace Core.Exceptions
         {
         }
     }
+
+    public class UnAuthorizedException : BaseException
+    {
+        public UnAuthorizedException(string message = "Invalid Token", string code = "UNAUTHORIZE", int statusCode = (int)HttpStatusCode.Unauthorized) : base(message, code, statusCode)
+        {
+        }
+    }
 }

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Services.Helpers;
 using System.Net;
+using System.Security.Claims;
 
 namespace API.Helpers
 {
@@ -47,16 +48,15 @@ namespace API.Helpers
         {
             var refreshTokenProtector = _bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
             var refreshTicket = refreshTokenProtector.Unprotect(refreshToken);
+            var user = await _signInManager.ValidateSecurityStampAsync(refreshTicket?.Principal);
 
-            // Reject the /refresh attempt with a 401 if the token expired or the security stamp validation fails
-            if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc)
+            if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc || user == null)
             {
-                TypedResults.Challenge();
+                throw new UnAuthorizedException();
             }
 
-            var user = await _signInManager.ValidateSecurityStampAsync(refreshTicket?.Principal) ?? throw new SystemApiException("Invalid refresh token", statusCode: (int)HttpStatusCode.Unauthorized);
-            var newPrincipal = await _signInManager.CreateUserPrincipalAsync(user);
-            TypedResults.SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
+            _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
+            await _signInManager.SignInWithClaimsAsync(user, false, [new Claim("amr", "pwd")]);
         }
     }
 }
