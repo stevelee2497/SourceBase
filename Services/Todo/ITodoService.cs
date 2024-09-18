@@ -4,9 +4,9 @@ namespace Services.Todo
 {
     public interface ITodoService
     {
-        IEnumerable<TodoItemDetailDto> GetTodoItems();
+        Task<IEnumerable<TodoItemDetailDto>> GetTodoItems();
 
-        TodoItemDetailDto GetTodo(Guid id);
+        Task<TodoItemDetailDto> GetTodo(Guid id);
 
         Task CreateTodo(TodoItemDto todoItem);
 

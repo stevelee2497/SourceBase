@@ -7,37 +7,37 @@ namespace API.Controllers
 {
     [ApiController]
     [Authorize]
-    [Route("api/todo")]
+    [Route("api/todos")]
     public class TodoController(ITodoService todoService) : ControllerBase
     {
         [HttpGet]
-        public IEnumerable<TodoItemDetailDto> GetTodoItems()
+        public async Task<IEnumerable<TodoItemDetailDto>> GetTodoItems()
         {
-            return todoService.GetTodoItems();
+            return await todoService.GetTodoItems();
         }
 
         [HttpGet("{id}")]
-        public TodoItemDetailDto GetTodo(Guid id)
+        public async Task<TodoItemDetailDto> GetTodo(Guid id)
         {
-            return todoService.GetTodo(id);
+            return await todoService.GetTodo(id);
         }
 
         [HttpPost]
-        public void CreateTodo(TodoItemDto todo)
+        public async Task CreateTodo(TodoItemDto todo)
         {
-            todoService.CreateTodo(todo);
+            await todoService.CreateTodo(todo);
         }
 
         [HttpPut("{id}")]
-        public void UpdateTodo(Guid id, TodoItemDto todo)
+        public async Task UpdateTodo(Guid id, TodoItemDto todo)
         {
-            todoService.UpdateTodo(id, todo);
+            await todoService.UpdateTodo(id, todo);
         }
 
         [HttpDelete("{id}")]
-        public void DeleteTodo(Guid id)
+        public async Task DeleteTodo(Guid id)
         {
-            todoService.DeleteTodo(id);
+            await todoService.DeleteTodo(id);
         }
     }
 }

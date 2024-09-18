@@ -46,35 +46,35 @@ Authorization: Bearer {{accessToken}}
 
 ###
 
-GET {{HostAddress}}/api/todo
+GET {{HostAddress}}/api/todos
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 ###
 
-GET {{HostAddress}}/api/todo/edefbc3f-213e-457b-7bec-08dcb144be12
+GET {{HostAddress}}/api/todos/edefbc3f-213e-457b-7bec-08dcb144be12
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 ###
 
-POST {{HostAddress}}/api/todo
+POST {{HostAddress}}/api/todos
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "title": "Task 1",
+  "title": "Task 7",
   "date": "2024-03-31"
 }
 
 ###
 
-DELETE {{HostAddress}}/api/todo/2db4d350-4b52-4078-6372-08dcb13952cf
+DELETE {{HostAddress}}/api/todos/2db4d350-4b52-4078-6372-08dcb13952cf
 Authorization: Bearer {{accessToken}}
 
 ###
 
-PUT {{HostAddress}}/api/todo/60fe2d87-74d5-4825-3963-08dcb12d8894
+PUT {{HostAddress}}/api/todos/60fe2d87-74d5-4825-3963-08dcb12d8894
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
@@ -82,5 +82,14 @@ Content-Type: application/json
   "title": "Task 5 - Edited",
   "date": "2024-03-31"
 }
+
+###
+
+
+###
+
+GET {{HostAddress}}/api/audits
+Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 ###

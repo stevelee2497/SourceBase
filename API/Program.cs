@@ -1,6 +1,7 @@
 using API.DbContexts;
 using API.Filters;
 using API.Helpers;
+using API.Interceptors;
 using Core.DbContexts;
 using Core.Entities;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -30,7 +31,11 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 
 // Add EF Services
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("name=ConnectionStrings:DefaultConnection"));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer("name=ConnectionStrings:DefaultConnection");
+    options.AddInterceptors(new AuditingInterceptor());
+});
 builder.Services.AddIdentityApiEndpoints<UserEntity>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Override Identity Authentication Configurations

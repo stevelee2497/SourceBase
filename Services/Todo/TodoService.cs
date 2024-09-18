@@ -3,19 +3,21 @@ using Core.DTOs;
 using Core.Entities;
 using Core.Exceptions;
 using Core.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Services.Todo
 {
     public class TodoService(IDbContext context) : ITodoService
     {
-        public TodoItemDetailDto GetTodo(Guid id)
+        public async Task<TodoItemDetailDto> GetTodo(Guid id)
         {
-            return context.TodoItems.Find(id)?.ToDetailDto() ?? throw new NotFoundException();
+            var todo = await context.TodoItems.FindAsync(id);
+            return todo?.ToDetailDto() ?? throw new NotFoundException();
         }
 
-        public IEnumerable<TodoItemDetailDto> GetTodoItems()
+        public async Task<IEnumerable<TodoItemDetailDto>> GetTodoItems()
         {
-            return context.TodoItems.Where(x => x.UserId == context.CurrentUserId).Select(x => x.ToDetailDto()).AsEnumerable();
+            return await context.TodoItems.Where(x => x.UserId == context.CurrentUserId).Select(x => x.ToDetailDto()).ToListAsync();
         }
 
         public async Task CreateTodo(TodoItemDto todoItem)
