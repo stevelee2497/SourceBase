@@ -4,10 +4,10 @@ namespace Core.Entities
 {
     public interface IBaseEntity
     {
-        string? CreatedBy { get; set; }
+        Guid? CreatedBy { get; set; }
         DateTime? CreatedOn { get; set; }
         Guid Id { get; set; }
-        string? UpdatedBy { get; set; }
+        Guid? UpdatedBy { get; set; }
         DateTime? UpdatedOn { get; set; }
     }
 
@@ -19,12 +19,12 @@ namespace Core.Entities
         public DateTime? CreatedOn { get; set; }
 
         [Column(Order = 97)]
-        public string? CreatedBy { get; set; }
+        public Guid? CreatedBy { get; set; }
 
         [Column(Order = 98)]
         public DateTime? UpdatedOn { get; set; }
 
         [Column(Order = 99)]
-        public string? UpdatedBy { get; set; }
+        public Guid? UpdatedBy { get; set; }
     }
 }

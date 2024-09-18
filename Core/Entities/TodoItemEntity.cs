@@ -11,7 +11,7 @@ namespace Core.Entities
         [Column(TypeName = "nvarchar(50)")]
         public ItemStatus Status { get; set; }
 
-        public required string UserId { get; set; }
+        public required Guid UserId { get; set; }
     }
 
     public enum ItemStatus

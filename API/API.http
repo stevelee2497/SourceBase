@@ -4,7 +4,7 @@ POST {{HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "aloha-31311@yopmail.com",
+  "email": "aloha@yopmail.com",
   "password": "Hello@123"
 }
 
@@ -14,8 +14,8 @@ POST {{HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "aloha-31311@yopmail.com",
-  "password": "Hello@123"
+  "email": "aloha@yopmail.com",
+  "password": "Hello@1233"
 }
 
 ###

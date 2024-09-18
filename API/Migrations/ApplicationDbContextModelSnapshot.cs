@@ -35,9 +35,8 @@ namespace API.Migrations
                     b.Property<DateTime>("ActionOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid?>("Author")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Changes")
                         .HasColumnType("nvarchar(max)");
@@ -71,8 +70,8 @@ namespace API.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnOrder(97);
 
                     b.Property<DateTime?>("CreatedOn")
@@ -87,8 +86,8 @@ namespace API.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)")
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnOrder(99);
 
                     b.Property<DateTime?>("UpdatedOn")
@@ -111,8 +110,8 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnOrder(97);
 
                     b.Property<DateTime?>("CreatedOn")
@@ -130,17 +129,16 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)")
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnOrder(99);
 
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2")
                         .HasColumnOrder(98);
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -160,8 +158,8 @@ namespace API.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnOrder(97);
 
                     b.Property<DateTime?>("CreatedOn")
@@ -210,8 +208,8 @@ namespace API.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)")
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnOrder(99);
 
                     b.Property<DateTime?>("UpdatedOn")

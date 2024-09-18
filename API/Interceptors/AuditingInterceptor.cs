@@ -1,4 +1,4 @@
-﻿using Core.DbContexts;
+﻿using API.DbContexts;
 using Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -10,10 +10,10 @@ namespace API.Interceptors
     {
         public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
         {
-            if (eventData.Context is IDbContext dbContext)
+            if (eventData.Context is ApplicationDbContext dbContext)
             {
                 var auditHistories = new List<AuditHistoryEntity>();
-                foreach (var entry in eventData.Context.ChangeTracker.Entries())
+                foreach (var entry in dbContext.ChangeTracker.Entries())
                 {
                     if (entry is not { Entity: IBaseEntity entity })
                         continue;

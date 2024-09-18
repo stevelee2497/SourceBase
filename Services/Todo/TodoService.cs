@@ -22,7 +22,7 @@ namespace Services.Todo
 
         public async Task CreateTodo(TodoItemDto todoItem)
         {
-            context.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = context.CurrentUserId });
+            context.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = context.CurrentUserId ?? throw new UnAuthorizedException() });
             await context.SaveChangesAsync();
         }
 

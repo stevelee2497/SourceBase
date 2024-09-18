@@ -9,12 +9,12 @@ namespace Core.Entities
         public DateTime? CreatedOn { get; set; }
 
         [Column(Order = 97)]
-        public string? CreatedBy { get; set; }
+        public Guid? CreatedBy { get; set; }
 
         [Column(Order = 98)]
         public DateTime? UpdatedOn { get; set; }
 
         [Column(Order = 99)]
-        public string? UpdatedBy { get; set; }
+        public Guid? UpdatedBy { get; set; }
     }
 }

@@ -18,7 +18,7 @@ namespace API.Helpers
 
             if (!result.Succeeded)
             {
-                throw new SystemApiException(result.ToString(), statusCode: (int)HttpStatusCode.Unauthorized);
+                throw new UnAuthorizedException("Invalid credentials");
             }
         }
 
@@ -41,7 +41,7 @@ namespace API.Helpers
 
             if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc || user == null)
             {
-                throw new UnAuthorizedException();
+                throw new UnAuthorizedException("Invalid token");
             }
 
             signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
