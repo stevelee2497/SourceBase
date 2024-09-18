@@ -9,11 +9,11 @@ namespace Core.Exceptions
         public string Code { get; set; } = code;
     }
 
-    public class SystemApiException(string message, string code = "GENERIC CODE", int statusCode = (int)HttpStatusCode.InternalServerError) : BaseException(message, code, statusCode)
+    public class SystemApiException(string message = "Something went wrong", string code = "GENERIC CODE", int statusCode = (int)HttpStatusCode.InternalServerError) : BaseException(message, code, statusCode)
     {
     }
 
-    public class NotFoundException(string message = "Item Not Found", string code = "GENERIC CODE", int statusCode = (int)HttpStatusCode.InternalServerError) : BaseException(message, code, statusCode)
+    public class NotFoundException(string message = "Item Not Found", string code = "NOT FOUND", int statusCode = (int)HttpStatusCode.InternalServerError) : BaseException(message, code, statusCode)
     {
     }
 

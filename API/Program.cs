@@ -36,6 +36,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer("name=ConnectionStrings:DefaultConnection");
     options.AddInterceptors(new AuditingInterceptor());
 });
+
+// Add EF Identity Dependencies
 builder.Services.AddIdentityApiEndpoints<UserEntity>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Override Identity Authentication Configurations

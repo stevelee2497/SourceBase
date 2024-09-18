@@ -15,7 +15,7 @@ Content-Type: application/json
 
 {
   "email": "aloha@yopmail.com",
-  "password": "Hello@1233"
+  "password": "Hello@123"
 }
 
 ###
