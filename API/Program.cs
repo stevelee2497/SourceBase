@@ -1,7 +1,6 @@
 using API.DbContexts;
 using API.Filters;
 using API.Helpers;
-using Core.Constants;
 using Core.DbContexts;
 using Core.Entities;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -37,8 +36,8 @@ builder.Services.AddIdentityApiEndpoints<UserEntity>().AddEntityFrameworkStores<
 // Override Identity Authentication Configurations
 builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options =>
 {
-    options.BearerTokenExpiration = TimeSpan.FromDays(AppConstant.BearerTokenExpiration);
-    options.RefreshTokenExpiration = TimeSpan.FromDays(AppConstant.RefreshTokenExpiration);
+    options.BearerTokenExpiration = TimeSpan.Parse(builder.Configuration.GetValue<string>("BearerTokenOptions:BearerTokenExpiration") ?? string.Empty);
+    options.RefreshTokenExpiration = TimeSpan.Parse(builder.Configuration.GetValue<string>("BearerTokenOptions:RefreshTokenExpiration") ?? string.Empty);
 });
 
 // Add application services

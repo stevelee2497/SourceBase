@@ -1,4 +1,6 @@
-﻿namespace Services.Auth
+﻿using Core.DTOs;
+
+namespace Services.Auth
 {
     public interface IAuthService
     {

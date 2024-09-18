@@ -5,20 +5,11 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace API.Filters
 {
-    public class ExceptionFilter : IExceptionFilter
+    public class ExceptionFilter(IHostEnvironment hostEnvironment, ILogger<ExceptionFilter> logger) : IExceptionFilter
     {
-        private readonly ILogger<ExceptionFilter> _logger;
-        private readonly IHostEnvironment _hostEnvironment;
-
-        public ExceptionFilter(IHostEnvironment hostEnvironment, ILogger<ExceptionFilter> logger)
-        {
-            _logger = logger;
-            _hostEnvironment = hostEnvironment;
-        }
-
         public void OnException(ExceptionContext context)
         {
-            _logger.LogError(context.Exception, "Error on {env} at {time}: {message}", _hostEnvironment.EnvironmentName, DateTime.Now, context.Exception.Message);
+            logger.LogError(context.Exception, "Error on {env} at {time}: {message}", hostEnvironment.EnvironmentName, DateTime.Now, context.Exception.Message);
 
             switch (context.Exception)
             {

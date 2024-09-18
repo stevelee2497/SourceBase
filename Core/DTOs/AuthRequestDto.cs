@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Services
+namespace Core.DTOs
 {
     public class AuthRequestDto
     {

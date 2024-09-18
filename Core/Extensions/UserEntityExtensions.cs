@@ -1,5 +1,5 @@
-﻿using Core.Entities;
-using Services;
+﻿using Core.DTOs;
+using Core.Entities;
 
 namespace Core.Extensions
 {

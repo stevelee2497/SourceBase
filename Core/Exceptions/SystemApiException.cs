@@ -2,37 +2,22 @@
 
 namespace Core.Exceptions
 {
-    public abstract class BaseException : Exception
+    public abstract class BaseException(string message, string code, int statusCode) : Exception(message)
     {
-        public int StatusCode { get; set; }
+        public int StatusCode { get; set; } = statusCode;
 
-        public string Code { get; set; }
-
-        public BaseException(string message, string code, int statusCode) : base(message)
-        {
-            Code = code;
-            StatusCode = statusCode;
-        }
+        public string Code { get; set; } = code;
     }
 
-    public class SystemApiException : BaseException
+    public class SystemApiException(string message, string code = "GENERIC CODE", int statusCode = (int)HttpStatusCode.InternalServerError) : BaseException(message, code, statusCode)
     {
-        public SystemApiException(string message, string code = "GENERIC CODE", int statusCode = (int)HttpStatusCode.InternalServerError) : base(message, code, statusCode)
-        {
-        }
     }
 
-    public class NotFoundException : BaseException
+    public class NotFoundException(string message = "Item Not Found", string code = "GENERIC CODE", int statusCode = (int)HttpStatusCode.InternalServerError) : BaseException(message, code, statusCode)
     {
-        public NotFoundException(string message = "Item Not Found", string code = "GENERIC CODE", int statusCode = (int)HttpStatusCode.InternalServerError) : base(message, code, statusCode)
-        {
-        }
     }
 
-    public class UnAuthorizedException : BaseException
+    public class UnAuthorizedException(string message = "Invalid Token", string code = "UNAUTHORIZE", int statusCode = (int)HttpStatusCode.Unauthorized) : BaseException(message, code, statusCode)
     {
-        public UnAuthorizedException(string message = "Invalid Token", string code = "UNAUTHORIZE", int statusCode = (int)HttpStatusCode.Unauthorized) : base(message, code, statusCode)
-        {
-        }
     }
 }

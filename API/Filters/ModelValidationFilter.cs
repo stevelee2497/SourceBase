@@ -21,7 +21,7 @@ namespace API.Filters
             };
         }
 
-        private Dictionary<string, object> GetModelStateInvalidInfo(ActionContext context)
+        private static Dictionary<string, object> GetModelStateInvalidInfo(ActionContext context)
         {
             var errors = new Dictionary<string, object>();
 

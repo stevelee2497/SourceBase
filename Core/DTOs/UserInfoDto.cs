@@ -1,4 +1,4 @@
-﻿namespace Services
+﻿namespace Core.DTOs
 {
     public class UserInfoDto
     {

@@ -8,43 +8,36 @@ namespace API.Controllers
     [ApiController]
     [Authorize]
     [Route("api/todo")]
-    public class TodoController : ControllerBase
+    public class TodoController(ITodoService todoService) : ControllerBase
     {
-        private readonly ITodoService _todoService;
-
-        public TodoController(ITodoService todoService)
-        {
-            _todoService = todoService;
-        }
-
         [HttpGet]
         public IEnumerable<TodoItemDetailDto> GetTodoItems()
         {
-            return _todoService.GetTodoItems();
+            return todoService.GetTodoItems();
         }
 
         [HttpGet("{id}")]
         public TodoItemDetailDto GetTodo(Guid id)
         {
-            return _todoService.GetTodo(id);
+            return todoService.GetTodo(id);
         }
 
         [HttpPost]
         public void CreateTodo(TodoItemDto todo)
         {
-            _todoService.CreateTodo(todo);
+            todoService.CreateTodo(todo);
         }
 
         [HttpPut("{id}")]
         public void UpdateTodo(Guid id, TodoItemDto todo)
         {
-            _todoService.UpdateTodo(id, todo);
+            todoService.UpdateTodo(id, todo);
         }
 
         [HttpDelete("{id}")]
         public void DeleteTodo(Guid id)
         {
-            _todoService.DeleteTodo(id);
+            todoService.DeleteTodo(id);
         }
     }
 }

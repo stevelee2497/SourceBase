@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace API.DbContexts
 {
-    public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>, IDbContext
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor) : IdentityDbContext<UserEntity, RoleEntity, Guid>(options), IDbContext
     {
         #region DbSets
 
@@ -19,14 +19,7 @@ namespace API.DbContexts
 
         #region Ctors
 
-        public string CurrentUserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Anonymous user";
-
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor) : base(options)
-        {
-            _httpContextAccessor = httpContextAccessor;
-        }
+        public string CurrentUserId => httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Anonymous user";
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {

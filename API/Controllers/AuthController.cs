@@ -1,51 +1,44 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Core.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services;
 using Services.Auth;
 
 namespace API.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthController : ControllerBase
+    public class AuthController(IAuthService authService) : ControllerBase
     {
-        private readonly IAuthService _authService;
-
-        public AuthController(IAuthService authService)
-        {
-            _authService = authService;
-        }
-
         [HttpPost("register")]
         public async Task Register(AuthRequestDto registration)
         {
-            await _authService.Register(registration);
+            await authService.Register(registration);
         }
 
         [HttpPost("login")]
         public async Task Login(AuthRequestDto login)
         {
-            await _authService.Login(login);
+            await authService.Login(login);
         }
 
         [HttpPost("refresh")]
         public async Task Refresh(RefreshTokenDto login)
         {
-            await _authService.Refresh(login);
+            await authService.Refresh(login);
         }
 
         [HttpGet("info")]
         [Authorize]
         public async Task<UserInfoDto> GetUserInfo()
         {
-            return await _authService.GetUserInfo();
+            return await authService.GetUserInfo();
         }
 
         [HttpPost("info")]
         [Authorize]
         public async Task<UserInfoDto> UpdateUserInfo(UserInfoDto userInfoDto)
         {
-            return await _authService.UpdateUserInfo(userInfoDto);
+            return await authService.UpdateUserInfo(userInfoDto);
         }
     }
 }
