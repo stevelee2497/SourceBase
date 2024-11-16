@@ -1,6 +1,6 @@
-﻿namespace Services.Helpers
+﻿namespace Core.Contexts
 {
-    public interface IAuthHelper
+    public interface IUserContext
     {
         Task LoginAsync(string email, string password);
         Task RefreshAsync(string refreshToken);

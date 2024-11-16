@@ -1,14 +1,12 @@
-using API.DbContexts;
+using API.Contexts;
 using API.Filters;
-using API.Helpers;
 using API.Interceptors;
-using Core.DbContexts;
+using Core.Contexts;
 using Core.Entities;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Services.Auth;
-using Services.Helpers;
 using Services.Todo;
 using System.Text.Json.Serialization;
 
@@ -49,9 +47,9 @@ builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).
 
 // Add application services
 builder.Services.AddScoped<IDbContext, ApplicationDbContext>();
+builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddScoped<ITodoService, TodoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IAuthHelper, AuthHelper>();
 
 var app = builder.Build();
 

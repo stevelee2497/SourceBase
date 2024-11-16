@@ -1,4 +1,4 @@
-﻿using Core.DbContexts;
+﻿using Core.Contexts;
 using Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,15 +1,14 @@
-﻿using Core.Entities;
+﻿using Core.Contexts;
+using Core.Entities;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using Services.Helpers;
-using System.Net;
 using System.Security.Claims;
 
-namespace API.Helpers
+namespace API.Contexts
 {
-    public class AuthHelper(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions) : IAuthHelper
+    public class UserContext(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions) : IUserContext
     {
         public async Task LoginAsync(string email, string password)
         {

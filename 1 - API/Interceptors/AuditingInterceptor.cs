@@ -1,4 +1,4 @@
-﻿using API.DbContexts;
+﻿using API.Contexts;
 using Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -22,7 +22,7 @@ namespace API.Interceptors
                     {
                         Action = entry.State.ToString(),
                         ActionOn = DateTime.UtcNow,
-                        Author = dbContext.CurrentUserId,
+                        Author = dbContext.GetCurrentUserId(),
                         EntityType = entity.GetType().ToString(),
                         EntityId = entity.Id.ToString()
                     };
@@ -31,12 +31,12 @@ namespace API.Interceptors
                     {
                         case EntityState.Added:
                             entity.CreatedOn = entity.UpdatedOn = DateTime.UtcNow;
-                            entity.CreatedBy = entity.UpdatedBy = dbContext.CurrentUserId;
+                            entity.CreatedBy = entity.UpdatedBy = dbContext.GetCurrentUserId();
                             break;
 
                         case EntityState.Modified:
                             entity.UpdatedOn = DateTime.UtcNow;
-                            entity.UpdatedBy = dbContext.CurrentUserId;
+                            entity.UpdatedBy = dbContext.GetCurrentUserId();
                             auditHistory.Original = JsonSerializer.Serialize(entry.OriginalValues.ToObject());
                             auditHistory.Changes = JsonSerializer.Serialize(entry.Properties.Where(prop => prop.IsModified).Select(prop => new
                             {
