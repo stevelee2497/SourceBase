@@ -1,6 +1,7 @@
 using API.Contexts;
 using API.Filters;
 using API.Interceptors;
+using Core.Constants;
 using Core.Contexts;
 using Core.Entities;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -16,12 +17,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddControllers(options =>
     {
-        options.Filters.Add<ExceptionFilter>();
-        options.Filters.Add<ModelValidationFilter>(int.MinValue);
+        options.Filters.Add<ExceptionFilter>(); // Add global exception filter to force all exceptions into our error model
+        options.Filters.Add<ModelValidationFilter>(int.MinValue); // Validating json payload and return in error model format
     })
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); // Force to save enum in string format to our database instead of magic numbers
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -31,18 +32,18 @@ builder.Services.AddHttpContextAccessor();
 // Add EF Services
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseSqlServer("name=ConnectionStrings:DefaultConnection");
-    options.AddInterceptors(new AuditingInterceptor());
+    options.UseSqlite(AppSettingKeys.ConnectionString);
+    options.AddInterceptors(new AuditingInterceptor()); // Audit trailing for create/update/delete actions
 });
 
 // Add EF Identity Dependencies
-builder.Services.AddIdentityApiEndpoints<UserEntity>().AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentityApiEndpoints<UserEntity>().AddRoles<RoleEntity>().AddEntityFrameworkStores<ApplicationDbContext>(); 
 
 // Override Identity Authentication Configurations
 builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options =>
 {
-    options.BearerTokenExpiration = TimeSpan.Parse(builder.Configuration.GetValue<string>("BearerTokenOptions:BearerTokenExpiration") ?? string.Empty);
-    options.RefreshTokenExpiration = TimeSpan.Parse(builder.Configuration.GetValue<string>("BearerTokenOptions:RefreshTokenExpiration") ?? string.Empty);
+    options.BearerTokenExpiration = TimeSpan.Parse(builder.Configuration.GetValue<string>(AppSettingKeys.BearerTokenExpiration) ?? string.Empty);
+    options.RefreshTokenExpiration = TimeSpan.Parse(builder.Configuration.GetValue<string>(AppSettingKeys.RefreshTokenExpiration) ?? string.Empty);
 });
 
 // Add application services

@@ -2,7 +2,19 @@
 
 namespace Core.DTOs
 {
-    public class AuthRequestDto
+    public class RegisterRequestDto
+    {
+        [Required]
+        [EmailAddress]
+        public required string Email { get; init; }
+
+        [Required]
+        public required string Password { get; init; }
+        
+        public string? PhoneNumber { get; init; }
+    }
+    
+    public class LoginRequestDto
     {
         [Required]
         [EmailAddress]

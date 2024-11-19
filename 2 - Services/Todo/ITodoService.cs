@@ -4,14 +4,14 @@ namespace Services.Todo
 {
     public interface ITodoService
     {
-        Task<IEnumerable<TodoItemDetailDto>> GetTodoItems();
+        Task<IEnumerable<TodoItemDetailDto>> GetTodoItemsAsync();
 
-        Task<TodoItemDetailDto> GetTodo(Guid id);
+        Task<TodoItemDetailDto> GetTodoAsync(Guid id);
 
-        Task CreateTodo(TodoItemDto todoItem);
+        Task CreateTodoAsync(TodoItemDto todoItem);
 
-        Task UpdateTodo(Guid id, TodoItemDto todoItem);
+        Task UpdateTodoAsync(Guid id, TodoItemDto todoItem);
 
-        Task DeleteTodo(Guid id);
+        Task DeleteTodoAsync(Guid id);
     }
 }

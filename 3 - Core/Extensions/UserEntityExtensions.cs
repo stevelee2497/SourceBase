@@ -12,7 +12,9 @@ namespace Core.Extensions
                 Id = entity.Id,
                 Email = entity.Email,
                 FirstName = entity.FirstName,
-                LastName = entity.LastName
+                LastName = entity.LastName,
+                PhoneNumber = entity.PhoneNumber,
+                Roles = entity.Roles.Select(x => x.Name).ToArray()!
             };
         }
     }

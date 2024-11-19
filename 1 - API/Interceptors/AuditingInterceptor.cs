@@ -15,7 +15,7 @@ namespace API.Interceptors
                 var auditHistories = new List<AuditHistoryEntity>();
                 foreach (var entry in dbContext.ChangeTracker.Entries())
                 {
-                    if (entry is not { Entity: IBaseEntity entity })
+                    if (entry is not { Entity: IBaseEntity entity } || new[] { EntityState.Detached, EntityState.Unchanged }.Contains(entry.State))
                         continue;
 
                     var auditHistory = new AuditHistoryEntity
@@ -44,6 +44,9 @@ namespace API.Interceptors
                                 Current = prop.CurrentValue,
                                 Original = prop.OriginalValue,
                             }));
+                            break;
+
+                        default:
                             break;
                     }
 

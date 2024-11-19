@@ -10,35 +10,35 @@ namespace API.Controllers
     public class AuthController(IAuthService authService) : ControllerBase
     {
         [HttpPost("register")]
-        public async Task Register(AuthRequestDto registration)
+        public async Task Register(RegisterRequestDto registration)
         {
-            await authService.Register(registration);
+            await authService.RegisterAsync(registration);
         }
 
         [HttpPost("login")]
-        public async Task Login(AuthRequestDto login)
+        public async Task Login(LoginRequestDto login)
         {
-            await authService.Login(login);
+            await authService.LoginAsync(login);
         }
 
         [HttpPost("refresh")]
         public async Task Refresh(RefreshTokenDto login)
         {
-            await authService.Refresh(login);
+            await authService.RefreshAsync(login);
         }
 
         [HttpGet("info")]
         [Authorize]
         public async Task<UserInfoDto> GetUserInfo()
         {
-            return await authService.GetUserInfo();
+            return await authService.GetUserInfoAsync();
         }
 
         [HttpPost("info")]
         [Authorize]
         public async Task<UserInfoDto> UpdateUserInfo(UserInfoDto userInfoDto)
         {
-            return await authService.UpdateUserInfo(userInfoDto);
+            return await authService.UpdateUserInfoAsync(userInfoDto);
         }
     }
 }

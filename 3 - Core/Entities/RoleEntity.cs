@@ -5,6 +5,10 @@ namespace Core.Entities
 {
     public class RoleEntity : IdentityRole<Guid>, IBaseEntity
     {
+        public override string? Name { get; set; }
+
+        public List<UserEntity> Users { get; set; } = [];
+
         [Column(Order = 96)]
         public DateTime? CreatedOn { get; set; }
 
