@@ -1,24 +1,32 @@
 @HostAddress = https://localhost:7237
 
+### register
+
 POST {{HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "aloha@yopmail.com",
-  "password": "Hello@123"
+  "email": "admin-111111111@yopmail.com",
+  "password": "Hello@123",
+  "role": "Adm1in"
 }
 
-###
+### login
 
 POST {{HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "aloha@yopmail.com",
+  "email": "admin@yopmail.com",
   "password": "Hello@123"
 }
 
-###
+> {%
+    client.global.set("token", response.body.accessToken)
+    client.global.set("refreshToken", response.body.refreshToken)
+%}
+
+### refresh
 
 POST {{HostAddress}}/api/auth/refresh
 Content-Type: application/json
@@ -27,55 +35,61 @@ Content-Type: application/json
   "token": "{{refreshToken}}"
 }
 
-###
+> {%
+    client.global.set("token", response.body.accessToken)
+    client.global.set("refreshToken", response.body.refreshToken)
+%}
+
+### info
 
 GET {{HostAddress}}/api/auth/info
 Accept: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{token}}
 
-###
+### update info
 
 POST {{HostAddress}}/api/auth/info
 Content-Type: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{token}}
 
 {
-  "firstName": "Steven",
-  "lastName": "Junior"
+  "firstName": "Steven-2",
+  "lastName": "Junior",
+  "phoneNumber": "1233123321"
 }
 
-###
+### get todos
 
 GET {{HostAddress}}/api/todos
 Accept: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{token}}
 
-###
+### get todo
 
 GET {{HostAddress}}/api/todos/edefbc3f-213e-457b-7bec-08dcb144be12
 Accept: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{token}}
 
-###
+### create todo
 
 POST {{HostAddress}}/api/todos
 Content-Type: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{token}}
 
 {
   "title": "Task 7",
   "date": "2024-03-31"
 }
 
-###
+### delete todo
 
 DELETE {{HostAddress}}/api/todos/2db4d350-4b52-4078-6372-08dcb13952cf
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{token}}
 
-###
+### update todo
 
 PUT {{HostAddress}}/api/todos/60fe2d87-74d5-4825-3963-08dcb12d8894
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -83,13 +97,10 @@ Content-Type: application/json
   "date": "2024-03-31"
 }
 
-###
-
-
-###
+### get audits
 
 GET {{HostAddress}}/api/audits
 Accept: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{token}}
 
 ###

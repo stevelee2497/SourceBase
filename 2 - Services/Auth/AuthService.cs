@@ -36,6 +36,7 @@ namespace Services.Auth
 
             userEntity.FirstName = userInfoDto.FirstName;
             userEntity.LastName = userInfoDto.LastName;
+            userEntity.PhoneNumber = userInfoDto.PhoneNumber;
 
             await dbContext.SaveChangesAsync();
 

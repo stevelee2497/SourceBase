@@ -1,5 +1,4 @@
-﻿using Core.Constants;
-using Core.Contexts;
+﻿using Core.Contexts;
 using Core.Entities;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -25,14 +24,21 @@ namespace API.Contexts
 
         public async Task RegisterAsync(RegisterRequestDto registration)
         {
-            var user = new UserEntity { Email = registration.Email, UserName = registration.Email, PhoneNumber = registration.PhoneNumber};
+            // Create a new user
+            var user = new UserEntity
+            {
+                Email = registration.Email,
+                UserName = registration.Email,
+                PhoneNumber = registration.PhoneNumber
+            };
             var result = await userManager.CreateAsync(user, registration.Password);
             if (!result.Succeeded)
             {
                 throw new SystemApiException(result.Errors.First().Description);
             }
 
-            result = await userManager.AddToRoleAsync(user, Roles.User);
+            // Assign role to the user
+            result = await userManager.AddToRoleAsync(user, registration.Role);
             if (!result.Succeeded)
             {
                 throw new SystemApiException(result.Errors.First().Description);

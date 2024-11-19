@@ -18,29 +18,29 @@ namespace API.Contexts
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
+
             modelBuilder.Entity<UserEntity>()
                 .HasMany(e => e.Roles)
                 .WithMany(e => e.Users)
                 .UsingEntity<IdentityUserRole<Guid>>();
-            
+
             modelBuilder.Entity<RoleEntity>().HasData(
                 new RoleEntity
                 {
-                    Id = Guid.NewGuid(), 
+                    Id = Guid.NewGuid(),
                     Name = Core.Constants.Roles.Admin,
-                    NormalizedName = Core.Constants.Roles.Admin.ToUpper(), 
+                    NormalizedName = Core.Constants.Roles.Admin.ToUpper(),
                     CreatedOn = DateTime.UtcNow,
-                    UpdatedOn = DateTime.UtcNow, 
+                    UpdatedOn = DateTime.UtcNow,
                     ConcurrencyStamp = Guid.NewGuid().ToString()
                 },
                 new RoleEntity
                 {
-                    Id = Guid.NewGuid(), 
+                    Id = Guid.NewGuid(),
                     Name = Core.Constants.Roles.User,
-                    NormalizedName = Core.Constants.Roles.User.ToUpper(), 
+                    NormalizedName = Core.Constants.Roles.User.ToUpper(),
                     CreatedOn = DateTime.UtcNow,
-                    UpdatedOn = DateTime.UtcNow, 
+                    UpdatedOn = DateTime.UtcNow,
                     ConcurrencyStamp = Guid.NewGuid().ToString()
                 }
             );

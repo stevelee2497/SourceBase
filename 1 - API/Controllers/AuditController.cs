@@ -1,4 +1,5 @@
-﻿using Core.Contexts;
+﻿using Core.Constants;
+using Core.Contexts;
 using Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ namespace API.Controllers
     public class AuditController(IDbContext dbContext) : ControllerBase
     {
         [HttpGet]
-        [Authorize]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<IEnumerable<AuditHistoryEntity>> GetAudits()
         {
             return await dbContext.AuditHistories.ToListAsync();

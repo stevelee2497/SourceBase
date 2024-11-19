@@ -37,7 +37,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 // Add EF Identity Dependencies
-builder.Services.AddIdentityApiEndpoints<UserEntity>().AddRoles<RoleEntity>().AddEntityFrameworkStores<ApplicationDbContext>(); 
+builder.Services.AddIdentityApiEndpoints<UserEntity>()  // Set up Identity managers and stores
+    .AddRoles<RoleEntity>()                             // Set up Role-based manager and store
+    .AddEntityFrameworkStores<ApplicationDbContext>();  // Attach Identity to our DB context
 
 // Override Identity Authentication Configurations
 builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options =>

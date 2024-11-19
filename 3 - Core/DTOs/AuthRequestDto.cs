@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Core.Constants;
 
 namespace Core.DTOs
 {
@@ -12,6 +13,9 @@ namespace Core.DTOs
         public required string Password { get; init; }
         
         public string? PhoneNumber { get; init; }
+
+        [RegularExpression($"^({Roles.Admin}|{Roles.User})$", ErrorMessage = "The role must be either 'Admin' or 'User'.")]
+        public string Role { get; set; } = Roles.User;
     }
     
     public class LoginRequestDto
