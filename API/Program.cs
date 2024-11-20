@@ -1,6 +1,8 @@
 using API.Contexts;
 using API.Filters;
 using API.Interceptors;
+using Business.Interfaces;
+using Business.Services;
 using Core.Constants;
 using Core.Contexts;
 using Core.Entities;
@@ -8,8 +10,6 @@ using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
-using Business.Interfaces;
-using Business.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

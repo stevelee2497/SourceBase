@@ -16,7 +16,7 @@ public class UserEntity : IdentityUser<Guid>, IBaseEntity
     public override string? PhoneNumber { get; set; }
 
     public List<RoleEntity> Roles { get; set; } = [];
-        
+
     [Column(Order = 96)]
     public DateTime? CreatedOn { get; set; }
 

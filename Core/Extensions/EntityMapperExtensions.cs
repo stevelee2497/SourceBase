@@ -16,7 +16,7 @@ public static class EntityMapperExtensions
             CreatedOn = entity.CreatedOn,
         };
     }
-        
+
     public static UserInfoDto ToDto(this UserEntity entity)
     {
         return new UserInfoDto

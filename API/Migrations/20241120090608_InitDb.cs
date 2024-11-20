@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -211,8 +211,8 @@ namespace API.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "CreatedBy", "CreatedOn", "Name", "NormalizedName", "UpdatedBy", "UpdatedOn" },
                 values: new object[,]
                 {
-                    { new Guid("a929dd1d-3ccd-4e54-b90c-6d46b20fb125"), "da769a59-9854-4f87-9ea5-82a78141e0a8", null, new DateTime(2024, 11, 18, 9, 37, 23, 247, DateTimeKind.Utc).AddTicks(7832), "User", "USER", null, new DateTime(2024, 11, 18, 9, 37, 23, 247, DateTimeKind.Utc).AddTicks(7832) },
-                    { new Guid("d3414034-7e22-4f01-9706-7f17221e246a"), "bbe31cd4-721c-4430-a374-73a81189c676", null, new DateTime(2024, 11, 18, 9, 37, 23, 247, DateTimeKind.Utc).AddTicks(7787), "Admin", "ADMIN", null, new DateTime(2024, 11, 18, 9, 37, 23, 247, DateTimeKind.Utc).AddTicks(7790) }
+                    { new Guid("2c2c38ef-8af6-4117-8dca-7c508c0c4acc"), "fdeccc4c-2355-4322-a663-76f1706a172f", null, new DateTime(2024, 11, 20, 9, 6, 8, 389, DateTimeKind.Utc).AddTicks(5617), "User", "USER", null, new DateTime(2024, 11, 20, 9, 6, 8, 389, DateTimeKind.Utc).AddTicks(5626) },
+                    { new Guid("3416dd4a-c35e-475e-ad0a-5fa2275fe3c7"), "06a31989-deb1-4970-88a8-8ce2f8be87be", null, new DateTime(2024, 11, 20, 9, 6, 8, 388, DateTimeKind.Utc).AddTicks(7325), "Admin", "ADMIN", null, new DateTime(2024, 11, 20, 9, 6, 8, 388, DateTimeKind.Utc).AddTicks(7861) }
                 });
 
             migrationBuilder.CreateIndex(

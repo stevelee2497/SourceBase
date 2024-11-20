@@ -15,7 +15,7 @@ namespace API.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.2");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
 
             modelBuilder.Entity("Core.Entities.AuditHistoryEntity", b =>
                 {
@@ -100,21 +100,21 @@ namespace API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("d3414034-7e22-4f01-9706-7f17221e246a"),
-                            ConcurrencyStamp = "bbe31cd4-721c-4430-a374-73a81189c676",
-                            CreatedOn = new DateTime(2024, 11, 18, 9, 37, 23, 247, DateTimeKind.Utc).AddTicks(7787),
+                            Id = new Guid("3416dd4a-c35e-475e-ad0a-5fa2275fe3c7"),
+                            ConcurrencyStamp = "06a31989-deb1-4970-88a8-8ce2f8be87be",
+                            CreatedOn = new DateTime(2024, 11, 20, 9, 6, 8, 388, DateTimeKind.Utc).AddTicks(7325),
                             Name = "Admin",
                             NormalizedName = "ADMIN",
-                            UpdatedOn = new DateTime(2024, 11, 18, 9, 37, 23, 247, DateTimeKind.Utc).AddTicks(7790)
+                            UpdatedOn = new DateTime(2024, 11, 20, 9, 6, 8, 388, DateTimeKind.Utc).AddTicks(7861)
                         },
                         new
                         {
-                            Id = new Guid("a929dd1d-3ccd-4e54-b90c-6d46b20fb125"),
-                            ConcurrencyStamp = "da769a59-9854-4f87-9ea5-82a78141e0a8",
-                            CreatedOn = new DateTime(2024, 11, 18, 9, 37, 23, 247, DateTimeKind.Utc).AddTicks(7832),
+                            Id = new Guid("2c2c38ef-8af6-4117-8dca-7c508c0c4acc"),
+                            ConcurrencyStamp = "fdeccc4c-2355-4322-a663-76f1706a172f",
+                            CreatedOn = new DateTime(2024, 11, 20, 9, 6, 8, 389, DateTimeKind.Utc).AddTicks(5617),
                             Name = "User",
                             NormalizedName = "USER",
-                            UpdatedOn = new DateTime(2024, 11, 18, 9, 37, 23, 247, DateTimeKind.Utc).AddTicks(7832)
+                            UpdatedOn = new DateTime(2024, 11, 20, 9, 6, 8, 389, DateTimeKind.Utc).AddTicks(5626)
                         });
                 });
 

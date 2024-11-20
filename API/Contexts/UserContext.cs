@@ -1,11 +1,11 @@
 ﻿using Core.Contexts;
+using Core.DTOs;
 using Core.Entities;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
-using Core.DTOs;
 
 namespace API.Contexts
 {
