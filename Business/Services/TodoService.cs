@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Business.Services
 {
-    public class TodoService(IDbContext dbContext) : ITodoService
+    public class TodoService(IDbContext dbContext, IUserContext userContext) : ITodoService
     {
         public async Task<TodoItemDetailDto> GetTodoAsync(Guid id)
         {
@@ -18,12 +18,12 @@ namespace Business.Services
 
         public async Task<IEnumerable<TodoItemDetailDto>> GetTodoItemsAsync()
         {
-            return await dbContext.TodoItems.Where(x => x.UserId == dbContext.GetCurrentUserId()).Select(x => x.ToDetailDto()).ToListAsync();
+            return await dbContext.TodoItems.Where(x => x.UserId == userContext.GetCurrentUserId()).Select(x => x.ToDetailDto()).ToListAsync();
         }
 
         public async Task CreateTodoAsync(TodoItemDto todoItem)
         {
-            dbContext.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = dbContext.GetCurrentUserId() ?? throw new UnAuthorizedException() });
+            dbContext.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = userContext.GetCurrentUserId() });
             await dbContext.SaveChangesAsync();
         }
 

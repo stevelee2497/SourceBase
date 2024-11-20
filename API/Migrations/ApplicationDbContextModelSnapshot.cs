@@ -30,7 +30,7 @@ namespace API.Migrations
                     b.Property<DateTime>("ActionOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("Author")
+                    b.Property<string>("Author")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Changes")
@@ -65,7 +65,7 @@ namespace API.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("CreatedBy")
+                    b.Property<string>("CreatedBy")
                         .HasColumnType("TEXT")
                         .HasColumnOrder(97);
 
@@ -81,7 +81,7 @@ namespace API.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("UpdatedBy")
+                    b.Property<string>("UpdatedBy")
                         .HasColumnType("TEXT")
                         .HasColumnOrder(99);
 
@@ -104,7 +104,7 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("CreatedBy")
+                    b.Property<string>("CreatedBy")
                         .HasColumnType("TEXT")
                         .HasColumnOrder(97);
 
@@ -122,7 +122,7 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("UpdatedBy")
+                    b.Property<string>("UpdatedBy")
                         .HasColumnType("TEXT")
                         .HasColumnOrder(99);
 
@@ -151,7 +151,7 @@ namespace API.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("CreatedBy")
+                    b.Property<string>("CreatedBy")
                         .HasColumnType("TEXT")
                         .HasColumnOrder(97);
 
@@ -201,7 +201,7 @@ namespace API.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("UpdatedBy")
+                    b.Property<string>("UpdatedBy")
                         .HasColumnType("TEXT")
                         .HasColumnOrder(99);
 

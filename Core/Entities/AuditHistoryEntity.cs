@@ -4,7 +4,7 @@ public class AuditHistoryEntity
 {
     public Guid Id { get; set; }
 
-    public Guid? Author { get; set; }
+    public string? Author { get; set; }
 
     public required string Action { get; set; }
 

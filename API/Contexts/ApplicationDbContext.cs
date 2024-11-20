@@ -1,24 +1,24 @@
-﻿using Core.Contexts;
+﻿using API.Interceptors;
+using Core.Constants;
+using Core.Contexts;
 using Core.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace API.Contexts
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor) : IdentityDbContext<UserEntity, RoleEntity, Guid>(options), IDbContext
     {
-        public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
+        public required DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
-        public DbSet<TodoItemEntity> TodoItems { get; set; }
-
-        public Guid? GetCurrentUserId() => Guid.TryParse(httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : null;
-
+        public required DbSet<TodoItemEntity> TodoItems { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseSqlite(AppSettingKeys.ConnectionString);
+
+            optionsBuilder.AddInterceptors(new AuditingInterceptor(httpContextAccessor)); // Audit trailing for create/update/delete actions
 
             optionsBuilder.UseSeeding((context, _) =>
             {

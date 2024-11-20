@@ -9,5 +9,4 @@ public interface IDbContext
     DbSet<TodoItemEntity> TodoItems { get; set; }
     DbSet<AuditHistoryEntity> AuditHistories { get; set; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-    Guid? GetCurrentUserId();
 }

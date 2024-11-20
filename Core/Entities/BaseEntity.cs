@@ -5,9 +5,9 @@ namespace Core.Entities;
 public interface IBaseEntity
 {
     Guid Id { get; set; }
-    Guid? CreatedBy { get; set; }
+    string? CreatedBy { get; set; }
     DateTime? CreatedOn { get; set; }
-    Guid? UpdatedBy { get; set; }
+    string? UpdatedBy { get; set; }
     DateTime? UpdatedOn { get; set; }
 }
 
@@ -19,11 +19,11 @@ public abstract class BaseEntity : IBaseEntity
     public DateTime? CreatedOn { get; set; }
 
     [Column(Order = 97)]
-    public Guid? CreatedBy { get; set; }
+    public string? CreatedBy { get; set; }
 
     [Column(Order = 98)]
     public DateTime? UpdatedOn { get; set; }
 
     [Column(Order = 99)]
-    public Guid? UpdatedBy { get; set; }
+    public string? UpdatedBy { get; set; }
 }

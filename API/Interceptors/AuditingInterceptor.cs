@@ -2,12 +2,15 @@
 using Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace API.Interceptors
 {
-    public class AuditingInterceptor : ISaveChangesInterceptor
+    public class AuditingInterceptor(IHttpContextAccessor httpContextAccessor) : ISaveChangesInterceptor
     {
+        private string? GetCurrentUser() => httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Name);
+
         public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
         {
             if (eventData.Context is ApplicationDbContext dbContext)
@@ -22,7 +25,7 @@ namespace API.Interceptors
                     {
                         Action = entry.State.ToString(),
                         ActionOn = DateTime.UtcNow,
-                        Author = dbContext.GetCurrentUserId(),
+                        Author = GetCurrentUser(),
                         EntityType = entity.GetType().ToString(),
                         EntityId = entity.Id.ToString()
                     };
@@ -31,12 +34,12 @@ namespace API.Interceptors
                     {
                         case EntityState.Added:
                             entity.CreatedOn = entity.UpdatedOn = DateTime.UtcNow;
-                            entity.CreatedBy = entity.UpdatedBy = dbContext.GetCurrentUserId();
+                            entity.CreatedBy = entity.UpdatedBy = GetCurrentUser();
                             break;
 
                         case EntityState.Modified:
                             entity.UpdatedOn = DateTime.UtcNow;
-                            entity.UpdatedBy = dbContext.GetCurrentUserId();
+                            entity.UpdatedBy = GetCurrentUser();
                             auditHistory.Original = JsonSerializer.Serialize(entry.OriginalValues.ToObject());
                             auditHistory.Changes = JsonSerializer.Serialize(entry.Properties.Where(prop => prop.IsModified).Select(prop => new
                             {

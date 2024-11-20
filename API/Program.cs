@@ -1,6 +1,5 @@
 using API.Contexts;
 using API.Filters;
-using API.Interceptors;
 using Business.Interfaces;
 using Business.Services;
 using Core.Constants;
@@ -8,7 +7,6 @@ using Core.Contexts;
 using Core.Entities;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,11 +28,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 
 // Add EF Business
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    options.UseSqlite(AppSettingKeys.ConnectionString);
-    options.AddInterceptors(new AuditingInterceptor()); // Audit trailing for create/update/delete actions
-});
+builder.Services.AddDbContext<ApplicationDbContext>();
 
 // Add EF Identity Dependencies
 builder.Services.AddIdentityApiEndpoints<UserEntity>()  // Set up Identity managers and stores
