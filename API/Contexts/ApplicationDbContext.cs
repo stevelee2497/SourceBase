@@ -1,9 +1,9 @@
 ﻿using Core.Contexts;
 using Core.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
 
 namespace API.Contexts
 {
@@ -15,6 +15,44 @@ namespace API.Contexts
 
         public Guid? GetCurrentUserId() => Guid.TryParse(httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : null;
 
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+
+            optionsBuilder.UseSeeding((context, _) =>
+            {
+                var adminRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == Core.Constants.Roles.Admin);
+                if (adminRole == null)
+                {
+                    context.Set<RoleEntity>().Add(new RoleEntity
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = Core.Constants.Roles.Admin,
+                        NormalizedName = Core.Constants.Roles.Admin.ToUpper(),
+                        CreatedOn = DateTime.UtcNow,
+                        UpdatedOn = DateTime.UtcNow,
+                        ConcurrencyStamp = Guid.NewGuid().ToString()
+                    });
+                    context.SaveChanges();
+                }
+                var userRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == Core.Constants.Roles.User);
+                if (userRole == null)
+                {
+                    context.Set<RoleEntity>().Add(new RoleEntity
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = Core.Constants.Roles.User,
+                        NormalizedName = Core.Constants.Roles.User.ToUpper(),
+                        CreatedOn = DateTime.UtcNow,
+                        UpdatedOn = DateTime.UtcNow,
+                        ConcurrencyStamp = Guid.NewGuid().ToString()
+                    });
+                    context.SaveChanges();
+                }
+            });
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -23,27 +61,6 @@ namespace API.Contexts
                 .HasMany(e => e.Roles)
                 .WithMany(e => e.Users)
                 .UsingEntity<IdentityUserRole<Guid>>();
-
-            modelBuilder.Entity<RoleEntity>().HasData(
-                new RoleEntity
-                {
-                    Id = Guid.NewGuid(),
-                    Name = Core.Constants.Roles.Admin,
-                    NormalizedName = Core.Constants.Roles.Admin.ToUpper(),
-                    CreatedOn = DateTime.UtcNow,
-                    UpdatedOn = DateTime.UtcNow,
-                    ConcurrencyStamp = Guid.NewGuid().ToString()
-                },
-                new RoleEntity
-                {
-                    Id = Guid.NewGuid(),
-                    Name = Core.Constants.Roles.User,
-                    NormalizedName = Core.Constants.Roles.User.ToUpper(),
-                    CreatedOn = DateTime.UtcNow,
-                    UpdatedOn = DateTime.UtcNow,
-                    ConcurrencyStamp = Guid.NewGuid().ToString()
-                }
-            );
         }
     }
 }
