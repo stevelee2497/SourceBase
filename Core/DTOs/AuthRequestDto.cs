@@ -30,5 +30,6 @@ public class LoginRequestDto
 
 public class RefreshTokenDto
 {
+    [Required]
     public required string Token { get; init; }
 }
