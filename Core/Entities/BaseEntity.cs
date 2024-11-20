@@ -1,0 +1,29 @@
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Core.Entities;
+
+public interface IBaseEntity
+{
+    Guid Id { get; set; }
+    Guid? CreatedBy { get; set; }
+    DateTime? CreatedOn { get; set; }
+    Guid? UpdatedBy { get; set; }
+    DateTime? UpdatedOn { get; set; }
+}
+
+public abstract class BaseEntity : IBaseEntity
+{
+    public Guid Id { get; set; }
+
+    [Column(Order = 96)]
+    public DateTime? CreatedOn { get; set; }
+
+    [Column(Order = 97)]
+    public Guid? CreatedBy { get; set; }
+
+    [Column(Order = 98)]
+    public DateTime? UpdatedOn { get; set; }
+
+    [Column(Order = 99)]
+    public Guid? UpdatedBy { get; set; }
+}
