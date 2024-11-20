@@ -12,6 +12,10 @@ public class RegisterRequestDto
     [Required]
     public required string Password { get; init; }
         
+    public string? FirstName { get; init; }
+    
+    public string? LastName { get; init; }
+    
     public string? PhoneNumber { get; init; }
 
     [RegularExpression($"^({Roles.Admin}|{Roles.User})$", ErrorMessage = "The role must be either 'Admin' or 'User'.")]
