@@ -3,12 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDb : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -204,15 +202,6 @@ namespace API.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.InsertData(
-                table: "AspNetRoles",
-                columns: new[] { "Id", "ConcurrencyStamp", "CreatedBy", "CreatedOn", "Name", "NormalizedName", "UpdatedBy", "UpdatedOn" },
-                values: new object[,]
-                {
-                    { new Guid("2c2c38ef-8af6-4117-8dca-7c508c0c4acc"), "fdeccc4c-2355-4322-a663-76f1706a172f", null, new DateTime(2024, 11, 20, 9, 6, 8, 389, DateTimeKind.Utc).AddTicks(5617), "User", "USER", null, new DateTime(2024, 11, 20, 9, 6, 8, 389, DateTimeKind.Utc).AddTicks(5626) },
-                    { new Guid("3416dd4a-c35e-475e-ad0a-5fa2275fe3c7"), "06a31989-deb1-4970-88a8-8ce2f8be87be", null, new DateTime(2024, 11, 20, 9, 6, 8, 388, DateTimeKind.Utc).AddTicks(7325), "Admin", "ADMIN", null, new DateTime(2024, 11, 20, 9, 6, 8, 388, DateTimeKind.Utc).AddTicks(7861) }
                 });
 
             migrationBuilder.CreateIndex(

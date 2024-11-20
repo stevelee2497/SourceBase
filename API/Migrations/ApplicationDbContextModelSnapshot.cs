@@ -96,26 +96,6 @@ namespace API.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("3416dd4a-c35e-475e-ad0a-5fa2275fe3c7"),
-                            ConcurrencyStamp = "06a31989-deb1-4970-88a8-8ce2f8be87be",
-                            CreatedOn = new DateTime(2024, 11, 20, 9, 6, 8, 388, DateTimeKind.Utc).AddTicks(7325),
-                            Name = "Admin",
-                            NormalizedName = "ADMIN",
-                            UpdatedOn = new DateTime(2024, 11, 20, 9, 6, 8, 388, DateTimeKind.Utc).AddTicks(7861)
-                        },
-                        new
-                        {
-                            Id = new Guid("2c2c38ef-8af6-4117-8dca-7c508c0c4acc"),
-                            ConcurrencyStamp = "fdeccc4c-2355-4322-a663-76f1706a172f",
-                            CreatedOn = new DateTime(2024, 11, 20, 9, 6, 8, 389, DateTimeKind.Utc).AddTicks(5617),
-                            Name = "User",
-                            NormalizedName = "USER",
-                            UpdatedOn = new DateTime(2024, 11, 20, 9, 6, 8, 389, DateTimeKind.Utc).AddTicks(5626)
-                        });
                 });
 
             modelBuilder.Entity("Core.Entities.TodoItemEntity", b =>
