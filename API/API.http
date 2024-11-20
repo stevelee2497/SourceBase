@@ -6,9 +6,19 @@ POST {{HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "user-02@yopmail.com",
+  "email": "user@yopmail.com",
   "password": "Hello@123",
   "role": "User"
+}
+
+### login
+
+POST {{HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@yopmail.com",
+  "password": "Hello@123"
 }
 
 ### login
