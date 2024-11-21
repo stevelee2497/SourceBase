@@ -27,8 +27,8 @@ POST {{HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "user-02@yopmail.com",
-  "password": "Hello@123"
+  "email": "user@yopmail.com",
+  "password": "Hello@1231"
 }
 
 > {%
@@ -87,7 +87,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "title": "Task 2",
+  "title": "Task 1",
   "date": "2024-03-31"
 }
 

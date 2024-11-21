@@ -26,13 +26,13 @@ namespace Business.Services
 
         public async Task<UserInfoDto> GetUserInfoAsync()
         {
-            var userEntity = await dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userContext.GetCurrentUserId()) ?? throw new NotFoundException();
+            var userEntity = await dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userContext.CurrentUserId) ?? throw new NotFoundException();
             return userEntity.ToDto();
         }
 
         public async Task<UserInfoDto> UpdateUserInfoAsync(UserInfoDto userInfoDto)
         {
-            var userEntity = await dbContext.Users.FindAsync(userContext.GetCurrentUserId()) ?? throw new NotFoundException();
+            var userEntity = await dbContext.Users.FindAsync(userContext.CurrentUserId) ?? throw new NotFoundException();
 
             userEntity.FirstName = userInfoDto.FirstName;
             userEntity.LastName = userInfoDto.LastName;

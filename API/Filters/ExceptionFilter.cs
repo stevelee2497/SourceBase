@@ -11,17 +11,26 @@ namespace API.Filters
         {
             logger.LogError(context.Exception, "Error on {env} at {time}: {message}", hostEnvironment.EnvironmentName, DateTime.Now, context.Exception.Message);
 
-            context.Result = context.Exception switch
+            switch (context.Exception)
             {
-                SystemApiException exception => new JsonResult(new SystemApiErrorModel { Code = exception.Code, Message = exception.Message, StackTrace = exception.StackTrace })
-                {
-                    StatusCode = exception.StatusCode
-                },
-                _ => new JsonResult(new SystemApiErrorModel { Code = "GENERIC CODE", Message = context.Exception.Message, StackTrace = context.Exception.StackTrace })
-                {
-                    StatusCode = StatusCodes.Status500InternalServerError
-                },
-            };
+                case BaseException exception:
+                    context.Result = new JsonResult(new SystemApiErrorModel
+                    {
+                        Code = exception.Code, 
+                        Message = exception.Message, 
+                        StackTrace = exception.StackTrace
+                    }) { StatusCode = exception.StatusCode };
+                    break;
+                default:
+                    context.Result =
+                        new JsonResult(new SystemApiErrorModel
+                        {
+                            Code = "GENERIC CODE",
+                            Message = context.Exception.Message,
+                            StackTrace = context.Exception.StackTrace
+                        }) { StatusCode = StatusCodes.Status500InternalServerError };
+                    break;
+            }
         }
     }
 }
