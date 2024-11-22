@@ -1,0 +1,7 @@
+services:
+  api:
+    image: api:latest
+    build: .
+    restart: always
+    ports:
+      - "7237:8080"

@@ -12,10 +12,10 @@ I've poured my heart and soul into this project, weaving in all the valuable les
 
 ✅ Customized ef identity authentication with additional user info and role based authorization
 
+✅ Docker support: N/A
+
 👩‍💻 Email service with SendGrid provider for OTP confirmation, email confirmation, forgot password, reset password: N/A
 
 👩‍💻 Payment service with Stripe: N/A
 
 👩‍💻 Logging mechanism: N/A
-
-👩‍💻 Docker support: N/A

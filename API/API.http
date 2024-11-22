@@ -28,7 +28,7 @@ Content-Type: application/json
 
 {
   "email": "user@yopmail.com",
-  "password": "Hello@1231"
+  "password": "Hello@123"
 }
 
 > {%
