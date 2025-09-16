@@ -1,6 +1,5 @@
 using API.Contexts;
 using API.Filters;
-using Business.Interfaces;
 using Business.Services;
 using Core.Constants;
 using Core.Contexts;
@@ -52,7 +51,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request middlewares pipeline.
+// Configure the HTTP request middleware pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();

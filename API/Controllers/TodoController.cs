@@ -1,43 +1,41 @@
-using Business.Interfaces;
-using Core.DTOs;
+using Business.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Controllers
+namespace API.Controllers;
+
+[ApiController]
+[Authorize]
+[Route("api/todos")]
+public class TodoController(ITodoService todoService) : ControllerBase
 {
-    [ApiController]
-    [Authorize]
-    [Route("api/todos")]
-    public class TodoController(ITodoService todoService) : ControllerBase
+    [HttpGet]
+    public async Task<IEnumerable<TodoItemDetailDto>> GetTodoItems()
     {
-        [HttpGet]
-        public async Task<IEnumerable<TodoItemDetailDto>> GetTodoItems()
-        {
-            return await todoService.GetTodoItemsAsync();
-        }
+        return await todoService.GetTodoItemsAsync();
+    }
 
-        [HttpGet("{id}")]
-        public async Task<TodoItemDetailDto> GetTodo(Guid id)
-        {
-            return await todoService.GetTodoAsync(id);
-        }
+    [HttpGet("{id}")]
+    public async Task<TodoItemDetailDto> GetTodo(Guid id)
+    {
+        return await todoService.GetTodoAsync(id);
+    }
 
-        [HttpPost]
-        public async Task CreateTodo(TodoItemDto todo)
-        {
-            await todoService.CreateTodoAsync(todo);
-        }
+    [HttpPost]
+    public async Task CreateTodo(TodoItemDto todo)
+    {
+        await todoService.CreateTodoAsync(todo);
+    }
 
-        [HttpPut("{id}")]
-        public async Task UpdateTodo(Guid id, TodoItemDto todo)
-        {
-            await todoService.UpdateTodoAsync(id, todo);
-        }
+    [HttpPut("{id}")]
+    public async Task UpdateTodo(Guid id, TodoItemDto todo)
+    {
+        await todoService.UpdateTodoAsync(id, todo);
+    }
 
-        [HttpDelete("{id}")]
-        public async Task DeleteTodo(Guid id)
-        {
-            await todoService.DeleteTodoAsync(id);
-        }
+    [HttpDelete("{id}")]
+    public async Task DeleteTodo(Guid id)
+    {
+        await todoService.DeleteTodoAsync(id);
     }
 }

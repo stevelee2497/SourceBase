@@ -5,17 +5,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Controllers
+namespace API.Controllers;
+
+[ApiController]
+[Route("api/audits")]
+public class AuditController(IDbContext dbContext) : ControllerBase
 {
-    [ApiController]
-    [Route("api/audits")]
-    public class AuditController(IDbContext dbContext) : ControllerBase
+    [HttpGet]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IEnumerable<AuditHistoryEntity>> GetAudits()
     {
-        [HttpGet]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<IEnumerable<AuditHistoryEntity>> GetAudits()
-        {
-            return await dbContext.AuditHistories.ToListAsync();
-        }
+        return await dbContext.AuditHistories.ToListAsync();
     }
 }

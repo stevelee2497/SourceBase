@@ -1,6 +1,4 @@
-﻿using Core.DTOs;
-
-namespace Core.Contexts;
+﻿namespace Core.Contexts;
 
 public interface IUserContext
 {
@@ -9,3 +7,5 @@ public interface IUserContext
     Task RefreshAsync(string refreshToken);
     Task RegisterAsync(RegisterRequestDto registration);
 }
+
+public record RegisterRequestDto(string Email, string Password, string Role, string? FirstName, string? LastName, string? PhoneNumber);
