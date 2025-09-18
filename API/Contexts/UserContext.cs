@@ -1,4 +1,5 @@
-﻿using Domain.Contexts;
+﻿using Domain.Constants;
+using Domain.Contexts;
 using Domain.Entities;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -26,25 +27,22 @@ public class UserContext(SignInManager<UserEntity> signInManager, UserManager<Us
         }
     }
 
-    public async Task RegisterAsync(RegisterRequest registration)
+    public async Task RegisterAsync(string email, string password)
     {
         // Create a new user
         var user = new UserEntity
         {
-            Email = registration.Email,
-            UserName = registration.Email,
-            PhoneNumber = registration.PhoneNumber,
-            FirstName = registration.FirstName,
-            LastName = registration.LastName,
+            Email = email,
+            UserName = email
         };
-        var result = await userManager.CreateAsync(user, registration.Password);
+        var result = await userManager.CreateAsync(user, password);
         if (!result.Succeeded)
         {
             throw new SystemApiException(result.Errors.First().Description);
         }
 
         // Assign role to the user
-        result = await userManager.AddToRoleAsync(user, registration.Role);
+        result = await userManager.AddToRoleAsync(user, Roles.User);
         if (!result.Succeeded)
         {
             throw new SystemApiException(result.Errors.First().Description);

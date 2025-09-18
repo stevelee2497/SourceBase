@@ -9,7 +9,7 @@ public class AuthService(IUserContext userContext, IDbContext dbContext) : IAuth
 {
     public async Task RegisterAsync(RegisterRequest registration)
     {
-        await userContext.RegisterAsync(registration);
+        await userContext.RegisterAsync(registration.Email, registration.Password);
     }
 
     public async Task LoginAsync(LoginRequest login)
@@ -28,17 +28,21 @@ public class AuthService(IUserContext userContext, IDbContext dbContext) : IAuth
         return new UserInfoResponse(userEntity.Id, userEntity.Email, userEntity.FirstName, userEntity.LastName, userEntity.PhoneNumber, [.. userEntity.Roles.Select(x => x.Name!)]);
     }
 
-    public async Task<UserInfoResponse> UpdateUserInfoAsync(UserInfoUpdateRequest userInfo)
+    public async Task UpdateUserInfoAsync(UserInfoUpdateRequest userInfo)
     {
-        var userEntity = await dbContext.Users.FindAsync(userContext.CurrentUserId) ?? throw new NotFoundException();
+        var userEntity = await dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userContext.CurrentUserId) ?? throw new NotFoundException();
 
         userEntity.FirstName = userInfo.FirstName;
         userEntity.LastName = userInfo.LastName;
         userEntity.PhoneNumber = userInfo.PhoneNumber;
 
-        await dbContext.SaveChangesAsync();
+        if (userInfo.Roles.Any())
+        {
+            var roles = await dbContext.Roles.Where(x => userInfo.Roles.Contains(x.Name!)).ToListAsync();
+            userEntity.Roles.AddRange(roles);
+        }
 
-        return await GetUserInfoAsync();
+        await dbContext.SaveChangesAsync();
     }
 }
 
@@ -48,9 +52,10 @@ public interface IAuthService
     Task RegisterAsync(RegisterRequest registration);
     Task RefreshAsync(RefreshTokenRequest refreshToken);
     Task<UserInfoResponse> GetUserInfoAsync();
-    Task<UserInfoResponse> UpdateUserInfoAsync(UserInfoUpdateRequest userInfo);
+    Task UpdateUserInfoAsync(UserInfoUpdateRequest userInfo);
 }
 
+public record RegisterRequest([Required] string Email, [Required] string Password);
 
 public record LoginRequest([Required] string Email, [Required] string Password);
 
@@ -58,4 +63,4 @@ public record RefreshTokenRequest([Required] string Token);
 
 public record UserInfoResponse(Guid Id, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);
 
-public record UserInfoUpdateRequest(string? FirstName, string? LastName, string? PhoneNumber);
+public record UserInfoUpdateRequest(string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);

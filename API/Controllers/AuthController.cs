@@ -1,5 +1,4 @@
 ﻿using Application.Services;
-using Domain.Contexts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,8 +35,8 @@ public class AuthController(IAuthService authService) : ControllerBase
 
     [HttpPut("info")]
     [Authorize]
-    public async Task<UserInfoResponse> UpdateUserInfo(UserInfoUpdateRequest userInfo)
+    public async Task UpdateUserInfo(UserInfoUpdateRequest userInfo)
     {
-        return await authService.UpdateUserInfoAsync(userInfo);
+        await authService.UpdateUserInfoAsync(userInfo);
     }
 }

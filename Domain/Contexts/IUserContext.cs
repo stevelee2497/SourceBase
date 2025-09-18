@@ -1,13 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Domain.Contexts;
+﻿namespace Domain.Contexts;
 
 public interface IUserContext
 {
     Guid CurrentUserId { get; }
     Task LoginAsync(string email, string password);
     Task RefreshAsync(string refreshToken);
-    Task RegisterAsync(RegisterRequest registration);
+    Task RegisterAsync(string email, string password);
 }
-
-public record RegisterRequest([Required] string Email, [Required] string Password, [Required] string Role, string? FirstName, string? LastName, string? PhoneNumber);
