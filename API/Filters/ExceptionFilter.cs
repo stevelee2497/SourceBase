@@ -12,6 +12,10 @@ public class ExceptionFilter(IHostEnvironment hostEnvironment, ILogger<Exception
 
         switch (context.Exception)
         {
+            case UnAuthorizedException exception:
+                context.Result = new JsonResult(new SystemApiErrorModel(exception.Code, exception.Message, null, null)) { StatusCode = exception.StatusCode };
+                break;
+
             case BaseException exception:
                 context.Result = new JsonResult(new SystemApiErrorModel(exception.Code, exception.Message, exception.StackTrace, null)) { StatusCode = exception.StatusCode };
                 break;
@@ -23,4 +27,4 @@ public class ExceptionFilter(IHostEnvironment hostEnvironment, ILogger<Exception
     }
 }
 
-public record SystemApiErrorModel(string Code, string Message, string? StackTrace, Dictionary<string, object>? Details);
+public record SystemApiErrorModel(string Code, string Message, string? StackTrace, Dictionary<string, string>? Details);

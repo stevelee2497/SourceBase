@@ -18,7 +18,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         optionsBuilder.UseSqlite(AppSettingKeys.ConnectionString);
 
-        optionsBuilder.AddInterceptors(new AuditingInterceptor(httpContextAccessor)); // Audit trailing for create/update/delete actions
+        optionsBuilder.AddInterceptors(new HistoryInterceptor(httpContextAccessor)); // Audit history for all actions
+        optionsBuilder.AddInterceptors(new AuditInterceptor(httpContextAccessor)); // Audit trailing for create/update/delete actions
 
         optionsBuilder.UseSeeding((context, _) =>
         {

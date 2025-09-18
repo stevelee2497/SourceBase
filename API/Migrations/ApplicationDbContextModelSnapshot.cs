@@ -66,12 +66,10 @@ namespace API.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(97);
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("CreatedOn")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(96);
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
@@ -82,12 +80,10 @@ namespace API.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(99);
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(98);
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -105,12 +101,10 @@ namespace API.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(97);
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("CreatedOn")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(96);
+                        .HasColumnType("TEXT");
 
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
@@ -123,12 +117,10 @@ namespace API.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(99);
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(98);
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("TEXT");
@@ -152,12 +144,10 @@ namespace API.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(97);
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("CreatedOn")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(96);
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -202,12 +192,10 @@ namespace API.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(99);
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("TEXT")
-                        .HasColumnOrder(98);
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)

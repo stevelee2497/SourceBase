@@ -10,25 +10,25 @@ namespace API.Controllers;
 public class TodoController(ITodoService todoService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IEnumerable<TodoItemDetailDto>> GetTodoItems()
+    public async Task<IEnumerable<TodoItemDetailResponse>> GetTodoItems()
     {
-        return await todoService.GetTodoItemsAsync();
+        return await todoService.GetTodosAsync();
     }
 
     [HttpGet("{id}")]
-    public async Task<TodoItemDetailDto> GetTodo(Guid id)
+    public async Task<TodoItemDetailResponse> GetTodo(Guid id)
     {
         return await todoService.GetTodoAsync(id);
     }
 
     [HttpPost]
-    public async Task CreateTodo(TodoItemDto todo)
+    public async Task CreateTodo(CreateTodoRequest todo)
     {
         await todoService.CreateTodoAsync(todo);
     }
 
     [HttpPut("{id}")]
-    public async Task UpdateTodo(Guid id, TodoItemDto todo)
+    public async Task UpdateTodo(Guid id, CreateTodoRequest todo)
     {
         await todoService.UpdateTodoAsync(id, todo);
     }

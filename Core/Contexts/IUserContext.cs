@@ -1,11 +1,13 @@
-﻿namespace Core.Contexts;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Core.Contexts;
 
 public interface IUserContext
 {
     Guid CurrentUserId { get; }
     Task LoginAsync(string email, string password);
     Task RefreshAsync(string refreshToken);
-    Task RegisterAsync(RegisterRequestDto registration);
+    Task RegisterAsync(RegisterRequest registration);
 }
 
-public record RegisterRequestDto(string Email, string Password, string Role, string? FirstName, string? LastName, string? PhoneNumber);
+public record RegisterRequest([Required] string Email, [Required] string Password, [Required] string Role, string? FirstName, string? LastName, string? PhoneNumber);

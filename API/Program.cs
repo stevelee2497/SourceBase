@@ -15,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddControllers(options =>
     {
+        options.Filters.Add<ApiAuthorizationFilter>();
         options.Filters.Add<ExceptionFilter>(); // Add global exception filter to force all exceptions into our error model
         options.Filters.Add<ModelValidationFilter>(int.MinValue); // Validating json payload and return in error model format
     })
@@ -57,7 +58,6 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-app.MapIdentityApi<IdentityUser>();
 
 // Ensure db migration is applied on start up
 using (var scope = app.Services.CreateScope())

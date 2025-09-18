@@ -10,7 +10,7 @@ namespace API.Contexts;
 
 public class UserContext(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, IHttpContextAccessor httpContextAccessor) : IUserContext
 {
-    public Guid CurrentUserId => Guid.TryParse(userManager.GetUserId(httpContextAccessor.HttpContext!.User), out var userId) ? userId : throw new UnAuthorizedException();
+    public Guid CurrentUserId => Guid.TryParse(httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : throw new UnAuthorizedException();
 
     public async Task LoginAsync(string email, string password)
     {
@@ -22,11 +22,11 @@ public class UserContext(SignInManager<UserEntity> signInManager, UserManager<Us
 
         if (!result.Succeeded)
         {
-            throw new UnAuthorizedException(result.ToString());
+            throw new UnAuthorizedException("Invalid credentials");
         }
     }
 
-    public async Task RegisterAsync(RegisterRequestDto registration)
+    public async Task RegisterAsync(RegisterRequest registration)
     {
         // Create a new user
         var user = new UserEntity

@@ -2,41 +2,33 @@
 using Core.Entities;
 using Core.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Business.Services;
 
-public interface ITodoService
-{
-    Task<IEnumerable<TodoItemDetailDto>> GetTodoItemsAsync();
-    Task<TodoItemDetailDto> GetTodoAsync(Guid id);
-    Task CreateTodoAsync(TodoItemDto todoItem);
-    Task UpdateTodoAsync(Guid id, TodoItemDto todoItem);
-    Task DeleteTodoAsync(Guid id);
-}
-
 public class TodoService(IDbContext dbContext, IUserContext userContext) : ITodoService
 {
-    public async Task<TodoItemDetailDto> GetTodoAsync(Guid id)
+    public async Task<TodoItemDetailResponse> GetTodoAsync(Guid id)
     {
         var todo = await dbContext.TodoItems.FindAsync(id) ?? throw new NotFoundException();
-        return new TodoItemDetailDto(todo.Id, todo.Date, todo.Title, todo.Status, todo.CreatedOn);
+        return new TodoItemDetailResponse(todo);
     }
 
-    public async Task<IEnumerable<TodoItemDetailDto>> GetTodoItemsAsync()
+    public async Task<IEnumerable<TodoItemDetailResponse>> GetTodosAsync()
     {
         return await dbContext.TodoItems
             .Where(x => x.UserId == userContext.CurrentUserId)
-            .Select(todo => new TodoItemDetailDto(todo.Id, todo.Date, todo.Title, todo.Status, todo.CreatedOn))
+            .Select(todo => new TodoItemDetailResponse(todo))
             .ToListAsync();
     }
 
-    public async Task CreateTodoAsync(TodoItemDto todoItem)
+    public async Task CreateTodoAsync(CreateTodoRequest todoItem)
     {
         dbContext.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = userContext.CurrentUserId });
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task UpdateTodoAsync(Guid id, TodoItemDto todoItem)
+    public async Task UpdateTodoAsync(Guid id, CreateTodoRequest todoItem)
     {
         var item = await dbContext.TodoItems.FindAsync(id) ?? throw new NotFoundException();
         item.Title = todoItem.Title;
@@ -53,6 +45,20 @@ public class TodoService(IDbContext dbContext, IUserContext userContext) : ITodo
     }
 }
 
-public record TodoItemDto(DateOnly Date, string Title, ItemStatus Status, DateTime? CreatedOn);
+public interface ITodoService
+{
+    Task<IEnumerable<TodoItemDetailResponse>> GetTodosAsync();
+    Task<TodoItemDetailResponse> GetTodoAsync(Guid id);
+    Task CreateTodoAsync(CreateTodoRequest todoItem);
+    Task UpdateTodoAsync(Guid id, CreateTodoRequest todoItem);
+    Task DeleteTodoAsync(Guid id);
+}
 
-public record TodoItemDetailDto(Guid Id, DateOnly Date, string Title, ItemStatus Status, DateTime? CreatedOn);
+public record CreateTodoRequest([Required] DateOnly Date, [Required] string Title, ItemStatus Status);
+
+public record TodoItemDetailResponse(Guid Id, DateOnly Date, string Title, ItemStatus Status, DateTime? CreatedOn, string? CreatedBy, DateTime? UpdatedOn, string? UpdatedBy)
+{
+    public TodoItemDetailResponse(TodoItemEntity todo) : this(todo.Id, todo.Date, todo.Title, todo.Status, todo.CreatedOn, todo.CreatedBy, todo.UpdatedOn, todo.UpdatedBy)
+    {
+    }
+}
