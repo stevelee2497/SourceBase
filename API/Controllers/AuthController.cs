@@ -1,9 +1,9 @@
-﻿using Business.Services;
-using Core.Contexts;
+﻿using Application.Services;
+using Domain.Contexts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Controllers;
+namespace Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]

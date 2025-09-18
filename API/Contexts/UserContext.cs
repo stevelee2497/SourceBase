@@ -1,12 +1,12 @@
-﻿using Core.Contexts;
-using Core.Entities;
-using Core.Exceptions;
+﻿using Domain.Contexts;
+using Domain.Entities;
+using Domain.Exceptions;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
-namespace API.Contexts;
+namespace Api.Contexts;
 
 public class UserContext(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, IHttpContextAccessor httpContextAccessor) : IUserContext
 {

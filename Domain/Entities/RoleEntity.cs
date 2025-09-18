@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace Core.Entities;
+namespace Domain.Entities;
 
 public class RoleEntity : IdentityRole<Guid>, IBaseEntity
 {

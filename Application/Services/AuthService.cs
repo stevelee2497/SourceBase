@@ -1,9 +1,9 @@
-﻿using Core.Contexts;
-using Core.Exceptions;
+﻿using Domain.Contexts;
+using Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace Business.Services;
+namespace Application.Services;
 
 public class AuthService(IUserContext userContext, IDbContext dbContext) : IAuthService
 {

@@ -1,10 +1,10 @@
-﻿using Core.Contexts;
-using Core.Entities;
-using Core.Exceptions;
+﻿using Domain.Contexts;
+using Domain.Entities;
+using Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace Business.Services;
+namespace Application.Services;
 
 public class TodoService(IDbContext dbContext, IUserContext userContext) : ITodoService
 {

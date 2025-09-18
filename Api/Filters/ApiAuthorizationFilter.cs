@@ -1,9 +1,9 @@
-﻿using Core.Exceptions;
+﻿using Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace API.Filters;
+namespace Api.Filters;
 
 public class ApiAuthorizationFilter : IAsyncAuthorizationFilter
 {

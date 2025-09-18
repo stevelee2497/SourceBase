@@ -1,8 +1,8 @@
-﻿using Core.Exceptions;
+﻿using Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace API.Filters;
+namespace Api.Filters;
 
 public class ExceptionFilter(IHostEnvironment hostEnvironment, ILogger<ExceptionFilter> logger) : IExceptionFilter
 {

@@ -1,8 +1,8 @@
-using Business.Services;
+using Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Controllers;
+namespace Api.Controllers;
 
 [ApiController]
 [Authorize]

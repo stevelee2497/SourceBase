@@ -5,6 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<InvariantGlobalization>false</InvariantGlobalization>
+		<RootNamespace>Api</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -23,7 +24,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Business\Business.csproj" />
+	  <ProjectReference Include="..\Application\Application.csproj" />
 	</ItemGroup>
 
 </Project>

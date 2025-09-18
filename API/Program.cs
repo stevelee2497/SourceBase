@@ -1,9 +1,9 @@
-using API.Contexts;
-using API.Filters;
-using Business.Services;
-using Core.Constants;
-using Core.Contexts;
-using Core.Entities;
+using Api.Contexts;
+using Api.Filters;
+using Application.Services;
+using Domain.Constants;
+using Domain.Contexts;
+using Domain.Entities;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

@@ -1,11 +1,11 @@
-﻿using API.Contexts;
-using Core.Entities;
+﻿using Api.Contexts;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
 
-namespace API.Interceptors;
+namespace Api.Interceptors;
 
 public class HistoryInterceptor(IHttpContextAccessor httpContextAccessor) : ISaveChangesInterceptor
 {

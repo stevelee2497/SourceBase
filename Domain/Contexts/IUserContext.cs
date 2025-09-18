@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Core.Contexts;
+namespace Domain.Contexts;
 
 public interface IUserContext
 {

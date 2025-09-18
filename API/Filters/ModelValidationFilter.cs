@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace API.Filters;
+namespace Api.Filters;
 
 public class ModelValidationFilter : IActionFilter
 {

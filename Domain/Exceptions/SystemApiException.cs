@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Core.Exceptions;
+namespace Domain.Exceptions;
 
 public abstract class BaseException(string message, string code, int statusCode) : Exception(message)
 {

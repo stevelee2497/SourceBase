@@ -1,11 +1,11 @@
-﻿using Core.Constants;
-using Core.Contexts;
-using Core.Entities;
+﻿using Domain.Constants;
+using Domain.Contexts;
+using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Controllers;
+namespace Api.Controllers;
 
 [ApiController]
 [Route("api/audits")]
