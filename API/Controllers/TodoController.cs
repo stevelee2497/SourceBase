@@ -10,32 +10,32 @@ namespace Api.Controllers;
 public class TodoController(ITodoService todoService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IEnumerable<TodoItemDetailResponse>> GetTodoItems()
+    public Task<IEnumerable<TodoItemDetailResponse>> GetTodoItems()
     {
-        return await todoService.GetTodosAsync();
+        return todoService.GetTodosAsync();
     }
 
     [HttpGet("{id}")]
-    public async Task<TodoItemDetailResponse> GetTodo(Guid id)
+    public Task<TodoItemDetailResponse> GetTodo(Guid id)
     {
-        return await todoService.GetTodoAsync(id);
+        return todoService.GetTodoAsync(id);
     }
 
     [HttpPost]
-    public async Task CreateTodo(CreateTodoRequest todo)
+    public Task CreateTodo(CreateTodoRequest todo)
     {
-        await todoService.CreateTodoAsync(todo);
+        return todoService.CreateTodoAsync(todo);
     }
 
     [HttpPut("{id}")]
-    public async Task UpdateTodo(Guid id, CreateTodoRequest todo)
+    public Task UpdateTodo(Guid id, CreateTodoRequest todo)
     {
-        await todoService.UpdateTodoAsync(id, todo);
+        return todoService.UpdateTodoAsync(id, todo);
     }
 
     [HttpDelete("{id}")]
-    public async Task DeleteTodo(Guid id)
+    public Task DeleteTodo(Guid id)
     {
-        await todoService.DeleteTodoAsync(id);
+        return todoService.DeleteTodoAsync(id);
     }
 }

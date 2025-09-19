@@ -13,14 +13,14 @@ public class DataController(IDbContext dbContext) : ControllerBase
 {
     [HttpGet("audits")]
     [Authorize(Roles = Roles.Admin)]
-    public async Task<IEnumerable<AuditHistoryEntity>> GetAudits()
+    public Task<List<AuditHistoryEntity>> GetAudits()
     {
-        return await dbContext.AuditHistories.ToListAsync();
+        return dbContext.AuditHistories.ToListAsync();
     }
 
     [HttpGet("roles")]
-    public async Task<IEnumerable<RoleEntity>> GetRoles()
+    public Task<List<RoleEntity>> GetRoles()
     {
-        return await dbContext.Roles.ToListAsync();
+        return dbContext.Roles.ToListAsync();
     }
 }

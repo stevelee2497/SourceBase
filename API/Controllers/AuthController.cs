@@ -9,34 +9,40 @@ namespace Api.Controllers;
 public class AuthController(IAuthService authService) : ControllerBase
 {
     [HttpPost("register")]
-    public async Task Register(RegisterRequest registration)
+    public Task<string> Register(RegisterRequest registration)
     {
-        await authService.RegisterAsync(registration);
+        return authService.RegisterAsync(registration);
     }
 
     [HttpPost("login")]
-    public async Task Login(LoginRequest login)
+    public Task Login(LoginRequest login)
     {
-        await authService.LoginAsync(login);
+        return authService.LoginAsync(login);
+    }
+
+    [HttpGet("confirmEmail", Name = "ConfirmEmail")]
+    public Task ConfirmEmail(string userId, string code)
+    {
+        return authService.ConfirmEmailAsync(userId, code);
     }
 
     [HttpPost("refresh")]
-    public async Task Refresh(RefreshTokenRequest login)
+    public Task Refresh(RefreshTokenRequest login)
     {
-        await authService.RefreshAsync(login);
+        return authService.RefreshAsync(login);
     }
 
     [HttpGet("info")]
     [Authorize]
-    public async Task<UserInfoResponse> GetUserInfo()
+    public Task<UserInfoResponse> GetUserInfo()
     {
-        return await authService.GetUserInfoAsync();
+        return authService.GetUserInfoAsync();
     }
 
     [HttpPut("info")]
     [Authorize]
-    public async Task UpdateUserInfo(UserInfoUpdateRequest userInfo)
+    public Task UpdateUserInfo(UserInfoUpdateRequest userInfo)
     {
-        await authService.UpdateUserInfoAsync(userInfo);
+        return authService.UpdateUserInfoAsync(userInfo);
     }
 }

@@ -7,9 +7,9 @@ namespace Application.Services;
 
 public class AuthService(IUserContext userContext, IDbContext dbContext) : IAuthService
 {
-    public async Task RegisterAsync(RegisterRequest registration)
+    public async Task<string> RegisterAsync(RegisterRequest registration)
     {
-        await userContext.RegisterAsync(registration.Email, registration.Password);
+        return await userContext.RegisterAsync(registration.Email, registration.Password);
     }
 
     public async Task LoginAsync(LoginRequest login)
@@ -44,18 +44,24 @@ public class AuthService(IUserContext userContext, IDbContext dbContext) : IAuth
 
         await dbContext.SaveChangesAsync();
     }
+
+    public Task ConfirmEmailAsync(string userId, string code)
+    {
+        return userContext.ConfirmEmailAsync(userId, code);
+    }
 }
 
 public interface IAuthService
 {
     Task LoginAsync(LoginRequest login);
-    Task RegisterAsync(RegisterRequest registration);
+    Task<string> RegisterAsync(RegisterRequest registration);
     Task RefreshAsync(RefreshTokenRequest refreshToken);
     Task<UserInfoResponse> GetUserInfoAsync();
     Task UpdateUserInfoAsync(UserInfoUpdateRequest userInfo);
+    Task ConfirmEmailAsync(string userId, string code);
 }
 
-public record RegisterRequest([Required] string Email, [Required] string Password);
+public record RegisterRequest([Required][EmailAddress] string Email, [Required] string Password);
 
 public record LoginRequest([Required] string Email, [Required] string Password);
 
