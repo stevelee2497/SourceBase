@@ -1,0 +1,121 @@
+﻿using Domain.Contexts;
+using Domain.Entities;
+using Infrastructure.Interceptors;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace Infrastructure.Contexts;
+
+public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>, IDbContext
+{
+    #region Ctor
+
+    private readonly IHttpContextAccessor httpContextAccessor;
+
+    public ApplicationDbContext()
+    {
+        httpContextAccessor = new HttpContextAccessor();
+    }
+
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor) : base(options)
+    {
+        this.httpContextAccessor = httpContextAccessor;
+    }
+
+    #endregion
+
+    #region DbSets
+
+    public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
+
+    public DbSet<TodoItemEntity> TodoItems { get; set; }
+
+    #endregion
+
+    #region Configuring
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlite("Data Source=../app.db");
+
+        optionsBuilder.AddInterceptors(new HistoryInterceptor(httpContextAccessor)); // Audit history for all actions
+        optionsBuilder.AddInterceptors(new AuditInterceptor(httpContextAccessor)); // Audit trailing for create/update/delete actions
+
+        optionsBuilder.UseSeeding((context, _) =>
+        {
+            var adminEmail = "admin@yopmail.com";
+            var adminRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == Domain.Constants.Roles.Admin);
+            if (adminRole == null)
+            {
+                adminRole = new RoleEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Name = Domain.Constants.Roles.Admin,
+                    NormalizedName = Domain.Constants.Roles.Admin.ToUpper(),
+                    CreatedOn = DateTime.UtcNow,
+                    CreatedBy = adminEmail,
+                    UpdatedOn = DateTime.UtcNow,
+                    UpdatedBy = adminEmail,
+                    ConcurrencyStamp = Guid.NewGuid().ToString()
+                };
+                context.Set<RoleEntity>().Add(adminRole);
+                context.SaveChanges();
+            }
+
+            var userRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == Domain.Constants.Roles.User);
+            if (userRole == null)
+            {
+                context.Set<RoleEntity>().Add(new RoleEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Name = Domain.Constants.Roles.User,
+                    NormalizedName = Domain.Constants.Roles.User.ToUpper(),
+                    CreatedOn = DateTime.UtcNow,
+                    CreatedBy = adminEmail,
+                    UpdatedOn = DateTime.UtcNow,
+                    UpdatedBy = adminEmail,
+                    ConcurrencyStamp = Guid.NewGuid().ToString()
+                });
+                context.SaveChanges();
+            }
+
+            var adminUser = context.Set<UserEntity>().FirstOrDefault(b => b.Email == adminEmail);
+            if (adminUser == null)
+            {
+                var adminUserEntity = new UserEntity
+                {
+                    Id = Guid.NewGuid(),
+                    UserName = adminEmail,
+                    NormalizedUserName = adminEmail.ToUpper(),
+                    Email = adminEmail,
+                    NormalizedEmail = adminEmail.ToUpper(),
+                    EmailConfirmed = true,
+                    CreatedOn = DateTime.UtcNow,
+                    CreatedBy = adminEmail,
+                    UpdatedOn = DateTime.UtcNow,
+                    UpdatedBy = adminEmail,
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    ConcurrencyStamp = Guid.NewGuid().ToString(),
+                    PasswordHash = new PasswordHasher<UserEntity>().HashPassword(null!, "Admin@123"),
+                    Roles = [adminRole]
+                };
+                context.Set<UserEntity>().Add(adminUserEntity);
+                context.SaveChanges();
+            }
+        });
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<UserEntity>()
+            .HasMany(e => e.Roles)
+            .WithMany(e => e.Users)
+            .UsingEntity<IdentityUserRole<Guid>>();
+    }
+
+    #endregion
+}

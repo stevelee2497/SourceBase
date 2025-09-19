@@ -8,13 +8,19 @@ using Microsoft.EntityFrameworkCore;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/audits")]
-public class AuditController(IDbContext dbContext) : ControllerBase
+[Route("api")]
+public class DataController(IDbContext dbContext) : ControllerBase
 {
-    [HttpGet]
+    [HttpGet("audits")]
     [Authorize(Roles = Roles.Admin)]
     public async Task<IEnumerable<AuditHistoryEntity>> GetAudits()
     {
         return await dbContext.AuditHistories.ToListAsync();
+    }
+
+    [HttpGet("roles")]
+    public async Task<IEnumerable<RoleEntity>> GetRoles()
+    {
+        return await dbContext.Roles.ToListAsync();
     }
 }

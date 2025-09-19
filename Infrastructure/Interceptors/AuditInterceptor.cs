@@ -1,10 +1,11 @@
-﻿using Api.Contexts;
-using Domain.Entities;
+﻿using Domain.Entities;
+using Infrastructure.Contexts;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.Security.Claims;
 
-namespace Api.Interceptors;
+namespace Infrastructure.Interceptors;
 
 public class AuditInterceptor(IHttpContextAccessor httpContextAccessor) : ISaveChangesInterceptor
 {
