@@ -1,15 +1,6 @@
 ﻿namespace Domain.Entities;
 
-public interface IBaseEntity
-{
-    Guid Id { get; set; }
-    string? CreatedBy { get; set; }
-    DateTime? CreatedOn { get; set; }
-    string? UpdatedBy { get; set; }
-    DateTime? UpdatedOn { get; set; }
-}
-
-public abstract class BaseEntity : IBaseEntity
+public abstract class BaseEntity
 {
     public Guid Id { get; set; }
 

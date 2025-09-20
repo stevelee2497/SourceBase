@@ -32,6 +32,8 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Gu
 
     public DbSet<TodoItemEntity> TodoItems { get; set; }
 
+    public DbSet<ProfileEntity> Profiles { get; set; }
+
     #endregion
 
     #region Configuring
@@ -54,10 +56,6 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Gu
                     Id = Guid.NewGuid(),
                     Name = Domain.Constants.Roles.Admin,
                     NormalizedName = Domain.Constants.Roles.Admin.ToUpper(),
-                    CreatedOn = DateTime.UtcNow,
-                    CreatedBy = adminEmail,
-                    UpdatedOn = DateTime.UtcNow,
-                    UpdatedBy = adminEmail,
                     ConcurrencyStamp = Guid.NewGuid().ToString()
                 };
                 context.Set<RoleEntity>().Add(adminRole);
@@ -72,10 +70,6 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Gu
                     Id = Guid.NewGuid(),
                     Name = Domain.Constants.Roles.User,
                     NormalizedName = Domain.Constants.Roles.User.ToUpper(),
-                    CreatedOn = DateTime.UtcNow,
-                    CreatedBy = adminEmail,
-                    UpdatedOn = DateTime.UtcNow,
-                    UpdatedBy = adminEmail,
                     ConcurrencyStamp = Guid.NewGuid().ToString()
                 });
                 context.SaveChanges();
@@ -92,20 +86,22 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Gu
                     Email = adminEmail,
                     NormalizedEmail = adminEmail.ToUpper(),
                     EmailConfirmed = true,
-                    CreatedOn = DateTime.UtcNow,
-                    CreatedBy = adminEmail,
-                    UpdatedOn = DateTime.UtcNow,
-                    UpdatedBy = adminEmail,
                     SecurityStamp = Guid.NewGuid().ToString(),
                     ConcurrencyStamp = Guid.NewGuid().ToString(),
                     PasswordHash = new PasswordHasher<UserEntity>().HashPassword(null!, "Admin@123"),
-                    Roles = [adminRole]
+                    Roles = [adminRole],
+                    Profile = new ProfileEntity
+                    {
+                        FirstName = "Admin",
+                        LastName = "User",
+                    }
                 };
                 context.Set<UserEntity>().Add(adminUserEntity);
                 context.SaveChanges();
             }
         });
     }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

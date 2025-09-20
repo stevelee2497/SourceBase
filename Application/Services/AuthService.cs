@@ -24,23 +24,21 @@ public class AuthService(IUserContext userContext, IDbContext dbContext) : IAuth
 
     public async Task<UserInfoResponse> GetUserInfoAsync()
     {
-        var userEntity = await dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userContext.CurrentUserId) ?? throw new NotFoundException();
-        return new UserInfoResponse(userEntity.Id, userEntity.Email, userEntity.FirstName, userEntity.LastName, userEntity.PhoneNumber, [.. userEntity.Roles.Select(x => x.Name!)]);
+        return await dbContext.Users
+            .Include(x => x.Roles)
+            .Include(x => x.Profile)
+            .Where(x => x.Id == userContext.CurrentUserId)
+            .Select(x => new UserInfoResponse(x.Id, x.Email, x.Profile.FirstName, x.Profile.LastName, x.PhoneNumber, x.Roles.Select(ur => ur.Name!)))
+            .FirstOrDefaultAsync()
+            ?? throw new NotFoundException();
     }
 
     public async Task UpdateUserInfoAsync(UserInfoUpdateRequest userInfo)
     {
-        var userEntity = await dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userContext.CurrentUserId) ?? throw new NotFoundException();
+        var profile = await dbContext.Profiles.FirstOrDefaultAsync(x => x.UserId == userContext.CurrentUserId) ?? throw new NotFoundException();
 
-        userEntity.FirstName = userInfo.FirstName;
-        userEntity.LastName = userInfo.LastName;
-        userEntity.PhoneNumber = userInfo.PhoneNumber;
-
-        if (userInfo.Roles.Any())
-        {
-            var roles = await dbContext.Roles.Where(x => userInfo.Roles.Contains(x.Name!)).ToListAsync();
-            userEntity.Roles.AddRange(roles);
-        }
+        profile.FirstName = userInfo.FirstName;
+        profile.LastName = userInfo.LastName;
 
         await dbContext.SaveChangesAsync();
     }
@@ -67,6 +65,6 @@ public record LoginRequest([Required] string Email, [Required] string Password);
 
 public record RefreshTokenRequest([Required] string Token);
 
-public record UserInfoResponse(Guid Id, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);
+public record UserInfoResponse(Guid Id, string? Email, string? FirstName, string? LastName, string? PhoneNumber, IEnumerable<string> Roles);
 
 public record UserInfoUpdateRequest(string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);

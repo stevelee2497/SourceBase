@@ -3,7 +3,6 @@
 public interface IUserContext
 {
     Guid CurrentUserId { get; }
-
     Task ConfirmEmailAsync(string userId, string code);
     Task LoginAsync(string email, string password);
     Task RefreshAsync(string refreshToken);

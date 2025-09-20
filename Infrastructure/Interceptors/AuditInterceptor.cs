@@ -17,7 +17,7 @@ public class AuditInterceptor(IHttpContextAccessor httpContextAccessor) : ISaveC
         {
             foreach (var entry in dbContext.ChangeTracker.Entries())
             {
-                if (entry is not { Entity: IBaseEntity entity } || new[] { EntityState.Detached, EntityState.Unchanged }.Contains(entry.State))
+                if (entry is not { Entity: BaseEntity entity } || new[] { EntityState.Detached, EntityState.Unchanged }.Contains(entry.State))
                     continue;
 
                 switch (entry.State)

@@ -10,8 +10,7 @@ using System.Text;
 
 namespace Api.Contexts;
 
-// TODO: Move to infrastructure layer 
-public class UserContext(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator) : IUserContext
+public class IdentityUserContext(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator) : IUserContext
 {
     public Guid CurrentUserId => Guid.TryParse(httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : throw new UnAuthorizedException();
 
@@ -35,7 +34,7 @@ public class UserContext(SignInManager<UserEntity> signInManager, UserManager<Us
         var user = new UserEntity
         {
             Email = email,
-            UserName = email
+            UserName = email,
         };
         var result = await userManager.CreateAsync(user, password);
         if (!result.Succeeded)
