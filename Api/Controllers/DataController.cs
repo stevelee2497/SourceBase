@@ -1,5 +1,5 @@
-﻿using Domain.Constants;
-using Domain.Contexts;
+﻿using Domain.Abstractions;
+using Domain.Common;
 using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

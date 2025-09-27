@@ -1,4 +1,4 @@
-﻿using Domain.Exceptions;
+﻿using Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 

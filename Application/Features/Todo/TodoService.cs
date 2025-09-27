@@ -1,10 +1,9 @@
-﻿using Domain.Contexts;
-using Domain.Entities;
-using Domain.Exceptions;
+﻿using Domain.Common;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+using Domain.Entities;
+using Domain.Abstractions;
 
-namespace Application.Services;
+namespace Application.Features.Todo;
 
 public class TodoService(IDbContext dbContext, IUserContext userContext) : ITodoService
 {
@@ -45,20 +44,3 @@ public class TodoService(IDbContext dbContext, IUserContext userContext) : ITodo
     }
 }
 
-public interface ITodoService
-{
-    Task<IEnumerable<TodoItemDetailResponse>> GetTodosAsync();
-    Task<TodoItemDetailResponse> GetTodoAsync(Guid id);
-    Task CreateTodoAsync(CreateTodoRequest todoItem);
-    Task UpdateTodoAsync(Guid id, CreateTodoRequest todoItem);
-    Task DeleteTodoAsync(Guid id);
-}
-
-public record CreateTodoRequest([Required] DateOnly Date, [Required] string Title, ItemStatus Status);
-
-public record TodoItemDetailResponse(Guid Id, DateOnly Date, string Title, ItemStatus Status, DateTime? CreatedOn, string? CreatedBy, DateTime? UpdatedOn, string? UpdatedBy)
-{
-    public TodoItemDetailResponse(TodoItemEntity todo) : this(todo.Id, todo.Date, todo.Title, todo.Status, todo.CreatedOn, todo.CreatedBy, todo.UpdatedOn, todo.UpdatedBy)
-    {
-    }
-}

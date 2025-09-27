@@ -7,7 +7,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMvcConfigs();
-builder.Services.AddApplicationDbContext(builder.Configuration);
+builder.Services.AddAppSettings(builder.Configuration);
+builder.Services.AddApplicationDbContext();
 builder.Services.AddApplicationServices();
 
 var app = builder.Build();

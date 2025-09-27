@@ -1,7 +1,7 @@
 ﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Domain.Contexts;
+namespace Domain.Abstractions;
 
 public interface IDbContext
 {

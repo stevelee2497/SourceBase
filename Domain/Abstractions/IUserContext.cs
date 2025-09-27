@@ -1,4 +1,4 @@
-﻿namespace Domain.Contexts;
+﻿namespace Domain.Abstractions;
 
 public interface IUserContext
 {

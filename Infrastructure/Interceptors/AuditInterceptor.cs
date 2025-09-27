@@ -1,5 +1,5 @@
 ﻿using Domain.Entities;
-using Infrastructure.Contexts;
+using Infrastructure.DbContexts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;

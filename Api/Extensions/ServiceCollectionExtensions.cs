@@ -1,16 +1,25 @@
 ﻿using Api.Contexts;
 using Api.Filters;
-using Application.Services;
-using Domain.Contexts;
+using Application.Features.Auth;
+using Application.Features.Todo;
+using Domain.Abstractions;
+using Domain.Common;
 using Domain.Entities;
-using Infrastructure.Contexts;
+using Infrastructure.DbContexts;
+using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 
 namespace Api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddApplicationDbContext(this IServiceCollection services, IConfiguration configuration)
+    public static void AddAppSettings(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
+        services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<AppSettings>>().Value);
+    }
+
+    public static void AddApplicationDbContext(this IServiceCollection services)
     {
         // Add DB Context
         services.AddScoped<IDbContext, ApplicationDbContext>();

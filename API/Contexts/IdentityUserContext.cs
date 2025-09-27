@@ -1,6 +1,6 @@
-﻿using Domain.Contexts;
+﻿using Domain.Abstractions;
+using Domain.Common;
 using Domain.Entities;
-using Domain.Exceptions;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
@@ -39,7 +39,7 @@ public class IdentityUserContext(SignInManager<UserEntity> signInManager, UserMa
         var result = await userManager.CreateAsync(user, password);
         if (!result.Succeeded)
         {
-            throw new SystemApiException(result.Errors.First().Description);
+            throw new ApiInternalException(result.Errors.First().Description);
         }
 
         return await SendConfirmationEmailAsync(user);

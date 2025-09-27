@@ -1,9 +1,8 @@
-﻿using Domain.Contexts;
-using Domain.Exceptions;
+﻿using Domain.Abstractions;
+using Domain.Common;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
-namespace Application.Services;
+namespace Application.Features.Auth;
 
 public class AuthService(IUserContext userContext, IDbContext dbContext) : IAuthService
 {
@@ -48,23 +47,3 @@ public class AuthService(IUserContext userContext, IDbContext dbContext) : IAuth
         return userContext.ConfirmEmailAsync(userId, code);
     }
 }
-
-public interface IAuthService
-{
-    Task LoginAsync(LoginRequest login);
-    Task<string> RegisterAsync(RegisterRequest registration);
-    Task RefreshAsync(RefreshTokenRequest refreshToken);
-    Task<UserInfoResponse> GetUserInfoAsync();
-    Task UpdateUserInfoAsync(UserInfoUpdateRequest userInfo);
-    Task ConfirmEmailAsync(string userId, string code);
-}
-
-public record RegisterRequest([Required][EmailAddress] string Email, [Required] string Password);
-
-public record LoginRequest([Required] string Email, [Required] string Password);
-
-public record RefreshTokenRequest([Required] string Token);
-
-public record UserInfoResponse(Guid Id, string? Email, string? FirstName, string? LastName, string? PhoneNumber, IEnumerable<string> Roles);
-
-public record UserInfoUpdateRequest(string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);
