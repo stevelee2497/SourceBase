@@ -1,4 +1,4 @@
-﻿namespace SourceBase.Domain.Common;
+﻿namespace SourceBase.Application.Common;
 
 public static class Base64UrlHelper
 {

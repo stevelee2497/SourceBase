@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using SourceBase.Domain.Abstractions;
-using SourceBase.Domain.Common;
+using SourceBase.Application.Abstractions;
+using SourceBase.Application.Common;
 using SourceBase.Domain.Entities;
 using System.Security.Claims;
 

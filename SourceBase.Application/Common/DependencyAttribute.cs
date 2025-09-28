@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace SourceBase.Domain.Common;
+namespace SourceBase.Application.Common;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public abstract class DependencyAttribute(ServiceLifetime serviceLifeTime, Type type) : Attribute

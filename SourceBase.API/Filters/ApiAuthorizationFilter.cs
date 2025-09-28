@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
-using SourceBase.Domain.Common;
+using SourceBase.Application.Common;
 
 namespace SourceBase.Api.Filters;
 

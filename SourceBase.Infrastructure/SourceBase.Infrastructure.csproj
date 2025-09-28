@@ -12,10 +12,11 @@
 		<PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
+		<PackageReference Include="SendGrid" Version="9.29.3" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\SourceBase.Domain\SourceBase.Domain.csproj" />
+	  <ProjectReference Include="..\SourceBase.Application\SourceBase.Application.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using SourceBase.Domain.Common;
+using SourceBase.Application.Common;
 
 namespace SourceBase.Api.Filters;
 

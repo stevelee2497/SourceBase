@@ -1,9 +1,9 @@
-﻿using SourceBase.Domain.Abstractions;
-using SourceBase.Domain.Common;
-using SourceBase.Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SourceBase.Application.Abstractions;
+using SourceBase.Application.Common;
+using SourceBase.Domain.Entities;
 
 namespace SourceBase.Api.Controllers;
 

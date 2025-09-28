@@ -2,11 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Domain.Abstractions;
-using SourceBase.Domain.Common;
+using SourceBase.Application.Abstractions;
+using SourceBase.Application.Common;
 using SourceBase.Domain.Entities;
 using SourceBase.Infrastructure.Interceptors;
-using System.Data;
 
 namespace SourceBase.Infrastructure.DbContexts;
 
@@ -49,28 +48,28 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Gu
         optionsBuilder.UseSeeding((context, _) =>
         {
             var adminEmail = "admin@yopmail.com";
-            var adminRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == Domain.Common.Roles.Admin);
+            var adminRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == Application.Common.Roles.Admin);
             if (adminRole == null)
             {
                 adminRole = new RoleEntity
                 {
                     Id = Guid.NewGuid(),
-                    Name = Domain.Common.Roles.Admin,
-                    NormalizedName = Domain.Common.Roles.Admin.ToUpper(),
+                    Name = Application.Common.Roles.Admin,
+                    NormalizedName = Application.Common.Roles.Admin.ToUpper(),
                     ConcurrencyStamp = Guid.NewGuid().ToString()
                 };
                 context.Set<RoleEntity>().Add(adminRole);
                 context.SaveChanges();
             }
 
-            var userRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == Domain.Common.Roles.User);
+            var userRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == Application.Common.Roles.User);
             if (userRole == null)
             {
                 context.Set<RoleEntity>().Add(new RoleEntity
                 {
                     Id = Guid.NewGuid(),
-                    Name = Domain.Common.Roles.User,
-                    NormalizedName = Domain.Common.Roles.User.ToUpper(),
+                    Name = Application.Common.Roles.User,
+                    NormalizedName = Application.Common.Roles.User.ToUpper(),
                     ConcurrencyStamp = Guid.NewGuid().ToString()
                 });
                 context.SaveChanges();

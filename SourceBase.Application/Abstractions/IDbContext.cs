@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SourceBase.Domain.Entities;
 
-namespace SourceBase.Domain.Abstractions;
+namespace SourceBase.Application.Abstractions;
 
 public interface IDbContext
 {

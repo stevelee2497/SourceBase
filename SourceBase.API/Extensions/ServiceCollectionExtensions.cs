@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Options;
 using SourceBase.Api.Filters;
+using SourceBase.Application.Common;
 using SourceBase.Application.Features.Auth;
-using SourceBase.Domain.Common;
 using SourceBase.Domain.Entities;
 using SourceBase.Infrastructure.DbContexts;
 using System.Reflection;

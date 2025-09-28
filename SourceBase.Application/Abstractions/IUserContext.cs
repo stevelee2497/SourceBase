@@ -1,4 +1,4 @@
-﻿namespace SourceBase.Domain.Abstractions;
+﻿namespace SourceBase.Application.Abstractions;
 
 public interface IUserContext
 {

@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Domain.Abstractions;
-using SourceBase.Domain.Common;
+using SourceBase.Application.Abstractions;
+using SourceBase.Application.Common;
 using SourceBase.Domain.Entities;
 using System.Text;
 
 namespace SourceBase.Application.Features.Auth;
 
 [ScopedDependency<IAuthService>]
-public class AuthService(IUserContext userContext, IDbContext dbContext, UserManager<UserEntity> userManager, AppSettings appSettings) : IAuthService
+public class AuthService(IUserContext userContext, IDbContext dbContext, UserManager<UserEntity> userManager, AppSettings appSettings, IEmailHelper emailHelper) : IAuthService
 {
     public async Task RegisterAsync(RegisterRequest request)
     {
@@ -45,7 +45,6 @@ public class AuthService(IUserContext userContext, IDbContext dbContext, UserMan
         }
 
         var decodedCode = Encoding.UTF8.GetString(Base64UrlHelper.Base64UrlDecode(request.Code));
-
         var result = await userManager.ConfirmEmailAsync(user, decodedCode);
         if (!result.Succeeded)
         {
@@ -58,7 +57,6 @@ public class AuthService(IUserContext userContext, IDbContext dbContext, UserMan
     public async Task ForgotPasswordAsync(ForgotPasswordRequest request)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
-
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
         var code = Base64UrlHelper.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var resetPasswordUrl = $"{appSettings.ApiUrl}/resetPassword?email={request.Email}&code={code}";
@@ -66,7 +64,8 @@ public class AuthService(IUserContext userContext, IDbContext dbContext, UserMan
         {
             throw new Exception("Couldn't send email");
         }
-        // TODO: Send email with this link
+
+        await emailHelper.SendEmailAsync(request.Email, "Reset Password", $"Click <a href='{resetPasswordUrl}'>here</a> to reset your password.");
     }
 
     public async Task ResendConfirmationEmailAsync(ResendConfirmationEmailRequest request)
@@ -83,9 +82,7 @@ public class AuthService(IUserContext userContext, IDbContext dbContext, UserMan
     public async Task ResetPasswordAsync(ResetPasswordRequest request)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
-
         var decodedCode = Encoding.UTF8.GetString(Base64UrlHelper.Base64UrlDecode(request.Code));
-
         var result = await userManager.ResetPasswordAsync(user, decodedCode, request.NewPassword);
         if (!result.Succeeded)
         {
@@ -118,7 +115,6 @@ public class AuthService(IUserContext userContext, IDbContext dbContext, UserMan
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var code = Base64UrlHelper.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var confirmEmailUrl = $"{appSettings.ApiUrl}/confirmEmail?email={user.Email}&code={code}";
-        Console.WriteLine(confirmEmailUrl);
-        // TODO: Send email with this link
+        await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Please confirm your account by clicking <a href='{confirmEmailUrl}'>here</a>.");
     }
 }
