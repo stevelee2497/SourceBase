@@ -154,41 +154,6 @@ namespace SourceBase.Infrastructure.Migrations
                     b.ToTable("AuditHistories");
                 });
 
-            modelBuilder.Entity("SourceBase.Domain.Entities.ProfileEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("CreatedOn")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FirstName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Profiles");
-                });
-
             modelBuilder.Entity("SourceBase.Domain.Entities.RoleEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -272,6 +237,12 @@ namespace SourceBase.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("FirstName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("INTEGER");
 
@@ -295,9 +266,6 @@ namespace SourceBase.Infrastructure.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
 
@@ -316,9 +284,6 @@ namespace SourceBase.Infrastructure.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
-
-                    b.HasIndex("ProfileId")
-                        .IsUnique();
 
                     b.ToTable("Users", (string)null);
                 });
@@ -371,23 +336,6 @@ namespace SourceBase.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("SourceBase.Domain.Entities.UserEntity", b =>
-                {
-                    b.HasOne("SourceBase.Domain.Entities.ProfileEntity", "Profile")
-                        .WithOne("UserEntity")
-                        .HasForeignKey("SourceBase.Domain.Entities.UserEntity", "ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Profile");
-                });
-
-            modelBuilder.Entity("SourceBase.Domain.Entities.ProfileEntity", b =>
-                {
-                    b.Navigation("UserEntity")
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

@@ -19,8 +19,6 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Gu
 
     public DbSet<TodoItemEntity> TodoItems { get; set; }
 
-    public DbSet<ProfileEntity> Profiles { get; set; }
-
     #endregion
 
     #region Ctor
@@ -92,12 +90,7 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Gu
                     SecurityStamp = Guid.NewGuid().ToString(),
                     ConcurrencyStamp = Guid.NewGuid().ToString(),
                     PasswordHash = new PasswordHasher<UserEntity>().HashPassword(null!, "Admin@123"),
-                    Roles = [adminRole],
-                    Profile = new ProfileEntity
-                    {
-                        FirstName = "Admin",
-                        LastName = "User",
-                    }
+                    Roles = [adminRole]
                 };
                 context.Set<UserEntity>().Add(adminUserEntity);
                 context.SaveChanges();

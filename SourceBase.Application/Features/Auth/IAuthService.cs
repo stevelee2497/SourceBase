@@ -2,10 +2,13 @@
 
 public interface IAuthService
 {
-    Task LoginAsync(LoginRequest login);
-    Task<string> RegisterAsync(RegisterRequest registration);
-    Task RefreshAsync(RefreshTokenRequest refreshToken);
+    Task LoginAsync(LoginRequest request);
+    Task RegisterAsync(RegisterRequest request);
+    Task RefreshAsync(RefreshTokenRequest request);
     Task<UserInfoResponse> GetUserInfoAsync();
-    Task UpdateUserInfoAsync(UserInfoUpdateRequest userInfo);
-    Task ConfirmEmailAsync(string userId, string code);
+    Task UpdateUserInfoAsync(UserInfoUpdateRequest request);
+    Task ConfirmEmailAsync(ConfirmEmailRequest request);
+    Task ForgotPasswordAsync(ForgotPasswordRequest request);
+    Task ResendConfirmationEmailAsync(ResendConfirmationEmailRequest request);
+    Task ResetPasswordAsync(ResetPasswordRequest request);
 }

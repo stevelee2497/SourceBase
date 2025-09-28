@@ -9,7 +9,7 @@ namespace SourceBase.Api.Controllers;
 public class AuthController(IAuthService authService) : ControllerBase
 {
     [HttpPost("register")]
-    public Task<string> Register(RegisterRequest registration)
+    public Task Register(RegisterRequest registration)
     {
         return authService.RegisterAsync(registration);
     }
@@ -21,15 +21,33 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpGet("confirmEmail", Name = "ConfirmEmail")]
-    public Task ConfirmEmail(string userId, string code)
+    public Task ConfirmEmail([FromQuery] ConfirmEmailRequest request)
     {
-        return authService.ConfirmEmailAsync(userId, code);
+        return authService.ConfirmEmailAsync(request);
     }
 
     [HttpPost("refresh")]
     public Task Refresh(RefreshTokenRequest login)
     {
         return authService.RefreshAsync(login);
+    }
+
+    [HttpPost("forgotPassword")]
+    public Task ForgotPassword(ForgotPasswordRequest request)
+    {
+        return authService.ForgotPasswordAsync(request);
+    }
+
+    [HttpPost("resendConfirmationEmail")]
+    public Task ResendConfirmationEmail(ResendConfirmationEmailRequest request)
+    {
+        return authService.ResendConfirmationEmailAsync(request);
+    }
+
+    [HttpPost("resetPassword")]
+    public Task ResetPassword(ResetPasswordRequest request)
+    {
+        return authService.ResetPasswordAsync(request);
     }
 
     [HttpGet("info")]

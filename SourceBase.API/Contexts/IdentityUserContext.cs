@@ -1,17 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using SourceBase.Domain.Abstractions;
 using SourceBase.Domain.Common;
 using SourceBase.Domain.Entities;
 using System.Security.Claims;
-using System.Text;
 
 namespace SourceBase.Api.Contexts;
 
 [ScopedDependency<IUserContext>]
-public class IdentityUserContext(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator) : IUserContext
+public class IdentityUserContext(SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, IHttpContextAccessor httpContextAccessor) : IUserContext
 {
     public Guid CurrentUserId => Guid.TryParse(httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : throw new UnAuthorizedException();
 
@@ -29,23 +27,6 @@ public class IdentityUserContext(SignInManager<UserEntity> signInManager, UserMa
         }
     }
 
-    public async Task<string> RegisterAsync(string email, string password)
-    {
-        // Create a new user
-        var user = new UserEntity
-        {
-            Email = email,
-            UserName = email,
-        };
-        var result = await userManager.CreateAsync(user, password);
-        if (!result.Succeeded)
-        {
-            throw new ApiInternalException(result.Errors.First().Description);
-        }
-
-        return await SendConfirmationEmailAsync(user);
-    }
-
     public async Task RefreshAsync(string refreshToken)
     {
         var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
@@ -59,43 +40,5 @@ public class IdentityUserContext(SignInManager<UserEntity> signInManager, UserMa
 
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
         await signInManager.SignInWithClaimsAsync(user, false, [new Claim("amr", "pwd")]);
-    }
-
-    private async Task<string> SendConfirmationEmailAsync(UserEntity user)
-    {
-        var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(await userManager.GenerateEmailConfirmationTokenAsync(user)));
-
-        var userId = await userManager.GetUserIdAsync(user);
-        var routeValues = new RouteValueDictionary()
-        {
-            ["userId"] = userId,
-            ["code"] = code,
-        };
-
-        var confirmEmailUrl = linkGenerator.GetUriByName(httpContextAccessor.HttpContext!, "ConfirmEmail", routeValues);
-        return confirmEmailUrl ?? throw new Exception("Couldn't send email");
-    }
-
-    public async Task ConfirmEmailAsync(string userId, string code)
-    {
-        if (await userManager.FindByIdAsync(userId) is not { } user)
-        {
-            throw new UnAuthorizedException();
-        }
-
-        try
-        {
-            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-        }
-        catch (FormatException)
-        {
-            throw new UnAuthorizedException();
-        }
-
-        var result = await userManager.ConfirmEmailAsync(user, code);
-        if (!result.Succeeded)
-        {
-            throw new UnAuthorizedException();
-        }
     }
 }

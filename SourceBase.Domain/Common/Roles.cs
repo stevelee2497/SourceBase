@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace SourceBase.Domain.Common;
+﻿namespace SourceBase.Domain.Common;
 
 public static class Roles
 {
