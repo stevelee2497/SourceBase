@@ -8,11 +8,9 @@ using System.Security.Claims;
 
 namespace SourceBase.Api.Contexts;
 
-[ScopedDependency<IUserContext>]
-public class IdentityUserContext(SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, IHttpContextAccessor httpContextAccessor) : IUserContext
+[ScopedDependency<IIdentityContext>]
+public class IdentityContext(SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions) : IIdentityContext
 {
-    public Guid CurrentUserId => Guid.TryParse(httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : throw new UnAuthorizedException();
-
     public async Task LoginAsync(string email, string password)
     {
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;

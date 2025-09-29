@@ -1,17 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using SourceBase.Application.Abstractions;
 using SourceBase.Domain.Entities;
-using SourceBase.Infrastructure.DbContexts;
-using System.Security.Claims;
 using System.Text.Json;
 
-namespace SourceBase.Infrastructure.Interceptors;
+namespace SourceBase.Infrastructure.DbContexts;
 
-public class HistoryInterceptor(IHttpContextAccessor httpContextAccessor) : ISaveChangesInterceptor
+public class ApplicationDbContextHistoryInterceptor(IUserContext userContext) : ISaveChangesInterceptor
 {
-    private string? GetCurrentUser() => httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Name);
-
     public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
         if (eventData.Context is ApplicationDbContext dbContext)
@@ -26,7 +22,7 @@ public class HistoryInterceptor(IHttpContextAccessor httpContextAccessor) : ISav
                 {
                     Action = entry.State.ToString(),
                     ActionOn = DateTime.UtcNow,
-                    Author = GetCurrentUser(),
+                    Author = userContext.UserEmail,
                     EntityType = entity.GetType().ToString(),
                     EntityId = entity.Id.ToString(),
                     Current = JsonSerializer.Serialize(entry.CurrentValues.ToObject()),

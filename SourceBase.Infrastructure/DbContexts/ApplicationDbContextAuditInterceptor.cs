@@ -1,16 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using SourceBase.Application.Abstractions;
 using SourceBase.Domain.Entities;
-using SourceBase.Infrastructure.DbContexts;
-using System.Security.Claims;
 
-namespace SourceBase.Infrastructure.Interceptors;
+namespace SourceBase.Infrastructure.DbContexts;
 
-public class AuditInterceptor(IHttpContextAccessor httpContextAccessor) : ISaveChangesInterceptor
+public class ApplicationDbContextAuditInterceptor(IUserContext userContext) : ISaveChangesInterceptor
 {
-    private string? GetCurrentUser() => httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Name);
-
     public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
         if (eventData.Context is ApplicationDbContext dbContext)
@@ -24,12 +20,12 @@ public class AuditInterceptor(IHttpContextAccessor httpContextAccessor) : ISaveC
                 {
                     case EntityState.Added:
                         entity.CreatedOn = entity.UpdatedOn = DateTime.UtcNow;
-                        entity.CreatedBy = entity.UpdatedBy = GetCurrentUser();
+                        entity.CreatedBy = entity.UpdatedBy = userContext.UserEmail;
                         break;
 
                     case EntityState.Modified:
                         entity.UpdatedOn = DateTime.UtcNow;
-                        entity.UpdatedBy = GetCurrentUser();
+                        entity.UpdatedBy = userContext.UserEmail;
                         break;
                 }
             }

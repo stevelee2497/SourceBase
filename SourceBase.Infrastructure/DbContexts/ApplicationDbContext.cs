@@ -1,106 +1,34 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SourceBase.Application.Abstractions;
 using SourceBase.Application.Common;
 using SourceBase.Domain.Entities;
-using SourceBase.Infrastructure.Interceptors;
 
 namespace SourceBase.Infrastructure.DbContexts;
 
 [ScopedDependency<IDbContext>]
-public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>, IDbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IUserContext userContext, IConfiguration configuration) : IdentityDbContext<UserEntity, RoleEntity, Guid>(options), IDbContext
 {
-    #region DbSets
-
     public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
     public DbSet<TodoItemEntity> TodoItems { get; set; }
 
-    #endregion
-
-    #region Ctor
-
-    private readonly IHttpContextAccessor httpContextAccessor;
-
-    public ApplicationDbContext()
-    {
-        httpContextAccessor = new HttpContextAccessor();
-    }
-
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor) : base(options)
-    {
-        this.httpContextAccessor = httpContextAccessor;
-    }
-
-    #endregion
-
-    #region Configuring
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite("Data Source=../app.db");
-
-        optionsBuilder.AddInterceptors(new HistoryInterceptor(httpContextAccessor)); // Audit history for all actions
-        optionsBuilder.AddInterceptors(new AuditInterceptor(httpContextAccessor)); // Audit trailing for create/update/delete actions
-
-        optionsBuilder.UseSeeding((context, _) =>
-        {
-            var adminEmail = "admin@yopmail.com";
-            var adminRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == Application.Common.Roles.Admin);
-            if (adminRole == null)
-            {
-                adminRole = new RoleEntity
-                {
-                    Id = Guid.NewGuid(),
-                    Name = Application.Common.Roles.Admin,
-                    NormalizedName = Application.Common.Roles.Admin.ToUpper(),
-                    ConcurrencyStamp = Guid.NewGuid().ToString()
-                };
-                context.Set<RoleEntity>().Add(adminRole);
-                context.SaveChanges();
-            }
-
-            var userRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == Application.Common.Roles.User);
-            if (userRole == null)
-            {
-                context.Set<RoleEntity>().Add(new RoleEntity
-                {
-                    Id = Guid.NewGuid(),
-                    Name = Application.Common.Roles.User,
-                    NormalizedName = Application.Common.Roles.User.ToUpper(),
-                    ConcurrencyStamp = Guid.NewGuid().ToString()
-                });
-                context.SaveChanges();
-            }
-
-            var adminUser = context.Set<UserEntity>().FirstOrDefault(b => b.Email == adminEmail);
-            if (adminUser == null)
-            {
-                var adminUserEntity = new UserEntity
-                {
-                    Id = Guid.NewGuid(),
-                    UserName = adminEmail,
-                    NormalizedUserName = adminEmail.ToUpper(),
-                    Email = adminEmail,
-                    NormalizedEmail = adminEmail.ToUpper(),
-                    EmailConfirmed = true,
-                    SecurityStamp = Guid.NewGuid().ToString(),
-                    ConcurrencyStamp = Guid.NewGuid().ToString(),
-                    PasswordHash = new PasswordHasher<UserEntity>().HashPassword(null!, "Admin@123"),
-                    Roles = [adminRole]
-                };
-                context.Set<UserEntity>().Add(adminUserEntity);
-                context.SaveChanges();
-            }
-        });
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        optionsBuilder.UseSqlite(connectionString);
+        optionsBuilder.UseSeeding((context, _) => SeedData(context, configuration));
+        optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(userContext)); // Audit history for all actions
+        optionsBuilder.AddInterceptors(new ApplicationDbContextAuditInterceptor(userContext)); // Audit trailing for create/update/delete actions
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        // Identity table mappings
         modelBuilder.Entity<UserEntity>().ToTable("Users").HasMany(e => e.Roles).WithMany(e => e.Users).UsingEntity<IdentityUserRole<Guid>>();
         modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
         modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
@@ -108,6 +36,50 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Gu
         modelBuilder.Entity<RoleEntity>().ToTable("Roles");
         modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
         modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+    }
+
+    #region SeedData
+
+    private static void SeedData(DbContext context, IConfiguration configuration)
+    {
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>() ?? throw new Exception("Unable to bind AppSettings");
+
+        foreach (var role in appSettings.Roles)
+        {
+            var existingRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == role);
+            if (existingRole == null)
+            {
+                existingRole = new RoleEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Name = role,
+                    NormalizedName = role.ToUpper(),
+                    ConcurrencyStamp = Guid.NewGuid().ToString()
+                };
+                context.Set<RoleEntity>().Add(existingRole);
+            }
+            context.SaveChanges();
+        }
+
+        var adminUser = context.Set<UserEntity>().FirstOrDefault(b => b.Email == appSettings.AdminEmail);
+        if (adminUser == null)
+        {
+            var adminUserEntity = new UserEntity
+            {
+                Id = Guid.NewGuid(),
+                UserName = appSettings.AdminEmail,
+                NormalizedUserName = appSettings.AdminEmail.ToUpper(),
+                Email = appSettings.AdminEmail,
+                NormalizedEmail = appSettings.AdminEmail.ToUpper(),
+                EmailConfirmed = true,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                ConcurrencyStamp = Guid.NewGuid().ToString(),
+                PasswordHash = new PasswordHasher<UserEntity>().HashPassword(null!, appSettings.AdminPassword),
+                Roles = [.. context.Set<RoleEntity>()]
+            };
+            context.Set<UserEntity>().Add(adminUserEntity);
+            context.SaveChanges();
+        }
     }
 
     #endregion

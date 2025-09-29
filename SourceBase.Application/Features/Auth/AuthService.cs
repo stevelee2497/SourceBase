@@ -8,7 +8,7 @@ using System.Text;
 namespace SourceBase.Application.Features.Auth;
 
 [ScopedDependency<IAuthService>]
-public class AuthService(IUserContext userContext, IDbContext dbContext, UserManager<UserEntity> userManager, AppSettings appSettings, IEmailHelper emailHelper) : IAuthService
+public class AuthService(IIdentityContext identityUserContext, IUserContext userContext, IDbContext dbContext, UserManager<UserEntity> userManager, AppSettings appSettings, IEmailHelper emailHelper) : IAuthService
 {
     public async Task RegisterAsync(RegisterRequest request)
     {
@@ -29,12 +29,12 @@ public class AuthService(IUserContext userContext, IDbContext dbContext, UserMan
 
     public async Task LoginAsync(LoginRequest login)
     {
-        await userContext.LoginAsync(login.Email, login.Password);
+        await identityUserContext.LoginAsync(login.Email, login.Password);
     }
 
     public async Task RefreshAsync(RefreshTokenRequest refreshToken)
     {
-        await userContext.RefreshAsync(refreshToken.Token);
+        await identityUserContext.RefreshAsync(refreshToken.Token);
     }
 
     public async Task ConfirmEmailAsync(ConfirmEmailRequest request)
@@ -94,15 +94,15 @@ public class AuthService(IUserContext userContext, IDbContext dbContext, UserMan
     {
         return await dbContext.Users
             .Include(x => x.Roles)
-            .Where(x => x.Id == userContext.CurrentUserId)
+            .Where(x => x.Id == userContext.UserId)
             .Select(x => new UserInfoResponse(x.Id, x.Email, x.FirstName, x.LastName, x.PhoneNumber, x.Roles.Select(ur => ur.Name!)))
             .FirstOrDefaultAsync()
-            ?? throw new NotFoundException();
+            ?? throw new UnAuthorizedException();
     }
 
     public async Task UpdateUserInfoAsync(UserInfoUpdateRequest userInfo)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == userContext.CurrentUserId) ?? throw new NotFoundException();
+        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == userContext.UserId) ?? throw new NotFoundException();
 
         user.FirstName = userInfo.FirstName;
         user.LastName = userInfo.LastName;

@@ -11,3 +11,4 @@ public record ConfirmEmailRequest([Required] string Email, [Required] string Cod
 public record ForgotPasswordRequest([Required][EmailAddress] string Email);
 public record ResendConfirmationEmailRequest([Required][EmailAddress] string Email);
 public record ResetPasswordRequest([Required] string Email, [Required] string Code, [Required] string NewPassword);
+public record RoleResponse(Guid Id, string Name);

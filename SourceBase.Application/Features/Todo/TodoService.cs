@@ -17,14 +17,14 @@ public class TodoService(IDbContext dbContext, IUserContext userContext) : ITodo
     public async Task<IEnumerable<TodoItemDetailResponse>> GetTodosAsync()
     {
         return await dbContext.TodoItems
-            .Where(x => x.UserId == userContext.CurrentUserId)
+            .Where(x => x.UserId == userContext.UserId)
             .Select(todo => new TodoItemDetailResponse(todo))
             .ToListAsync();
     }
 
     public async Task CreateTodoAsync(CreateTodoRequest todoItem)
     {
-        dbContext.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = userContext.CurrentUserId });
+        dbContext.TodoItems.Add(new TodoItemEntity { Title = todoItem.Title, Date = todoItem.Date, UserId = userContext.UserId });
         await dbContext.SaveChangesAsync();
     }
 
