@@ -34,7 +34,7 @@ public static class ServiceCollectionExtensions
         services
             .AddControllers(options =>
             {
-                options.Filters.Add<ApiAuthorizationFilter>();
+                options.Filters.Add<AuthorizationFilter>();
                 options.Filters.Add<ExceptionFilter>();                     // Add global exception filter to force all exceptions into our error model
                 options.Filters.Add<ModelValidationFilter>(int.MinValue);   // Validating json payload and return in error model format
             })

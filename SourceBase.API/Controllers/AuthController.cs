@@ -20,8 +20,8 @@ public class AuthController(IAuthService authService) : ControllerBase
         return authService.LoginAsync(login);
     }
 
-    [HttpGet("confirmEmail")]
-    public Task ConfirmEmail([FromQuery] ConfirmEmailRequest request)
+    [HttpPost("confirmEmail")]
+    public Task ConfirmEmail(ConfirmEmailRequest request)
     {
         return authService.ConfirmEmailAsync(request);
     }

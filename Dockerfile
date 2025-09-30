@@ -1,19 +1,24 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
+# Use .dockerignore to exclude unnecessary files for smaller context and faster build
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 8080
 
+# Copy only csproj files and restore as distinct layers for better build caching
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY . .
-RUN dotnet restore API/Api.csproj
-RUN dotnet build API/Api.csproj -c Release -o /app/build
+COPY SourceBase.Api/SourceBase.Api.csproj SourceBase.Api/
+COPY SourceBase.Application/SourceBase.Application.csproj SourceBase.Application/
+COPY SourceBase.Domain/SourceBase.Domain.csproj SourceBase.Domain/
+COPY SourceBase.Infrastructure/SourceBase.Infrastructure.csproj SourceBase.Infrastructure/
+RUN dotnet restore SourceBase.Api/SourceBase.Api.csproj
 
-FROM build AS publish
-RUN dotnet publish API/Api.csproj -c Release -o /app/publish 
+# Copy the rest of the source code
+COPY . .
+
+# Build and publish in a single step to reduce layers and intermediate output
+RUN dotnet publish SourceBase.Api/SourceBase.Api.csproj -c Release -o /app/publish --no-restore
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Api.dll"]
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "SourceBase.Api.dll"]

@@ -5,7 +5,7 @@ using SourceBase.Application.Common;
 
 namespace SourceBase.Api.Filters;
 
-public class ApiAuthorizationFilter : IAsyncAuthorizationFilter
+public class AuthorizationFilter : IAsyncAuthorizationFilter
 {
     public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {

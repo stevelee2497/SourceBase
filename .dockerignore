@@ -1,0 +1,37 @@
+# Ignore build outputs
+bin/
+obj/
+out/
+
+# Ignore user-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore logs and temp files
+*.log
+*.tmp
+
+# Ignore Visual Studio files
+.vs/
+.vscode/
+
+# Ignore test results
+TestResults/
+
+# Ignore git files
+.git
+.gitignore
+
+# Ignore Docker files
+Dockerfile
+docker-compose.yml
+
+# Ignore other config/secrets (uncomment if needed)
+# appsettings.Development.json
+# appsettings.Local.json

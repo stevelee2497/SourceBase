@@ -4,18 +4,20 @@ I've poured my heart and soul into this project, weaving in all the valuable les
 
 ## Features
 
-✅ Simple and logical solution structure with multiple layers of projects: API -> Services -> Core
+✅ Clean architecture with layered design: API, Application, Domain, Infrastructure layers
 
-✅ Entity Framework and .NET 8 
+✅ Entity Framework and .NET 9
 
 ✅ Exception filter, Model binding validation, Audit log interceptors
 
 ✅ Customized ef identity authentication with additional user info and role based authorization
 
-✅ Docker support: N/A
+✅ Docker support
 
-👩‍💻 Email service with SendGrid provider for OTP confirmation, email confirmation, forgot password, reset password: N/A
+✅ Email service with SendGrid provider for OTP confirmation, email confirmation, forgot password, reset password
 
-👩‍💻 Payment service with Stripe: N/A
+✅ Singleton appsettings with IOptions pattern
+
+✅ Dependency injection with Attribute based registration
 
 👩‍💻 Logging mechanism: N/A
