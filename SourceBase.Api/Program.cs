@@ -13,7 +13,11 @@ builder.Services.AddDependencyInjections();
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
+
+if (app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthorization();
 app.MapControllers();
 app.UseSwagger();
