@@ -7,6 +7,7 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY Directory.Packages.props .  
+COPY Directory.Build.props .
 COPY SourceBase.Api/SourceBase.Api.csproj SourceBase.Api/
 COPY SourceBase.Application/SourceBase.Application.csproj SourceBase.Application/
 COPY SourceBase.Domain/SourceBase.Domain.csproj SourceBase.Domain/
@@ -17,7 +18,7 @@ RUN dotnet restore SourceBase.Api/SourceBase.Api.csproj
 COPY . .
 
 # Build and publish in a single step to reduce layers and intermediate output
-RUN dotnet publish SourceBase.Api/SourceBase.Api.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish SourceBase.Api/SourceBase.Api.csproj -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
