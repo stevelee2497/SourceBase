@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="README.md" />
+  </Folder>
   <Project Path="SourceBase.Api/SourceBase.Api.csproj" />
   <Project Path="SourceBase.Application/SourceBase.Application.csproj" />
   <Project Path="SourceBase.Domain/SourceBase.Domain.csproj" />
