@@ -1,11 +1,12 @@
 # Use .dockerignore to exclude unnecessary files for smaller context and faster build
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 8080
 
 # Copy only csproj files and restore as distinct layers for better build caching
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
+COPY Directory.Packages.props .  
 COPY SourceBase.Api/SourceBase.Api.csproj SourceBase.Api/
 COPY SourceBase.Application/SourceBase.Application.csproj SourceBase.Application/
 COPY SourceBase.Domain/SourceBase.Domain.csproj SourceBase.Domain/
