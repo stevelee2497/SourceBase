@@ -76,4 +76,13 @@ public static class ServiceCollectionExtensions
             }
         }
     }
+
+    public static void UseSeeding(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        db.Database.EnsureCreated();
+        ApplicationDbContext.SeedData(db, config);
+    }
 }

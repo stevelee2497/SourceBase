@@ -19,7 +19,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         optionsBuilder.UseSqlite(connectionString);
-        optionsBuilder.UseSeeding((context, _) => SeedData(context, configuration));
         optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(userContext)); // Audit history for all actions
         optionsBuilder.AddInterceptors(new ApplicationDbContextAuditInterceptor(userContext)); // Audit trailing for create/update/delete actions
     }
@@ -40,7 +39,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     #region SeedData
 
-    private static void SeedData(DbContext context, IConfiguration configuration)
+    public static void SeedData(DbContext context, IConfiguration configuration)
     {
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>() ?? throw new Exception("Unable to bind AppSettings");
 
