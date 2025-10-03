@@ -16,8 +16,10 @@ I've poured my heart and soul into this project, weaving in all the valuable les
 
 ✅ Email service with SendGrid provider for OTP confirmation, email confirmation, forgot password, reset password
 
-✅ Singleton appsettings with IOptions pattern
+✅ Singleton AppSettings with IOptions pattern
 
 ✅ Dependency injection with Attribute based registration
 
-👩‍💻 Logging mechanism: N/A
+✅ Logging mechanism: N/A
+
+✅ Cors policy

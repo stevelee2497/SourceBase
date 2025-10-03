@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Options;
+using Serilog;
 using SourceBase.Api.Filters;
 using SourceBase.Application.Common;
 using SourceBase.Application.Features.Auth;
@@ -75,6 +76,30 @@ public static class ServiceCollectionExtensions
                     throw new NotImplementedException();
             }
         }
+    }
+
+    public static void AddCorsPolicies(this IServiceCollection services, IConfiguration configuration)
+    {
+        var corsSettings = configuration.GetSection(Constants.CorsCustomPolicy).Get<string[]>() ?? [];
+        services.AddCors(options =>
+        {
+            options.AddPolicy(Constants.CorsDefaultPolicy, builder =>
+                builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
+
+            options.AddPolicy(Constants.CorsCustomPolicy, builder =>
+                builder.WithOrigins(corsSettings)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
+        });
+    }
+
+    public static void UseSeriLog(this WebApplicationBuilder builder)
+    {
+
+        Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
+        builder.Host.UseSerilog();
     }
 
     public static void UseSeeding(this WebApplication app)
