@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.UseSeriLog();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwagger();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMvcConfigs();

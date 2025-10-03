@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using SourceBase.Api.Filters;
 using SourceBase.Application.Common;
@@ -92,6 +94,48 @@ public static class ServiceCollectionExtensions
                 builder.WithOrigins(corsSettings)
                     .AllowAnyMethod()
                     .AllowAnyHeader());
+        });
+    }
+
+    public static void AddSwagger(this IServiceCollection services)
+    {
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+
+            c.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme.",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+            });
+
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "BearerAuth"
+                        }
+                    },
+                    []
+                }
+            });
+
+            c.DescribeAllParametersInCamelCase();
+
+            c.MapType<TimeOnly>(() => new OpenApiSchema
+            {
+                Type = "string",
+                Format = "time",
+                Example = new OpenApiString("14:30")
+            });
         });
     }
 
