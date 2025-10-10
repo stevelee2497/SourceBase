@@ -1,7 +1,9 @@
-﻿namespace SourceBase.Application.Abstractions;
+﻿using SourceBase.Domain.Entities;
+
+namespace SourceBase.Application.Abstractions;
 
 public interface IIdentityContext
 {
-    Task LoginAsync(string email, string password);
-    Task RefreshAsync(string refreshToken);
+    Task GenerateTokenAsync(UserEntity user);
+    Task RefreshTokenAsync(string refreshToken);
 }

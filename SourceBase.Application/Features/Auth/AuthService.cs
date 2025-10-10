@@ -8,7 +8,7 @@ using System.Text;
 namespace SourceBase.Application.Features.Auth;
 
 [ScopedDependency<IAuthService>]
-public class AuthService(IIdentityContext identityUserContext, IUserContext userContext, IDbContext dbContext, UserManager<UserEntity> userManager, AppSettings appSettings, IEmailHelper emailHelper) : IAuthService
+public class AuthService(IUserContext userContext, IDbContext dbContext, UserManager<UserEntity> userManager, AppSettings appSettings, IEmailHelper emailHelper, IIdentityContext identityContext) : IAuthService
 {
     public async Task RegisterAsync(RegisterRequest request)
     {
@@ -29,12 +29,24 @@ public class AuthService(IIdentityContext identityUserContext, IUserContext user
 
     public async Task LoginAsync(LoginRequest login)
     {
-        await identityUserContext.LoginAsync(login.Email, login.Password);
+        var user = await userManager.FindByEmailAsync(login.Email);
+        if (user == null || !await userManager.IsEmailConfirmedAsync(user))
+        {
+            throw new UnAuthorizedException("Invalid credentials");
+        }
+
+        var passwordValid = await userManager.CheckPasswordAsync(user, login.Password);
+        if (passwordValid != true)
+        {
+            throw new UnAuthorizedException("Invalid credentials");
+        }
+
+        await identityContext.GenerateTokenAsync(user);
     }
 
     public async Task RefreshAsync(RefreshTokenRequest refreshToken)
     {
-        await identityUserContext.RefreshAsync(refreshToken.Token);
+        await identityContext.RefreshTokenAsync(refreshToken.Token);
     }
 
     public async Task ConfirmEmailAsync(ConfirmEmailRequest request)
@@ -59,12 +71,7 @@ public class AuthService(IIdentityContext identityUserContext, IUserContext user
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
         var code = Base64UrlHelper.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-        var resetPasswordUrl = $"{appSettings.ApiUrl}/resetPassword?email={request.Email}&code={code}";
-        if (resetPasswordUrl == null)
-        {
-            throw new Exception("Couldn't send email");
-        }
-
+        var resetPasswordUrl = $"{appSettings.WebUrl}/resetPassword?email={request.Email}&code={code}";
         await emailHelper.SendEmailAsync(request.Email, "Reset Password", $"Click <a href='{resetPasswordUrl}'>here</a> to reset your password.");
     }
 
@@ -114,7 +121,7 @@ public class AuthService(IIdentityContext identityUserContext, IUserContext user
     {
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var code = Base64UrlHelper.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-        var confirmEmailUrl = $"{appSettings.ApiUrl}/confirmEmail?email={user.Email}&code={code}";
+        var confirmEmailUrl = $"{appSettings.WebUrl}/confirmEmail?email={user.Email}&code={code}";
         await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Please confirm your account by clicking <a href='{confirmEmailUrl}'>here</a>.");
     }
 }

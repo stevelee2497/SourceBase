@@ -11,21 +11,15 @@ namespace SourceBase.Api.Contexts;
 [ScopedDependency<IIdentityContext>]
 public class IdentityContext(SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions) : IIdentityContext
 {
-    public async Task LoginAsync(string email, string password)
+    public async Task GenerateTokenAsync(UserEntity user)
     {
-        signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
-
         // After this call, EF Identity will sign in the user to the http context and will return the access token to the API response after the request is executed
         // Noted that we can not get the access token directly, it is bind and only return after the request successfully executed
-        var result = await signInManager.PasswordSignInAsync(email, password, false, true);
-
-        if (!result.Succeeded)
-        {
-            throw new UnAuthorizedException("Invalid credentials");
-        }
+        signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
+        await signInManager.SignInWithClaimsAsync(user, false, [new Claim("amr", "pwd")]);
     }
 
-    public async Task RefreshAsync(string refreshToken)
+    public async Task RefreshTokenAsync(string refreshToken)
     {
         var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(refreshToken);
@@ -36,7 +30,6 @@ public class IdentityContext(SignInManager<UserEntity> signInManager, IOptionsMo
             throw new UnAuthorizedException("Invalid token");
         }
 
-        signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
-        await signInManager.SignInWithClaimsAsync(user, false, [new Claim("amr", "pwd")]);
+        await GenerateTokenAsync(user);
     }
 }

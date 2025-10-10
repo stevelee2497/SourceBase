@@ -141,7 +141,6 @@ public static class ServiceCollectionExtensions
 
     public static void UseSeriLog(this WebApplicationBuilder builder)
     {
-
         Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
         builder.Host.UseSerilog();
     }
