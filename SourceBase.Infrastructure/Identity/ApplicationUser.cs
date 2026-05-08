@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Identity;
+using SourceBase.Domain.Entities;
 
 namespace SourceBase.Infrastructure.Identity;
 
-public class ApplicationUser : IdentityUser<Guid>
+public class ApplicationUser : IdentityUser<Guid>, IBaseEntity
 {
     public string? FirstName { get; set; }
 

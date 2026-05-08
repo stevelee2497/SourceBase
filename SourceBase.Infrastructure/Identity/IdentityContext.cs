@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SourceBase.Application.Abstractions;
 using SourceBase.Application.Common;
-using SourceBase.Domain.Entities;
+using SourceBase.Application.Features.Auth;
+using SourceBase.Application.Features.Data;
 using SourceBase.Infrastructure.DbContexts;
 using System.Security.Claims;
 using System.Text;
@@ -107,31 +108,30 @@ public class IdentityContext(
         await signInManager.SignInWithClaimsAsync(user, false, [new Claim("amr", "pwd")]);
     }
 
-    public async Task<UserEntity?> GetUserWithRolesAsync(Guid userId, CancellationToken ct = default)
-    {
-        return await dbContext.Set<ApplicationUser>()
-            .Where(u => u.Id == userId)
-            .Select(u => new UserEntity
-            {
-                Id = u.Id,
-                Email = u.Email,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                PhoneNumber = u.PhoneNumber,
-                Roles = dbContext.Set<IdentityUserRole<Guid>>()
-                    .Where(ur => ur.UserId == u.Id)
-                    .Join(dbContext.Set<ApplicationRole>(), ur => ur.RoleId, r => r.Id,
-                        (ur, r) => new RoleEntity { Id = r.Id, Name = r.Name })
-                    .ToList()
-            })
-            .FirstOrDefaultAsync(ct);
-    }
-
     public async Task UpdateUserInfoAsync(Guid userId, string? firstName, string? lastName, CancellationToken ct = default)
     {
         var user = await dbContext.Set<ApplicationUser>().FirstOrDefaultAsync(u => u.Id == userId, ct) ?? throw new NotFoundException();
         user.FirstName = firstName;
         user.LastName = lastName;
         await dbContext.SaveChangesAsync(ct);
+    }
+
+    public async Task<UserInfoResponse> GetUserInfoAsync(Guid userId, CancellationToken ct = default)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new NotFoundException();
+        var roles = await userManager.GetRolesAsync(user);
+        return new UserInfoResponse(
+            user.Id,
+            user.Email,
+            user.FirstName,
+            user.LastName,
+            user.PhoneNumber,
+            roles);
+    }
+
+    public async Task<List<RoleResponse>> GetRolesAsync(CancellationToken ct = default)
+    {
+        var roles = await dbContext.Roles.Select(r => new RoleResponse(r.Id, r.Name!)).ToListAsync(ct);
+        return roles;
     }
 }

@@ -15,28 +15,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<TodoItemEntity> TodoItems { get; set; }
 
-    IQueryable<UserEntity> IDbContext.Users => Set<ApplicationUser>()
-        .Select(u => new UserEntity
-        {
-            Id = u.Id,
-            UserName = u.UserName,
-            NormalizedUserName = u.NormalizedUserName,
-            Email = u.Email,
-            NormalizedEmail = u.NormalizedEmail,
-            EmailConfirmed = u.EmailConfirmed,
-            PhoneNumber = u.PhoneNumber,
-            FirstName = u.FirstName,
-            LastName = u.LastName,
-        });
-
-    IQueryable<RoleEntity> IDbContext.Roles => Set<ApplicationRole>()
-        .Select(r => new RoleEntity
-        {
-            Id = r.Id,
-            Name = r.Name,
-            NormalizedName = r.NormalizedName,
-        });
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");

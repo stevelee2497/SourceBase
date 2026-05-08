@@ -1,4 +1,5 @@
-﻿using SourceBase.Domain.Entities;
+﻿using SourceBase.Application.Features.Auth;
+using SourceBase.Application.Features.Data;
 
 namespace SourceBase.Application.Abstractions;
 
@@ -18,6 +19,7 @@ public interface IIdentityContext
     Task<string> GeneratePasswordResetTokenAsync(string email);
 
     // User info
-    Task<UserEntity?> GetUserWithRolesAsync(Guid userId, CancellationToken ct = default);
+    Task<UserInfoResponse> GetUserInfoAsync(Guid userId, CancellationToken ct = default);
+    Task<List<RoleResponse>> GetRolesAsync(CancellationToken ct = default);
     Task UpdateUserInfoAsync(Guid userId, string? firstName, string? lastName, CancellationToken ct = default);
 }
