@@ -26,24 +26,17 @@ public class AuthorizationFilter(ApplicationDbContext dbContext) : IAsyncAuthori
 
     private async Task<bool> IsUserAuthorized(ClaimsPrincipal user, CancellationToken cancellationToken)
     {
-        var principal = user.Identity;
-        if (principal is not { IsAuthenticated: true })
-            return false;
-
-        if (!Guid.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var userId))
+        if (user.Identity is not { IsAuthenticated: true } || Guid.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var userId) is false)
             return false;
 
         var existingUser = await dbContext.Users.FindAsync([userId], cancellationToken);
-        if (existingUser == null)
-            return false;
-
-        if (!existingUser.EmailConfirmed)
-            return false;
-
-        if (existingUser.LockoutEnabled && existingUser.LockoutEnd > DateTimeOffset.UtcNow)
+        if (existingUser == null || existingUser.EmailConfirmed is false || existingUser.LockoutEnabled && existingUser.LockoutEnd > DateTimeOffset.UtcNow)
             return false;
 
         var securityStamp = user.FindFirst("AspNet.Identity.SecurityStamp")?.Value;
-        return string.IsNullOrWhiteSpace(securityStamp) || string.Equals(existingUser.SecurityStamp, securityStamp, StringComparison.Ordinal);
+        if (string.IsNullOrWhiteSpace(securityStamp) || !string.Equals(existingUser.SecurityStamp, securityStamp, StringComparison.Ordinal))
+            return false;
+
+        return true;
     }
 }
