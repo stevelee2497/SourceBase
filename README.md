@@ -48,3 +48,15 @@ API (ASP.NET Core) → Infrastructure → Application → Domain
 ✅ Logging mechanism with Serilog
 
 ✅ CORS policy
+
+
+## Migrations
+
+Use the root shell scripts for EF Core migrations in this split-project setup:
+
+```sh
+sh add-migration.sh InitDb
+sh update-db.sh
+```
+
+Both scripts target `SourceBase.Infrastructure` for migrations and use `SourceBase.Api` as the startup project.

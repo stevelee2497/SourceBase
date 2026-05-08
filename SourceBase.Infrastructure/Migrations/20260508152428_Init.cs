@@ -35,11 +35,11 @@ namespace SourceBase.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: true),
                     UpdatedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
                     UpdatedBy = table.Column<string>(type: "TEXT", nullable: true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true)
                 },
@@ -55,7 +55,7 @@ namespace SourceBase.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     Date = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    Status = table.Column<int>(type: "nvarchar(50)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     UserId = table.Column<Guid>(type: "TEXT", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: true),

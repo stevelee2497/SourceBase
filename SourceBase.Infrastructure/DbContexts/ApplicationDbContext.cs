@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Configuration;
 using SourceBase.Application.Abstractions;
 using SourceBase.Application.Common;
@@ -26,6 +27,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<TodoItemEntity>()
+            .Property(todoItem => todoItem.Status)
+            .HasConversion(new EnumToStringConverter<ItemStatus>())
+            .HasMaxLength(50);
 
         // Identity table mappings
         modelBuilder.Entity<ApplicationUser>().ToTable("Users");
