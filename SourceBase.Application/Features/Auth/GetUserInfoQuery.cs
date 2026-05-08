@@ -5,11 +5,11 @@ namespace SourceBase.Application.Features.Auth;
 
 public record GetUserInfoQuery() : IRequest<UserInfoResponse>;
 
-public class GetUserInfoQueryHandler(IIdentityService identityContext, IUserContext userContext) : IRequestHandler<GetUserInfoQuery, UserInfoResponse>
+public class GetUserInfoQueryHandler(IIdentityService identityService, IUserContext userContext) : IRequestHandler<GetUserInfoQuery, UserInfoResponse>
 {
     public Task<UserInfoResponse> Handle(GetUserInfoQuery request, CancellationToken cancellationToken)
     {
-        return identityContext.GetUserInfoAsync(userContext.UserId, cancellationToken);
+        return identityService.GetUserInfoAsync(userContext.UserId, cancellationToken);
     }
 }
 

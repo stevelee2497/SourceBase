@@ -6,10 +6,10 @@ namespace SourceBase.Application.Features.Auth;
 
 public record ConfirmEmailCommand(string Email, string Code) : IRequest;
 
-public class ConfirmEmailCommandHandler(IIdentityService identityContext) : IRequestHandler<ConfirmEmailCommand>
+public class ConfirmEmailCommandHandler(IIdentityService identityService) : IRequestHandler<ConfirmEmailCommand>
 {
     public async Task Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
     {
-        await identityContext.ConfirmEmailAsync(request.Email, request.Code, Roles.User);
+        await identityService.ConfirmEmailAsync(request.Email, request.Code, Roles.User);
     }
 }

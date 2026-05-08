@@ -5,10 +5,10 @@ namespace SourceBase.Application.Features.Auth;
 
 public record RefreshTokenCommand(string Token) : IRequest;
 
-public class RefreshTokenCommandHandler(IIdentityService identityContext) : IRequestHandler<RefreshTokenCommand>
+public class RefreshTokenCommandHandler(IIdentityService identityService) : IRequestHandler<RefreshTokenCommand>
 {
     public async Task Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
     {
-        await identityContext.RefreshTokenAsync(request.Token);
+        await identityService.RefreshTokenAsync(request.Token);
     }
 }

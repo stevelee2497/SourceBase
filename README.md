@@ -13,8 +13,8 @@ API (ASP.NET Core) → Infrastructure → Application → Domain
 | Layer | Responsibility |
 |-------|---------------|
 | **Domain** | Pure POCO entities, no framework dependencies |
-| **Application** | Use cases (Commands/Queries/Handlers via MediatR), abstractions (`IDbContext`, `IIdentityContext`, `IEmailHelper`, `IUserContext`) |
-| **Infrastructure** | EF Core DbContext, ASP.NET Identity (`ApplicationUser`/`ApplicationRole`), email service, Identity context implementations |
+| **Application** | Use cases (Commands/Queries/Handlers via MediatR), abstractions (`IDbContext`, `IIdentityService`, `IEmailHelper`, `IUserContext`) |
+| **Infrastructure** | EF Core DbContext, ASP.NET Identity (`ApplicationUser`/`ApplicationRole`), email service, Identity service implementations |
 | **API** | Controllers, filters, middleware, DI composition root |
 
 ### Key Design Decisions

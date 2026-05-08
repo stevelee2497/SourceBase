@@ -5,10 +5,10 @@ namespace SourceBase.Application.Features.Auth;
 
 public record LoginCommand(string Email, string Password) : IRequest;
 
-public class LoginCommandHandler(IIdentityService identityContext) : IRequestHandler<LoginCommand>
+public class LoginCommandHandler(IIdentityService identityService) : IRequestHandler<LoginCommand>
 {
     public async Task Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        await identityContext.ValidateAndSignInAsync(request.Email, request.Password);
+        await identityService.ValidateAndSignInAsync(request.Email, request.Password);
     }
 }
