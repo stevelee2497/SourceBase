@@ -5,15 +5,37 @@ using Microsoft.Extensions.Configuration;
 using SourceBase.Application.Abstractions;
 using SourceBase.Application.Common;
 using SourceBase.Domain.Entities;
+using SourceBase.Infrastructure.Identity;
 
 namespace SourceBase.Infrastructure.DbContexts;
 
-[ScopedDependency<IDbContext>]
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IUserContext userContext, IConfiguration configuration) : IdentityDbContext<UserEntity, RoleEntity, Guid>(options), IDbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IUserContext userContext, IConfiguration configuration) : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>(options), IDbContext
 {
     public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
     public DbSet<TodoItemEntity> TodoItems { get; set; }
+
+    IQueryable<UserEntity> IDbContext.Users => Set<ApplicationUser>()
+        .Select(u => new UserEntity
+        {
+            Id = u.Id,
+            UserName = u.UserName,
+            NormalizedUserName = u.NormalizedUserName,
+            Email = u.Email,
+            NormalizedEmail = u.NormalizedEmail,
+            EmailConfirmed = u.EmailConfirmed,
+            PhoneNumber = u.PhoneNumber,
+            FirstName = u.FirstName,
+            LastName = u.LastName,
+        });
+
+    IQueryable<RoleEntity> IDbContext.Roles => Set<ApplicationRole>()
+        .Select(r => new RoleEntity
+        {
+            Id = r.Id,
+            Name = r.Name,
+            NormalizedName = r.NormalizedName,
+        });
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -28,11 +50,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         base.OnModelCreating(modelBuilder);
 
         // Identity table mappings
-        modelBuilder.Entity<UserEntity>().ToTable("Users").HasMany(e => e.Roles).WithMany(e => e.Users).UsingEntity<IdentityUserRole<Guid>>();
+        modelBuilder.Entity<ApplicationUser>().ToTable("Users");
         modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
         modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
         modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
-        modelBuilder.Entity<RoleEntity>().ToTable("Roles");
+        modelBuilder.Entity<ApplicationRole>().ToTable("Roles");
         modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
         modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
     }
@@ -45,25 +67,25 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         foreach (var role in appSettings.Roles)
         {
-            var existingRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == role);
+            var existingRole = context.Set<ApplicationRole>().FirstOrDefault(b => b.Name == role);
             if (existingRole == null)
             {
-                existingRole = new RoleEntity
+                existingRole = new ApplicationRole
                 {
                     Id = Guid.NewGuid(),
                     Name = role,
                     NormalizedName = role.ToUpper(),
                     ConcurrencyStamp = Guid.NewGuid().ToString()
                 };
-                context.Set<RoleEntity>().Add(existingRole);
+                context.Set<ApplicationRole>().Add(existingRole);
             }
             context.SaveChanges();
         }
 
-        var adminUser = context.Set<UserEntity>().FirstOrDefault(b => b.Email == appSettings.AdminEmail);
+        var adminUser = context.Set<ApplicationUser>().FirstOrDefault(b => b.Email == appSettings.AdminEmail);
         if (adminUser == null)
         {
-            var adminUserEntity = new UserEntity
+            var adminUserEntity = new ApplicationUser
             {
                 Id = Guid.NewGuid(),
                 UserName = appSettings.AdminEmail,
@@ -73,10 +95,20 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 EmailConfirmed = true,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 ConcurrencyStamp = Guid.NewGuid().ToString(),
-                PasswordHash = new PasswordHasher<UserEntity>().HashPassword(null!, appSettings.AdminPassword),
-                Roles = [.. context.Set<RoleEntity>()]
+                PasswordHash = new PasswordHasher<ApplicationUser>().HashPassword(null!, appSettings.AdminPassword),
             };
-            context.Set<UserEntity>().Add(adminUserEntity);
+            context.Set<ApplicationUser>().Add(adminUserEntity);
+            context.SaveChanges();
+
+            // Assign all roles to admin
+            foreach (var role in context.Set<ApplicationRole>().ToList())
+            {
+                context.Set<IdentityUserRole<Guid>>().Add(new IdentityUserRole<Guid>
+                {
+                    UserId = adminUserEntity.Id,
+                    RoleId = role.Id
+                });
+            }
             context.SaveChanges();
         }
     }

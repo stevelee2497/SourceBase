@@ -1,10 +1,10 @@
-﻿using SourceBase.Application.Abstractions;
+using Microsoft.AspNetCore.Http;
+using SourceBase.Application.Abstractions;
 using SourceBase.Application.Common;
 using System.Security.Claims;
 
-namespace SourceBase.Api.Contexts;
+namespace SourceBase.Infrastructure.Identity;
 
-[ScopedDependency<IUserContext>]
 public class UserContext(IHttpContextAccessor httpContextAccessor) : IUserContext
 {
     public Guid UserId => Guid.TryParse(httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : throw new UnAuthorizedException();

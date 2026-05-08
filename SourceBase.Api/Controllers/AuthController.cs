@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Application.Features.Auth;
 
@@ -6,61 +7,61 @@ namespace SourceBase.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(ISender sender) : ControllerBase
 {
     [HttpPost("register")]
-    public Task Register(RegisterRequest registration)
+    public Task Register([FromBody] RegisterCommand command)
     {
-        return authService.RegisterAsync(registration);
+        return sender.Send(command);
     }
 
     [HttpPost("login")]
-    public Task Login(LoginRequest login)
+    public Task Login([FromBody] LoginCommand command)
     {
-        return authService.LoginAsync(login);
+        return sender.Send(command);
     }
 
     [HttpPost("confirmEmail")]
-    public Task ConfirmEmail(ConfirmEmailRequest request)
+    public Task ConfirmEmail([FromBody] ConfirmEmailCommand command)
     {
-        return authService.ConfirmEmailAsync(request);
+        return sender.Send(command);
     }
 
     [HttpPost("refresh")]
-    public Task Refresh(RefreshTokenRequest login)
+    public Task Refresh([FromBody] RefreshTokenCommand command)
     {
-        return authService.RefreshAsync(login);
+        return sender.Send(command);
     }
 
     [HttpPost("forgotPassword")]
-    public Task ForgotPassword(ForgotPasswordRequest request)
+    public Task ForgotPassword([FromBody] ForgotPasswordCommand command)
     {
-        return authService.ForgotPasswordAsync(request);
+        return sender.Send(command);
     }
 
     [HttpPost("resendConfirmationEmail")]
-    public Task ResendConfirmationEmail(ResendConfirmationEmailRequest request)
+    public Task ResendConfirmationEmail([FromBody] ResendConfirmationEmailCommand command)
     {
-        return authService.ResendConfirmationEmailAsync(request);
+        return sender.Send(command);
     }
 
     [HttpPost("resetPassword")]
-    public Task ResetPassword(ResetPasswordRequest request)
+    public Task ResetPassword([FromBody] ResetPasswordCommand command)
     {
-        return authService.ResetPasswordAsync(request);
+        return sender.Send(command);
     }
 
     [HttpGet("info")]
     [Authorize]
-    public Task<UserInfoResponse> GetUserInfo()
+    public Task<UserInfoResponse> GetUserInfo([FromQuery] GetUserInfoQuery query)
     {
-        return authService.GetUserInfoAsync();
+        return sender.Send(query);
     }
 
     [HttpPut("info")]
     [Authorize]
-    public Task UpdateUserInfo(UserInfoUpdateRequest userInfo)
+    public Task UpdateUserInfo([FromBody] UpdateUserInfoCommand command)
     {
-        return authService.UpdateUserInfoAsync(userInfo);
+        return sender.Send(command);
     }
 }

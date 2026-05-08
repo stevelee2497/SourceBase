@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Application.Features.Todo;
@@ -7,35 +8,35 @@ namespace SourceBase.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/todos")]
-public class TodoController(ITodoService todoService) : ControllerBase
+public class TodoController(ISender sender) : ControllerBase
 {
     [HttpGet]
-    public Task<IEnumerable<TodoItemDetailResponse>> GetTodoItems()
+    public Task<IEnumerable<TodoItemDetailResponse>> GetTodoItems([FromQuery] GetTodosQuery query)
     {
-        return todoService.GetTodosAsync();
+        return sender.Send(query);
     }
 
     [HttpGet("{id}")]
-    public Task<TodoItemDetailResponse> GetTodo(Guid id)
+    public Task<TodoItemDetailResponse> GetTodo([FromRoute] GetTodoQuery query)
     {
-        return todoService.GetTodoAsync(id);
+        return sender.Send(query);
     }
 
     [HttpPost]
-    public Task CreateTodo(CreateTodoRequest todo)
+    public Task CreateTodo([FromBody] CreateTodoCommand command)
     {
-        return todoService.CreateTodoAsync(todo);
+        return sender.Send(command);
     }
 
     [HttpPut("{id}")]
-    public Task UpdateTodo(Guid id, CreateTodoRequest todo)
+    public Task UpdateTodo(Guid id, [FromBody] UpdateTodoCommand command)
     {
-        return todoService.UpdateTodoAsync(id, todo);
+        return sender.Send(command with { Id = id });
     }
 
     [HttpDelete("{id}")]
-    public Task DeleteTodo(Guid id)
+    public Task DeleteTodo([FromRoute] DeleteTodoCommand command)
     {
-        return todoService.DeleteTodoAsync(id);
+        return sender.Send(command);
     }
 }

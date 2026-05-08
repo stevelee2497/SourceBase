@@ -1,5 +1,7 @@
 using SourceBase.Api.Extensions;
+using SourceBase.Application;
 using SourceBase.Application.Common;
+using SourceBase.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,8 +12,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMvcConfigs();
 builder.Services.AddAppSettings(builder.Configuration);
-builder.Services.AddApplicationDbContext();
-builder.Services.AddDependencyInjections();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCorsPolicies(builder.Configuration);
 
 var app = builder.Build();

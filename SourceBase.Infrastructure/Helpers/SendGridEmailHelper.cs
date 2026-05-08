@@ -5,7 +5,6 @@ using SourceBase.Application.Common;
 
 namespace SourceBase.Infrastructure.Helpers;
 
-[ScopedDependency<IEmailHelper>]
 public class SendGridEmailHelper(AppSettings appSettings) : IEmailHelper
 {
     public async Task SendEmailAsync(string to, string subject, string body)

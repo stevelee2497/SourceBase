@@ -1,27 +1,26 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SourceBase.Application.Abstractions;
 using SourceBase.Application.Common;
-using SourceBase.Application.Features.Auth;
+using SourceBase.Application.Features.Data;
 using SourceBase.Domain.Entities;
 
 namespace SourceBase.Api.Controllers;
 
 [ApiController]
 [Route("api")]
-public class DataController(IDbContext dbContext) : ControllerBase
+public class DataController(ISender sender) : ControllerBase
 {
     [HttpGet("audits")]
     [Authorize(Roles = Roles.Admin)]
-    public Task<List<AuditHistoryEntity>> GetAudits()
+    public Task<List<AuditHistoryEntity>> GetAudits([FromQuery] GetAuditsQuery query)
     {
-        return dbContext.AuditHistories.ToListAsync();
+        return sender.Send(query);
     }
 
     [HttpGet("roles")]
-    public Task<List<RoleResponse>> GetRoles()
+    public Task<List<RoleResponse>> GetRoles([FromQuery] GetRolesQuery query)
     {
-        return dbContext.Roles.Select(x => new RoleResponse(x.Id, x.Name!)).ToListAsync();
+        return sender.Send(query);
     }
 }

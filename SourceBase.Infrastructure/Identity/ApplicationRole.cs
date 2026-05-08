@@ -1,9 +1,9 @@
-﻿namespace SourceBase.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
-public abstract class BaseEntity
+namespace SourceBase.Infrastructure.Identity;
+
+public class ApplicationRole : IdentityRole<Guid>
 {
-    public Guid Id { get; set; }
-
     public DateTime? CreatedOn { get; set; }
 
     public string? CreatedBy { get; set; }

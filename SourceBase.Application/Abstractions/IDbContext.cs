@@ -5,8 +5,8 @@ namespace SourceBase.Application.Abstractions;
 
 public interface IDbContext
 {
-    DbSet<UserEntity> Users { get; set; }
-    DbSet<RoleEntity> Roles { get; set; }
+    IQueryable<UserEntity> Users { get; }
+    IQueryable<RoleEntity> Roles { get; }
     DbSet<TodoItemEntity> TodoItems { get; set; }
     DbSet<AuditHistoryEntity> AuditHistories { get; set; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
