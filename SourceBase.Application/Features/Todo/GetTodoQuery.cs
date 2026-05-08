@@ -16,15 +16,7 @@ public class GetTodoQueryHandler(IDbContext dbContext) : IRequestHandler<GetTodo
     }
 }
 
-public record TodoItemDetailResponse(
-    Guid Id,
-    DateOnly Date,
-    string Title,
-    ItemStatus Status,
-    DateTime? CreatedOn,
-    string? CreatedBy,
-    DateTime? UpdatedOn,
-    string? UpdatedBy)
+public record TodoItemDetailResponse(Guid Id, DateOnly Date, string Title, ItemStatus Status, DateTime? CreatedOn, string? CreatedBy, DateTime? UpdatedOn, string? UpdatedBy)
 {
     public TodoItemDetailResponse(TodoItemEntity todo)
         : this(todo.Id, todo.Date, todo.Title, todo.Status, todo.CreatedOn, todo.CreatedBy, todo.UpdatedOn, todo.UpdatedBy)
