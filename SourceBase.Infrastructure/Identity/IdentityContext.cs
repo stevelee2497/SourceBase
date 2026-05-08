@@ -110,7 +110,7 @@ public class IdentityContext(
 
     public async Task UpdateUserInfoAsync(Guid userId, string? firstName, string? lastName, CancellationToken ct = default)
     {
-        var user = await dbContext.Set<ApplicationUser>().FirstOrDefaultAsync(u => u.Id == userId, ct) ?? throw new NotFoundException();
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, ct) ?? throw new NotFoundException();
         user.FirstName = firstName;
         user.LastName = lastName;
         await dbContext.SaveChangesAsync(ct);

@@ -1,14 +1,23 @@
-﻿using SendGrid;
+﻿using Microsoft.Extensions.Logging;
+using SendGrid;
 using SendGrid.Helpers.Mail;
 using SourceBase.Application.Abstractions;
 using SourceBase.Application.Common;
 
 namespace SourceBase.Infrastructure.Helpers;
 
-public class SendGridEmailHelper(AppSettings appSettings) : IEmailHelper
+public class SendGridEmailHelper(AppSettings appSettings, ILogger<SendGridEmailHelper> logger) : IEmailHelper
 {
     public async Task SendEmailAsync(string to, string subject, string body)
     {
+        logger.LogInformation("Sending email to {To} with subject {Subject} and body {Body}", to, subject, body);
+
+        if (string.IsNullOrEmpty(appSettings.SendGridApiKey))
+        {
+            logger.LogError("SendGrid API key is not configured.");
+            return;
+        }
+
         var client = new SendGridClient(appSettings.SendGridApiKey);
         var fromEmail = new EmailAddress(appSettings.SendGridAccountOwner);
         var toEmail = new EmailAddress(to);
@@ -16,6 +25,7 @@ public class SendGridEmailHelper(AppSettings appSettings) : IEmailHelper
         var response = await client.SendEmailAsync(msg);
         if (!response.IsSuccessStatusCode)
         {
+            logger.LogError("Failed to send email to {To} with subject {Subject} and body {Body}", to, subject, body);
             throw new ApiInternalException("Failed to send email");
         }
     }
