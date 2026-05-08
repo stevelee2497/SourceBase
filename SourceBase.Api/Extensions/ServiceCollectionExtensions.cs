@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Serilog;
 using SourceBase.Api.Filters;
 using SourceBase.Application.Common;
 using SourceBase.Infrastructure.DbContexts;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace SourceBase.Api.Extensions;
@@ -66,17 +66,10 @@ public static class ServiceCollectionExtensions
                 In = ParameterLocation.Header,
             });
 
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
             {
                 {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "BearerAuth"
-                        }
-                    },
+                    new OpenApiSecuritySchemeReference("BearerAuth", document, null),
                     []
                 }
             });
@@ -85,9 +78,9 @@ public static class ServiceCollectionExtensions
 
             c.MapType<TimeOnly>(() => new OpenApiSchema
             {
-                Type = "string",
+                Type = JsonSchemaType.String,
                 Format = "time",
-                Example = new OpenApiString("14:30")
+                Example = JsonValue.Create("14:30")
             });
         });
     }

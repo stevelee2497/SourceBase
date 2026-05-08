@@ -31,7 +31,7 @@ API (ASP.NET Core) → Infrastructure → Application → Domain
 
 ✅ CQRS pattern with MediatR (Commands, Queries, Handlers)
 
-✅ Entity Framework and .NET 8
+✅ Entity Framework and .NET 10
 
 ✅ Exception filter, Model binding validation, Audit log interceptors
 
