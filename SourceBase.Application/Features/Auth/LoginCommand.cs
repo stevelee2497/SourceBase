@@ -5,7 +5,7 @@ namespace SourceBase.Application.Features.Auth;
 
 public record LoginCommand(string Email, string Password) : IRequest;
 
-public class LoginCommandHandler(IIdentityContext identityContext) : IRequestHandler<LoginCommand>
+public class LoginCommandHandler(IIdentityService identityContext) : IRequestHandler<LoginCommand>
 {
     public async Task Handle(LoginCommand request, CancellationToken cancellationToken)
     {

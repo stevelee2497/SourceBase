@@ -3,7 +3,7 @@ using SourceBase.Application.Features.Data;
 
 namespace SourceBase.Application.Abstractions;
 
-public interface IIdentityContext
+public interface IIdentityService
 {
     // Auth
     Task ValidateAndSignInAsync(string email, string password);

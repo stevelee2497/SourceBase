@@ -6,7 +6,7 @@ namespace SourceBase.Application.Features.Auth;
 
 public record RegisterCommand(string Email, string Password) : IRequest;
 
-public class RegisterCommandHandler(IIdentityContext identityContext, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<RegisterCommand>
+public class RegisterCommandHandler(IIdentityService identityContext, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<RegisterCommand>
 {
     public async Task Handle(RegisterCommand request, CancellationToken cancellationToken)
     {

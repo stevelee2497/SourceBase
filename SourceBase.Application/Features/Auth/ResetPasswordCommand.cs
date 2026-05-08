@@ -5,7 +5,7 @@ namespace SourceBase.Application.Features.Auth;
 
 public record ResetPasswordCommand(string Email, string Code, string NewPassword) : IRequest;
 
-public class ResetPasswordCommandHandler(IIdentityContext identityContext) : IRequestHandler<ResetPasswordCommand>
+public class ResetPasswordCommandHandler(IIdentityService identityContext) : IRequestHandler<ResetPasswordCommand>
 {
     public async Task Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
     {

@@ -6,7 +6,7 @@ namespace SourceBase.Application.Features.Auth;
 
 public record ResendConfirmationEmailCommand(string Email) : IRequest;
 
-public class ResendConfirmationEmailCommandHandler(IIdentityContext identityContext, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ResendConfirmationEmailCommand>
+public class ResendConfirmationEmailCommandHandler(IIdentityService identityContext, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ResendConfirmationEmailCommand>
 {
     public async Task Handle(ResendConfirmationEmailCommand request, CancellationToken cancellationToken)
     {

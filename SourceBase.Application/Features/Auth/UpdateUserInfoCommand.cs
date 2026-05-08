@@ -5,7 +5,7 @@ namespace SourceBase.Application.Features.Auth;
 
 public record UpdateUserInfoCommand(string? FirstName, string? LastName, string? PhoneNumber, string[] Roles) : IRequest;
 
-public class UpdateUserInfoCommandHandler(IIdentityContext identityContext, IUserContext userContext) : IRequestHandler<UpdateUserInfoCommand>
+public class UpdateUserInfoCommandHandler(IIdentityService identityContext, IUserContext userContext) : IRequestHandler<UpdateUserInfoCommand>
 {
     public async Task Handle(UpdateUserInfoCommand request, CancellationToken cancellationToken)
     {

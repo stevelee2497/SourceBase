@@ -20,8 +20,8 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         // Application abstractions
-        services.AddScoped<IDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
-        services.AddScoped<IIdentityContext, IdentityContext>();
+        services.AddScoped<IDbContext, ApplicationDbContext>();
+        services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IUserContext, UserContext>();
         services.AddScoped<IEmailHelper, SendGridEmailHelper>();
 

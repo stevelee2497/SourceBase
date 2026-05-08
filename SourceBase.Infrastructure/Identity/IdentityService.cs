@@ -12,11 +12,11 @@ using System.Text;
 
 namespace SourceBase.Infrastructure.Identity;
 
-public class IdentityContext(
+public class IdentityService(
+    ApplicationDbContext dbContext,
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
-    IOptionsMonitor<BearerTokenOptions> bearerTokenOptions,
-    ApplicationDbContext dbContext) : IIdentityContext
+    IOptionsMonitor<BearerTokenOptions> bearerTokenOptions) : IIdentityService
 {
     public async Task CreateUserAsync(string email, string password)
     {

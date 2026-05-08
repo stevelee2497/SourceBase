@@ -5,7 +5,7 @@ namespace SourceBase.Application.Features.Auth;
 
 public record GetUserInfoQuery() : IRequest<UserInfoResponse>;
 
-public class GetUserInfoQueryHandler(IIdentityContext identityContext, IUserContext userContext) : IRequestHandler<GetUserInfoQuery, UserInfoResponse>
+public class GetUserInfoQueryHandler(IIdentityService identityContext, IUserContext userContext) : IRequestHandler<GetUserInfoQuery, UserInfoResponse>
 {
     public Task<UserInfoResponse> Handle(GetUserInfoQuery request, CancellationToken cancellationToken)
     {

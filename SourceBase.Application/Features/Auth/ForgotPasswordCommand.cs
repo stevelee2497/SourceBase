@@ -6,7 +6,7 @@ namespace SourceBase.Application.Features.Auth;
 
 public record ForgotPasswordCommand(string Email) : IRequest;
 
-public class ForgotPasswordCommandHandler(IIdentityContext identityContext, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ForgotPasswordCommand>
+public class ForgotPasswordCommandHandler(IIdentityService identityContext, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ForgotPasswordCommand>
 {
     public async Task Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
