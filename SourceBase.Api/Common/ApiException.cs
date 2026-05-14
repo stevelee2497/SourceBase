@@ -20,3 +20,7 @@ public class NotFoundException(string message = "Item Not Found", string code = 
 public class UnAuthorizedException(string message = "UNAUTHORIZE", string code = "UNAUTHORIZE", int statusCode = (int)HttpStatusCode.Unauthorized) : ApiException(message, code, statusCode)
 {
 }
+
+public class ForbiddenException(string message = "FORBIDDEN", string code = "FORBIDDEN", int statusCode = (int)HttpStatusCode.Forbidden) : ApiException(message, code, statusCode)
+{
+}

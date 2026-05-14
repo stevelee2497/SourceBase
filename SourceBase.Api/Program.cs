@@ -5,6 +5,7 @@ using SourceBase.Api.Infrastructure.DbContexts;
 using SourceBase.Api.Infrastructure.Helpers;
 using SourceBase.Api.Infrastructure.Identity;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,13 +23,14 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Progr
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddScoped<IEmailHelper, SendGridEmailHelper>();
 builder.Services.AddCorsPolicies(builder.Configuration);
+builder.Services.AddValidation();
 
 var app = builder.Build();
 
-if (app.Environment.IsProduction())
-{
-    app.UseHttpsRedirection();
-}
+if (app.Environment.IsProduction()) app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<AuthorizationMiddleware>();
 app.UseCors(Constants.CorsCustomPolicy);
 app.UseAuthentication();
 app.UseAuthorization();

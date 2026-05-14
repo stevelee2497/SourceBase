@@ -1,10 +1,11 @@
+using System.ComponentModel.DataAnnotations;
 using MediatR;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
-public record CreateTodoCommand(DateOnly Date, string Title, ItemStatus Status) : IRequest;
+public record CreateTodoCommand([Required]DateOnly Date, [Required]string Title, ItemStatus Status) : IRequest;
 
 public class CreateTodoCommandHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoCommand>
 {
