@@ -1,6 +1,5 @@
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Common;
 
@@ -34,9 +33,11 @@ public sealed class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionM
             {
                 Type = apiEx.Code,
                 Title = apiEx.Message,
+                Status = apiEx.StatusCode
             },
             BadHttpRequestException { InnerException: JsonException jsonEx } => new ProblemDetails
             {
+                Type = "VALIDATION ERROR",
                 Title = "One or more validation errors occurred.",
                 Status = StatusCodes.Status400BadRequest,
                 Extensions = { ["errors"] = ExtractError(jsonEx) }
@@ -45,13 +46,19 @@ public sealed class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionM
             {
                 Type = "GENERIC CODE",
                 Title = "Something went wrong",
+                Status = StatusCodes.Status500InternalServerError
             }
         };
 
+        if (error.Type != "VALIDATION ERROR")
+        {
+            logger.LogWarning(exception, "Request failed for {Method} {Path}", context.Request.Method, context.Request.Path);
+        }
 
-        logger.LogWarning(exception, "Request failed for {Method} {Path}", context.Request.Method, context.Request.Path);
-
+        context.Response.StatusCode = error.Status ?? StatusCodes.Status500InternalServerError;
         context.Response.ContentLength = null;
+        error.Status = null; // Status is already set in the response, no need to include it in the body
+        
         await context.Response.WriteAsJsonAsync(error);
     }
 

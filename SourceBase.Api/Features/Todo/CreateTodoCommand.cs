@@ -5,7 +5,7 @@ using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
-public record CreateTodoCommand([Required] DateOnly Date, [Required] string Title, ItemStatus Status) : IRequest;
+public record CreateTodoCommand([Required] DateOnly? Date, [Required] string Title, ItemStatus Status) : IRequest;
 
 public class CreateTodoCommandHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoCommand>
 {
@@ -14,7 +14,7 @@ public class CreateTodoCommandHandler(IDbContext dbContext, ICurrentUser current
         dbContext.TodoItems.Add(new TodoItemEntity
         {
             Title = request.Title,
-            Date = request.Date,
+            Date = request.Date!.Value,
             Status = request.Status,
             UserId = currentUser.UserId,
         });
