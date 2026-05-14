@@ -1,13 +1,13 @@
 using MediatR;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
-using SourceBase.Api.Infrastructure.DbContexts;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
 public record GetTodoQuery(Guid Id) : IRequest<TodoItemDetailResponse>;
 
-public class GetTodoQueryHandler(ApplicationDbContext dbContext) : IRequestHandler<GetTodoQuery, TodoItemDetailResponse>
+public class GetTodoQueryHandler(IDbContext dbContext) : IRequestHandler<GetTodoQuery, TodoItemDetailResponse>
 {
     public async Task<TodoItemDetailResponse> Handle(GetTodoQuery request, CancellationToken cancellationToken)
     {

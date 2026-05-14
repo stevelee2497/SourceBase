@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
-using SourceBase.Api.Infrastructure.DbContexts;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Data;
 
 public record GetAuditsQuery() : IRequest<List<AuditHistoryEntity>>;
 
-public class GetAuditsQueryHandler(ApplicationDbContext dbContext) : IRequestHandler<GetAuditsQuery, List<AuditHistoryEntity>>
+public class GetAuditsQueryHandler(IDbContext dbContext) : IRequestHandler<GetAuditsQuery, List<AuditHistoryEntity>>
 {
     public Task<List<AuditHistoryEntity>> Handle(GetAuditsQuery request, CancellationToken cancellationToken)
     {

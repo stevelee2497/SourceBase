@@ -5,6 +5,7 @@ using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.DbContexts;
 using SourceBase.Api.Infrastructure.Helpers;
 using SourceBase.Api.Infrastructure.Identity;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,10 +17,11 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddMvcConfigs();
 builder.Services.AddAppSettings(builder.Configuration);
 builder.Services.AddDbContext<ApplicationDbContext>();
+builder.Services.AddScoped<IDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>().AddRoles<ApplicationRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-builder.Services.AddScoped<CurrentUser>();
-builder.Services.AddScoped<SendGridEmailHelper>();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+builder.Services.AddScoped<IEmailHelper, SendGridEmailHelper>();
 builder.Services.AddCorsPolicies(builder.Configuration);
 
 var app = builder.Build();

@@ -1,13 +1,13 @@
 using MediatR;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
-using SourceBase.Api.Infrastructure.DbContexts;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
 public record UpdateTodoCommand(Guid Id, DateOnly Date, string Title, ItemStatus Status) : IRequest;
 
-public class UpdateTodoCommandHandler(ApplicationDbContext dbContext) : IRequestHandler<UpdateTodoCommand>
+public class UpdateTodoCommandHandler(IDbContext dbContext) : IRequestHandler<UpdateTodoCommand>
 {
     public async Task Handle(UpdateTodoCommand request, CancellationToken cancellationToken)
     {

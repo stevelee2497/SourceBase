@@ -5,10 +5,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.Identity;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Infrastructure.DbContexts;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, CurrentUser currentUser, IConfiguration configuration) : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IConfiguration configuration) : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>(options), IDbContext
 {
     public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 

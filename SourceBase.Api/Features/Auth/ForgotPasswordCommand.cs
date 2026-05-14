@@ -3,13 +3,13 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
-using SourceBase.Api.Infrastructure.Helpers;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
 public record ForgotPasswordCommand(string Email) : IRequest;
 
-public class ForgotPasswordCommandHandler(UserManager<ApplicationUser> userManager, SendGridEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ForgotPasswordCommand>
+public class ForgotPasswordCommandHandler(UserManager<ApplicationUser> userManager, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ForgotPasswordCommand>
 {
     public async Task Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {

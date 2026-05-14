@@ -1,12 +1,12 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Api.Infrastructure.DbContexts;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Data;
 
 public record GetRolesQuery() : IRequest<List<RoleResponse>>;
 
-public class GetRolesQueryHandler(ApplicationDbContext dbContext) : IRequestHandler<GetRolesQuery, List<RoleResponse>>
+public class GetRolesQueryHandler(IDbContext dbContext) : IRequestHandler<GetRolesQuery, List<RoleResponse>>
 {
     public Task<List<RoleResponse>> Handle(GetRolesQuery request, CancellationToken cancellationToken)
     {

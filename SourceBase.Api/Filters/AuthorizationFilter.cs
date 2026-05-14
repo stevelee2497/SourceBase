@@ -1,11 +1,11 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using SourceBase.Api.Common;
-using SourceBase.Api.Infrastructure.DbContexts;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Filters;
 
-public class AuthorizationFilter(ApplicationDbContext dbContext) : IEndpointFilter
+public class AuthorizationFilter(IDbContext dbContext) : IEndpointFilter
 {
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {

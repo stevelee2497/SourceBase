@@ -2,13 +2,13 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
-using SourceBase.Api.Infrastructure.Identity;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
 public record GetUserInfoQuery() : IRequest<UserInfoResponse>;
 
-public class GetUserInfoQueryHandler(UserManager<ApplicationUser> userManager, CurrentUser currentUser) : IRequestHandler<GetUserInfoQuery, UserInfoResponse>
+public class GetUserInfoQueryHandler(UserManager<ApplicationUser> userManager, ICurrentUser currentUser) : IRequestHandler<GetUserInfoQuery, UserInfoResponse>
 {
     public async Task<UserInfoResponse> Handle(GetUserInfoQuery request, CancellationToken cancellationToken)
     {

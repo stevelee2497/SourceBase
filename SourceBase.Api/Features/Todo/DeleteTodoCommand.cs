@@ -1,12 +1,12 @@
 using MediatR;
 using SourceBase.Api.Common;
-using SourceBase.Api.Infrastructure.DbContexts;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
 public record DeleteTodoCommand(Guid Id) : IRequest;
 
-public class DeleteTodoCommandHandler(ApplicationDbContext dbContext) : IRequestHandler<DeleteTodoCommand>
+public class DeleteTodoCommandHandler(IDbContext dbContext) : IRequestHandler<DeleteTodoCommand>
 {
     public async Task Handle(DeleteTodoCommand request, CancellationToken cancellationToken)
     {

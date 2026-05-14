@@ -2,11 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using SourceBase.Api.Domain.Entities;
-using SourceBase.Api.Infrastructure.Identity;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Infrastructure.DbContexts;
 
-public class ApplicationDbContextHistoryInterceptor(CurrentUser currentUser) : ISaveChangesInterceptor
+public class ApplicationDbContextHistoryInterceptor(ICurrentUser currentUser) : ISaveChangesInterceptor
 {
     public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {

@@ -1,14 +1,13 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Common;
-using SourceBase.Api.Infrastructure.DbContexts;
-using SourceBase.Api.Infrastructure.Identity;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
 public record UpdateUserInfoCommand(string? FirstName, string? LastName, string? PhoneNumber, string[] Roles) : IRequest;
 
-public class UpdateUserInfoCommandHandler(ApplicationDbContext dbContext, CurrentUser currentUser) : IRequestHandler<UpdateUserInfoCommand>
+public class UpdateUserInfoCommandHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<UpdateUserInfoCommand>
 {
     public async Task Handle(UpdateUserInfoCommand request, CancellationToken cancellationToken)
     {

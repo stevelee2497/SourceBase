@@ -3,13 +3,13 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
-using SourceBase.Api.Infrastructure.Helpers;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
 public record ResendConfirmationEmailCommand(string Email) : IRequest;
 
-public class ResendConfirmationEmailCommandHandler(UserManager<ApplicationUser> userManager, SendGridEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ResendConfirmationEmailCommand>
+public class ResendConfirmationEmailCommandHandler(UserManager<ApplicationUser> userManager, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ResendConfirmationEmailCommand>
 {
     public async Task Handle(ResendConfirmationEmailCommand request, CancellationToken cancellationToken)
     {

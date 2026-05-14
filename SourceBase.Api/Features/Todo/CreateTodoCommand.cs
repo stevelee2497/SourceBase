@@ -1,13 +1,12 @@
 using MediatR;
 using SourceBase.Api.Domain.Entities;
-using SourceBase.Api.Infrastructure.DbContexts;
-using SourceBase.Api.Infrastructure.Identity;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
 public record CreateTodoCommand(DateOnly Date, string Title, ItemStatus Status) : IRequest;
 
-public class CreateTodoCommandHandler(ApplicationDbContext dbContext, CurrentUser currentUser) : IRequestHandler<CreateTodoCommand>
+public class CreateTodoCommandHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoCommand>
 {
     public async Task Handle(CreateTodoCommand request, CancellationToken cancellationToken)
     {

@@ -1,13 +1,12 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Api.Infrastructure.DbContexts;
-using SourceBase.Api.Infrastructure.Identity;
+using SourceBase.Api.Infrastructure.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
 public record GetTodosQuery() : IRequest<IEnumerable<TodoItemDetailResponse>>;
 
-public class GetTodosQueryHandler(ApplicationDbContext dbContext, CurrentUser currentUser) : IRequestHandler<GetTodosQuery, IEnumerable<TodoItemDetailResponse>>
+public class GetTodosQueryHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetTodosQuery, IEnumerable<TodoItemDetailResponse>>
 {
     public async Task<IEnumerable<TodoItemDetailResponse>> Handle(GetTodosQuery request, CancellationToken cancellationToken)
     {
