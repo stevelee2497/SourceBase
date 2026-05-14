@@ -9,9 +9,6 @@ WORKDIR /src
 COPY Directory.Packages.props .  
 COPY Directory.Build.props .
 COPY SourceBase.Api/SourceBase.Api.csproj SourceBase.Api/
-COPY SourceBase.Application/SourceBase.Application.csproj SourceBase.Application/
-COPY SourceBase.Domain/SourceBase.Domain.csproj SourceBase.Domain/
-COPY SourceBase.Infrastructure/SourceBase.Infrastructure.csproj SourceBase.Infrastructure/
 RUN dotnet restore SourceBase.Api/SourceBase.Api.csproj
 
 # Copy the rest of the source code

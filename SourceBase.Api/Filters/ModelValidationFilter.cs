@@ -1,43 +1,63 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SourceBase.Api.Filters;
 
-public class ModelValidationFilter : IActionFilter
+public class ModelValidationFilter : IEndpointFilter
 {
-    public void OnActionExecuted(ActionExecutedContext context)
-    {
-    }
-
-    public void OnActionExecuting(ActionExecutingContext context)
-    {
-        if (context.ModelState.IsValid) return;
-
-        // Response Result
-        context.Result = new JsonResult(new SystemApiErrorModel("INVALID FIELDS", "error on model binding validation", null, GetModelStateInvalidInfo(context)))
-        {
-            StatusCode = StatusCodes.Status400BadRequest
-        };
-    }
-
-    private static Dictionary<string, string> GetModelStateInvalidInfo(ActionContext context)
+    public ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
         var errors = new Dictionary<string, string>();
 
-        foreach (var keyValueState in context.ModelState)
+        foreach (var argument in context.Arguments)
         {
-            var error = string.Join(", ", keyValueState.Value.Errors.Select(x => x.ErrorMessage));
+            if (argument == null)
+            {
+                continue;
+            }
 
-            errors.Add(keyValueState.Key, error);
+            var argumentType = argument.GetType();
+            if (IsSimpleType(argumentType))
+            {
+                continue;
+            }
+
+            var validationResults = new List<ValidationResult>();
+            var validationContext = new ValidationContext(argument);
+            if (Validator.TryValidateObject(argument, validationContext, validationResults, validateAllProperties: true))
+            {
+                continue;
+            }
+
+            foreach (var validationResult in validationResults)
+            {
+                var key = validationResult.MemberNames.FirstOrDefault() ?? argumentType.Name;
+                errors[key] = validationResult.ErrorMessage ?? "invalid value";
+            }
         }
 
-        if (errors.Any(x => x.Value.Contains("The JSON value could not be converted")))
+        if (errors.Count == 0)
         {
-            return errors
-                .Where(x => x.Value.Contains("The JSON value could not be converted"))
-                .ToDictionary(x => x.Key.Replace("$.", ""), x => "enum value is not valid");
+            return next(context);
         }
 
-        return errors;
+        return ValueTask.FromResult<object?>(Results.Json(new SystemApiErrorModel("INVALID FIELDS", "error on model binding validation", null, errors), statusCode: StatusCodes.Status400BadRequest));
+    }
+
+    private static bool IsSimpleType(Type type)
+    {
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+        if (underlyingType.IsPrimitive || underlyingType.IsEnum)
+        {
+            return true;
+        }
+
+        return underlyingType == typeof(string)
+            || underlyingType == typeof(Guid)
+            || underlyingType == typeof(DateOnly)
+            || underlyingType == typeof(DateTime)
+            || underlyingType == typeof(DateTimeOffset)
+            || underlyingType == typeof(TimeOnly)
+            || underlyingType == typeof(decimal)
+            || underlyingType == typeof(CancellationToken);
     }
 }

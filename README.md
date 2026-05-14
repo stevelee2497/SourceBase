@@ -4,30 +4,31 @@ I've poured my heart and soul into this project, weaving in all the valuable les
 
 ## Architecture
 
-Clean Architecture with CQRS/MediatR pattern. Dependencies flow inward — outer layers depend on inner layers, never the reverse.
+This codebase is in active migration from layered Clean Architecture toward a simpler vertical-slice structure.
+
+Current runtime shape:
 
 ```
-API (ASP.NET Core) → Infrastructure → Application → Domain
+API (feature slices + startup, active build project)
 ```
 
-| Layer | Responsibility |
+| Project | Responsibility |
 |-------|---------------|
-| **Domain** | Pure POCO entities, no framework dependencies |
-| **Application** | Use cases (Commands/Queries/Handlers via MediatR), abstractions (`IDbContext`, `IIdentityService`, `IEmailHelper`, `IUserContext`) |
-| **Infrastructure** | EF Core DbContext, ASP.NET Identity (`ApplicationUser`/`ApplicationRole`), email service, Identity service implementations |
-| **API** | Controllers, filters, middleware, DI composition root |
+| **API** | Feature-local controllers and MediatR handlers, DI composition root, and the active build/runtime project |
+| **Domain code** | Pure POCO entities now compiled from `SourceBase.Api/Domain/Entities` |
+| **Infrastructure code** | DbContext, Identity, helpers, and common types now compiled from `SourceBase.Api/Infrastructure` |
 
 ### Key Design Decisions
 
 - **Domain decoupled from Identity**: `UserEntity`/`RoleEntity` are pure POCOs. Infrastructure uses `ApplicationUser : IdentityUser<Guid>` for Identity, with projections to map to domain entities.
-- **CQRS with MediatR**: All features use Commands/Queries dispatched via `ISender`. Handlers live in Application (business logic) or Infrastructure (Identity operations).
-- **`IDbContext` with `DbSet<T>`**: Application references `Microsoft.EntityFrameworkCore` for `DbSet<T>` on business entities (`TodoItems`, `AuditHistories`). User/Role access uses `IQueryable<T>` projections.
-- **Explicit DI registration**: Each layer provides its own `DependencyInjection.cs` extension method (`AddApplication()`, `AddInfrastructure()`).
+- **CQRS with MediatR**: Feature handlers now live alongside their API slices and are dispatched via `ISender`.
+- **Direct startup composition**: Service registration now happens in `SourceBase.Api/Program.cs` instead of per-layer dependency injection extension methods.
+- **Current migration status**: Todo, Data, and Auth slices live under `SourceBase.Api/Features`, and shared domain/infrastructure code now also builds from `SourceBase.Api`.
 
 
 ## Features
 
-✅ Clean architecture with layered design: API, Application, Domain, Infrastructure layers
+✅ Feature-first API slices for Todo, Auth, and Data
 
 ✅ CQRS pattern with MediatR (Commands, Queries, Handlers)
 
@@ -43,7 +44,7 @@ API (ASP.NET Core) → Infrastructure → Application → Domain
 
 ✅ Singleton AppSettings with IOptions pattern
 
-✅ Explicit per-layer dependency injection registration
+✅ Direct startup registration in the API host
 
 ✅ Logging mechanism with Serilog
 
@@ -52,11 +53,4 @@ API (ASP.NET Core) → Infrastructure → Application → Domain
 
 ## Migrations
 
-Use the root shell scripts for EF Core migrations in this split-project setup:
-
-```sh
-sh add-migration.sh InitDb
-sh update-db.sh
-```
-
-Both scripts target `SourceBase.Infrastructure` for migrations and use `SourceBase.Api` as the startup project.
+EF Core migrations are intentionally out of scope for the current migration step and can be reintroduced later.

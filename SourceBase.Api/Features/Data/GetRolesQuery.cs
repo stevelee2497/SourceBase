@@ -1,0 +1,29 @@
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using SourceBase.Api.Infrastructure.DbContexts;
+
+namespace SourceBase.Api.Features.Data;
+
+public record GetRolesQuery() : IRequest<List<RoleResponse>>;
+
+public class GetRolesQueryHandler(ApplicationDbContext dbContext) : IRequestHandler<GetRolesQuery, List<RoleResponse>>
+{
+    public Task<List<RoleResponse>> Handle(GetRolesQuery request, CancellationToken cancellationToken)
+    {
+        return dbContext.Roles.Select(role => new RoleResponse(role.Id, role.Name!)).ToListAsync(cancellationToken);
+    }
+}
+
+public record RoleResponse(Guid Id, string Name);
+
+public static class GetRolesQueryEndpoint
+{
+    public static IEndpointRouteBuilder MapGetRolesQueryEndpoint(this IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapGet("/roles", async (ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new GetRolesQuery(), cancellationToken)))
+            .WithTags("Data");
+
+        return endpoints;
+    }
+}

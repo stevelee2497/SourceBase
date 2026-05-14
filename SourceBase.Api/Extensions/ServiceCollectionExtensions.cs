@@ -1,11 +1,12 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Reflection;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
 using SourceBase.Api.Filters;
-using SourceBase.Application.Common;
-using SourceBase.Infrastructure.DbContexts;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
+using SourceBase.Api.Common;
+using SourceBase.Api.Infrastructure.DbContexts;
 
 namespace SourceBase.Api.Extensions;
 
@@ -19,18 +20,11 @@ public static class ServiceCollectionExtensions
 
     public static void AddMvcConfigs(this IServiceCollection services)
     {
-        services
-            .AddControllers(options =>
-            {
-                options.Filters.Add<AuthorizationFilter>();
-                options.Filters.Add<ExceptionFilter>();                     // Add global exception filter to force all exceptions into our error model
-                options.Filters.Add<ModelValidationFilter>(int.MinValue);   // Validating json payload and return in error model format
-            })
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); // Force to save enum in string format to our database instead of magic numbers
-                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            });
+        services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        });
     }
 
     public static void AddCorsPolicies(this IServiceCollection services, IConfiguration configuration)
@@ -98,5 +92,40 @@ public static class ServiceCollectionExtensions
         var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
         db.Database.EnsureCreated();
         ApplicationDbContext.SeedData(db, config);
+    }
+
+    public static void UseMinimalApi(this WebApplication app)
+    {
+        var api = app.MapGroup("/api")
+            .RequireAuthorization()
+            .AddEndpointFilter<AuthorizationFilter>()
+            .AddEndpointFilter<ModelValidationFilter>();
+
+        api.MapFeatureEndpoints(typeof(Program).Assembly);
+    }
+
+    public static IEndpointRouteBuilder MapFeatureEndpoints(this IEndpointRouteBuilder endpoints, Assembly assembly)
+    {
+        var endpointMethods = assembly.DefinedTypes
+            .Where(type => type.Namespace?.StartsWith("SourceBase.Api.Features.", StringComparison.Ordinal) == true)
+            .SelectMany(type => type.DeclaredMethods)
+            .Where(method => method.IsPublic && method.IsStatic)
+            .Where(method => method.Name.StartsWith("Map", StringComparison.Ordinal) && method.Name.EndsWith("Endpoint", StringComparison.Ordinal))
+            .Where(HasValidEndpointSignature)
+            .OrderBy(method => method.DeclaringType?.FullName, StringComparer.Ordinal)
+            .ThenBy(method => method.Name, StringComparer.Ordinal);
+
+        foreach (var endpointMethod in endpointMethods)
+        {
+            endpointMethod.Invoke(null, [endpoints]);
+        }
+
+        return endpoints;
+    }
+
+    private static bool HasValidEndpointSignature(MethodInfo method)
+    {
+        var parameters = method.GetParameters();
+        return parameters.Length == 1 && typeof(IEndpointRouteBuilder).IsAssignableFrom(parameters[0].ParameterType);
     }
 }

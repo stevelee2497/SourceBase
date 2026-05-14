@@ -1,28 +1,33 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using SourceBase.Application.Common;
+﻿using SourceBase.Api.Common;
 
 namespace SourceBase.Api.Filters;
 
-public class ExceptionFilter(IHostEnvironment hostEnvironment, ILogger<ExceptionFilter> logger) : IExceptionFilter
+public class ExceptionFilter(RequestDelegate next, IHostEnvironment hostEnvironment, ILogger<ExceptionFilter> logger)
 {
-    public void OnException(ExceptionContext context)
+    public async Task InvokeAsync(HttpContext context)
     {
-        logger.LogError(context.Exception, "Error on {env} at {time}: {message}", hostEnvironment.EnvironmentName, DateTime.Now, context.Exception.Message);
-
-        switch (context.Exception)
+        try
         {
-            case UnAuthorizedException exception:
-                context.Result = new JsonResult(new SystemApiErrorModel(exception.Code, exception.Message, null, null)) { StatusCode = exception.StatusCode };
-                break;
+            await next(context);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Error on {env} at {time}: {message}", hostEnvironment.EnvironmentName, DateTime.Now, exception.Message);
 
-            case ApiException exception:
-                context.Result = new JsonResult(new SystemApiErrorModel(exception.Code, exception.Message, exception.StackTrace, null)) { StatusCode = exception.StatusCode };
-                break;
-            default:
-                context.Result =
-                    new JsonResult(new SystemApiErrorModel("GENERIC CODE", context.Exception.Message, context.Exception.StackTrace, null)) { StatusCode = StatusCodes.Status500InternalServerError };
-                break;
+            if (context.Response.HasStarted)
+            {
+                throw;
+            }
+
+            var (statusCode, error) = exception switch
+            {
+                UnAuthorizedException unauthorizedException => (unauthorizedException.StatusCode, new SystemApiErrorModel(unauthorizedException.Code, unauthorizedException.Message, null, null)),
+                ApiException apiException => (apiException.StatusCode, new SystemApiErrorModel(apiException.Code, apiException.Message, apiException.StackTrace, null)),
+                _ => (StatusCodes.Status500InternalServerError, new SystemApiErrorModel("GENERIC CODE", exception.Message, exception.StackTrace, null))
+            };
+
+            context.Response.StatusCode = statusCode;
+            await context.Response.WriteAsJsonAsync(error);
         }
     }
 }

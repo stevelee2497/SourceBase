@@ -5,6 +5,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="MediatR" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
 		<PackageReference Include="Swashbuckle.AspNetCore" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
 			<PrivateAssets>all</PrivateAssets>
@@ -14,14 +17,10 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="SendGrid" />
 		<PackageReference Include="Serilog.AspNetCore" />
 		<PackageReference Include="Serilog.Sinks.Console" />
 		<PackageReference Include="Serilog.Sinks.File" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\SourceBase.Application\SourceBase.Application.csproj" />
-		<ProjectReference Include="..\SourceBase.Infrastructure\SourceBase.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>
