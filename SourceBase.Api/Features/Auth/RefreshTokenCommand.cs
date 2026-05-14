@@ -35,7 +35,6 @@ public static class RefreshTokenCommandEndpoint
         endpoints.MapPost("/auth/refresh", async (RefreshTokenCommand command, ISender sender, CancellationToken cancellationToken) =>
             {
                 await sender.Send(command, cancellationToken);
-                return Results.NoContent();
             })
             .WithTags("Auth")
             .AllowAnonymous();

@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
-using SourceBase.Api.Filters;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.DbContexts;
 
@@ -96,11 +95,7 @@ public static class ServiceCollectionExtensions
 
     public static void UseMinimalApi(this WebApplication app)
     {
-        var api = app.MapGroup("/api")
-            .RequireAuthorization()
-            .AddEndpointFilter<AuthorizationFilter>()
-            .AddEndpointFilter<ModelValidationFilter>();
-
+        var api = app.MapGroup("/api").RequireAuthorization();
         api.MapFeatureEndpoints(typeof(Program).Assembly);
     }
 

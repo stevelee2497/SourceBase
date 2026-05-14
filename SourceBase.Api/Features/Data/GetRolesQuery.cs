@@ -20,8 +20,8 @@ public static class GetRolesQueryEndpoint
 {
     public static IEndpointRouteBuilder MapGetRolesQueryEndpoint(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/roles", async (ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new GetRolesQuery(), cancellationToken)))
+        endpoints.MapGet("/roles", async (ISender sender, CancellationToken cancellationToken) => Results.Ok(await sender.Send(new GetRolesQuery(), cancellationToken)))
+            .AllowAnonymous()
             .WithTags("Data");
 
         return endpoints;

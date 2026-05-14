@@ -1,6 +1,5 @@
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Extensions;
-using SourceBase.Api.Filters;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.DbContexts;
 using SourceBase.Api.Infrastructure.Helpers;
@@ -30,7 +29,6 @@ if (app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
 }
-app.UseMiddleware<ExceptionFilter>();
 app.UseCors(Constants.CorsCustomPolicy);
 app.UseAuthentication();
 app.UseAuthorization();

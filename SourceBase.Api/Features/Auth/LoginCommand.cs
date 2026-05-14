@@ -35,7 +35,6 @@ public static class LoginCommandEndpoint
         endpoints.MapPost("/auth/login", async (LoginCommand command, ISender sender, CancellationToken cancellationToken) =>
             {
                 await sender.Send(command, cancellationToken);
-                return Results.NoContent();
             })
             .WithTags("Auth")
             .AllowAnonymous();
