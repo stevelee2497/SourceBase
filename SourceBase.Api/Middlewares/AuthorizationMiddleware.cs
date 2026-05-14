@@ -8,12 +8,7 @@ public sealed class AuthorizationMiddleware(RequestDelegate next)
     public async Task InvokeAsync(HttpContext context)
     {
         await next(context);
-
-        if (context.Response.HasStarted)
-        {
-            return;
-        }
-
+        
         var error = context.Response.StatusCode switch
         {
             StatusCodes.Status401Unauthorized => (ApiException)new UnAuthorizedException(),
@@ -21,7 +16,7 @@ public sealed class AuthorizationMiddleware(RequestDelegate next)
             _ => null,
         };
 
-        if (error is null)
+        if (context.Response.HasStarted || error is null)
         {
             return;
         }

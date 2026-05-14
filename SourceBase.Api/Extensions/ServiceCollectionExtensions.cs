@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
@@ -23,6 +24,7 @@ public static class ServiceCollectionExtensions
         {
             options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
         });
     }
 
