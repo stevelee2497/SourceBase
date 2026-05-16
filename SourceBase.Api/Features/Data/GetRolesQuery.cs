@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Data;
 
@@ -16,14 +17,10 @@ public class GetRolesQueryHandler(IDbContext dbContext) : IRequestHandler<GetRol
 
 public record RoleResponse(Guid Id, string Name);
 
-public static class GetRolesQueryEndpoint
+public class GetRolesQueryEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapGetRolesQueryEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapGet("/roles", async (ISender sender, CancellationToken cancellationToken) => Results.Ok(await sender.Send(new GetRolesQuery(), cancellationToken)))
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapGet("/roles", async (ISender sender, CancellationToken cancellationToken) => Results.Ok(await sender.Send(new GetRolesQuery(), cancellationToken)))
             .AllowAnonymous()
             .WithTags("Data");
-
-        return endpoints;
-    }
 }

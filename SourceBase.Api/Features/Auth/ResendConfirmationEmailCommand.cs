@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Auth;
 
@@ -26,18 +27,14 @@ public class ResendConfirmationEmailCommandHandler(UserManager<ApplicationUser> 
     }
 }
 
-public static class ResendConfirmationEmailCommandEndpoint
+public class ResendConfirmationEmailCommandEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapResendConfirmationEmailCommandEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapPost("/auth/resendConfirmationEmail", async (ResendConfirmationEmailCommand command, ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapPost("/auth/resendConfirmationEmail", async (ResendConfirmationEmailCommand command, ISender sender, CancellationToken cancellationToken) =>
             {
                 await sender.Send(command, cancellationToken);
                 return Results.NoContent();
             })
             .WithTags("Auth")
             .AllowAnonymous();
-
-        return endpoints;
-    }
 }

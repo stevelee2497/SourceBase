@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Data;
 
@@ -17,15 +18,11 @@ public class GetAuditsQueryHandler(IDbContext dbContext) : IRequestHandler<GetAu
     }
 }
 
-public static class GetAuditsQueryEndpoint
+public class GetAuditsQueryEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapGetAuditsQueryEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapGet("/audits", async (ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapGet("/audits", async (ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetAuditsQuery(), cancellationToken)))
             .WithTags("Data")
             .RequireAuthorization(new AuthorizeAttribute { Roles = Roles.Admin });
-
-        return endpoints;
-    }
 }

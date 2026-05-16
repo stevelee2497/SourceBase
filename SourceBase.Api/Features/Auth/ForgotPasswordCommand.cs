@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Auth;
 
@@ -21,18 +22,14 @@ public class ForgotPasswordCommandHandler(UserManager<ApplicationUser> userManag
     }
 }
 
-public static class ForgotPasswordCommandEndpoint
+public class ForgotPasswordCommandEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapForgotPasswordCommandEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapPost("/auth/forgotPassword", async (ForgotPasswordCommand command, ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapPost("/auth/forgotPassword", async (ForgotPasswordCommand command, ISender sender, CancellationToken cancellationToken) =>
             {
                 await sender.Send(command, cancellationToken);
                 return Results.NoContent();
             })
             .WithTags("Auth")
             .AllowAnonymous();
-
-        return endpoints;
-    }
 }

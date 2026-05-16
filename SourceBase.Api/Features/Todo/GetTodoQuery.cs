@@ -2,6 +2,7 @@ using MediatR;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Todo;
 
@@ -24,14 +25,10 @@ public record TodoItemDetailResponse(Guid Id, DateOnly Date, string Title, ItemS
     }
 }
 
-public static class GetTodoQueryEndpoint
+public class GetTodoQueryEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapGetTodoQueryEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapGet("/todos/{id:guid}", async (Guid id, ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapGet("/todos/{id:guid}", async (Guid id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetTodoQuery(id), cancellationToken)))
             .WithTags("Todos");
-
-        return endpoints;
-    }
 }

@@ -1,6 +1,7 @@
 using MediatR;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Todo;
 
@@ -16,17 +17,13 @@ public class DeleteTodoCommandHandler(IDbContext dbContext) : IRequestHandler<De
     }
 }
 
-public static class DeleteTodoCommandEndpoint
+public class DeleteTodoCommandEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapDeleteTodoCommandEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapDelete("/todos/{id:guid}", async (Guid id, ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapDelete("/todos/{id:guid}", async (Guid id, ISender sender, CancellationToken cancellationToken) =>
             {
                 await sender.Send(new DeleteTodoCommand(id), cancellationToken);
                 return Results.NoContent();
             })
             .WithTags("Todos");
-
-        return endpoints;
-    }
 }

@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Auth;
 
@@ -25,18 +26,14 @@ public class ConfirmEmailCommandHandler(UserManager<ApplicationUser> userManager
     }
 }
 
-public static class ConfirmEmailCommandEndpoint
+public class ConfirmEmailCommandEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapConfirmEmailCommandEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapPost("/auth/confirmEmail", async (ConfirmEmailCommand command, ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapPost("/auth/confirmEmail", async (ConfirmEmailCommand command, ISender sender, CancellationToken cancellationToken) =>
             {
                 await sender.Send(command, cancellationToken);
                 return Results.NoContent();
             })
             .WithTags("Auth")
             .AllowAnonymous();
-
-        return endpoints;
-    }
 }

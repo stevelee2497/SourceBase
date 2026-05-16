@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Auth;
 
@@ -26,14 +27,10 @@ public class GetUserInfoQueryHandler(UserManager<ApplicationUser> userManager, I
 
 public record UserInfoResponse(Guid Id, string? Email, string? FirstName, string? LastName, string? PhoneNumber, IEnumerable<string> Roles);
 
-public static class GetUserInfoQueryEndpoint
+public class GetUserInfoQueryEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapGetUserInfoQueryEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapGet("/auth/info", async (ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapGet("/auth/info", async (ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetUserInfoQuery(), cancellationToken)))
             .WithTags("Auth");
-
-        return endpoints;
-    }
 }

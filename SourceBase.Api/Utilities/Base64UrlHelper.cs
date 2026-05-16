@@ -1,4 +1,4 @@
-namespace SourceBase.Api.Common;
+namespace SourceBase.Api.Utilities;
 
 public static class Base64UrlHelper
 {

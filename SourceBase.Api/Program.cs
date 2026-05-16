@@ -24,6 +24,7 @@ builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddScoped<IEmailHelper, SendGridEmailHelper>();
 builder.Services.AddCorsPolicies(builder.Configuration);
 builder.Services.AddValidation();
+builder.Services.AddEndpoints(typeof(Program).Assembly);
 
 var app = builder.Build();
 
@@ -37,6 +38,6 @@ app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseSeeding();
-app.UseMinimalApi();
+app.MapGroup("/api").RequireAuthorization().MapEndpoints(app);
 
 app.Run();

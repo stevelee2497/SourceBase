@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Auth;
 
@@ -22,18 +23,14 @@ public class ResetPasswordCommandHandler(UserManager<ApplicationUser> userManage
     }
 }
 
-public static class ResetPasswordCommandEndpoint
+public class ResetPasswordCommandEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapResetPasswordCommandEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapPost("/auth/resetPassword", async (ResetPasswordCommand command, ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapPost("/auth/resetPassword", async (ResetPasswordCommand command, ISender sender, CancellationToken cancellationToken) =>
             {
                 await sender.Send(command, cancellationToken);
                 return Results.NoContent();
             })
             .WithTags("Auth")
             .AllowAnonymous();
-
-        return endpoints;
-    }
 }

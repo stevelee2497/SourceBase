@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Todo;
 
@@ -17,14 +18,10 @@ public class GetTodosQueryHandler(IDbContext dbContext, ICurrentUser currentUser
     }
 }
 
-public static class GetTodosQueryEndpoint
+public class GetTodosQueryEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapGetTodosQueryEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapGet("/todos", async (ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapGet("/todos", async (ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetTodosQuery(), cancellationToken)))
             .WithTags("Todos");
-
-        return endpoints;
-    }
 }

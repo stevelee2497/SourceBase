@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Auth;
 
@@ -18,17 +19,13 @@ public class UpdateUserInfoCommandHandler(IDbContext dbContext, ICurrentUser cur
     }
 }
 
-public static class UpdateUserInfoCommandEndpoint
+public class UpdateUserInfoCommandEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapUpdateUserInfoCommandEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapPut("/auth/info", async (UpdateUserInfoCommand command, ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapPut("/auth/info", async (UpdateUserInfoCommand command, ISender sender, CancellationToken cancellationToken) =>
             {
                 await sender.Send(command, cancellationToken);
                 return Results.NoContent();
             })
             .WithTags("Auth");
-
-        return endpoints;
-    }
 }

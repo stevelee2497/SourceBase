@@ -2,6 +2,7 @@ using MediatR;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Todo;
 
@@ -19,17 +20,13 @@ public class UpdateTodoCommandHandler(IDbContext dbContext) : IRequestHandler<Up
     }
 }
 
-public static class UpdateTodoCommandEndpoint
+public class UpdateTodoCommandEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapUpdateTodoCommandEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapPut("/todos/{id:guid}", async (Guid id, UpdateTodoCommand command, ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapPut("/todos/{id:guid}", async (Guid id, UpdateTodoCommand command, ISender sender, CancellationToken cancellationToken) =>
             {
                 await sender.Send(command with { Id = id }, cancellationToken);
                 return Results.NoContent();
             })
             .WithTags("Todos");
-
-        return endpoints;
-    }
 }

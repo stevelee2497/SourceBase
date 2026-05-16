@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Common;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Auth;
 
@@ -28,17 +29,13 @@ public class RefreshTokenCommandHandler(SignInManager<ApplicationUser> signInMan
     }
 }
 
-public static class RefreshTokenCommandEndpoint
+public class RefreshTokenCommandEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapRefreshTokenCommandEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapPost("/auth/refresh", async (RefreshTokenCommand command, ISender sender, CancellationToken cancellationToken) =>
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapPost("/auth/refresh", async (RefreshTokenCommand command, ISender sender, CancellationToken cancellationToken) =>
             {
                 await sender.Send(command, cancellationToken);
             })
             .WithTags("Auth")
             .AllowAnonymous();
-
-        return endpoints;
-    }
 }

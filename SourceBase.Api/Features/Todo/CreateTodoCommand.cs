@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using MediatR;
 using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Todo;
 
@@ -23,17 +24,12 @@ public class CreateTodoCommandHandler(IDbContext dbContext, ICurrentUser current
     }
 }
 
-public static class CreateTodoCommandEndpoint
+public class CreateTodoCommandEndpoint : IEndpoint
 {
-    public static IEndpointRouteBuilder MapCreateTodoCommandEndpoint(this IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapPost("/todos", async (CreateTodoCommand command, ISender sender, CancellationToken cancellationToken) =>
-            {
-                await sender.Send(command, cancellationToken);
-                return Results.NoContent();
-            })
-            .WithTags("Todos");
-
-        return endpoints;
-    }
+    public void MapEndpoint(IEndpointRouteBuilder app) 
+        => app.MapPost("/todos", async (CreateTodoCommand command, ISender sender, CancellationToken cancellationToken) =>
+        {
+            await sender.Send(command, cancellationToken);
+            return Results.NoContent();
+        }).WithTags("Todos");
 }

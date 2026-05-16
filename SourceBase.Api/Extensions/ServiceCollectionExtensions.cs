@@ -2,11 +2,13 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
 using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.DbContexts;
+using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Extensions;
 
@@ -95,34 +97,26 @@ public static class ServiceCollectionExtensions
         ApplicationDbContext.SeedData(db, config);
     }
 
-    public static void UseMinimalApi(this WebApplication app)
+    public static void MapEndpoints(this IEndpointRouteBuilder builder, WebApplication app)
     {
-        var api = app.MapGroup("/api").RequireAuthorization();
-        api.MapFeatureEndpoints(typeof(Program).Assembly);
-    }
+        var endpoints = app.Services.GetRequiredService<IEnumerable<IEndpoint>>();
 
-    public static IEndpointRouteBuilder MapFeatureEndpoints(this IEndpointRouteBuilder endpoints, Assembly assembly)
-    {
-        var endpointMethods = assembly.DefinedTypes
-            .Where(type => type.Namespace?.StartsWith("SourceBase.Api.Features.", StringComparison.Ordinal) == true)
-            .SelectMany(type => type.DeclaredMethods)
-            .Where(method => method.IsPublic && method.IsStatic)
-            .Where(method => method.Name.StartsWith("Map", StringComparison.Ordinal) && method.Name.EndsWith("Endpoint", StringComparison.Ordinal))
-            .Where(HasValidEndpointSignature)
-            .OrderBy(method => method.DeclaringType?.FullName, StringComparer.Ordinal)
-            .ThenBy(method => method.Name, StringComparer.Ordinal);
-
-        foreach (var endpointMethod in endpointMethods)
+        foreach (IEndpoint endpoint in endpoints)
         {
-            endpointMethod.Invoke(null, [endpoints]);
+            endpoint.MapEndpoint(builder);
         }
-
-        return endpoints;
     }
 
-    private static bool HasValidEndpointSignature(MethodInfo method)
+    public static IServiceCollection AddEndpoints(this IServiceCollection services, Assembly assembly)
     {
-        var parameters = method.GetParameters();
-        return parameters.Length == 1 && typeof(IEndpointRouteBuilder).IsAssignableFrom(parameters[0].ParameterType);
+        var serviceDescriptors = assembly
+            .DefinedTypes
+            .Where(type => type is { IsAbstract: false, IsInterface: false } && type.IsAssignableTo(typeof(IEndpoint)))
+            .Select(type => ServiceDescriptor.Transient(typeof(IEndpoint), type))
+            .ToArray();
+
+        services.TryAddEnumerable(serviceDescriptors);
+
+        return services;
     }
 }
