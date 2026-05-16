@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using SourceBase.Api.Common;
-using SourceBase.Api.Domain.Entities;
-using SourceBase.Api.Utilities;
+using SourceBase.Api.Entities;
+using SourceBase.Api.Shared;
+using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
@@ -14,7 +14,7 @@ public class Refresh : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/refresh", Handler).WithTags("Auth").AllowAnonymous();
 
-    private async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handler([FromBody] RefreshTokenRequest request, SignInManager<ApplicationUser> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, CancellationToken cancellationToken)
+    private async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handler([FromBody] RefreshTokenRequest request, SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, CancellationToken cancellationToken)
     {
         var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(request.Token);

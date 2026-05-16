@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using SourceBase.Api.Domain.Entities;
-using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Entities;
+using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Infrastructure.DbContexts;
 

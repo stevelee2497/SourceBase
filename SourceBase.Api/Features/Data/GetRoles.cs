@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Api.Infrastructure.Interfaces;
-using SourceBase.Api.Utilities;
+using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Data;
 

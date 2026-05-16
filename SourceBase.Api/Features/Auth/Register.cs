@@ -2,10 +2,9 @@ using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SourceBase.Api.Common;
-using SourceBase.Api.Domain.Entities;
-using SourceBase.Api.Infrastructure.Interfaces;
-using SourceBase.Api.Utilities;
+using SourceBase.Api.Entities;
+using SourceBase.Api.Shared;
+using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
@@ -13,9 +12,9 @@ public class Register : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/register", Handler).WithTags("Auth").AllowAnonymous();
 
-    private async Task<NoContent> Handler([FromBody] RegisterRequest request, UserManager<ApplicationUser> userManager, IEmailHelper emailHelper, AppSettings appSettings, CancellationToken cancellationToken)
+    private async Task<NoContent> Handler([FromBody] RegisterRequest request, UserManager<UserEntity> userManager, IEmailHelper emailHelper, AppSettings appSettings, CancellationToken cancellationToken)
     {
-        var user = new ApplicationUser { Email = request.Email, UserName = request.Email };
+        var user = new UserEntity { Email = request.Email, UserName = request.Email };
         var createResult = await userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
             throw new ApiInternalException(createResult.Errors.First().Description);

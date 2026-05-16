@@ -2,13 +2,15 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
-using SourceBase.Api.Common;
+using SourceBase.Api.Entities;
 using SourceBase.Api.Infrastructure.DbContexts;
-using SourceBase.Api.Utilities;
+using SourceBase.Api.Shared;
+using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Extensions;
 
@@ -66,8 +68,7 @@ public static class ServiceCollectionExtensions
             c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
             {
                 {
-                    new OpenApiSecuritySchemeReference("BearerAuth", document, null),
-                    []
+                    new OpenApiSecuritySchemeReference("BearerAuth", document, null), []
                 }
             });
 
@@ -86,15 +87,6 @@ public static class ServiceCollectionExtensions
     {
         Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
         builder.Host.UseSerilog();
-    }
-
-    public static void UseSeeding(this WebApplication app)
-    {
-        using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-        db.Database.EnsureCreated();
-        ApplicationDbContext.SeedData(db, config);
     }
 
     public static void MapEndpoints(this IEndpointRouteBuilder builder, WebApplication app)

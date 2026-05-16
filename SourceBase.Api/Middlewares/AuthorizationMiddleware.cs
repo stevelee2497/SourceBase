@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using SourceBase.Api.Common;
+using SourceBase.Api.Shared;
 
 namespace SourceBase.Api.Middlewares;
 

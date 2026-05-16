@@ -1,4 +1,4 @@
-namespace SourceBase.Api.Common;
+namespace SourceBase.Api.Shared;
 
 public static class Constants
 {

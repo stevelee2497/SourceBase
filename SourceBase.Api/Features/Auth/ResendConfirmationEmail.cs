@@ -2,10 +2,9 @@ using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SourceBase.Api.Common;
-using SourceBase.Api.Domain.Entities;
-using SourceBase.Api.Infrastructure.Interfaces;
-using SourceBase.Api.Utilities;
+using SourceBase.Api.Entities;
+using SourceBase.Api.Shared;
+using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
@@ -13,7 +12,7 @@ public class ResendConfirmationEmail : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/resendConfirmationEmail", Handler).WithTags("Auth").AllowAnonymous();
 
-    private async Task<NoContent> Handler([FromBody] ResendConfirmationEmailRequest request, UserManager<ApplicationUser> userManager, IEmailHelper emailHelper, AppSettings appSettings, CancellationToken cancellationToken)
+    private async Task<NoContent> Handler([FromBody] ResendConfirmationEmailRequest request, UserManager<UserEntity> userManager, IEmailHelper emailHelper, AppSettings appSettings, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         if (user.EmailConfirmed)

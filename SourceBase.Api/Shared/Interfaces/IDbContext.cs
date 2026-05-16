@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Api.Domain.Entities;
+using SourceBase.Api.Entities;
 
-namespace SourceBase.Api.Infrastructure.Interfaces;
+namespace SourceBase.Api.Shared.Interfaces;
 
 public interface IDbContext
 {
-    DbSet<ApplicationUser> Users { get; }
+    DbSet<UserEntity> Users { get; }
 
-    DbSet<ApplicationRole> Roles { get; }
+    DbSet<RoleEntity> Roles { get; }
 
     DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 

@@ -1,4 +1,4 @@
-﻿namespace SourceBase.Api.Domain.Entities;
+﻿namespace SourceBase.Api.Entities;
 
 public class AuditHistoryEntity
 {

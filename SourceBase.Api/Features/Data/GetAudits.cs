@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Api.Common;
-using SourceBase.Api.Domain.Entities;
-using SourceBase.Api.Infrastructure.Interfaces;
-using SourceBase.Api.Utilities;
+using SourceBase.Api.Entities;
+using SourceBase.Api.Shared;
+using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Data;
 

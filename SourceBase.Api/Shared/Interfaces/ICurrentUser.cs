@@ -1,4 +1,4 @@
-namespace SourceBase.Api.Infrastructure.Interfaces;
+namespace SourceBase.Api.Shared.Interfaces;
 
 public interface ICurrentUser
 {

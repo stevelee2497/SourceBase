@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
-using SourceBase.Api.Common;
-using SourceBase.Api.Domain.Entities;
-using SourceBase.Api.Infrastructure.Interfaces;
-using SourceBase.Api.Utilities;
+using SourceBase.Api.Entities;
+using SourceBase.Api.Shared;
+using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
@@ -11,7 +10,7 @@ public class GetUserInfo : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/auth/info", Handler).WithTags("Auth");
 
-    private async Task<Ok<GetUserInfoResponse>> Handler(UserManager<ApplicationUser> userManager, ICurrentUser currentUser, CancellationToken cancellationToken)
+    private async Task<Ok<GetUserInfoResponse>> Handler(UserManager<UserEntity> userManager, ICurrentUser currentUser, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(currentUser.UserId.ToString()) ?? throw new NotFoundException();
         var roles = await userManager.GetRolesAsync(user);

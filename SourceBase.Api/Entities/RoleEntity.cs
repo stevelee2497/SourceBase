@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace SourceBase.Api.Domain.Entities;
+namespace SourceBase.Api.Entities;
 
-public class ApplicationRole : IdentityRole<Guid>, IBaseEntity
+public class RoleEntity : IdentityRole<Guid>, IBaseEntity
 {
     public DateTime? CreatedOn { get; set; }
 

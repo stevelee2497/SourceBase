@@ -2,14 +2,13 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using SourceBase.Api.Domain.Entities;
-using SourceBase.Api.Common;
-using SourceBase.Api.Infrastructure.Identity;
-using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Entities;
+using SourceBase.Api.Shared;
+using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Infrastructure.DbContexts;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IConfiguration configuration) : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>(options), IDbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IConfiguration configuration) : IdentityDbContext<UserEntity, RoleEntity, Guid>(options), IDbContext
 {
     public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
@@ -18,7 +17,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-        optionsBuilder.UseSqlite(connectionString);
+        optionsBuilder.UseSqlite(connectionString).UseSeeding((context, _) => SeedData(context, configuration));
         optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser)); // Audit history for all actions
         optionsBuilder.AddInterceptors(new ApplicationDbContextAuditInterceptor(currentUser)); // Audit trailing for create/update/delete actions
     }
@@ -33,11 +32,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasMaxLength(50);
 
         // Identity table mappings
-        modelBuilder.Entity<ApplicationUser>().ToTable("Users");
+        modelBuilder.Entity<UserEntity>().ToTable("Users");
         modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
         modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
         modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
-        modelBuilder.Entity<ApplicationRole>().ToTable("Roles");
+        modelBuilder.Entity<RoleEntity>().ToTable("Roles");
         modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
         modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
     }
@@ -50,25 +49,25 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         foreach (var role in appSettings.Roles)
         {
-            var existingRole = context.Set<ApplicationRole>().FirstOrDefault(b => b.Name == role);
+            var existingRole = context.Set<RoleEntity>().FirstOrDefault(b => b.Name == role);
             if (existingRole == null)
             {
-                existingRole = new ApplicationRole
+                existingRole = new RoleEntity
                 {
                     Id = Guid.NewGuid(),
                     Name = role,
                     NormalizedName = role.ToUpper(),
                     ConcurrencyStamp = Guid.NewGuid().ToString()
                 };
-                context.Set<ApplicationRole>().Add(existingRole);
+                context.Set<RoleEntity>().Add(existingRole);
             }
             context.SaveChanges();
         }
 
-        var adminUser = context.Set<ApplicationUser>().FirstOrDefault(b => b.Email == appSettings.AdminEmail);
+        var adminUser = context.Set<UserEntity>().FirstOrDefault(b => b.Email == appSettings.AdminEmail);
         if (adminUser == null)
         {
-            var adminUserEntity = new ApplicationUser
+            var adminUserEntity = new UserEntity
             {
                 Id = Guid.NewGuid(),
                 UserName = appSettings.AdminEmail,
@@ -78,13 +77,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 EmailConfirmed = true,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 ConcurrencyStamp = Guid.NewGuid().ToString(),
-                PasswordHash = new PasswordHasher<ApplicationUser>().HashPassword(null!, appSettings.AdminPassword),
+                PasswordHash = new PasswordHasher<UserEntity>().HashPassword(null!, appSettings.AdminPassword),
             };
-            context.Set<ApplicationUser>().Add(adminUserEntity);
+            context.Set<UserEntity>().Add(adminUserEntity);
             context.SaveChanges();
 
             // Assign all roles to admin
-            foreach (var role in context.Set<ApplicationRole>().ToList())
+            foreach (var role in context.Set<RoleEntity>().ToList())
             {
                 context.Set<IdentityUserRole<Guid>>().Add(new IdentityUserRole<Guid>
                 {

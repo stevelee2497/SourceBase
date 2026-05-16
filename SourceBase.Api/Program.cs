@@ -1,11 +1,11 @@
-using SourceBase.Api.Domain.Entities;
+using SourceBase.Api.Entities;
 using SourceBase.Api.Extensions;
-using SourceBase.Api.Common;
 using SourceBase.Api.Infrastructure.DbContexts;
 using SourceBase.Api.Infrastructure.Helpers;
 using SourceBase.Api.Infrastructure.Identity;
-using SourceBase.Api.Infrastructure.Interfaces;
 using SourceBase.Api.Middlewares;
+using SourceBase.Api.Shared;
+using SourceBase.Api.Shared.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +18,7 @@ builder.Services.AddMvcConfigs();
 builder.Services.AddAppSettings(builder.Configuration);
 builder.Services.AddDbContext<ApplicationDbContext>();
 builder.Services.AddScoped<IDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
-builder.Services.AddIdentityApiEndpoints<ApplicationUser>().AddRoles<ApplicationRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentityApiEndpoints<UserEntity>().AddRoles<RoleEntity>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddScoped<IEmailHelper, SendGridEmailHelper>();
 builder.Services.AddCorsPolicies(builder.Configuration);
@@ -36,7 +36,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseSeeding();
 app.MapGroup("/api").RequireAuthorization().MapEndpoints(app);
 
 app.Run();

@@ -1,4 +1,4 @@
-namespace SourceBase.Api.Utilities;
+namespace SourceBase.Api.Shared.Interfaces;
 
 public interface IEndpoint
 {

@@ -1,7 +1,7 @@
 ﻿using SendGrid;
 using SendGrid.Helpers.Mail;
-using SourceBase.Api.Common;
-using SourceBase.Api.Infrastructure.Interfaces;
+using SourceBase.Api.Shared;
+using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Infrastructure.Helpers;
 

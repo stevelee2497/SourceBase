@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Api.Domain.Entities;
-using SourceBase.Api.Infrastructure.Interfaces;
-using SourceBase.Api.Utilities;
+using SourceBase.Api.Entities;
+using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
@@ -14,7 +13,7 @@ public class GetTodos : IEndpoint
     {
        var todos = await dbContext.TodoItems
             .Where(x => x.UserId == currentUser.UserId && (request.Status == null || x.Status == request.Status) && (request.Date == null || x.Date == request.Date))
-            .Select(todo => new TodoItemDetailResponse(todo))
+            .Select(todo => new GetTodoResponse(todo))
             .ToListAsync(cancellationToken);
        return TypedResults.Ok(new GetTodosResponse(todos));
     }
@@ -22,5 +21,5 @@ public class GetTodos : IEndpoint
 
 public record GetTodosRequest(TodoItemStatus? Status, DateOnly? Date);
 
-public record GetTodosResponse(IEnumerable<TodoItemDetailResponse> Items);
+public record GetTodosResponse(IEnumerable<GetTodoResponse> Items);
 

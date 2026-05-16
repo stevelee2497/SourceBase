@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SourceBase.Api.Domain.Entities;
+namespace SourceBase.Api.Entities;
 
 public class TodoItemEntity : BaseEntity
 {
