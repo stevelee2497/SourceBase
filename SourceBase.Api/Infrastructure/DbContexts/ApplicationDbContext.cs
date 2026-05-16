@@ -29,7 +29,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         modelBuilder.Entity<TodoItemEntity>()
             .Property(todoItem => todoItem.Status)
-            .HasConversion(new EnumToStringConverter<ItemStatus>())
+            .HasConversion(new EnumToStringConverter<TodoItemStatus>())
             .HasMaxLength(50);
 
         // Identity table mappings

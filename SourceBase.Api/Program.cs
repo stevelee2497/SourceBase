@@ -19,7 +19,6 @@ builder.Services.AddAppSettings(builder.Configuration);
 builder.Services.AddDbContext<ApplicationDbContext>();
 builder.Services.AddScoped<IDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>().AddRoles<ApplicationRole>().AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddScoped<IEmailHelper, SendGridEmailHelper>();
 builder.Services.AddCorsPolicies(builder.Configuration);

@@ -9,12 +9,12 @@ public class TodoItemEntity : BaseEntity
     public DateOnly Date { get; set; }
 
     [Column(TypeName = "nvarchar(50)")]
-    public ItemStatus Status { get; set; }
+    public TodoItemStatus Status { get; set; }
 
     public required Guid UserId { get; set; }
 }
 
-public enum ItemStatus
+public enum TodoItemStatus
 {
     Open,
     Completed,

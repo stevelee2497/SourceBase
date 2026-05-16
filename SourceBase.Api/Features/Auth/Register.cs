@@ -1,47 +1,35 @@
 using System.Text;
-using MediatR;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
-using SourceBase.Api.Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Common;
+using SourceBase.Api.Domain.Entities;
 using SourceBase.Api.Infrastructure.Interfaces;
 using SourceBase.Api.Utilities;
 
 namespace SourceBase.Api.Features.Auth;
 
-public record RegisterCommand(string Email, string Password) : IRequest;
-
-public class RegisterCommandHandler(UserManager<ApplicationUser> userManager, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<RegisterCommand>
+public class Register : IEndpoint
 {
-    public async Task Handle(RegisterCommand request, CancellationToken cancellationToken)
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/register", Handler).WithTags("Auth").AllowAnonymous();
+
+    private async Task<NoContent> Handler([FromBody] RegisterRequest request, UserManager<ApplicationUser> userManager, IEmailHelper emailHelper, AppSettings appSettings, CancellationToken cancellationToken)
     {
         var user = new ApplicationUser { Email = request.Email, UserName = request.Email };
         var createResult = await userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
-        {
             throw new ApiInternalException(createResult.Errors.First().Description);
-        }
 
         var persistedUser = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         if (persistedUser.EmailConfirmed)
-        {
             throw new ApiInternalException("Email already confirmed");
-        }
 
         var token = await userManager.GenerateEmailConfirmationTokenAsync(persistedUser);
         var code = Base64UrlHelper.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var confirmEmailUrl = $"{appSettings.WebUrl}/confirmEmail?email={request.Email}&code={code}";
         await emailHelper.SendEmailAsync(request.Email, "Confirm your email", $"Please confirm your account by clicking <a href='{confirmEmailUrl}'>here</a>.");
+        return TypedResults.NoContent();
     }
 }
 
-public class RegisterCommandEndpoint : IEndpoint
-{
-    public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapPost("/auth/register", async (RegisterCommand command, ISender sender, CancellationToken cancellationToken) =>
-            {
-                await sender.Send(command, cancellationToken);
-                return Results.NoContent();
-            })
-            .WithTags("Auth")
-            .AllowAnonymous();
-}
+public record RegisterRequest(string Email, string Password);
