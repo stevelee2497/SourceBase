@@ -1,34 +1,20 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SourceBase.Api.Infrastructure.DbContexts;
+using Xunit;
 
 namespace SourceBase.Tests.Infrastructure;
 
-public class WebAppFactory : WebApplicationFactory<Program>
+public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    public static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        Converters = { new JsonStringEnumConverter() }
-    };
-    // A unique name per factory instance keeps databases isolated between test classes
-    private readonly string _dbName = $"sourcebase_test_{Guid.NewGuid():N}";
-    private readonly string _connectionString;
-
-    // Kept open for the lifetime of the factory so SQLite doesn't destroy the in-memory DB
-    private SqliteConnection? _anchorConnection;
-
     public const string AdminEmail = "admin@test.com";
     public const string AdminPassword = "Test@1234!";
 
-    public WebAppFactory()
-    {
-        _connectionString = $"Data Source={_dbName};Mode=Memory;Cache=Shared";
-    }
+    private SqliteConnection? _anchorConnection;
+    private readonly string _connectionString = $"Data Source=test_{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -42,17 +28,12 @@ public class WebAppFactory : WebApplicationFactory<Program>
                 ["AppSettings:Roles:0"] = "Admin",
                 ["AppSettings:Roles:1"] = "User",
                 ["AppSettings:WebUrl"] = "http://localhost",
-                ["AppSettings:SendGridApiKey"] = "test-key",
-                ["AppSettings:SendGridAccountOwner"] = "test@test.com",
-                ["Serilog:MinimumLevel"] = "Warning",
-                ["Serilog:WriteTo:1:Name"] = "Console",
             });
         });
     }
 
     public async Task InitializeAsync()
     {
-        // Open the anchor connection first so the named in-memory DB is never dropped
         _anchorConnection = new SqliteConnection(_connectionString);
         await _anchorConnection.OpenAsync();
 
@@ -61,17 +42,17 @@ public class WebAppFactory : WebApplicationFactory<Program>
         await db.Database.EnsureCreatedAsync();
     }
 
+    public new async Task DisposeAsync()
+    {
+        if (_anchorConnection != null)
+            await _anchorConnection.DisposeAsync();
+        await base.DisposeAsync().AsTask();
+    }
+
     public async Task<HttpClient> CreateAuthorizedClient()
     {
         var client = CreateClient();
         await client.AuthorizeAsync();
         return client;
-    }
-
-    public new async Task DisposeAsync()
-    {
-        await base.DisposeAsync().AsTask();
-        if (_anchorConnection != null)
-            await _anchorConnection.DisposeAsync();
     }
 }

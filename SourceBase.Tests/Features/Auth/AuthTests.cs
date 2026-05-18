@@ -1,31 +1,18 @@
 using System.Net;
-using System.Net.Http.Json;
 using FluentAssertions;
 using SourceBase.Api.Features.Auth;
 using SourceBase.Tests.Infrastructure;
+using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
-[TestFixture]
-public class AuthTests
+public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    private WebAppFactory _factory = null!;
-
-    [OneTimeSetUp]
-    public async Task SetUp()
-    {
-        _factory = new WebAppFactory();
-        await _factory.InitializeAsync();
-    }
-
-    [OneTimeTearDown]
-    public async Task TearDown() => await _factory.DisposeAsync();
-
-    [Test]
+    [Fact]
     public async Task Login_WithValidCredentials_ReturnsOkAndAccessToken()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = factory.CreateClient();
 
         // Act
         var response = await client.PostAsJsonAsync("/api/auth/login", new
@@ -36,17 +23,17 @@ public class AuthTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<LoginResponse>(WebAppFactory.JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
         body.Should().NotBeNull();
         body!.AccessToken.Should().NotBeNullOrEmpty();
         body.RefreshToken.Should().NotBeNullOrEmpty();
     }
 
-    [Test]
+    [Fact]
     public async Task Login_WithWrongPassword_ReturnsUnauthorized()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = factory.CreateClient();
 
         // Act
         var response = await client.PostAsJsonAsync("/api/auth/login", new
@@ -59,11 +46,11 @@ public class AuthTests
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Test]
+    [Fact]
     public async Task Login_WithUnknownEmail_ReturnsUnauthorized()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = factory.CreateClient();
 
         // Act
         var response = await client.PostAsJsonAsync("/api/auth/login", new
@@ -76,28 +63,28 @@ public class AuthTests
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Test]
+    [Fact]
     public async Task GetUserInfo_WithValidToken_ReturnsOk()
     {
         // Arrange
-        var client = await _factory.CreateAuthorizedClient();
+        var client = await factory.CreateAuthorizedClient();
 
         // Act
         var response = await client.GetAsync("/api/auth/info");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>(WebAppFactory.JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
         body.Should().NotBeNull();
         body!.Email.Should().Be(WebAppFactory.AdminEmail);
         body.Roles.Should().NotBeEmpty();
     }
 
-    [Test]
+    [Fact]
     public async Task GetUserInfo_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = factory.CreateClient();
 
         // Act
         var response = await client.GetAsync("/api/auth/info");
