@@ -17,7 +17,7 @@ public class ResendConfirmationEmail : IEndpoint
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         if (user.EmailConfirmed)
-            throw new ApiInternalException("Email already confirmed");
+            throw new BadRequestException("Email already confirmed");
 
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var code = Base64UrlHelper.Base64UrlEncode(Encoding.UTF8.GetBytes(token));

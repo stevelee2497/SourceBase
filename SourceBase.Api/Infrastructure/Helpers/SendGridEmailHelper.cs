@@ -25,7 +25,7 @@ public class SendGridEmailHelper(AppSettings appSettings, ILogger<SendGridEmailH
         if (!response.IsSuccessStatusCode)
         {
             logger.LogError("Failed to send email to {To} with subject {Subject} and body {Body}", to, subject, body);
-            throw new ApiInternalException("Failed to send email");
+            throw new BadRequestException("Failed to send email");
         }
     }
 }

@@ -190,7 +190,7 @@ public class TodoTests
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         var getResponse = await client.GetAsync($"/api/todos/{id}");
-        getResponse.StatusCode.Should().Be(HttpStatusCode.InternalServerError); // NotFoundException maps to 500
+        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound); 
     }
 
     [Test]
@@ -204,6 +204,6 @@ public class TodoTests
         var response = await client.GetAsync($"/api/todos/{id}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError); // NotFoundException maps to 500
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound); 
     }
 }

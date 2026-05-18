@@ -19,7 +19,7 @@ public class ResetPassword : IEndpoint
         var decodedCode = Encoding.UTF8.GetString(Base64UrlHelper.Base64UrlDecode(request.Code));
         var result = await userManager.ResetPasswordAsync(user, decodedCode, request.NewPassword);
         if (!result.Succeeded)
-            throw new ApiInternalException(result.Errors.First().Description);
+            throw new BadRequestException(result.Errors.First().Description);
 
         return TypedResults.NoContent();
     }

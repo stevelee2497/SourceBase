@@ -18,11 +18,11 @@ public class Register : IEndpoint
         var user = new UserEntity { Email = request.Email, UserName = request.Email };
         var createResult = await userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
-            throw new ApiInternalException(createResult.Errors.First().Description);
+            throw new BadRequestException(createResult.Errors.First().Description);
 
         var persistedUser = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         if (persistedUser.EmailConfirmed)
-            throw new ApiInternalException("Email already confirmed");
+            throw new BadRequestException("Email already confirmed");
 
         var token = await userManager.GenerateEmailConfirmationTokenAsync(persistedUser);
         var code = Base64UrlHelper.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
