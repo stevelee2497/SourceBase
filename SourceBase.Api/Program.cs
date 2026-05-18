@@ -20,8 +20,7 @@ var app = builder.Build();
 
 if (app.Environment.IsProduction()) app.UseHttpsRedirection();
 
-app.UseMiddleware<ExceptionMiddleware>();
-app.UseMiddleware<AuthorizationMiddleware>();
+app.UseErrorResponse();
 app.UseCors(Constants.CorsCustomPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
