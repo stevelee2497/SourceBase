@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,4 +21,14 @@ public class UpdateUserInfo : IEndpoint
     }
 }
 
-public record UpdateUserInfoRequest(string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);
+public record UpdateUserInfoRequest(string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles);
+
+public class UpdateUserInfoRequestValidator : AbstractValidator<UpdateUserInfoRequest>
+{
+    public UpdateUserInfoRequestValidator()
+    {
+        RuleFor(x => x.FirstName).MaximumLength(100).When(x => x.FirstName is not null);
+        RuleFor(x => x.LastName).MaximumLength(100).When(x => x.LastName is not null);
+        RuleFor(x => x.PhoneNumber).MaximumLength(20).When(x => x.PhoneNumber is not null);
+    }
+}

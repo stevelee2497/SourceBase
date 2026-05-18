@@ -11,7 +11,7 @@ using SourceBase.Api.Infrastructure.DbContexts;
 namespace SourceBase.Api.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260517145932_Init")]
+    [Migration("20260518095821_Init")]
     partial class Init
     {
         /// <inheritdoc />

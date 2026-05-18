@@ -1,3 +1,4 @@
+using FluentValidation;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -30,3 +31,12 @@ public class Login : IEndpoint
 public record LoginRequest(string Email, string Password);
 
 public record LoginResponse(string TokenType, string AccessToken, int expiresIn, string RefreshToken);
+
+public class LoginRequestValidator : AbstractValidator<LoginRequest>
+{
+    public LoginRequestValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Password).NotEmpty();
+    }
+}

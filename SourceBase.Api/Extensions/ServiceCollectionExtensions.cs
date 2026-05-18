@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
@@ -121,5 +122,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<IEmailHelper, SendGridEmailHelper>();
+    }
+
+    public static void AddFluentValidation(this IServiceCollection services, Assembly assembly)
+    {
+        services.AddValidatorsFromAssembly(assembly);
     }
 }

@@ -1,3 +1,4 @@
+using FluentValidation;
 using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -25,3 +26,13 @@ public class ResetPassword : IEndpoint
 }
 
 public record ResetPasswordRequest(string Email, string Code, string NewPassword);
+
+public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest>
+{
+    public ResetPasswordRequestValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Code).NotEmpty();
+        RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(6);
+    }
+}

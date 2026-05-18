@@ -13,7 +13,7 @@ builder.Services.AddMvcConfigs();
 builder.Services.AddAppSettings(builder.Configuration);
 builder.Services.AddInfrastructure();
 builder.Services.AddCorsPolicies(builder.Configuration);
-builder.Services.AddValidation();
+builder.Services.AddFluentValidation(typeof(Program).Assembly);
 builder.Services.AddEndpoints(typeof(Program).Assembly);
 
 var app = builder.Build();
@@ -26,6 +26,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI();
-app.MapGroup("/api").RequireAuthorization().MapEndpoints(app);
+app.MapGroup("/api").RequireAuthorization().AddEndpointFilter<ValidationEndpointFilter>().MapEndpoints(app);
 
 app.Run();

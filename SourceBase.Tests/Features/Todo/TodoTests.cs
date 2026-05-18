@@ -110,6 +110,24 @@ public class TodoTests
     }
 
     [Test]
+    public async Task CreateTodo_WithMissingDate_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await _factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PostAsJsonAsync("/api/todos", new
+        {
+            title = "Missing Date",
+            status = "Open",
+            // date intentionally omitted
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Test]
     public async Task GetTodo_AfterCreate_ReturnsCorrectData()
     {
         // Arrange

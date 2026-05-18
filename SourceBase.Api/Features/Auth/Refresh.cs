@@ -1,3 +1,4 @@
+using FluentValidation;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -30,3 +31,11 @@ public class Refresh : IEndpoint
 }
 
 public record RefreshTokenRequest(string Token);
+
+public class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
+{
+    public RefreshTokenRequestValidator()
+    {
+        RuleFor(x => x.Token).NotEmpty();
+    }
+}

@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
@@ -24,4 +24,13 @@ public class CreateTodo : IEndpoint
     }
 }
 
-public record CreateTodoRequest([Required] DateOnly? Date, [Required] string Title, TodoItemStatus Status);
+public record CreateTodoRequest(DateOnly? Date, string Title, TodoItemStatus Status);
+
+public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
+{
+    public CreateTodoRequestValidator()
+    {
+        RuleFor(x => x.Date).NotNull();
+        RuleFor(x => x.Title).NotEmpty();
+    }
+}

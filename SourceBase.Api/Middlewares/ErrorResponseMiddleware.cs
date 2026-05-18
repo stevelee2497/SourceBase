@@ -84,7 +84,7 @@ public static class ErrorResponseMiddlewareUtilities
         {
             Type = error.Code,
             Title = error.Message,
-            Extensions = { [nameof(error.Errors)] = error.Errors }
+            Extensions = { [ JsonNamingPolicy.CamelCase.ConvertName(nameof(error.Errors)) ] = error.Errors }
         });
     }
     

@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace SourceBase.Api.Entities;
 
 public class TodoItemEntity : BaseAuditableEntity

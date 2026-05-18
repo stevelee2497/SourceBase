@@ -1,3 +1,4 @@
+using FluentValidation;
 using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -24,3 +25,11 @@ public class ForgotPassword : IEndpoint
 }
 
 public record ForgotPasswordRequest(string Email);
+
+public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
+{
+    public ForgotPasswordRequestValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+    }
+}

@@ -1,3 +1,4 @@
+using FluentValidation;
 using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -27,3 +28,11 @@ public class ResendConfirmationEmail : IEndpoint
 }
 
 public record ResendConfirmationEmailRequest(string Email);
+
+public class ResendConfirmationEmailRequestValidator : AbstractValidator<ResendConfirmationEmailRequest>
+{
+    public ResendConfirmationEmailRequestValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+    }
+}

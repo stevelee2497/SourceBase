@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
@@ -22,3 +23,11 @@ public class UpdateTodo : IEndpoint
 }
 
 public record UpdateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
+
+public class UpdateTodoRequestValidator : AbstractValidator<UpdateTodoRequest>
+{
+    public UpdateTodoRequestValidator()
+    {
+        RuleFor(x => x.Title).NotEmpty();
+    }
+}
