@@ -12,7 +12,7 @@ public class ConfirmEmail : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/confirmEmail", Handler).WithTags("Auth").AllowAnonymous();
 
-    private async Task<NoContent> Handler([FromBody] ConfirmEmailRequest request, UserManager<UserEntity> userManager, CancellationToken cancellationToken)
+    private async Task<NoContent> Handler([FromBody] ConfirmEmailRequest request, UserManager<UserEntity> userManager, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new UnAuthorizedException();
         var decodedCode = Encoding.UTF8.GetString(Base64UrlHelper.Base64UrlDecode(request.Code));

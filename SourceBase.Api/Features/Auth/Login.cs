@@ -12,7 +12,7 @@ public class Login : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/login", Handler).WithTags("Auth").AllowAnonymous();
 
-    private async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handler([FromBody] LoginRequest request, UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager, CancellationToken cancellationToken)
+    private async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handler([FromBody] LoginRequest request, UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user == null || !await userManager.IsEmailConfirmedAsync(user))

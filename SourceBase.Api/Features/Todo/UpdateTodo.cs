@@ -10,13 +10,13 @@ public class UpdateTodo : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPut("/todos/{id:guid}", Handler).WithTags("Todos");
 
-    private async Task<NoContent> Handler(Guid id, [FromBody] UpdateTodoRequest request, IDbContext dbContext, CancellationToken cancellationToken)
+    private async Task<NoContent> Handler(Guid id, [FromBody] UpdateTodoRequest request, IDbContext dbContext, CancellationToken ct)
     {
-        var item = await dbContext.TodoItems.FindAsync([id], cancellationToken) ?? throw new NotFoundException();
+        var item = await dbContext.TodoItems.FindAsync([id], ct) ?? throw new NotFoundException();
         item.Title = request.Title;
         item.Status = request.Status;
         item.Date = request.Date;
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(ct);
         return TypedResults.NoContent();
     }
 }

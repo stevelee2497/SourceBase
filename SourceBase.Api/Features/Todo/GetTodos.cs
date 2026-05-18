@@ -9,12 +9,12 @@ public class GetTodos : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/todos", Handler).WithTags("Todos");
 
-    private async Task<Ok<GetTodosResponse>> Handler([AsParameters]GetTodosRequest request, IDbContext dbContext, ICurrentUser currentUser, CancellationToken cancellationToken)
+    private async Task<Ok<GetTodosResponse>> Handler([AsParameters]GetTodosRequest request, IDbContext dbContext, ICurrentUser currentUser, CancellationToken ct)
     {
        var todos = await dbContext.TodoItems
             .Where(x => x.UserId == currentUser.UserId && (request.Status == null || x.Status == request.Status) && (request.Date == null || x.Date == request.Date))
             .Select(todo => new GetTodoResponse(todo))
-            .ToListAsync(cancellationToken);
+            .ToListAsync(ct);
        return TypedResults.Ok(new GetTodosResponse(todos));
     }
 }

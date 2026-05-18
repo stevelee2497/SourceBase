@@ -14,7 +14,7 @@ public class Refresh : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/refresh", Handler).WithTags("Auth").AllowAnonymous();
 
-    private async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handler([FromBody] RefreshTokenRequest request, SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, CancellationToken cancellationToken)
+    private async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handler([FromBody] RefreshTokenRequest request, SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, CancellationToken ct)
     {
         var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(request.Token);

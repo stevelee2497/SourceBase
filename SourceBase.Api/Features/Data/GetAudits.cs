@@ -11,9 +11,9 @@ public class GetAudits : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/audits", Handler).WithTags("Data").RequireAuthorization(new AuthorizeAttribute { Roles = Roles.Admin });
 
-    private async Task<Ok<List<AuditHistoryEntity>>> Handler(IDbContext dbContext, CancellationToken cancellationToken)
+    private async Task<Ok<List<AuditHistoryEntity>>> Handler(IDbContext dbContext, CancellationToken ct)
     {
-        var audits = await dbContext.AuditHistories.ToListAsync(cancellationToken);
+        var audits = await dbContext.AuditHistories.ToListAsync(ct);
         return TypedResults.Ok(audits);
     }
 }

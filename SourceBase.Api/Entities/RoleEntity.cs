@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace SourceBase.Api.Entities;
 
-public class RoleEntity : IdentityRole<Guid>, IBaseEntity
+public class RoleEntity : IdentityRole<Guid>, IAuditableEntity
 {
     public DateTime? CreatedOn { get; set; }
 

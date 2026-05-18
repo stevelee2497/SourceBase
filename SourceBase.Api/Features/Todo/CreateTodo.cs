@@ -10,7 +10,7 @@ public class CreateTodo : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/todos", Handler).WithTags("Todos");
 
-    private async Task<NoContent> Handler([FromBody] CreateTodoRequest request, IDbContext dbContext, ICurrentUser currentUser, CancellationToken cancellationToken)
+    private async Task<NoContent> Handler([FromBody] CreateTodoRequest request, IDbContext dbContext, ICurrentUser currentUser, CancellationToken ct)
     {
         dbContext.TodoItems.Add(new TodoItemEntity
         {
@@ -19,7 +19,7 @@ public class CreateTodo : IEndpoint
             Status = request.Status,
             UserId = currentUser.UserId,
         });
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(ct);
         return TypedResults.NoContent();
     }
 }

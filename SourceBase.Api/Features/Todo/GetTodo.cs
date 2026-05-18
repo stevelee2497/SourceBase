@@ -9,9 +9,9 @@ public class GetTodo : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/todos/{id:guid}", Handler).WithTags("Todos");
 
-    private async Task<Ok<GetTodoResponse>> Handler(Guid id, IDbContext dbContext, CancellationToken cancellationToken)
+    private async Task<Ok<GetTodoResponse>> Handler(Guid id, IDbContext dbContext, CancellationToken ct)
     {
-        var todo = await dbContext.TodoItems.FindAsync([id], cancellationToken) ?? throw new NotFoundException();
+        var todo = await dbContext.TodoItems.FindAsync([id], ct) ?? throw new NotFoundException();
         return TypedResults.Ok(new GetTodoResponse(todo));
     }
 }

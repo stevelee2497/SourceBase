@@ -13,5 +13,5 @@ public interface IDbContext
 
     DbSet<TodoItemEntity> TodoItems { get; set; }
 
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    Task<int> SaveChangesAsync(CancellationToken ct);
 }

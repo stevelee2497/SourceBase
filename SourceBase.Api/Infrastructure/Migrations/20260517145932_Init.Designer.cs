@@ -11,7 +11,7 @@ using SourceBase.Api.Infrastructure.DbContexts;
 namespace SourceBase.Api.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260516064220_Init")]
+    [Migration("20260517145932_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -213,8 +213,7 @@ namespace SourceBase.Api.Infrastructure.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
                         .IsRequired()

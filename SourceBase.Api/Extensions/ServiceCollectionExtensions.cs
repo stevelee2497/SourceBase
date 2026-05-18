@@ -2,13 +2,14 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Infrastructure.DbContexts;
+using SourceBase.Api.Infrastructure.Helpers;
+using SourceBase.Api.Infrastructure.Identity;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
@@ -93,7 +94,7 @@ public static class ServiceCollectionExtensions
     {
         var endpoints = app.Services.GetRequiredService<IEnumerable<IEndpoint>>();
 
-        foreach (IEndpoint endpoint in endpoints)
+        foreach (var endpoint in endpoints)
         {
             endpoint.MapEndpoint(builder);
         }
@@ -110,5 +111,15 @@ public static class ServiceCollectionExtensions
         services.TryAddEnumerable(serviceDescriptors);
 
         return services;
+    }
+
+    public static void AddInfrastructure(this IServiceCollection services)
+    {
+        services.AddDbContext<ApplicationDbContext>();
+        services.AddIdentityApiEndpoints<UserEntity>().AddRoles<RoleEntity>().AddEntityFrameworkStores<ApplicationDbContext>();
+
+        services.AddScoped<IDbContext, ApplicationDbContext>();
+        services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<IEmailHelper, SendGridEmailHelper>();
     }
 }

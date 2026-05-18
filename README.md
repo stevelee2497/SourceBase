@@ -30,17 +30,15 @@ API (feature slices + startup, active build project)
 
 ✅ Feature-first API slices for Todo, Auth, and Data
 
-✅ CQRS pattern with MediatR (Commands, Queries, Handlers)
+✅ Vertical-slice structure with controllers and simple custom Endpoint registration via DI
 
 ✅ Entity Framework and .NET 10
 
 ✅ Exception filter, Model binding validation, Audit log interceptors
 
-✅ Customized EF Identity authentication with `ApplicationUser` mapping and role-based authorization
+✅ Customized EF Identity authentication with `UserEntity` mapping and role-based authorization
 
 ✅ Docker support
-
-✅ Email service with SendGrid provider for OTP confirmation, email confirmation, forgot password, reset password
 
 ✅ Singleton AppSettings with IOptions pattern
 

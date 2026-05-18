@@ -1,6 +1,6 @@
 namespace SourceBase.Api.Entities;
 
-public interface IBaseEntity
+public interface IAuditableEntity
 {
     Guid Id { get; set; }
     DateTime? CreatedOn { get; set; }
@@ -9,7 +9,7 @@ public interface IBaseEntity
     string? UpdatedBy { get; set; }
 }
 
-public abstract class BaseEntity : IBaseEntity
+public abstract class BaseAuditableEntity : IAuditableEntity
 {
     public Guid Id { get; set; }
 

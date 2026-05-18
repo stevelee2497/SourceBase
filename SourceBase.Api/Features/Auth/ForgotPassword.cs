@@ -12,7 +12,7 @@ public class ForgotPassword : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/forgotPassword", Handler).WithTags("Auth").AllowAnonymous();
 
-    private async Task<NoContent> Handler([FromBody] ForgotPasswordRequest request, UserManager<UserEntity> userManager, IEmailHelper emailHelper, AppSettings appSettings, CancellationToken cancellationToken)
+    private async Task<NoContent> Handler([FromBody] ForgotPasswordRequest request, UserManager<UserEntity> userManager, IEmailHelper emailHelper, AppSettings appSettings, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         var token = await userManager.GeneratePasswordResetTokenAsync(user);

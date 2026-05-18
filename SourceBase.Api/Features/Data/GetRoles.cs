@@ -8,9 +8,9 @@ public class GetRoles : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/roles", Handler).AllowAnonymous().WithTags("Data");
 
-    private async Task<Ok<List<RoleResponse>>> Handler(IDbContext dbContext, CancellationToken cancellationToken)
+    private async Task<Ok<List<RoleResponse>>> Handler(IDbContext dbContext, CancellationToken ct)
     {
-        var roles = await dbContext.Roles.Select(role => new RoleResponse(role.Id, role.Name!)).ToListAsync(cancellationToken);
+        var roles = await dbContext.Roles.Select(role => new RoleResponse(role.Id, role.Name!)).ToListAsync(ct);
         return TypedResults.Ok(roles);
     }
 }

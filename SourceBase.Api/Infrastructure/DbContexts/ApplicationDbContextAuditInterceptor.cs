@@ -7,13 +7,13 @@ namespace SourceBase.Api.Infrastructure.DbContexts;
 
 public class ApplicationDbContextAuditInterceptor(ICurrentUser currentUser) : ISaveChangesInterceptor
 {
-    public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+    public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken ct = default)
     {
         if (eventData.Context is ApplicationDbContext dbContext)
         {
             foreach (var entry in dbContext.ChangeTracker.Entries())
             {
-                if (entry is not { Entity: IBaseEntity entity } || new[] { EntityState.Detached, EntityState.Unchanged }.Contains(entry.State))
+                if (entry is not { Entity: IAuditableEntity entity } || new[] { EntityState.Detached, EntityState.Unchanged }.Contains(entry.State))
                     continue;
 
                 switch (entry.State)

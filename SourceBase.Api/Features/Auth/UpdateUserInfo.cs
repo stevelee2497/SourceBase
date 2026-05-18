@@ -10,12 +10,12 @@ public class UpdateUserInfo : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPut("/auth/info", Handler).WithTags("Auth");
 
-    private async Task<NoContent> Handler([FromBody] UpdateUserInfoRequest request, IDbContext dbContext, ICurrentUser currentUser, CancellationToken cancellationToken)
+    private async Task<NoContent> Handler([FromBody] UpdateUserInfoRequest request, IDbContext dbContext, ICurrentUser currentUser, CancellationToken ct)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == currentUser.UserId, cancellationToken) ?? throw new NotFoundException();
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == currentUser.UserId, ct) ?? throw new NotFoundException();
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(ct);
         return TypedResults.NoContent();
     }
 }

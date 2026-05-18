@@ -12,7 +12,7 @@ public class ResetPassword : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/resetPassword", Handler).WithTags("Auth").AllowAnonymous();
 
-    private async Task<NoContent> Handler([FromBody] ResetPasswordRequest request, UserManager<UserEntity> userManager, CancellationToken cancellationToken)
+    private async Task<NoContent> Handler([FromBody] ResetPasswordRequest request, UserManager<UserEntity> userManager, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         var decodedCode = Encoding.UTF8.GetString(Base64UrlHelper.Base64UrlDecode(request.Code));

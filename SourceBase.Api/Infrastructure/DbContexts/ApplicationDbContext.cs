@@ -26,10 +26,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<TodoItemEntity>()
-            .Property(todoItem => todoItem.Status)
-            .HasConversion(new EnumToStringConverter<TodoItemStatus>())
-            .HasMaxLength(50);
+        // Convert all enums to strings in the database
+        SetEnumStringConverter(modelBuilder);
 
         // Identity table mappings
         modelBuilder.Entity<UserEntity>().ToTable("Users");
@@ -41,7 +39,30 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
     }
 
-    #region SeedData
+    #region Helper Methods
+
+    private static void SetEnumStringConverter(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                var propertyType = property.ClrType;
+
+                // Handle nullable enums
+                var enumType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+
+                if (!enumType.IsEnum)
+                    continue;
+
+                var converterType = typeof(EnumToStringConverter<>).MakeGenericType(enumType);
+
+                var converter = (ValueConverter)Activator.CreateInstance(converterType)!;
+
+                property.SetValueConverter(converter);
+            }
+        }
+    }
 
     public static void SeedData(DbContext context, IConfiguration configuration)
     {

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace SourceBase.Api.Entities;
 
-public class UserEntity : IdentityUser<Guid>, IBaseEntity
+public class UserEntity : IdentityUser<Guid>, IAuditableEntity
 {
     public string? FirstName { get; set; }
 

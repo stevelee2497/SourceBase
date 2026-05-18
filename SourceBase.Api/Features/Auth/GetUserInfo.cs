@@ -10,7 +10,7 @@ public class GetUserInfo : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/auth/info", Handler).WithTags("Auth");
 
-    private async Task<Ok<GetUserInfoResponse>> Handler(UserManager<UserEntity> userManager, ICurrentUser currentUser, CancellationToken cancellationToken)
+    private async Task<Ok<GetUserInfoResponse>> Handler(UserManager<UserEntity> userManager, ICurrentUser currentUser, CancellationToken ct)
     {
         var user = await userManager.FindByIdAsync(currentUser.UserId.ToString()) ?? throw new NotFoundException();
         var roles = await userManager.GetRolesAsync(user);
