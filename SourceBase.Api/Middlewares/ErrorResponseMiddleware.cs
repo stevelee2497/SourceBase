@@ -77,6 +77,7 @@ public static class ErrorResponseMiddlewareUtilities
             logger.LogWarning("Request failed for {Method} {Path}", context.Request.Method, context.Request.Path);
         }
 
+        context.Response.StatusCode = error.StatusCode;
         context.Response.ContentLength = null;
 
         await context.Response.WriteAsJsonAsync(new ProblemDetails

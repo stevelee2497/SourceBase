@@ -7,4 +7,5 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="SourceBase.Api/SourceBase.Api.csproj" />
+  <Project Path="SourceBase.Tests/SourceBase.Tests.csproj" />
 </Solution>

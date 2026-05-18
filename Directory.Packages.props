@@ -4,6 +4,15 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
+		<!-- Test packages -->
+		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.8" />
+		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+		<PackageVersion Include="NUnit" Version="4.2.2" />
+		<PackageVersion Include="NUnit3TestAdapter" Version="4.6.0" />
+		<PackageVersion Include="coverlet.collector" Version="6.0.2" />
+		<PackageVersion Include="FluentAssertions" Version="6.12.0" />
+	</ItemGroup>
+	<ItemGroup>
 		<PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.7" />
 		<PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
 		<PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7" />

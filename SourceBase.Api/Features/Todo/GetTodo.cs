@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
@@ -16,6 +17,7 @@ public class GetTodo : IEndpoint
     }
 }
 
+[method: JsonConstructor]
 public record GetTodoResponse(Guid Id, DateOnly Date, string Title, TodoItemStatus Status, DateTime? CreatedOn, string? CreatedBy, DateTime? UpdatedOn, string? UpdatedBy)
 {
     public GetTodoResponse(TodoItemEntity todo) : this(todo.Id, todo.Date, todo.Title, todo.Status, todo.CreatedOn, todo.CreatedBy, todo.UpdatedOn, todo.UpdatedBy)

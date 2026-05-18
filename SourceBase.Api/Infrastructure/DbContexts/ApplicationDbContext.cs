@@ -17,7 +17,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-        optionsBuilder.UseSqlite(connectionString).UseSeeding((context, _) => SeedData(context, configuration));
+        optionsBuilder.UseSqlite(connectionString).UseSeeding((context, _) => SeedData(context, configuration)).UseAsyncSeeding(async (context, _, _) => SeedData(context, configuration));
         optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser)); // Audit history for all actions
         optionsBuilder.AddInterceptors(new ApplicationDbContextAuditInterceptor(currentUser)); // Audit trailing for create/update/delete actions
     }
