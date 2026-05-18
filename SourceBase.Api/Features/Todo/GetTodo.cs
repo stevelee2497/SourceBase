@@ -12,9 +12,9 @@ public class GetTodo : IEndpoint
 
     private async Task<Ok<GetTodoResponse>> Handler(Guid id, ICurrentUser currentUser, IDbContext dbContext, CancellationToken ct)
     {
-        var todo = await dbContext.TodoItems.FindAsync([id], ct) ?? throw new NotFoundException();
+        var todo = await dbContext.TodoItems.FindAsync([id], ct);
 
-        if (todo.UserId != currentUser.UserId)
+        if (todo is null || todo.UserId != currentUser.UserId)
         {
             throw new NotFoundException(); // Don't reveal existence of the todo if the user doesn't own it
         }

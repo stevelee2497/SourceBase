@@ -27,6 +27,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["AppSettings:AdminPassword"] = AdminPassword,
                 ["AppSettings:Roles:0"] = "Admin",
                 ["AppSettings:Roles:1"] = "User",
+                ["Serilog:MinimumLevel"] = "Error",
                 ["AppSettings:WebUrl"] = "http://localhost",
             });
         });
