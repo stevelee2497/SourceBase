@@ -1,5 +1,4 @@
 using FluentValidation;
-using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +12,7 @@ public class Register : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/register", Handler).WithTags("Auth").AllowAnonymous();
 
-    private async Task<NoContent> Handler([FromBody] RegisterRequest request, UserManager<UserEntity> userManager, IEmailHelper emailHelper, AppSettings appSettings, CancellationToken ct)
+    private async Task<NoContent> Handler([FromBody] RegisterRequest request, UserManager<UserEntity> userManager, IEmailHelper emailHelper, CancellationToken ct)
     {
         var user = new UserEntity { Email = request.Email, UserName = request.Email };
         var createResult = await userManager.CreateAsync(user, request.Password);
@@ -24,10 +23,10 @@ public class Register : IEndpoint
         if (persistedUser.EmailConfirmed)
             throw new BadRequestException("Email already confirmed");
 
-        var token = await userManager.GenerateEmailConfirmationTokenAsync(persistedUser);
-        var code = Base64UrlHelper.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-        var confirmEmailUrl = $"{appSettings.WebUrl}/confirmEmail?email={request.Email}&code={code}";
-        await emailHelper.SendEmailAsync(request.Email, "Confirm your email", $"Please confirm your account by clicking <a href='{confirmEmailUrl}'>here</a>. Or use the following code: {code}");
+        var otp = OtpHelper.Generate();
+        persistedUser.OtpCode = otp;
+        await userManager.UpdateAsync(persistedUser);
+        await emailHelper.SendEmailAsync(request.Email, "Confirm your email", $"Your confirmation code is: <b>{otp}</b>");
 
         return TypedResults.NoContent();
     }

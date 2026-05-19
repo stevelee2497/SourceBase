@@ -1,5 +1,4 @@
 using FluentValidation;
-using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,8 +15,13 @@ public class ResetPassword : IEndpoint
     private async Task<NoContent> Handler([FromBody] ResetPasswordRequest request, UserManager<UserEntity> userManager, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
-        var decodedCode = Encoding.UTF8.GetString(Base64UrlHelper.Base64UrlDecode(request.Code));
-        var result = await userManager.ResetPasswordAsync(user, decodedCode, request.NewPassword);
+        if (user.OtpCode != request.Code)
+            throw new BadRequestException("Invalid or expired code");
+
+        user.OtpCode = null;
+        await userManager.UpdateAsync(user);
+        var token = await userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await userManager.ResetPasswordAsync(user, token, request.NewPassword);
         if (!result.Succeeded)
             throw new BadRequestException(result.Errors.First().Description);
 
@@ -32,7 +36,7 @@ public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequ
     public ResetPasswordRequestValidator()
     {
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
-        RuleFor(x => x.Code).NotEmpty();
+        RuleFor(x => x.Code).NotEmpty().Length(6);
         RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(6);
     }
 }

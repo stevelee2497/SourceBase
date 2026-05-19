@@ -8,6 +8,8 @@ public class UserEntity : IdentityUser<Guid>, IAuditableEntity
 
     public string? LastName { get; set; }
 
+    public string? OtpCode { get; set; }
+
     public DateTime? CreatedOn { get; set; }
 
     public string? CreatedBy { get; set; }

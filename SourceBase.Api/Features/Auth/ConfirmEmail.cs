@@ -1,5 +1,4 @@
 using FluentValidation;
-using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +15,14 @@ public class ConfirmEmail : IEndpoint
     private async Task<NoContent> Handler([FromBody] ConfirmEmailRequest request, UserManager<UserEntity> userManager, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new UnAuthorizedException();
-        var decodedCode = Encoding.UTF8.GetString(Base64UrlHelper.Base64UrlDecode(request.Code));
-        var result = await userManager.ConfirmEmailAsync(user, decodedCode);
-        if (!result.Succeeded)
+        if (user.OtpCode != request.Code)
+        {
             throw new UnAuthorizedException();
+        }
 
+        user.OtpCode = null;
+        user.EmailConfirmed = true;
+        await userManager.UpdateAsync(user);
         await userManager.AddToRoleAsync(user, Roles.User);
         return TypedResults.NoContent();
     }
@@ -33,6 +35,6 @@ public class ConfirmEmailRequestValidator : AbstractValidator<ConfirmEmailReques
     public ConfirmEmailRequestValidator()
     {
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
-        RuleFor(x => x.Code).NotEmpty();
+        RuleFor(x => x.Code).NotEmpty().Length(6);
     }
 }

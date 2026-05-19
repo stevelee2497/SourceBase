@@ -106,7 +106,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.PostAsJsonAsync("/api/auth/confirmEmail", new
         {
             email,
-            code = "aW52YWxpZC1jb2Rl", // base64url for "invalid-code" — won't match any real token
+            code = "000000", // valid length but won't match the real OTP
         });
 
         // Assert
@@ -123,7 +123,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.PostAsJsonAsync("/api/auth/confirmEmail", new
         {
             email = "nobody@example.com",
-            code = "c29tZWNvZGU",
+            code = "000000",
         });
 
         // Assert
@@ -390,7 +390,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.PostAsJsonAsync("/api/auth/resetPassword", new
         {
             email,
-            code = "aW52YWxpZC1yZXNldC1jb2Rl", // base64url for "invalid-reset-code"
+            code = "000000", // valid length but won't match the real OTP
             newPassword = "NewTest@5678!",
         });
 
@@ -408,7 +408,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.PostAsJsonAsync("/api/auth/resetPassword", new
         {
             email = "nobody@example.com",
-            code = "c29tZWNvZGU",
+            code = "000000",
             newPassword = "NewTest@5678!",
         });
 

@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -63,14 +62,10 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var emailEntity = await db.Emails
-            .Where(e => e.To == email)
-            .OrderByDescending(e => e.SentOn)
-            .FirstAsync();
-
-        var match = Regex.Match(emailEntity.Body, @"href='([^']+)'");
-        var url = match.Groups[1].Value;
-        var code = Regex.Match(url, @"[?&]code=([^&'""]+)").Groups[1].Value;
-        return code;
+        var otp = await db.Users
+            .Where(u => u.Email == email)
+            .Select(u => u.OtpCode)
+            .FirstOrDefaultAsync();
+        return otp ?? throw new InvalidOperationException($"No OTP code found for '{email}'.");
     }
 }
