@@ -22,7 +22,7 @@ public class ResendConfirmationEmail : IEndpoint
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var code = Base64UrlHelper.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var confirmEmailUrl = $"{appSettings.WebUrl}/confirmEmail?email={request.Email}&code={code}";
-        await emailHelper.SendEmailAsync(request.Email, "Confirm your email", $"Please confirm your account by clicking <a href='{confirmEmailUrl}'>here</a>.");
+        await emailHelper.SendEmailAsync(request.Email, "Confirm your email", $"Please confirm your account by clicking <a href='{confirmEmailUrl}'>here</a>. Or use the following code: {code}");
         return TypedResults.NoContent();
     }
 }

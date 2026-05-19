@@ -12,7 +12,7 @@ public class DataTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     public async Task Database_IsCreatedAndSeeded()
     {
         // Arrange
-        var client = await factory.CreateAuthorizedClient();
+        var client = factory.CreateClient();
 
         // Act
         var response = await client.GetAsync("/api/roles");

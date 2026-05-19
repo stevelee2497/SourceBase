@@ -19,7 +19,7 @@ public class ForgotPassword : IEndpoint
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
         var code = Base64UrlHelper.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var resetPasswordUrl = $"{appSettings.WebUrl}/resetPassword?email={request.Email}&code={code}";
-        await emailHelper.SendEmailAsync(request.Email, "Reset Password", $"Click <a href='{resetPasswordUrl}'>here</a> to reset your password.");
+        await emailHelper.SendEmailAsync(request.Email, "Reset Password", $"Click <a href='{resetPasswordUrl}'>here</a> to reset your password. Or use the following code: {code}");
         return TypedResults.NoContent();
     }
 }

@@ -13,5 +13,7 @@ public interface IDbContext
 
     DbSet<TodoItemEntity> TodoItems { get; set; }
 
+    DbSet<EmailEntity> Emails { get; set; }
+
     Task<int> SaveChangesAsync(CancellationToken ct);
 }

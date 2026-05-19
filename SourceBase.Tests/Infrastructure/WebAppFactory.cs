@@ -1,6 +1,8 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SourceBase.Api.Infrastructure.DbContexts;
@@ -55,5 +57,20 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         var client = CreateClient();
         await client.AuthorizeAsync();
         return client;
+    }
+
+    public async Task<string> GetLatestEmailCodeAsync(string email)
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var emailEntity = await db.Emails
+            .Where(e => e.To == email)
+            .OrderByDescending(e => e.SentOn)
+            .FirstAsync();
+
+        var match = Regex.Match(emailEntity.Body, @"href='([^']+)'");
+        var url = match.Groups[1].Value;
+        var code = Regex.Match(url, @"[?&]code=([^&'""]+)").Groups[1].Value;
+        return code;
     }
 }
