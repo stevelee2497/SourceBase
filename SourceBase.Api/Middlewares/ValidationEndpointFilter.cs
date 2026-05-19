@@ -18,7 +18,7 @@ public class ValidationEndpointFilter : IEndpointFilter
             var result = await validator.ValidateAsync(validationContext, context.HttpContext.RequestAborted);
 
             if (result.IsValid) continue;
-      
+
             var errors = result.Errors
                 .GroupBy(e => e.PropertyName)
                 .ToDictionary(g => JsonNamingPolicy.CamelCase.ConvertName(g.Key), g => g.Select(e => e.ErrorMessage).ToArray());

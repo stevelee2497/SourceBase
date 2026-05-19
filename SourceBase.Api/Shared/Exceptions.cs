@@ -8,7 +8,7 @@ public abstract class ApiException(string message, string code, int statusCode, 
 
     public string Code { get; set; } = code;
 
-    public IDictionary<string, string[]> Errors { get; set; } = errors ?? new Dictionary<string, string[]>();
+    public IDictionary<string, string[]>? Errors { get; set; } = errors;
 }
 
 public class ApiInternalException(string message = "Something went wrong", string code = "GENERIC CODE", int statusCode = (int)HttpStatusCode.InternalServerError) : ApiException(message, code, statusCode)

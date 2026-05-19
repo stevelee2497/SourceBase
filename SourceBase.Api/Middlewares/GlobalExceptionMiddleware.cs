@@ -1,11 +1,10 @@
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Shared;
 
 namespace SourceBase.Api.Middlewares;
 
-public sealed class ErrorResponseMiddleware(RequestDelegate next)
+public sealed class GlobalExceptionMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context)
     {
@@ -56,14 +55,14 @@ public sealed class ErrorResponseMiddleware(RequestDelegate next)
     }
 }
 
-public static class ErrorResponseMiddlewareUtilities
+public static class GlobalExceptionMiddlewareUtilities
 {
-    public static IApplicationBuilder UseErrorResponse(this IApplicationBuilder builder)
+    public static IApplicationBuilder UseGlobalException(this IApplicationBuilder builder)
     {
-        return builder.UseMiddleware<ErrorResponseMiddleware>();
+        return builder.UseMiddleware<GlobalExceptionMiddleware>();
     }
 
-    
+
     public static async Task WriteResponseAsync(this HttpContext context, ApiException? error)
     {
         if (error is null)
@@ -73,21 +72,21 @@ public static class ErrorResponseMiddlewareUtilities
 
         if (error.Code != "VALIDATION ERROR")
         {
-            var logger = context.RequestServices.GetRequiredService<ILogger<ErrorResponseMiddleware>>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<GlobalExceptionMiddleware>>();
             logger.LogWarning("Request failed for {Method} {Path}", context.Request.Method, context.Request.Path);
         }
 
         context.Response.StatusCode = error.StatusCode;
         context.Response.ContentLength = null;
 
-        await context.Response.WriteAsJsonAsync(new ProblemDetails
+        await context.Response.WriteAsJsonAsync(new
         {
-            Type = error.Code,
-            Title = error.Message,
-            Extensions = { [ JsonNamingPolicy.CamelCase.ConvertName(nameof(error.Errors)) ] = error.Errors }
+            error.Code,
+            error.Message,
+            error.Errors
         });
     }
-    
+
     public static Dictionary<string, string[]> ExtractError(this JsonException jsonEx)
     {
         return new Dictionary<string, string[]> { [jsonEx.Path is { } p && p.StartsWith("$.", StringComparison.Ordinal) ? p[2..] : "body"] = ["The value is not valid."] };

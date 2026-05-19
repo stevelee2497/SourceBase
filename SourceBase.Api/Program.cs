@@ -20,10 +20,11 @@ var app = builder.Build();
 
 if (app.Environment.IsProduction()) app.UseHttpsRedirection();
 
-app.UseErrorResponse();
+app.UseGlobalException();
 app.UseCors(Constants.CorsCustomPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCustomAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapGroup("/api").RequireAuthorization().AddEndpointFilter<ValidationEndpointFilter>().MapEndpoints(app);
