@@ -2,9 +2,9 @@ using System.Security.Claims;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
-namespace SourceBase.Api.Infrastructure.Helpers;
+namespace SourceBase.Api.Infrastructure.Implementations;
 
-public class CurrentUserHelper(IHttpContextAccessor httpContextAccessor) : ICurrentUser
+public class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUser
 {
     public Guid UserId => Guid.TryParse(httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)
         ? userId

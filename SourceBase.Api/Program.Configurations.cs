@@ -9,7 +9,7 @@ using Microsoft.OpenApi;
 using Serilog;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Infrastructure.DbContexts;
-using SourceBase.Api.Infrastructure.Helpers;
+using SourceBase.Api.Infrastructure.Implementations;
 using SourceBase.Api.Middlewares;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
@@ -123,7 +123,7 @@ public static class ProgramConfigurations
         services.AddIdentityApiEndpoints<UserEntity>().AddRoles<RoleEntity>().AddEntityFrameworkStores<ApplicationDbContext>();
 
         services.AddScoped<IDbContext, ApplicationDbContext>();
-        services.AddScoped<ICurrentUser, CurrentUserHelper>();
+        services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<IEmailHelper, SendGridEmailHelper>();
     }
 

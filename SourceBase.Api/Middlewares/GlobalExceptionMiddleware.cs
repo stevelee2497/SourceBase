@@ -62,7 +62,6 @@ public static class GlobalExceptionMiddlewareUtilities
         return builder.UseMiddleware<GlobalExceptionMiddleware>();
     }
 
-
     public static async Task WriteResponseAsync(this HttpContext context, ApiException? error)
     {
         if (error is null)

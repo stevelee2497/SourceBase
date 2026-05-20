@@ -4,7 +4,7 @@ using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
-namespace SourceBase.Api.Infrastructure.Helpers;
+namespace SourceBase.Api.Infrastructure.Implementations;
 
 public class SendGridEmailHelper(AppSettings appSettings, ILogger<SendGridEmailHelper> logger, IDbContext dbContext) : IEmailHelper
 {
