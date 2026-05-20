@@ -10,12 +10,13 @@ using Serilog;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Infrastructure.DbContexts;
 using SourceBase.Api.Infrastructure.Helpers;
+using SourceBase.Api.Middlewares;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
-namespace SourceBase.Api.Extensions;
+namespace SourceBase.Api;
 
-public static class ServiceCollectionExtensions
+public static class ProgramConfigurations
 {
     public static void AddAppSettings(this IServiceCollection services, IConfiguration configuration)
     {
@@ -90,6 +91,11 @@ public static class ServiceCollectionExtensions
         builder.Host.UseSerilog();
     }
 
+    public static void UseMinimalApi(this WebApplication app)
+    {
+        app.MapGroup("/api").RequireAuthorization().AddEndpointFilter<ValidationEndpointFilter>().MapEndpoints(app);
+    }
+
     public static void MapEndpoints(this IEndpointRouteBuilder builder, WebApplication app)
     {
         var endpoints = app.Services.GetRequiredService<IEnumerable<IEndpoint>>();
@@ -100,7 +106,7 @@ public static class ServiceCollectionExtensions
         }
     }
 
-    public static IServiceCollection AddEndpoints(this IServiceCollection services, Assembly assembly)
+    public static void AddEndpoints(this IServiceCollection services, Assembly assembly)
     {
         var serviceDescriptors = assembly
             .DefinedTypes
@@ -109,8 +115,6 @@ public static class ServiceCollectionExtensions
             .ToArray();
 
         services.TryAddEnumerable(serviceDescriptors);
-
-        return services;
     }
 
     public static void AddInfrastructure(this IServiceCollection services)

@@ -1,4 +1,4 @@
-using SourceBase.Api.Extensions;
+using SourceBase.Api;
 using SourceBase.Api.Middlewares;
 using SourceBase.Api.Shared;
 
@@ -31,6 +31,6 @@ app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCustomAuthorization();
-app.MapGroup("/api").RequireAuthorization().AddEndpointFilter<ValidationEndpointFilter>().MapEndpoints(app);
+app.UseMinimalApi();
 
 app.Run();
