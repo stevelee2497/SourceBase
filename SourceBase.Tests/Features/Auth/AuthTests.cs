@@ -471,4 +471,21 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.FirstName.Should().Be(firstName);
         body.LastName.Should().Be(lastName);
     }
+
+
+    // ── Logout ────────────────────────────────────────────────────────────────
+    [Fact]
+    public async Task Logout_WithValidToken_ReturnsOk()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PostAsync("/api/auth/logout", null);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var getInfoResponse = await client.GetAsync("/api/auth/info");
+        getInfoResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 }

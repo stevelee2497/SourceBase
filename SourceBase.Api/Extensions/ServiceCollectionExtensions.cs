@@ -128,4 +128,11 @@ public static class ServiceCollectionExtensions
     {
         services.AddValidatorsFromAssembly(assembly);
     }
+
+    public static void EnsureDatabaseMigrated(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.Database.EnsureCreated();
+    }
 }

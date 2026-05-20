@@ -18,15 +18,19 @@ builder.Services.AddEndpoints(typeof(Program).Assembly);
 
 var app = builder.Build();
 
-if (app.Environment.IsProduction()) app.UseHttpsRedirection();
+if (app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+    app.EnsureDatabaseMigrated();
+}
 
 app.UseGlobalException();
 app.UseCors(Constants.CorsCustomPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCustomAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseCustomAuthorization();
 app.MapGroup("/api").RequireAuthorization().AddEndpointFilter<ValidationEndpointFilter>().MapEndpoints(app);
 
 app.Run();
