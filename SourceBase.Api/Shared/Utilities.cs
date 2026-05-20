@@ -17,8 +17,7 @@ public static class Utilities
     {
         if (direction is null) return query;
         var property = typeof(T).GetProperty(direction) ?? throw new ArgumentException($"Invalid sorting column: {direction}");
-        var param = Expression.Parameter(typeof(T));
-        var keySelector = Expression.Lambda<Func<T, object>>(Expression.Convert(Expression.Property(param, property), typeof(object)), param);
+        var keySelector = Expression.Lambda<Func<T, object>>(Expression.Convert(Expression.Property(Expression.Parameter(typeof(T)), property), typeof(object)), Expression.Parameter(typeof(T)));
         return order == PagingOrder.Asc ? query.OrderBy(keySelector) : query.OrderByDescending(keySelector);
     }
 }

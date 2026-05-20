@@ -10,7 +10,6 @@ using Serilog;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Infrastructure.DbContexts;
 using SourceBase.Api.Infrastructure.Helpers;
-using SourceBase.Api.Infrastructure.Identity;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
@@ -120,7 +119,7 @@ public static class ServiceCollectionExtensions
         services.AddIdentityApiEndpoints<UserEntity>().AddRoles<RoleEntity>().AddEntityFrameworkStores<ApplicationDbContext>();
 
         services.AddScoped<IDbContext, ApplicationDbContext>();
-        services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<ICurrentUser, CurrentUserHelper>();
         services.AddScoped<IEmailHelper, SendGridEmailHelper>();
     }
 
