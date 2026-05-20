@@ -7,9 +7,13 @@ namespace SourceBase.Api.Features.Auth;
 
 public class Logout : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/logout", Handler).WithTags("Auth");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/logout",
+        (ISender sender, CancellationToken ct) => sender.Send(new LogoutCommand(), ct)).WithTags("Auth");
+}
 
-    private async Task<Results<Ok, EmptyHttpResult>> Handler(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, CancellationToken ct)
+public class LogoutHandler(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager) : IRequestHandler<LogoutCommand, Results<Ok, EmptyHttpResult>>
+{
+    public async Task<Results<Ok, EmptyHttpResult>> Handle(LogoutCommand request, CancellationToken ct)
     {
         await signInManager.SignOutAsync();
         var user = await userManager.GetUserAsync(signInManager.Context.User);
@@ -17,3 +21,5 @@ public class Logout : IEndpoint
         return TypedResults.Ok();
     }
 }
+
+public record LogoutCommand : IRequest<Results<Ok, EmptyHttpResult>>;

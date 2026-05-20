@@ -117,6 +117,17 @@ public static class ProgramConfigurations
         services.TryAddEnumerable(serviceDescriptors);
     }
 
+    public static void AddHandlers(this IServiceCollection services, Assembly assembly)
+    {
+        var serviceDescriptors = assembly
+            .DefinedTypes
+            .Where(type => type is { IsAbstract: false, IsInterface: false })
+            .SelectMany(type => type.GetInterfaces().Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)).Select(i => ServiceDescriptor.Transient(i, type)))
+            .ToArray();
+
+        services.TryAddEnumerable(serviceDescriptors);
+    }
+
     public static void AddInfrastructure(this IServiceCollection services)
     {
         services.AddDbContext<ApplicationDbContext>();
@@ -125,6 +136,7 @@ public static class ProgramConfigurations
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<IEmailHelper, SendGridEmailHelper>();
+        services.AddTransient<ISender, Sender>();
     }
 
     public static void AddFluentValidation(this IServiceCollection services, Assembly assembly)

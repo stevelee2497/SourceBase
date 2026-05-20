@@ -13,9 +13,13 @@ namespace SourceBase.Api.Features.Auth;
 
 public class Refresh : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/refresh", Handler).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/refresh",
+        ([FromBody] RefreshTokenRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+}
 
-    private async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handler([FromBody] RefreshTokenRequest request, SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, CancellationToken ct)
+public class RefreshHandler(SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions) : IRequestHandler<RefreshTokenRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
+{
+    public async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handle(RefreshTokenRequest request, CancellationToken ct)
     {
         var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(request.Token);
@@ -30,7 +34,7 @@ public class Refresh : IEndpoint
     }
 }
 
-public record RefreshTokenRequest(string Token);
+public record RefreshTokenRequest(string Token) : IRequest<Results<Ok<LoginResponse>, EmptyHttpResult>>;
 
 public class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
 {

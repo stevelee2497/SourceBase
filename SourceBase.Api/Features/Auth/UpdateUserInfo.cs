@@ -9,9 +9,13 @@ namespace SourceBase.Api.Features.Auth;
 
 public class UpdateUserInfo : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPut("/auth/info", Handler).WithTags("Auth");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPut("/auth/info",
+        ([FromBody] UpdateUserInfoRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth");
+}
 
-    private async Task<NoContent> Handler([FromBody] UpdateUserInfoRequest request, IDbContext dbContext, ICurrentUser currentUser, CancellationToken ct)
+public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<UpdateUserInfoRequest, NoContent>
+{
+    public async Task<NoContent> Handle(UpdateUserInfoRequest request, CancellationToken ct)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == currentUser.UserId, ct) ?? throw new NotFoundException();
         user.FirstName = request.FirstName;
@@ -21,7 +25,7 @@ public class UpdateUserInfo : IEndpoint
     }
 }
 
-public record UpdateUserInfoRequest(string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles);
+public record UpdateUserInfoRequest(string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles) : IRequest<NoContent>;
 
 public class UpdateUserInfoRequestValidator : AbstractValidator<UpdateUserInfoRequest>
 {

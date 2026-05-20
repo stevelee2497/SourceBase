@@ -11,9 +11,13 @@ namespace SourceBase.Api.Features.Auth;
 
 public class Login : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/login", Handler).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/login",
+        ([FromBody] LoginRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+}
 
-    private async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handler([FromBody] LoginRequest request, UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager, CancellationToken ct)
+public class LoginHandler(UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager) : IRequestHandler<LoginRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
+{
+    public async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handle(LoginRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user == null || !await userManager.IsEmailConfirmedAsync(user))
@@ -28,7 +32,7 @@ public class Login : IEndpoint
     }
 }
 
-public record LoginRequest(string Email, string Password);
+public record LoginRequest(string Email, string Password) : IRequest<Results<Ok<LoginResponse>, EmptyHttpResult>>;
 
 public record LoginResponse(string TokenType, string AccessToken, int expiresIn, string RefreshToken);
 

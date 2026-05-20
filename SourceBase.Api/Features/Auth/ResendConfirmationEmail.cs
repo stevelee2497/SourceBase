@@ -10,9 +10,13 @@ namespace SourceBase.Api.Features.Auth;
 
 public class ResendConfirmationEmail : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/resendConfirmationEmail", Handler).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/resendConfirmationEmail",
+        ([FromBody] ResendConfirmationEmailRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+}
 
-    private async Task<NoContent> Handler([FromBody] ResendConfirmationEmailRequest request, UserManager<UserEntity> userManager, IEmailHelper emailHelper, CancellationToken ct)
+public class ResendConfirmationEmailHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<ResendConfirmationEmailRequest, NoContent>
+{
+    public async Task<NoContent> Handle(ResendConfirmationEmailRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         if (user.EmailConfirmed)
@@ -26,7 +30,7 @@ public class ResendConfirmationEmail : IEndpoint
     }
 }
 
-public record ResendConfirmationEmailRequest(string Email);
+public record ResendConfirmationEmailRequest(string Email) : IRequest<NoContent>;
 
 public class ResendConfirmationEmailRequestValidator : AbstractValidator<ResendConfirmationEmailRequest>
 {

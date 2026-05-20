@@ -10,9 +10,13 @@ namespace SourceBase.Api.Features.Auth;
 
 public class Register : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/register", Handler).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/register",
+        ([FromBody] RegisterRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+}
 
-    private async Task<NoContent> Handler([FromBody] RegisterRequest request, UserManager<UserEntity> userManager, IEmailHelper emailHelper, CancellationToken ct)
+public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<RegisterRequest, NoContent>
+{
+    public async Task<NoContent> Handle(RegisterRequest request, CancellationToken ct)
     {
         var user = new UserEntity { Email = request.Email, UserName = request.Email };
         var createResult = await userManager.CreateAsync(user, request.Password);
@@ -32,7 +36,7 @@ public class Register : IEndpoint
     }
 }
 
-public record RegisterRequest(string Email, string Password);
+public record RegisterRequest(string Email, string Password) : IRequest<NoContent>;
 
 public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {

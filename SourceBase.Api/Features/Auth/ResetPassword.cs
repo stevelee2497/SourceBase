@@ -10,9 +10,13 @@ namespace SourceBase.Api.Features.Auth;
 
 public class ResetPassword : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/resetPassword", Handler).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/resetPassword",
+        ([FromBody] ResetPasswordRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+}
 
-    private async Task<NoContent> Handler([FromBody] ResetPasswordRequest request, UserManager<UserEntity> userManager, CancellationToken ct)
+public class ResetPasswordHandler(UserManager<UserEntity> userManager) : IRequestHandler<ResetPasswordRequest, NoContent>
+{
+    public async Task<NoContent> Handle(ResetPasswordRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         if (user.OtpCode != request.Code)
@@ -29,7 +33,7 @@ public class ResetPassword : IEndpoint
     }
 }
 
-public record ResetPasswordRequest(string Email, string Code, string NewPassword);
+public record ResetPasswordRequest(string Email, string Code, string NewPassword) : IRequest<NoContent>;
 
 public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest>
 {

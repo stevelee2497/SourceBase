@@ -15,6 +15,7 @@ builder.Services.AddInfrastructure();
 builder.Services.AddCorsPolicies(builder.Configuration);
 builder.Services.AddFluentValidation(typeof(Program).Assembly);
 builder.Services.AddEndpoints(typeof(Program).Assembly);
+builder.Services.AddHandlers(typeof(Program).Assembly);
 
 var app = builder.Build();
 

@@ -8,11 +8,15 @@ namespace SourceBase.Api.Features.Todo;
 
 public class GetTodo : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/todos/{id:guid}", Handler).WithTags("Todos");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/todos/{id:guid}",
+        (Guid id, ISender sender, CancellationToken ct) => sender.Send(new GetTodoQuery(id), ct)).WithTags("Todos");
+}
 
-    private async Task<Ok<GetTodoResponse>> Handler(Guid id, ICurrentUser currentUser, IDbContext dbContext, CancellationToken ct)
+public class GetTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetTodoQuery, Ok<GetTodoResponse>>
+{
+    public async Task<Ok<GetTodoResponse>> Handle(GetTodoQuery request, CancellationToken ct)
     {
-        var todo = await dbContext.TodoItems.FindAsync([id], ct);
+        var todo = await dbContext.TodoItems.FindAsync([request.Id], ct);
 
         if (todo is null || todo.UserId != currentUser.UserId)
         {
@@ -22,6 +26,8 @@ public class GetTodo : IEndpoint
         return TypedResults.Ok(new GetTodoResponse(todo));
     }
 }
+
+public record GetTodoQuery(Guid Id) : IRequest<Ok<GetTodoResponse>>;
 
 [method: JsonConstructor]
 public record GetTodoResponse(Guid Id, DateOnly Date, string Title, TodoItemStatus Status, DateTime? CreatedOn, string? CreatedBy, DateTime? UpdatedOn, string? UpdatedBy)

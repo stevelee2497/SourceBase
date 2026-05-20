@@ -8,9 +8,13 @@ namespace SourceBase.Api.Features.Todo;
 
 public class CreateTodo : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/todos", Handler).WithTags("Todos");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/todos",
+        ([FromBody] CreateTodoRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Todos");
+}
 
-    private async Task<NoContent> Handler([FromBody] CreateTodoRequest request, IDbContext dbContext, ICurrentUser currentUser, CancellationToken ct)
+public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoRequest, NoContent>
+{
+    public async Task<NoContent> Handle(CreateTodoRequest request, CancellationToken ct)
     {
         dbContext.TodoItems.Add(new TodoItemEntity
         {
@@ -24,7 +28,7 @@ public class CreateTodo : IEndpoint
     }
 }
 
-public record CreateTodoRequest(DateOnly? Date, string Title, TodoItemStatus Status);
+public record CreateTodoRequest(DateOnly? Date, string Title, TodoItemStatus Status) : IRequest<NoContent>;
 
 public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 {

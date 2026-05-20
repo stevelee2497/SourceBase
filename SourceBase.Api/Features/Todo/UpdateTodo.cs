@@ -9,11 +9,15 @@ namespace SourceBase.Api.Features.Todo;
 
 public class UpdateTodo : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPut("/todos/{id:guid}", Handler).WithTags("Todos");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPut("/todos/{id:guid}",
+        (Guid id, [FromBody] UpdateTodoRequest body, ISender sender, CancellationToken ct) => sender.Send(new UpdateTodoCommand(id, body.Date, body.Title, body.Status), ct)).WithTags("Todos");
+}
 
-    private async Task<NoContent> Handler(Guid id, [FromBody] UpdateTodoRequest request, IDbContext dbContext, CancellationToken ct)
+public class UpdateTodoHandler(IDbContext dbContext) : IRequestHandler<UpdateTodoCommand, NoContent>
+{
+    public async Task<NoContent> Handle(UpdateTodoCommand request, CancellationToken ct)
     {
-        var item = await dbContext.TodoItems.FindAsync([id], ct) ?? throw new NotFoundException();
+        var item = await dbContext.TodoItems.FindAsync([request.Id], ct) ?? throw new NotFoundException();
         item.Title = request.Title;
         item.Status = request.Status;
         item.Date = request.Date;
@@ -21,6 +25,8 @@ public class UpdateTodo : IEndpoint
         return TypedResults.NoContent();
     }
 }
+
+public record UpdateTodoCommand(Guid Id, DateOnly Date, string Title, TodoItemStatus Status) : IRequest<NoContent>;
 
 public record UpdateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
 

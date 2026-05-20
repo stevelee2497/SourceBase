@@ -10,9 +10,13 @@ namespace SourceBase.Api.Features.Auth;
 
 public class ConfirmEmail : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/confirmEmail", Handler).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/confirmEmail",
+        ([FromBody] ConfirmEmailRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+}
 
-    private async Task<NoContent> Handler([FromBody] ConfirmEmailRequest request, UserManager<UserEntity> userManager, CancellationToken ct)
+public class ConfirmEmailHandler(UserManager<UserEntity> userManager) : IRequestHandler<ConfirmEmailRequest, NoContent>
+{
+    public async Task<NoContent> Handle(ConfirmEmailRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new UnAuthorizedException();
         if (user.OtpCode != request.Code)
@@ -28,7 +32,7 @@ public class ConfirmEmail : IEndpoint
     }
 }
 
-public record ConfirmEmailRequest(string Email, string Code);
+public record ConfirmEmailRequest(string Email, string Code) : IRequest<NoContent>;
 
 public class ConfirmEmailRequestValidator : AbstractValidator<ConfirmEmailRequest>
 {

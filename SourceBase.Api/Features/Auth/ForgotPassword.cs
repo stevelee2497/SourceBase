@@ -10,9 +10,13 @@ namespace SourceBase.Api.Features.Auth;
 
 public class ForgotPassword : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/forgotPassword", Handler).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/forgotPassword",
+        ([FromBody] ForgotPasswordRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+}
 
-    private async Task<NoContent> Handler([FromBody] ForgotPasswordRequest request, UserManager<UserEntity> userManager, IEmailHelper emailHelper, CancellationToken ct)
+public class ForgotPasswordHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<ForgotPasswordRequest, NoContent>
+{
+    public async Task<NoContent> Handle(ForgotPasswordRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         var otp = OtpHelper.Generate();
@@ -23,7 +27,7 @@ public class ForgotPassword : IEndpoint
     }
 }
 
-public record ForgotPasswordRequest(string Email);
+public record ForgotPasswordRequest(string Email) : IRequest<NoContent>;
 
 public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
 {
