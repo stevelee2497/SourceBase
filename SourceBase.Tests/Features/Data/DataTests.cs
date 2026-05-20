@@ -1,6 +1,7 @@
 
 using FluentAssertions;
 using SourceBase.Api.Features.Data;
+using SourceBase.Api.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -17,11 +18,12 @@ public class DataTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Act
         var response = await client.GetAsync("/api/roles");
         response.EnsureSuccessStatusCode();
-        var body = await response.Content.ReadFromJsonAsync<List<RoleResponse>>();
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
 
         // Assert
         body.Should().NotBeNull();
-        body!.Should().ContainSingle(role => role.Name == "Admin");
-        body!.Should().ContainSingle(role => role.Name == "User");
+        body!.Items.Should().HaveCount(2);
+        body!.Items.Should().ContainSingle(role => role.Name == "Admin");
+        body!.Items.Should().ContainSingle(role => role.Name == "User");
     }
 }

@@ -48,7 +48,7 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next)
         {
             ApiException apiEx => apiEx,
             BadHttpRequestException { InnerException: JsonException jsonEx } => new ValidationException(errors: jsonEx.ExtractError()),
-            _ => new ApiInternalException()
+            _ => new ApiInternalException(exception.Message)
         };
 
         await context.WriteResponseAsync(error);

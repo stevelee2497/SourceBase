@@ -2,6 +2,7 @@ using System.Net;
 using FluentAssertions;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Features.Todo;
+using SourceBase.Api.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -43,7 +44,7 @@ public class TodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<GetTodosResponse>();
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
         body.Should().NotBeNull();
         body!.Items.Should().NotBeNull();
     }
@@ -109,7 +110,7 @@ public class TodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = await factory.CreateAuthorizedClient();
         await client.PostAsJsonAsync("/api/todos", new { date = "2025-07-15", title = "Fetch Me", status = "Open" });
         var list = await client.GetAsync("/api/todos?date=2025-07-15");
-        var todos = await list.Content.ReadFromJsonAsync<GetTodosResponse>();
+        var todos = await list.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
         var id = todos!.Items.First(x => x.Title == "Fetch Me").Id;
 
         // Act
@@ -130,7 +131,7 @@ public class TodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = await factory.CreateAuthorizedClient();
         await client.PostAsJsonAsync("/api/todos", new { date = "2025-08-01", title = "To Be Updated", status = "Open" });
         var list = await client.GetAsync("/api/todos?date=2025-08-01");
-        var todos = await list.Content.ReadFromJsonAsync<GetTodosResponse>();
+        var todos = await list.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
         var id = todos!.Items.First(x => x.Title == "To Be Updated").Id;
 
         // Act
@@ -156,7 +157,7 @@ public class TodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = await factory.CreateAuthorizedClient();
         await client.PostAsJsonAsync("/api/todos", new { date = "2025-09-01", title = "To Be Deleted", status = "Open" });
         var list = await client.GetAsync("/api/todos?date=2025-09-01");
-        var todos = await list.Content.ReadFromJsonAsync<GetTodosResponse>();
+        var todos = await list.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
         var id = todos!.Items.First(x => x.Title == "To Be Deleted").Id;
 
         // Act

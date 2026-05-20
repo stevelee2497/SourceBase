@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace SourceBase.Api.Entities;
 
 public class TodoItemEntity : BaseAuditableEntity
@@ -11,6 +13,7 @@ public class TodoItemEntity : BaseAuditableEntity
     public required Guid UserId { get; set; }
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum TodoItemStatus
 {
     Open,
