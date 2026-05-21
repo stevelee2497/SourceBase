@@ -9,7 +9,7 @@ namespace SourceBase.Api.Features.Todo;
 public class GetTodosEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet("/todos", ([AsParameters] GetTodosRequest request, IRequestHandler<GetTodosRequest, Ok<PagingResponse<GetTodoResponse>>> sender, CancellationToken ct) => sender.Handle(request, ct))
+        .MapGet("/todos", ([AsParameters] GetTodosRequest request, GetTodosHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Todos");
 }
 

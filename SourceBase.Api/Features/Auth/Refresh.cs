@@ -14,7 +14,7 @@ namespace SourceBase.Api.Features.Auth;
 public class RefreshEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/refresh", ([FromBody] RefreshTokenRequest request, IRequestHandler<RefreshTokenRequest, Results<Ok<LoginResponse>, EmptyHttpResult>> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost("/auth/refresh", ([FromBody] RefreshTokenRequest request, RefreshHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

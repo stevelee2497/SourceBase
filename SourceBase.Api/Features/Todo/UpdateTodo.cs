@@ -10,7 +10,7 @@ namespace SourceBase.Api.Features.Todo;
 public class UpdateTodoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut("/todos/{id:guid}", (Guid id, [FromBody] UpdateTodoRequest body, IRequestHandler<UpdateTodoCommand, NoContent> handler, CancellationToken ct) => handler.Handle(new UpdateTodoCommand(id, body.Date, body.Title, body.Status), ct))
+        .MapPut("/todos/{id:guid}", (Guid id, [FromBody] UpdateTodoRequest body, UpdateTodoHandler handler, CancellationToken ct) => handler.Handle(new UpdateTodoCommand(id, body.Date, body.Title, body.Status), ct))
         .WithTags("Todos");
 }
 

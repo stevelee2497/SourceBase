@@ -9,7 +9,7 @@ namespace SourceBase.Api.Features.Todo;
 public class CreateTodoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/todos", ([FromBody] CreateTodoRequest request, IRequestHandler<CreateTodoRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost("/todos", ([FromBody] CreateTodoRequest request, CreateTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Todos");
 }
 

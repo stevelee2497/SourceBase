@@ -7,7 +7,7 @@ namespace SourceBase.Api.Features.Todo;
 public class DeleteTodoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapDelete("/todos/{id:guid}", (Guid id, IRequestHandler<DeleteTodoCommand, NoContent> handler, CancellationToken ct) => handler.Handle(new DeleteTodoCommand(id), ct))
+        .MapDelete("/todos/{id:guid}", (Guid id, DeleteTodoHandler handler, CancellationToken ct) => handler.Handle(new DeleteTodoCommand(id), ct))
         .WithTags("Todos");
 }
 

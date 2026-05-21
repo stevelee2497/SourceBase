@@ -11,7 +11,7 @@ namespace SourceBase.Api.Features.Auth;
 public class ResetPasswordEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/resetPassword", ([FromBody] ResetPasswordRequest request, IRequestHandler<ResetPasswordRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost("/auth/resetPassword", ([FromBody] ResetPasswordRequest request, ResetPasswordHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

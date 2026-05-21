@@ -10,7 +10,7 @@ namespace SourceBase.Api.Features.Auth;
 public class UpdateUserInfoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut("/auth/info", ([FromBody] UpdateUserInfoRequest request, IRequestHandler<UpdateUserInfoRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPut("/auth/info", ([FromBody] UpdateUserInfoRequest request, UpdateUserInfoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Auth");
 }
 

@@ -11,7 +11,7 @@ namespace SourceBase.Api.Features.Auth;
 public class ConfirmEmailEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/confirmEmail", ([FromBody] ConfirmEmailRequest request, IRequestHandler<ConfirmEmailRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost("/auth/confirmEmail", ([FromBody] ConfirmEmailRequest request, ConfirmEmailHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

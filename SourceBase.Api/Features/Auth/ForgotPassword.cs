@@ -11,7 +11,7 @@ namespace SourceBase.Api.Features.Auth;
 public class ForgotPasswordEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/forgotPassword", ([FromBody] ForgotPasswordRequest request, IRequestHandler<ForgotPasswordRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost("/auth/forgotPassword", ([FromBody] ForgotPasswordRequest request, ForgotPasswordHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

@@ -8,7 +8,7 @@ namespace SourceBase.Api.Features.Auth;
 public class LogoutEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/logout", (IRequestHandler<LogoutCommand, Results<Ok, EmptyHttpResult>> handler, CancellationToken ct) => handler.Handle(new LogoutCommand(), ct))
+        .MapPost("/auth/logout", (LogoutHandler handler, CancellationToken ct) => handler.Handle(new LogoutCommand(), ct))
         .WithTags("Auth");
 }
 

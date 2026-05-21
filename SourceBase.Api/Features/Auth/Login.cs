@@ -12,7 +12,7 @@ namespace SourceBase.Api.Features.Auth;
 public class LoginEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/login", ([FromBody] LoginRequest request, IRequestHandler<LoginRequest, Results<Ok<LoginResponse>, EmptyHttpResult>> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost("/auth/login", ([FromBody] LoginRequest request, LoginHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

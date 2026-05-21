@@ -119,13 +119,12 @@ public static class ProgramConfigurations
 
     public static void AddHandlers(this IServiceCollection services, Assembly assembly)
     {
-        var serviceDescriptors = assembly
+        var handlerTypes = assembly
             .DefinedTypes
-            .Where(type => type is { IsAbstract: false, IsInterface: false })
-            .SelectMany(type => type.GetInterfaces().Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)).Select(i => ServiceDescriptor.Transient(i, type)))
-            .ToArray();
+            .Where(type => type is { IsAbstract: false, IsInterface: false } && type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)));
 
-        services.TryAddEnumerable(serviceDescriptors);
+        foreach (var type in handlerTypes)
+            services.AddTransient(type, type);
     }
 
     public static void AddInfrastructure(this IServiceCollection services)

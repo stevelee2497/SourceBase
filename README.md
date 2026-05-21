@@ -37,7 +37,7 @@ Each slice is a self-contained file:
 public class CreateTodo : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/todos", ([FromBody] CreateTodoRequest request, IRequestHandler<CreateTodoRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost("/todos", ([FromBody] CreateTodoRequest request, CreateTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Todos");
 }
 
@@ -60,7 +60,7 @@ Keep `MapEndpoint` chains aligned like this:
 
 ```csharp
 public void MapEndpoint(IEndpointRouteBuilder app) => app
-    .MapGet("/roles", ([AsParameters] GetRolesRequest request, IRequestHandler<GetRolesRequest, PagingResponse<RoleResponse>> handler, CancellationToken ct) => handler.Handle(request, ct))
+    .MapGet("/roles", ([AsParameters] GetRolesRequest request, GetRolesHandler handler, CancellationToken ct) => handler.Handle(request, ct))
     .AllowAnonymous()
     .WithTags("Data");
 ```

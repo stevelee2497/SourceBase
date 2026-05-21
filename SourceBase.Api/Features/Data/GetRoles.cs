@@ -7,7 +7,7 @@ namespace SourceBase.Api.Features.Data;
 public class GetRolesEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet("/roles", ([AsParameters] GetRolesRequest request, IRequestHandler<GetRolesRequest, PagingResponse<RoleResponse>> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapGet("/roles", ([AsParameters] GetRolesRequest request, GetRolesHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Data");
 }

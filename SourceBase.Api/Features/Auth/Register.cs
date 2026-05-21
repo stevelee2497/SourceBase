@@ -11,7 +11,7 @@ namespace SourceBase.Api.Features.Auth;
 public class RegisterEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/register", ([FromBody] RegisterRequest request, IRequestHandler<RegisterRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost("/auth/register", ([FromBody] RegisterRequest request, RegisterHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

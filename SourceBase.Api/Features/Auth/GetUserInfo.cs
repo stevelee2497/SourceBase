@@ -9,7 +9,7 @@ namespace SourceBase.Api.Features.Auth;
 public class GetUserInfoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet("/auth/info", (IRequestHandler<GetUserInfoRequest, Ok<GetUserInfoResponse>> handler, CancellationToken ct) => handler.Handle(new GetUserInfoRequest(), ct))
+        .MapGet("/auth/info", (GetUserInfoHandler handler, CancellationToken ct) => handler.Handle(new GetUserInfoRequest(), ct))
         .WithTags("Auth");
 }
 
