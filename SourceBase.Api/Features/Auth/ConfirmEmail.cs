@@ -29,7 +29,7 @@ public class ConfirmEmailHandler(UserManager<UserEntity> userManager) : IRequest
         user.OtpCode = null;
         user.EmailConfirmed = true;
         await userManager.UpdateAsync(user);
-        await userManager.AddToRoleAsync(user, Roles.User);
+        await userManager.AddToRoleAsync(user, AppRoles.User);
         return TypedResults.NoContent();
     }
 }

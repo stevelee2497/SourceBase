@@ -119,8 +119,8 @@ dotnet run --project SourceBase.Api
 dotnet build
 
 # Apply EF migrations
-sh migration-add.sh <MigrationName>
-sh migration-update-db.sh
+sh cmd-migration-add.sh <MigrationName>
+sh cmd-migration-update-db.sh
 
 # Docker
 docker compose up

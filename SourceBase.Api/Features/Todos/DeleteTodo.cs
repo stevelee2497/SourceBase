@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
-namespace SourceBase.Api.Features.Todo;
+namespace SourceBase.Api.Features.Todos;
 
 public class DeleteTodoEndpoint : IEndpoint
 {

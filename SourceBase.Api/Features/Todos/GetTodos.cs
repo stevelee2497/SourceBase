@@ -4,7 +4,7 @@ using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
-namespace SourceBase.Api.Features.Todo;
+namespace SourceBase.Api.Features.Todos;
 
 public class GetTodosEndpoint : IEndpoint
 {

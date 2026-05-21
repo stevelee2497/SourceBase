@@ -1,6 +1,6 @@
 
 using FluentAssertions;
-using SourceBase.Api.Features.Data;
+using SourceBase.Api.Features.Roles;
 using SourceBase.Api.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;

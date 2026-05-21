@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using FluentAssertions;
 using SourceBase.Api.Features.Auth;
 using SourceBase.Tests.Infrastructure;
@@ -470,6 +471,35 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Should().NotBeNull();
         body!.FirstName.Should().Be(firstName);
         body.LastName.Should().Be(lastName);
+    }
+
+    [Fact]
+    public async Task UpdateUserInfo_WithRoles_UpdatesCurrentUserRoles()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var email = $"updaterole_{Guid.NewGuid():N}@test.com";
+        const string password = "Test@1234!";
+        await client.PostAsJsonAsync("/api/auth/register", new { email, password });
+        var code = await factory.GetLatestEmailCodeAsync(email);
+        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
+        var token = await Utilities.GetAccessTokenAsync(client, email, password);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        // Act
+        var updateResponse = await client.PutAsJsonAsync("/api/auth/info", new
+        {
+            roles = new[] { "Admin", "User" }
+        });
+
+        // Assert
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var response = await client.GetAsync("/api/auth/info");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
+        body.Should().NotBeNull();
+        body!.Roles.Should().Contain("Admin");
+        body.Roles.Should().Contain("User");
     }
 
 

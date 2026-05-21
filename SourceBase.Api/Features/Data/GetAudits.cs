@@ -9,8 +9,8 @@ namespace SourceBase.Api.Features.Data;
 public class GetAuditsEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet("/audits", ([AsParameters] GetAuditsRequest request, GetAuditsHandler handler, CancellationToken ct) => handler.Handle(request, ct))
-        .RequireAuthorization(new AuthorizeAttribute { Roles = Roles.Admin })
+        .MapGet("/data/audits", ([AsParameters] GetAuditsRequest request, GetAuditsHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Data");
 }
 

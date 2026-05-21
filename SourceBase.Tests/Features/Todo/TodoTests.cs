@@ -1,7 +1,7 @@
 using System.Net;
 using FluentAssertions;
 using SourceBase.Api.Entities;
-using SourceBase.Api.Features.Todo;
+using SourceBase.Api.Features.Todos;
 using SourceBase.Api.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
