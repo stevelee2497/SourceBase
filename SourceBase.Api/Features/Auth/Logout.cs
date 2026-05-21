@@ -5,10 +5,11 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public class Logout : IEndpoint
+public class LogoutEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/logout",
-        (ISender sender, CancellationToken ct) => sender.Send(new LogoutCommand(), ct)).WithTags("Auth");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapPost("/auth/logout", (IRequestHandler<LogoutCommand, Results<Ok, EmptyHttpResult>> handler, CancellationToken ct) => handler.Handle(new LogoutCommand(), ct))
+        .WithTags("Auth");
 }
 
 public class LogoutHandler(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager) : IRequestHandler<LogoutCommand, Results<Ok, EmptyHttpResult>>
@@ -22,4 +23,4 @@ public class LogoutHandler(SignInManager<UserEntity> signInManager, UserManager<
     }
 }
 
-public record LogoutCommand : IRequest<Results<Ok, EmptyHttpResult>>;
+public record LogoutCommand;

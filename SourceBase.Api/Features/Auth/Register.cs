@@ -8,10 +8,12 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public class Register : IEndpoint
+public class RegisterEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/register",
-        ([FromBody] RegisterRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapPost("/auth/register", ([FromBody] RegisterRequest request, IRequestHandler<RegisterRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .AllowAnonymous()
+        .WithTags("Auth");
 }
 
 public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<RegisterRequest, NoContent>
@@ -36,7 +38,7 @@ public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper e
     }
 }
 
-public record RegisterRequest(string Email, string Password) : IRequest<NoContent>;
+public record RegisterRequest(string Email, string Password);
 
 public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {

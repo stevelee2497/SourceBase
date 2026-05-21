@@ -8,7 +8,7 @@ One project. One folder per concern.
 
 ```
 SourceBase.Api/
-├── Features/          # One file per use case (endpoint + handler + request record)
+├── Features/          # One file per use case (endpoint + handler + request/response records)
 │   ├── Auth/          # Login, Register, ForgotPassword, ...
 │   ├── Todo/          # CreateTodo, GetTodos, UpdateTodo, ...
 │   └── Data/          # GetAudits, GetRoles
@@ -23,8 +23,8 @@ SourceBase.Api/
 ### Key Design Decisions
 
 - **Minimal API slices via `IEndpoint`**: Every feature implements `IEndpoint` and registers its own route in `MapEndpoint`. No controllers.
-- **Single-file features**: Request record, response record, and handler are colocated in one `.cs` file per use case.
-- **Direct DI injection**: Handler methods receive dependencies (`IDbContext`, `ICurrentUser`, etc.) as parameters — no service locator, no MediatR.
+- **Single-file features**: Endpoint, request/response records, and handler are colocated in one `.cs` file per use case.
+- **Direct DI injection**: Route handlers receive `IRequestHandler<TRequest, TResponse>` plus normal dependencies (`IDbContext`, `ICurrentUser`, etc.) — no service locator, no ISender.
 - **Middleware-based error handling**: `ErrorResponseMiddleware` catches `ApiException` subclasses and maps them to `ProblemDetails` responses.
 - **Identity on `UserEntity`**: ASP.NET Core Identity is wired to `UserEntity : IdentityUser<Guid>` directly — no separate `ApplicationUser` projection.
 - **Startup is flat**: All service registration is in `Program.cs` via thin extension methods. No per-layer DI modules.
@@ -36,14 +36,14 @@ Each slice is a self-contained file:
 ```csharp
 public class CreateTodo : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapPost("/todos", Handler).WithTags("Todos");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapPost("/todos", ([FromBody] CreateTodoRequest request, IRequestHandler<CreateTodoRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .WithTags("Todos");
+}
 
-    private async Task<NoContent> Handler(
-        [FromBody] CreateTodoRequest request,
-        IDbContext dbContext,
-        ICurrentUser currentUser,
-        CancellationToken ct)
+public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoRequest, NoContent>
+{
+    public async Task<NoContent> Handle(CreateTodoRequest request, CancellationToken ct)
     {
         dbContext.TodoItems.Add(new TodoItemEntity { ... });
         await dbContext.SaveChangesAsync(ct);
@@ -54,22 +54,32 @@ public class CreateTodo : IEndpoint
 public record CreateTodoRequest([Required] DateOnly? Date, [Required] string Title, TodoItemStatus Status);
 ```
 
+### Endpoint Formatting
+
+Keep `MapEndpoint` chains aligned like this:
+
+```csharp
+public void MapEndpoint(IEndpointRouteBuilder app) => app
+    .MapGet("/roles", ([AsParameters] GetRolesRequest request, IRequestHandler<GetRolesRequest, PagingResponse<RoleResponse>> handler, CancellationToken ct) => handler.Handle(request, ct))
+    .AllowAnonymous()
+    .WithTags("Data");
+```
+
 ### Error Handling
 
 Throw a typed exception; the middleware handles the rest:
 
-| Exception | Status |
-|---|---|
-| `NotFoundException` | 500 |
-| `UnAuthorizedException` | 401 |
-| `ForbiddenException` | 403 |
-| `ValidationException` | 400 |
-| `ApiInternalException` | 500 |
+| Exception               | Status |
+| ----------------------- | ------ |
+| `NotFoundException`     | 500    |
+| `UnAuthorizedException` | 401    |
+| `ForbiddenException`    | 403    |
+| `ValidationException`   | 400    |
+| `ApiInternalException`  | 500    |
 
 ### Entities
 
 All entities inherit `BaseEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`). Audit fields are filled automatically by `ApplicationDbContextAuditInterceptor` — do not set them manually. Enums are stored as strings via `EnumToStringConverter<T>`.
-
 
 ## Features
 
@@ -99,7 +109,6 @@ All entities inherit `BaseEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`, `Update
 
 ✅ Docker support
 
-
 ## Getting Started
 
 ```sh
@@ -118,4 +127,3 @@ docker compose up
 ```
 
 The database (`app.db`) is auto-created on first run and seeded with roles and the admin user defined in `AppSettings`.
-

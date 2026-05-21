@@ -6,10 +6,12 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Data;
 
-public class GetAudits : IEndpoint
+public class GetAuditsEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/audits",
-        ([AsParameters] GetAuditsRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Data").RequireAuthorization(new AuthorizeAttribute { Roles = Roles.Admin });
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapGet("/audits", ([AsParameters] GetAuditsRequest request, IRequestHandler<GetAuditsRequest, Ok<PagingResponse<AuditHistoryEntity>>> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .RequireAuthorization(new AuthorizeAttribute { Roles = Roles.Admin })
+        .WithTags("Data");
 }
 
 public class GetAuditsHandler(IDbContext dbContext) : IRequestHandler<GetAuditsRequest, Ok<PagingResponse<AuditHistoryEntity>>>
@@ -21,4 +23,4 @@ public class GetAuditsHandler(IDbContext dbContext) : IRequestHandler<GetAuditsR
     }
 }
 
-public record GetAuditsRequest : PagingRequest, IRequest<Ok<PagingResponse<AuditHistoryEntity>>>;
+public record GetAuditsRequest : PagingRequest;

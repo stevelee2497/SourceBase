@@ -8,10 +8,12 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public class ResendConfirmationEmail : IEndpoint
+public class ResendConfirmationEmailEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/resendConfirmationEmail",
-        ([FromBody] ResendConfirmationEmailRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapPost("/auth/resendConfirmationEmail", ([FromBody] ResendConfirmationEmailRequest request, IRequestHandler<ResendConfirmationEmailRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .AllowAnonymous()
+        .WithTags("Auth");
 }
 
 public class ResendConfirmationEmailHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<ResendConfirmationEmailRequest, NoContent>
@@ -30,7 +32,7 @@ public class ResendConfirmationEmailHandler(UserManager<UserEntity> userManager,
     }
 }
 
-public record ResendConfirmationEmailRequest(string Email) : IRequest<NoContent>;
+public record ResendConfirmationEmailRequest(string Email);
 
 public class ResendConfirmationEmailRequestValidator : AbstractValidator<ResendConfirmationEmailRequest>
 {

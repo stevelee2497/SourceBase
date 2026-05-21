@@ -136,7 +136,6 @@ public static class ProgramConfigurations
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<IEmailHelper, SendGridEmailHelper>();
-        services.AddTransient<ISender, Sender>();
     }
 
     public static void AddFluentValidation(this IServiceCollection services, Assembly assembly)

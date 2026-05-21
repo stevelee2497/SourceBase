@@ -7,10 +7,11 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
-public class UpdateTodo : IEndpoint
+public class UpdateTodoEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPut("/todos/{id:guid}",
-        (Guid id, [FromBody] UpdateTodoRequest body, ISender sender, CancellationToken ct) => sender.Send(new UpdateTodoCommand(id, body.Date, body.Title, body.Status), ct)).WithTags("Todos");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapPut("/todos/{id:guid}", (Guid id, [FromBody] UpdateTodoRequest body, IRequestHandler<UpdateTodoCommand, NoContent> handler, CancellationToken ct) => handler.Handle(new UpdateTodoCommand(id, body.Date, body.Title, body.Status), ct))
+        .WithTags("Todos");
 }
 
 public class UpdateTodoHandler(IDbContext dbContext) : IRequestHandler<UpdateTodoCommand, NoContent>
@@ -26,7 +27,7 @@ public class UpdateTodoHandler(IDbContext dbContext) : IRequestHandler<UpdateTod
     }
 }
 
-public record UpdateTodoCommand(Guid Id, DateOnly Date, string Title, TodoItemStatus Status) : IRequest<NoContent>;
+public record UpdateTodoCommand(Guid Id, DateOnly Date, string Title, TodoItemStatus Status);
 
 public record UpdateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
 

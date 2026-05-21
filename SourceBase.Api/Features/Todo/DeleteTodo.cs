@@ -4,10 +4,11 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
-public class DeleteTodo : IEndpoint
+public class DeleteTodoEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapDelete("/todos/{id:guid}",
-        (Guid id, ISender sender, CancellationToken ct) => sender.Send(new DeleteTodoCommand(id), ct)).WithTags("Todos");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapDelete("/todos/{id:guid}", (Guid id, IRequestHandler<DeleteTodoCommand, NoContent> handler, CancellationToken ct) => handler.Handle(new DeleteTodoCommand(id), ct))
+        .WithTags("Todos");
 }
 
 public class DeleteTodoHandler(IDbContext dbContext) : IRequestHandler<DeleteTodoCommand, NoContent>
@@ -21,4 +22,4 @@ public class DeleteTodoHandler(IDbContext dbContext) : IRequestHandler<DeleteTod
     }
 }
 
-public record DeleteTodoCommand(Guid Id) : IRequest<NoContent>;
+public record DeleteTodoCommand(Guid Id);

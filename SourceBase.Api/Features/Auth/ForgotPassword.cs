@@ -8,10 +8,12 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public class ForgotPassword : IEndpoint
+public class ForgotPasswordEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/forgotPassword",
-        ([FromBody] ForgotPasswordRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapPost("/auth/forgotPassword", ([FromBody] ForgotPasswordRequest request, IRequestHandler<ForgotPasswordRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .AllowAnonymous()
+        .WithTags("Auth");
 }
 
 public class ForgotPasswordHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<ForgotPasswordRequest, NoContent>
@@ -27,7 +29,7 @@ public class ForgotPasswordHandler(UserManager<UserEntity> userManager, IEmailHe
     }
 }
 
-public record ForgotPasswordRequest(string Email) : IRequest<NoContent>;
+public record ForgotPasswordRequest(string Email);
 
 public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
 {

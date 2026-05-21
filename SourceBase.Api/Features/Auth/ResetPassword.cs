@@ -8,10 +8,12 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public class ResetPassword : IEndpoint
+public class ResetPasswordEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/resetPassword",
-        ([FromBody] ResetPasswordRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapPost("/auth/resetPassword", ([FromBody] ResetPasswordRequest request, IRequestHandler<ResetPasswordRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .AllowAnonymous()
+        .WithTags("Auth");
 }
 
 public class ResetPasswordHandler(UserManager<UserEntity> userManager) : IRequestHandler<ResetPasswordRequest, NoContent>
@@ -33,7 +35,7 @@ public class ResetPasswordHandler(UserManager<UserEntity> userManager) : IReques
     }
 }
 
-public record ResetPasswordRequest(string Email, string Code, string NewPassword) : IRequest<NoContent>;
+public record ResetPasswordRequest(string Email, string Code, string NewPassword);
 
 public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest>
 {

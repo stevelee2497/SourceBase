@@ -6,10 +6,11 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
-public class GetTodos : IEndpoint
+public class GetTodosEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/todos",
-        ([AsParameters] GetTodosRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Todos");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapGet("/todos", ([AsParameters] GetTodosRequest request, IRequestHandler<GetTodosRequest, Ok<PagingResponse<GetTodoResponse>>> sender, CancellationToken ct) => sender.Handle(request, ct))
+        .WithTags("Todos");
 }
 
 public class GetTodosHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetTodosRequest, Ok<PagingResponse<GetTodoResponse>>>
@@ -23,6 +24,8 @@ public class GetTodosHandler(IDbContext dbContext, ICurrentUser currentUser) : I
     }
 }
 
+public record GetTodosRequest(TodoItemStatus? Status, DateOnly? Date, int? Page, int? Limit, PagingOrder? Order, GetTodosOrder? OrderBy) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
+
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum GetTodosOrder
 {
@@ -34,7 +37,3 @@ public enum GetTodosOrder
     UpdatedOn,
     UpdatedBy
 }
-
-public record GetTodosRequest(TodoItemStatus? Status, DateOnly? Date, int? Page, int? Limit, PagingOrder? Order, GetTodosOrder? OrderBy) : PagingRequest(Page, Limit, Order, OrderBy?.ToString()), IRequest<Ok<PagingResponse<GetTodoResponse>>>;
-
-

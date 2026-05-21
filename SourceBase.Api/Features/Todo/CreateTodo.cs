@@ -6,10 +6,11 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
-public class CreateTodo : IEndpoint
+public class CreateTodoEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/todos",
-        ([FromBody] CreateTodoRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Todos");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapPost("/todos", ([FromBody] CreateTodoRequest request, IRequestHandler<CreateTodoRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .WithTags("Todos");
 }
 
 public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoRequest, NoContent>
@@ -28,7 +29,7 @@ public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) :
     }
 }
 
-public record CreateTodoRequest(DateOnly? Date, string Title, TodoItemStatus Status) : IRequest<NoContent>;
+public record CreateTodoRequest(DateOnly? Date, string Title, TodoItemStatus Status);
 
 public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 {

@@ -6,15 +6,16 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public class GetUserInfo : IEndpoint
+public class GetUserInfoEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/auth/info",
-        (ISender sender, CancellationToken ct) => sender.Send(new GetUserInfoQuery(), ct)).WithTags("Auth");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapGet("/auth/info", (IRequestHandler<GetUserInfoRequest, Ok<GetUserInfoResponse>> handler, CancellationToken ct) => handler.Handle(new GetUserInfoRequest(), ct))
+        .WithTags("Auth");
 }
 
-public class GetUserInfoHandler(UserManager<UserEntity> userManager, ICurrentUser currentUser) : IRequestHandler<GetUserInfoQuery, Ok<GetUserInfoResponse>>
+public class GetUserInfoHandler(UserManager<UserEntity> userManager, ICurrentUser currentUser) : IRequestHandler<GetUserInfoRequest, Ok<GetUserInfoResponse>>
 {
-    public async Task<Ok<GetUserInfoResponse>> Handle(GetUserInfoQuery request, CancellationToken ct)
+    public async Task<Ok<GetUserInfoResponse>> Handle(GetUserInfoRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByIdAsync(currentUser.UserId.ToString()) ?? throw new NotFoundException();
         var roles = await userManager.GetRolesAsync(user);
@@ -22,6 +23,6 @@ public class GetUserInfoHandler(UserManager<UserEntity> userManager, ICurrentUse
     }
 }
 
-public record GetUserInfoQuery : IRequest<Ok<GetUserInfoResponse>>;
+public record GetUserInfoRequest;
 
 public record GetUserInfoResponse(Guid Id, string? Email, string? FirstName, string? LastName, string? PhoneNumber, IEnumerable<string> Roles);

@@ -8,10 +8,12 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public class ConfirmEmail : IEndpoint
+public class ConfirmEmailEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/confirmEmail",
-        ([FromBody] ConfirmEmailRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapPost("/auth/confirmEmail", ([FromBody] ConfirmEmailRequest request, IRequestHandler<ConfirmEmailRequest, NoContent> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .AllowAnonymous()
+        .WithTags("Auth");
 }
 
 public class ConfirmEmailHandler(UserManager<UserEntity> userManager) : IRequestHandler<ConfirmEmailRequest, NoContent>
@@ -32,7 +34,7 @@ public class ConfirmEmailHandler(UserManager<UserEntity> userManager) : IRequest
     }
 }
 
-public record ConfirmEmailRequest(string Email, string Code) : IRequest<NoContent>;
+public record ConfirmEmailRequest(string Email, string Code);
 
 public class ConfirmEmailRequestValidator : AbstractValidator<ConfirmEmailRequest>
 {

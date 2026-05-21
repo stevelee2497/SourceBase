@@ -11,10 +11,12 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public class Refresh : IEndpoint
+public class RefreshEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/refresh",
-        ([FromBody] RefreshTokenRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapPost("/auth/refresh", ([FromBody] RefreshTokenRequest request, IRequestHandler<RefreshTokenRequest, Results<Ok<LoginResponse>, EmptyHttpResult>> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .AllowAnonymous()
+        .WithTags("Auth");
 }
 
 public class RefreshHandler(SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions) : IRequestHandler<RefreshTokenRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
@@ -34,7 +36,7 @@ public class RefreshHandler(SignInManager<UserEntity> signInManager, IOptionsMon
     }
 }
 
-public record RefreshTokenRequest(string Token) : IRequest<Results<Ok<LoginResponse>, EmptyHttpResult>>;
+public record RefreshTokenRequest(string Token);
 
 public class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
 {

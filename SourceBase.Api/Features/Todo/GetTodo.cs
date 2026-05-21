@@ -6,15 +6,16 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todo;
 
-public class GetTodo : IEndpoint
+public class GetTodoEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapGet("/todos/{id:guid}",
-        (Guid id, ISender sender, CancellationToken ct) => sender.Send(new GetTodoQuery(id), ct)).WithTags("Todos");
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapGet("/todos/{id:guid}", (Guid id, IRequestHandler<GetTodoRequest, Ok<GetTodoResponse>> handler, CancellationToken ct) => handler.Handle(new GetTodoRequest(id), ct))
+        .WithTags("Todos");
 }
 
-public class GetTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetTodoQuery, Ok<GetTodoResponse>>
+public class GetTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetTodoRequest, Ok<GetTodoResponse>>
 {
-    public async Task<Ok<GetTodoResponse>> Handle(GetTodoQuery request, CancellationToken ct)
+    public async Task<Ok<GetTodoResponse>> Handle(GetTodoRequest request, CancellationToken ct)
     {
         var todo = await dbContext.TodoItems.FindAsync([request.Id], ct);
 
@@ -27,7 +28,7 @@ public class GetTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IR
     }
 }
 
-public record GetTodoQuery(Guid Id) : IRequest<Ok<GetTodoResponse>>;
+public record GetTodoRequest(Guid Id);
 
 [method: JsonConstructor]
 public record GetTodoResponse(Guid Id, DateOnly Date, string Title, TodoItemStatus Status, DateTime? CreatedOn, string? CreatedBy, DateTime? UpdatedOn, string? UpdatedBy)

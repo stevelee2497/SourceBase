@@ -9,10 +9,12 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public class Login : IEndpoint
+public class LoginEndpoint : IEndpoint
 {
-    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost("/auth/login",
-        ([FromBody] LoginRequest request, ISender sender, CancellationToken ct) => sender.Send(request, ct)).WithTags("Auth").AllowAnonymous();
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapPost("/auth/login", ([FromBody] LoginRequest request, IRequestHandler<LoginRequest, Results<Ok<LoginResponse>, EmptyHttpResult>> handler, CancellationToken ct) => handler.Handle(request, ct))
+        .AllowAnonymous()
+        .WithTags("Auth");
 }
 
 public class LoginHandler(UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager) : IRequestHandler<LoginRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
@@ -32,7 +34,7 @@ public class LoginHandler(UserManager<UserEntity> userManager, SignInManager<Use
     }
 }
 
-public record LoginRequest(string Email, string Password) : IRequest<Results<Ok<LoginResponse>, EmptyHttpResult>>;
+public record LoginRequest(string Email, string Password);
 
 public record LoginResponse(string TokenType, string AccessToken, int expiresIn, string RefreshToken);
 
