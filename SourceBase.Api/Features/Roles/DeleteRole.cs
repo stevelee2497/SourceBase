@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Entities;
@@ -22,15 +23,27 @@ public class DeleteRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
 {
     public async Task<DeleteRoleResponse> Handle(DeleteRoleCommand request, CancellationToken ct)
     {
-        var role = await roleManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
+        var role = await roleManager.FindByIdAsync(request.Id.ToString());
 
-        if (role.Name == AppRoles.Admin)
-            throw new BadRequestException("Cannot delete Admin role");
-
-        var result = await roleManager.DeleteAsync(role);
+        var result = await roleManager.DeleteAsync(role!);
         if (!result.Succeeded)
             throw new BadRequestException(result.Errors.First().Description);
 
         return new DeleteRoleResponse(true);
+    }
+}
+
+public class DeleteRoleCommandValidator : AbstractValidator<DeleteRoleCommand>
+{
+    public DeleteRoleCommandValidator(RoleManager<RoleEntity> roleManager)
+    {
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .MustAsync(async (id, ct) =>
+            {
+                var role = await roleManager.FindByIdAsync(id.ToString());
+                return role != null && role.Name != AppRoles.Admin;
+            })
+            .WithMessage("Role with the specified ID does not exist or cannot delete Admin role");
     }
 }

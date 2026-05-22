@@ -25,14 +25,22 @@ public class GetEnumsEndpoint : IEndpoint
         .WithTags("Data");
 }
 
-public class GetEnumsHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<GetEnumsRequest, GetEnumsResponse>
+public class GetEnumsHandler : IRequestHandler<GetEnumsRequest, GetEnumsResponse>
 {
-    private Dictionary<AvailableEnums, Task<List<EnumResponse>>> EnumTypeMapping => new()
+    private readonly RoleManager<RoleEntity> roleManager;
+    private readonly Dictionary<AvailableEnums, Task<List<EnumResponse>>> EnumTypeMapping;
+
+    public GetEnumsHandler(RoleManager<RoleEntity> roleManager)
     {
-        { AvailableEnums.RolesOrder, BuildEnumDefinitions<RolesOrder>() },
-        { AvailableEnums.TodoItemStatus, BuildEnumDefinitions<TodoItemStatus>() },
-        { AvailableEnums.Roles, GetRolesAsync() },
-    };
+        this.roleManager = roleManager;
+
+        EnumTypeMapping = new Dictionary<AvailableEnums, Task<List<EnumResponse>>>
+        {
+            { AvailableEnums.RolesOrder, BuildEnumDefinitions<RolesOrder>() },
+            { AvailableEnums.TodoItemStatus, BuildEnumDefinitions<TodoItemStatus>() },
+            { AvailableEnums.Roles, GetRolesAsync() },
+        };
+    }
 
     public async Task<GetEnumsResponse> Handle(GetEnumsRequest request, CancellationToken ct)
     {

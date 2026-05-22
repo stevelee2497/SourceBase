@@ -4,7 +4,7 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Roles;
 
-public record GetRolesRequest(int? Page = 1, int? Limit = 10, PagingOrder? Order = PagingOrder.Asc, RolesOrder? OrderBy = null) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
+public record GetRolesRequest(int? Page = 1, int? Limit = 10, PagingOrder? Order = PagingOrder.Asc, RolesOrder? OrderBy = RolesOrder.CreatedOn) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
 
 public record RoleResponse(Guid Id, string Name, string? Description);
 
