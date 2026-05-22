@@ -6,6 +6,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todos;
 
+public record GetTodosRequest(TodoItemStatus? Status, DateOnly? Date, int? Page, int? Limit, PagingOrder? Order, GetTodosOrder? OrderBy) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
+
 public class GetTodosEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -23,8 +25,6 @@ public class GetTodosHandler(IDbContext dbContext, ICurrentUser currentUser) : I
         return TypedResults.Ok(todos);
     }
 }
-
-public record GetTodosRequest(TodoItemStatus? Status, DateOnly? Date, int? Page, int? Limit, PagingOrder? Order, GetTodosOrder? OrderBy) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum GetTodosOrder

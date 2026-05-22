@@ -474,7 +474,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
     [Fact]
-    public async Task UpdateUserInfo_WithRoles_UpdatesCurrentUserRoles()
+    public async Task UpdateUserInfo_WithRoles_InvalidatesCurrentTokenAndUpdatesCurrentUserRoles()
     {
         // Arrange
         var client = factory.CreateClient();
@@ -494,6 +494,12 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 
         // Assert
         updateResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var responseWithOldToken = await client.GetAsync("/api/auth/info");
+        responseWithOldToken.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        var newToken = await Utilities.GetAccessTokenAsync(client, email, password);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", newToken);
+
         var response = await client.GetAsync("/api/auth/info");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();

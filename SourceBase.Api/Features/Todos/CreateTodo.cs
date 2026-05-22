@@ -6,6 +6,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todos;
 
+public record CreateTodoRequest(DateOnly? Date, string Title, TodoItemStatus Status);
+
 public class CreateTodoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -28,8 +30,6 @@ public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) :
         return TypedResults.NoContent();
     }
 }
-
-public record CreateTodoRequest(DateOnly? Date, string Title, TodoItemStatus Status);
 
 public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 {

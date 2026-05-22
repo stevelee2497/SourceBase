@@ -9,6 +9,10 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Roles;
 
+public record UpdateRoleRequest(string Name, string? Description);
+
+public record UpdateRoleCommand(Guid Id, string Name, string? Description);
+
 public class UpdateRoleEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -32,10 +36,6 @@ public class UpdateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
         return TypedResults.NoContent();
     }
 }
-
-public record UpdateRoleCommand(Guid Id, string Name, string? Description);
-
-public record UpdateRoleRequest(string Name, string? Description);
 
 public class UpdateRoleRequestValidator : AbstractValidator<UpdateRoleRequest>
 {

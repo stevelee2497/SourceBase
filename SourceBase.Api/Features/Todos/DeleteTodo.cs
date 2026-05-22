@@ -4,6 +4,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todos;
 
+public record DeleteTodoCommand(Guid Id);
+
 public class DeleteTodoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -21,5 +23,3 @@ public class DeleteTodoHandler(IDbContext dbContext) : IRequestHandler<DeleteTod
         return TypedResults.NoContent();
     }
 }
-
-public record DeleteTodoCommand(Guid Id);

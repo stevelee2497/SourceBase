@@ -8,6 +8,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
+public record ResetPasswordRequest(string Email, string Code, string NewPassword);
+
 public class ResetPasswordEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -34,8 +36,6 @@ public class ResetPasswordHandler(UserManager<UserEntity> userManager) : IReques
         return TypedResults.NoContent();
     }
 }
-
-public record ResetPasswordRequest(string Email, string Code, string NewPassword);
 
 public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest>
 {

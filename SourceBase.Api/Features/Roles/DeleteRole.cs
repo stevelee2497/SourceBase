@@ -7,6 +7,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Roles;
 
+public record DeleteRoleCommand(Guid Id);
+
 public class DeleteRoleEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -31,5 +33,3 @@ public class DeleteRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
         return TypedResults.NoContent();
     }
 }
-
-public record DeleteRoleCommand(Guid Id);

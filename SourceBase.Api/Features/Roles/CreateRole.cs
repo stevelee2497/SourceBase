@@ -9,6 +9,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Roles;
 
+public record CreateRoleRequest(string Name, string? Description);
+
 public class CreateRoleEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -34,8 +36,6 @@ public class CreateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
         return TypedResults.NoContent();
     }
 }
-
-public record CreateRoleRequest(string Name, string? Description);
 
 public class CreateRoleRequestValidator : AbstractValidator<CreateRoleRequest>
 {

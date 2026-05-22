@@ -9,6 +9,10 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
+public record LoginRequest(string Email, string Password);
+
+public record LoginResponse(string TokenType, string AccessToken, int ExpiresIn, string RefreshToken);
+
 public class LoginEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -33,10 +37,6 @@ public class LoginHandler(UserManager<UserEntity> userManager, SignInManager<Use
         return TypedResults.Empty; // The actual token generation is handled by the JwtBearer middleware, so we return null here. The client will receive the token in the response headers.
     }
 }
-
-public record LoginRequest(string Email, string Password);
-
-public record LoginResponse(string TokenType, string AccessToken, int expiresIn, string RefreshToken);
 
 public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {

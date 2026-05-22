@@ -16,7 +16,6 @@ SourceBase.Api/
 ├── Infrastructure/    # DbContext, Identity, migrations, email helper
 ├── Shared/            # Exceptions, AppSettings, interfaces, constants
 ├── Middlewares/       # Error response middleware
-├── Extensions/        # IServiceCollection + IEndpointRouteBuilder extensions
 └── Program.cs         # Composition root — all DI wiring lives here
 ```
 
@@ -52,6 +51,16 @@ public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) :
 }
 
 public record CreateTodoRequest([Required] DateOnly? Date, [Required] string Title, TodoItemStatus Status);
+
+public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
+{
+    public CreateTodoRequestValidator()
+    {
+        RuleFor(x => x.Date).NotNull();
+        RuleFor(x => x.Title).NotEmpty();
+    }
+}
+
 ```
 
 ### Endpoint Formatting
@@ -71,10 +80,11 @@ Throw a typed exception; the middleware handles the rest:
 
 | Exception               | Status |
 | ----------------------- | ------ |
-| `NotFoundException`     | 500    |
+| `BadRequestException`   | 400    |
+| `ValidationException`   | 400    |
 | `UnAuthorizedException` | 401    |
 | `ForbiddenException`    | 403    |
-| `ValidationException`   | 400    |
+| `NotFoundException`     | 404    |
 | `ApiInternalException`  | 500    |
 
 ### Entities
@@ -93,9 +103,9 @@ All entities inherit `BaseEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`, `Update
 
 ✅ Role-based authorization
 
-✅ `ErrorResponseMiddleware` → `ProblemDetails` error responses
+✅ `GlobalExceptionMiddleware` → `ProblemDetails` error responses
 
-✅ Request validation via `DataAnnotations` with automatic 400 responses
+✅ Request validation via `FluentValidation` with automatic 400 responses
 
 ✅ EF Core audit interceptor (CreatedOn / UpdatedOn / CreatedBy / UpdatedBy)
 

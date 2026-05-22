@@ -7,6 +7,10 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todos;
 
+public record UpdateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
+
+public record UpdateTodoCommand(Guid Id, DateOnly Date, string Title, TodoItemStatus Status);
+
 public class UpdateTodoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -26,10 +30,6 @@ public class UpdateTodoHandler(IDbContext dbContext) : IRequestHandler<UpdateTod
         return TypedResults.NoContent();
     }
 }
-
-public record UpdateTodoCommand(Guid Id, DateOnly Date, string Title, TodoItemStatus Status);
-
-public record UpdateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
 
 public class UpdateTodoRequestValidator : AbstractValidator<UpdateTodoRequest>
 {

@@ -8,6 +8,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
+public record UpdateUserInfoRequest(string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles);
+
 public class UpdateUserInfoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -57,6 +59,8 @@ public class UpdateUserInfoHandler(
                 if (!addResult.Succeeded)
                     throw new BadRequestException(addResult.Errors.First().Description);
             }
+
+            user.SecurityStamp = Guid.NewGuid().ToString(); // Invalidate existing tokens
         }
 
         var result = await userManager.UpdateAsync(user);
@@ -66,8 +70,6 @@ public class UpdateUserInfoHandler(
         return TypedResults.NoContent();
     }
 }
-
-public record UpdateUserInfoRequest(string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles);
 
 public class UpdateUserInfoRequestValidator : AbstractValidator<UpdateUserInfoRequest>
 {

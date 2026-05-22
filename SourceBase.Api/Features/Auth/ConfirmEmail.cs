@@ -8,6 +8,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
+public record ConfirmEmailRequest(string Email, string Code);
+
 public class ConfirmEmailEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -33,8 +35,6 @@ public class ConfirmEmailHandler(UserManager<UserEntity> userManager) : IRequest
         return TypedResults.NoContent();
     }
 }
-
-public record ConfirmEmailRequest(string Email, string Code);
 
 public class ConfirmEmailRequestValidator : AbstractValidator<ConfirmEmailRequest>
 {

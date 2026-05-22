@@ -6,6 +6,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Data;
 
+public record GetAuditsRequest : PagingRequest;
+
 public class GetAuditsEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -22,5 +24,3 @@ public class GetAuditsHandler(IDbContext dbContext) : IRequestHandler<GetAuditsR
         return TypedResults.Ok(audits);
     }
 }
-
-public record GetAuditsRequest : PagingRequest;

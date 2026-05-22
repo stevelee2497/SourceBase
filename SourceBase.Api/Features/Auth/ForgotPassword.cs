@@ -8,6 +8,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
+public record ForgotPasswordRequest(string Email);
+
 public class ForgotPasswordEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -28,8 +30,6 @@ public class ForgotPasswordHandler(UserManager<UserEntity> userManager, IEmailHe
         return TypedResults.NoContent();
     }
 }
-
-public record ForgotPasswordRequest(string Email);
 
 public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
 {

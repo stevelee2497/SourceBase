@@ -6,6 +6,10 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
+public record GetUserInfoRequest;
+
+public record GetUserInfoResponse(Guid Id, string? Email, string? FirstName, string? LastName, string? PhoneNumber, IEnumerable<string> Roles);
+
 public class GetUserInfoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -22,7 +26,3 @@ public class GetUserInfoHandler(UserManager<UserEntity> userManager, ICurrentUse
         return TypedResults.Ok(new GetUserInfoResponse(user.Id, user.Email, user.FirstName, user.LastName, user.PhoneNumber, roles));
     }
 }
-
-public record GetUserInfoRequest;
-
-public record GetUserInfoResponse(Guid Id, string? Email, string? FirstName, string? LastName, string? PhoneNumber, IEnumerable<string> Roles);

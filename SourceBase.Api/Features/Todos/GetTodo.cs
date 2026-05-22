@@ -6,6 +6,16 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todos;
 
+public record GetTodoRequest(Guid Id);
+
+[method: JsonConstructor]
+public record GetTodoResponse(Guid Id, DateOnly Date, string Title, TodoItemStatus Status, DateTime? CreatedOn, string? CreatedBy, DateTime? UpdatedOn, string? UpdatedBy)
+{
+    public GetTodoResponse(TodoItemEntity todo) : this(todo.Id, todo.Date, todo.Title, todo.Status, todo.CreatedOn, todo.CreatedBy, todo.UpdatedOn, todo.UpdatedBy)
+    {
+    }
+}
+
 public class GetTodoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -25,15 +35,5 @@ public class GetTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IR
         }
 
         return TypedResults.Ok(new GetTodoResponse(todo));
-    }
-}
-
-public record GetTodoRequest(Guid Id);
-
-[method: JsonConstructor]
-public record GetTodoResponse(Guid Id, DateOnly Date, string Title, TodoItemStatus Status, DateTime? CreatedOn, string? CreatedBy, DateTime? UpdatedOn, string? UpdatedBy)
-{
-    public GetTodoResponse(TodoItemEntity todo) : this(todo.Id, todo.Date, todo.Title, todo.Status, todo.CreatedOn, todo.CreatedBy, todo.UpdatedOn, todo.UpdatedBy)
-    {
     }
 }

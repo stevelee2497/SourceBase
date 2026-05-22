@@ -8,6 +8,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
+public record RegisterRequest(string Email, string Password);
+
 public class RegisterEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -37,8 +39,6 @@ public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper e
         return TypedResults.NoContent();
     }
 }
-
-public record RegisterRequest(string Email, string Password);
 
 public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {

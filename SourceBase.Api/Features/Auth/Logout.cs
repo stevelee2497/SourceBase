@@ -5,6 +5,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
+public record LogoutCommand;
+
 public class LogoutEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -22,5 +24,3 @@ public class LogoutHandler(SignInManager<UserEntity> signInManager, UserManager<
         return TypedResults.Ok();
     }
 }
-
-public record LogoutCommand;

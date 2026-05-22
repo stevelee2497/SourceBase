@@ -11,6 +11,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
+public record RefreshTokenRequest(string Token);
+
 public class RefreshEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -35,8 +37,6 @@ public class RefreshHandler(SignInManager<UserEntity> signInManager, IOptionsMon
         return TypedResults.Empty; // The actual token generation is handled by the JwtBearer middleware, so we return null here. The client will receive the token in the response headers.
     }
 }
-
-public record RefreshTokenRequest(string Token);
 
 public class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
 {
