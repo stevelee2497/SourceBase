@@ -13,6 +13,15 @@
 		<PackageVersion Include="FluentAssertions" Version="6.12.0" />
 	</ItemGroup>
 	<ItemGroup>
+		<PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.6.0" />
+		<PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
+		<PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3" />
+		<PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.2" />
+		<PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.1" />
+		<PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.1" />
+		<PackageVersion Include="Serilog.Sinks.OpenTelemetry" Version="4.2.0" />
+	</ItemGroup>
+	<ItemGroup>
 		<PackageVersion Include="FluentValidation" Version="11.11.0" />
 		<PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
 		<PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.7" />

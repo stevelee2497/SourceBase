@@ -4,7 +4,9 @@ using SourceBase.Api.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.UseSeriLog();
+
+builder.AddServiceDefaults();
+builder.AddSeriLog();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
 builder.Services.AddAuthorization();
@@ -33,5 +35,6 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCustomAuthorization();
 app.UseMinimalApi();
+app.MapDefaultEndpoints();
 
 app.Run();

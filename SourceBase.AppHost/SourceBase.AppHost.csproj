@@ -1,0 +1,11 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.3.5">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\SourceBase.Api\SourceBase.Api.csproj" />
+	</ItemGroup>
+
+</Project>

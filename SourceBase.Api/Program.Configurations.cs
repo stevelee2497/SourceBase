@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
+using Serilog.Sinks.OpenTelemetry;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Infrastructure.DbContexts;
 using SourceBase.Api.Infrastructure.Implementations;
@@ -85,9 +86,26 @@ public static class ProgramConfigurations
         });
     }
 
-    public static void UseSeriLog(this WebApplicationBuilder builder)
+    public static void AddSeriLog(this WebApplicationBuilder builder)
     {
-        Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
+        var logConfig = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration);
+
+        var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+        if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+        {
+            logConfig = logConfig.WriteTo.OpenTelemetry(options =>
+            {
+                options.Endpoint = otlpEndpoint;
+                options.Protocol = OtlpProtocol.Grpc;
+                options.ResourceAttributes = new Dictionary<string, object>
+                {
+                    ["service.name"] = builder.Configuration["OTEL_SERVICE_NAME"] ?? builder.Configuration["ApplicationName"] ?? "SourceBase.Api",
+                    ["service.version"] = builder.Configuration["OTEL_SERVICE_VERSION"] ?? "1.0.0",
+                };
+            });
+        }
+
+        Log.Logger = logConfig.CreateLogger();
         builder.Host.UseSerilog();
     }
 

@@ -33,6 +33,11 @@ SourceBase.Api/
 Each slice is a self-contained file:
 
 ```csharp
+
+public record CreateTodoRequest([Required] DateOnly? Date, [Required] string Title, TodoItemStatus Status);
+
+public record CreateTodoResponse(bool Success);
+
 public class CreateTodo : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -40,17 +45,15 @@ public class CreateTodo : IEndpoint
         .WithTags("Todos");
 }
 
-public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoRequest, NoContent>
+public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoRequest, CreateTodoResponse>
 {
-    public async Task<NoContent> Handle(CreateTodoRequest request, CancellationToken ct)
+    public async Task<CreateTodoResponse> Handle(CreateTodoRequest request, CancellationToken ct)
     {
         dbContext.TodoItems.Add(new TodoItemEntity { ... });
         await dbContext.SaveChangesAsync(ct);
-        return TypedResults.NoContent();
+        return new CreateTodoResponse(true);
     }
 }
-
-public record CreateTodoRequest([Required] DateOnly? Date, [Required] string Title, TodoItemStatus Status);
 
 public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 {
@@ -111,15 +114,29 @@ All entities inherit `BaseEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`, `Update
 
 ✅ Strongly-typed `AppSettings` with `IOptions<T>` pattern
 
-✅ Serilog structured logging
+✅ Serilog structured logging with OpenTelemetry sink for Aspire dashboard
 
 ✅ CORS policy (configurable origins via `appsettings.json`)
 
 ✅ SendGrid email integration
 
+✅ .NET Aspire orchestration with dashboard for monitoring and logs
+
 ✅ Docker support
 
+## Observability & Aspire
+
+The project uses **.NET Aspire** for distributed application orchestration and observability:
+
+- **`SourceBase.ServiceDefaults`** — Shared OpenTelemetry configuration (metrics, traces, health checks, service discovery)
+- **`SourceBase.AppHost`** — Aspire orchestrator that manages the API and dashboard
+- **Dashboard** — Real-time logs, traces, metrics, and resource monitoring at `http://localhost:15017`
+
+Logs are forwarded to the dashboard via Serilog's OpenTelemetry sink when `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
+
 ## Getting Started
+
+### Run the API standalone
 
 ```sh
 # Run the API
@@ -132,7 +149,23 @@ dotnet build
 sh cmd-migration-add.sh <MigrationName>
 sh cmd-migration-update-db.sh
 
-# Docker
+# Run tests
+dotnet test
+```
+
+### Run with Aspire orchestration (recommended for development)
+
+```sh
+# Start the AppHost (orchestrates API + dashboard)
+dotnet run --project SourceBase.AppHost
+
+# Dashboard available at: http://localhost:15017
+# Login with token from console output
+```
+
+### Docker
+
+```sh
 docker compose up
 ```
 
