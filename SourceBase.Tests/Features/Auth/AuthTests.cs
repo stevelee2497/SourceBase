@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using FluentAssertions;
 using SourceBase.Api.Features.Auth;
 using SourceBase.Tests.Infrastructure;
@@ -88,7 +89,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
         var email = $"confirm_{Guid.NewGuid():N}@test.com";
         await client.PostAsJsonAsync("/api/auth/register", new { email, password = "Test@1234!" });
-        var code = await factory.GetLatestEmailCodeAsync(email);
+        var code = await factory.GetOtpCode(email);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
@@ -219,7 +220,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var email = $"login_ok_{Guid.NewGuid():N}@test.com";
         const string password = "Test@1234!";
         await client.PostAsJsonAsync("/api/auth/register", new { email, password });
-        var code = await factory.GetLatestEmailCodeAsync(email);
+        var code = await factory.GetOtpCode(email);
         await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
 
         // Act
@@ -344,10 +345,10 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var email = $"reset_{Guid.NewGuid():N}@test.com";
         const string password = "Test@1234!";
         await client.PostAsJsonAsync("/api/auth/register", new { email, password });
-        var code = await factory.GetLatestEmailCodeAsync(email);
+        var code = await factory.GetOtpCode(email);
         await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
         await client.PostAsJsonAsync("/api/auth/forgotPassword", new { email });
-        var newCode = await factory.GetLatestEmailCodeAsync(email);
+        var newCode = await factory.GetOtpCode(email);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/auth/resetPassword", new
@@ -372,10 +373,10 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         const string oldPassword = "Test@1234!";
         const string newPassword = "NewTest@5678!";
         await client.PostAsJsonAsync("/api/auth/register", new { email, password = oldPassword });
-        var code = await factory.GetLatestEmailCodeAsync(email);
+        var code = await factory.GetOtpCode(email);
         await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
         await client.PostAsJsonAsync("/api/auth/forgotPassword", new { email });
-        var newCode = await factory.GetLatestEmailCodeAsync(email);
+        var newCode = await factory.GetOtpCode(email);
         await client.PostAsJsonAsync("/api/auth/resetPassword", new { email, code = newCode, newPassword });
 
         // Act
@@ -392,7 +393,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
         var email = $"reset_bad_code_{Guid.NewGuid():N}@test.com";
         await client.PostAsJsonAsync("/api/auth/register", new { email, password = "Test@1234!" });
-        var code = await factory.GetLatestEmailCodeAsync(email);
+        var code = await factory.GetOtpCode(email);
         await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
 
         // Act
@@ -491,9 +492,9 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var email = $"updaterole_{Guid.NewGuid():N}@test.com";
         const string password = "Test@1234!";
         await client.PostAsJsonAsync("/api/auth/register", new { email, password });
-        var code = await factory.GetLatestEmailCodeAsync(email);
+        var code = await factory.GetOtpCode(email);
         await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
-        var token = await Utilities.GetAccessTokenAsync(client, email, password);
+        var token = await factory.GetAccessTokenAsync(client, email, password);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         // Act
@@ -507,7 +508,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var responseWithOldToken = await client.GetAsync("/api/auth/info");
         responseWithOldToken.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
-        var newToken = await Utilities.GetAccessTokenAsync(client, email, password);
+        var newToken = await factory.GetAccessTokenAsync(client, email, password);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", newToken);
 
         var response = await client.GetAsync("/api/auth/info");

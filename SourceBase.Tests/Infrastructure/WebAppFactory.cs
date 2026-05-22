@@ -1,9 +1,14 @@
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SourceBase.Api.Features.Auth;
 using SourceBase.Api.Infrastructure.DbContexts;
 using Xunit;
 
@@ -31,7 +36,17 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["Serilog:MinimumLevel"] = "Error",
                 ["AppSettings:WebUrl"] = "http://localhost",
             });
+            builder.ConfigureServices(services =>
+            {
+                services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+                {
+                    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                    options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+                });
+            });
         });
+
     }
 
     public async Task InitializeAsync()
@@ -54,11 +69,12 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
     public async Task<HttpClient> CreateAuthorizedClient()
     {
         var client = CreateClient();
-        await client.AuthorizeAsync();
+        var token = await GetAccessTokenAsync(client, AdminEmail, AdminPassword);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return client;
     }
 
-    public async Task<string> GetLatestEmailCodeAsync(string email)
+    public async Task<string> GetOtpCode(string email)
     {
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -67,5 +83,12 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
             .Select(u => u.OtpCode)
             .FirstOrDefaultAsync();
         return otp ?? throw new InvalidOperationException($"No OTP code found for '{email}'.");
+    }
+
+    public async Task<string> GetAccessTokenAsync(HttpClient client, string email, string password)
+    {
+        var response = await client.PostAsJsonAsync("/api/auth/login", new { email, password });
+        var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        return body?.AccessToken ?? throw new InvalidOperationException("Access token not found in login response");
     }
 }
