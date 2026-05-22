@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
@@ -11,6 +10,8 @@ public record UpdateTodoRequest(DateOnly Date, string Title, TodoItemStatus Stat
 
 public record UpdateTodoCommand(Guid Id, DateOnly Date, string Title, TodoItemStatus Status);
 
+public record UpdateTodoResponse(Guid Id);
+
 public class UpdateTodoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -18,16 +19,16 @@ public class UpdateTodoEndpoint : IEndpoint
         .WithTags("Todos");
 }
 
-public class UpdateTodoHandler(IDbContext dbContext) : IRequestHandler<UpdateTodoCommand, NoContent>
+public class UpdateTodoHandler(IDbContext dbContext) : IRequestHandler<UpdateTodoCommand, UpdateTodoResponse>
 {
-    public async Task<NoContent> Handle(UpdateTodoCommand request, CancellationToken ct)
+    public async Task<UpdateTodoResponse> Handle(UpdateTodoCommand request, CancellationToken ct)
     {
         var item = await dbContext.TodoItems.FindAsync([request.Id], ct) ?? throw new NotFoundException();
         item.Title = request.Title;
         item.Status = request.Status;
         item.Date = request.Date;
         await dbContext.SaveChangesAsync(ct);
-        return TypedResults.NoContent();
+        return new UpdateTodoResponse(item.Id);
     }
 }
 

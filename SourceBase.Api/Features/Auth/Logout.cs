@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared.Interfaces;
@@ -7,6 +6,8 @@ namespace SourceBase.Api.Features.Auth;
 
 public record LogoutCommand;
 
+public record LogoutResponse(bool Success);
+
 public class LogoutEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -14,13 +15,13 @@ public class LogoutEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class LogoutHandler(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager) : IRequestHandler<LogoutCommand, Results<Ok, EmptyHttpResult>>
+public class LogoutHandler(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager) : IRequestHandler<LogoutCommand, LogoutResponse>
 {
-    public async Task<Results<Ok, EmptyHttpResult>> Handle(LogoutCommand request, CancellationToken ct)
+    public async Task<LogoutResponse> Handle(LogoutCommand request, CancellationToken ct)
     {
         await signInManager.SignOutAsync();
         var user = await userManager.GetUserAsync(signInManager.Context.User);
         await userManager.UpdateSecurityStampAsync(user!);
-        return TypedResults.Ok();
+        return new LogoutResponse(true);
     }
 }

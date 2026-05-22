@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
@@ -10,6 +9,8 @@ namespace SourceBase.Api.Features.Auth;
 
 public record ConfirmEmailRequest(string Email, string Code);
 
+public record ConfirmEmailResponse(bool Success);
+
 public class ConfirmEmailEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -18,9 +19,9 @@ public class ConfirmEmailEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ConfirmEmailHandler(UserManager<UserEntity> userManager) : IRequestHandler<ConfirmEmailRequest, NoContent>
+public class ConfirmEmailHandler(UserManager<UserEntity> userManager) : IRequestHandler<ConfirmEmailRequest, ConfirmEmailResponse>
 {
-    public async Task<NoContent> Handle(ConfirmEmailRequest request, CancellationToken ct)
+    public async Task<ConfirmEmailResponse> Handle(ConfirmEmailRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new UnAuthorizedException();
         if (user.OtpCode != request.Code)
@@ -32,7 +33,7 @@ public class ConfirmEmailHandler(UserManager<UserEntity> userManager) : IRequest
         user.EmailConfirmed = true;
         await userManager.UpdateAsync(user);
         await userManager.AddToRoleAsync(user, AppRoles.User);
-        return TypedResults.NoContent();
+        return new ConfirmEmailResponse(true);
     }
 }
 

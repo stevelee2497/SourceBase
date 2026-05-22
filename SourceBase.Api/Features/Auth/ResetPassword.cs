@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
@@ -10,6 +9,8 @@ namespace SourceBase.Api.Features.Auth;
 
 public record ResetPasswordRequest(string Email, string Code, string NewPassword);
 
+public record ResetPasswordResponse(bool Success);
+
 public class ResetPasswordEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -18,9 +19,9 @@ public class ResetPasswordEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ResetPasswordHandler(UserManager<UserEntity> userManager) : IRequestHandler<ResetPasswordRequest, NoContent>
+public class ResetPasswordHandler(UserManager<UserEntity> userManager) : IRequestHandler<ResetPasswordRequest, ResetPasswordResponse>
 {
-    public async Task<NoContent> Handle(ResetPasswordRequest request, CancellationToken ct)
+    public async Task<ResetPasswordResponse> Handle(ResetPasswordRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         if (user.OtpCode != request.Code)
@@ -33,7 +34,7 @@ public class ResetPasswordHandler(UserManager<UserEntity> userManager) : IReques
         if (!result.Succeeded)
             throw new BadRequestException(result.Errors.First().Description);
 
-        return TypedResults.NoContent();
+        return new ResetPasswordResponse(true);
     }
 }
 

@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
@@ -10,6 +9,8 @@ namespace SourceBase.Api.Features.Auth;
 
 public record RegisterRequest(string Email, string Password);
 
+public record RegisterResponse(Guid Id);
+
 public class RegisterEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -18,9 +19,9 @@ public class RegisterEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<RegisterRequest, NoContent>
+public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<RegisterRequest, RegisterResponse>
 {
-    public async Task<NoContent> Handle(RegisterRequest request, CancellationToken ct)
+    public async Task<RegisterResponse> Handle(RegisterRequest request, CancellationToken ct)
     {
         var user = new UserEntity { Email = request.Email, UserName = request.Email };
         var createResult = await userManager.CreateAsync(user, request.Password);
@@ -36,7 +37,7 @@ public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper e
         await userManager.UpdateAsync(persistedUser);
         await emailHelper.SendEmailAsync(request.Email, "Confirm your email", $"Your confirmation code is: <b>{otp}</b>");
 
-        return TypedResults.NoContent();
+        return new RegisterResponse(persistedUser.Id);
     }
 }
 

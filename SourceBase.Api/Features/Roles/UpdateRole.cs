@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
@@ -13,6 +12,8 @@ public record UpdateRoleRequest(string Name, string? Description);
 
 public record UpdateRoleCommand(Guid Id, string Name, string? Description);
 
+public record UpdateRoleResponse(Guid Id);
+
 public class UpdateRoleEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -21,9 +22,9 @@ public class UpdateRoleEndpoint : IEndpoint
         .WithTags("Roles");
 }
 
-public class UpdateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<UpdateRoleCommand, NoContent>
+public class UpdateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<UpdateRoleCommand, UpdateRoleResponse>
 {
-    public async Task<NoContent> Handle(UpdateRoleCommand request, CancellationToken ct)
+    public async Task<UpdateRoleResponse> Handle(UpdateRoleCommand request, CancellationToken ct)
     {
         var role = await roleManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
         role.Name = request.Name.Trim();
@@ -33,7 +34,7 @@ public class UpdateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
         if (!result.Succeeded)
             throw new BadRequestException(result.Errors.First().Description);
 
-        return TypedResults.NoContent();
+        return new UpdateRoleResponse(role.Id);
     }
 }
 

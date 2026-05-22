@@ -12,7 +12,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     // ── Register ──────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task Register_WithValidData_ReturnsNoContent()
+    public async Task Register_WithValidData_ReturnsOk()
     {
         // Arrange
         var client = factory.CreateClient();
@@ -25,7 +25,9 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+        body!.Id.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -80,7 +82,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     // ── Confirm email ─────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task ConfirmEmail_WithValidCode_ReturnsNoContent()
+    public async Task ConfirmEmail_WithValidCode_ReturnsOk()
     {
         // Arrange
         var client = factory.CreateClient();
@@ -92,7 +94,9 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<ConfirmEmailResponse>();
+        body!.Success.Should().BeTrue();
     }
 
     [Fact]
@@ -281,7 +285,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     // ── Forgot password ───────────────────────────────────────────────────────
 
     [Fact]
-    public async Task ForgotPassword_WithValidEmail_ReturnsNoContent()
+    public async Task ForgotPassword_WithValidEmail_ReturnsOk()
     {
         // Arrange
         var client = factory.CreateClient();
@@ -293,7 +297,9 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<ForgotPasswordResponse>();
+        body!.Success.Should().BeTrue();
     }
 
     [Fact]
@@ -331,7 +337,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     // ── Reset password ────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task ResetPassword_WithValidToken_ReturnsNoContent()
+    public async Task ResetPassword_WithValidToken_ReturnsOk()
     {
         // Arrange
         var client = factory.CreateClient();
@@ -352,7 +358,9 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<ResetPasswordResponse>();
+        body!.Success.Should().BeTrue();
     }
 
     [Fact]
@@ -437,7 +445,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
     [Fact]
-    public async Task UpdateUserInfo_WithValidData_ReturnsNoContent()
+    public async Task UpdateUserInfo_WithValidData_ReturnsOk()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -450,7 +458,9 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<UpdateUserInfoResponse>();
+        body!.Id.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -493,7 +503,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        updateResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var responseWithOldToken = await client.GetAsync("/api/auth/info");
         responseWithOldToken.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 

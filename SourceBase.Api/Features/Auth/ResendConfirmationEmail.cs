@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
@@ -10,6 +9,8 @@ namespace SourceBase.Api.Features.Auth;
 
 public record ResendConfirmationEmailRequest(string Email);
 
+public record ResendConfirmationEmailResponse(bool Success);
+
 public class ResendConfirmationEmailEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -18,9 +19,9 @@ public class ResendConfirmationEmailEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ResendConfirmationEmailHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<ResendConfirmationEmailRequest, NoContent>
+public class ResendConfirmationEmailHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<ResendConfirmationEmailRequest, ResendConfirmationEmailResponse>
 {
-    public async Task<NoContent> Handle(ResendConfirmationEmailRequest request, CancellationToken ct)
+    public async Task<ResendConfirmationEmailResponse> Handle(ResendConfirmationEmailRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
         if (user.EmailConfirmed)
@@ -30,7 +31,7 @@ public class ResendConfirmationEmailHandler(UserManager<UserEntity> userManager,
         user.OtpCode = otp;
         await userManager.UpdateAsync(user);
         await emailHelper.SendEmailAsync(request.Email, "Confirm your email", $"Your confirmation code is: <b>{otp}</b>");
-        return TypedResults.NoContent();
+        return new ResendConfirmationEmailResponse(true);
     }
 }
 

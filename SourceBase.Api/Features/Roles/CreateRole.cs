@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
@@ -11,6 +10,8 @@ namespace SourceBase.Api.Features.Roles;
 
 public record CreateRoleRequest(string Name, string? Description);
 
+public record CreateRoleResponse(Guid Id);
+
 public class CreateRoleEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -19,9 +20,9 @@ public class CreateRoleEndpoint : IEndpoint
         .WithTags("Roles");
 }
 
-public class CreateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<CreateRoleRequest, NoContent>
+public class CreateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<CreateRoleRequest, CreateRoleResponse>
 {
-    public async Task<NoContent> Handle(CreateRoleRequest request, CancellationToken ct)
+    public async Task<CreateRoleResponse> Handle(CreateRoleRequest request, CancellationToken ct)
     {
         var role = new RoleEntity
         {
@@ -33,7 +34,7 @@ public class CreateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
         if (!result.Succeeded)
             throw new BadRequestException(result.Errors.First().Description);
 
-        return TypedResults.NoContent();
+        return new CreateRoleResponse(role.Id);
     }
 }
 

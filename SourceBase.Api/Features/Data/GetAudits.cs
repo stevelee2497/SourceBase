@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
@@ -16,11 +15,11 @@ public class GetAuditsEndpoint : IEndpoint
         .WithTags("Data");
 }
 
-public class GetAuditsHandler(IDbContext dbContext) : IRequestHandler<GetAuditsRequest, Ok<PagingResponse<AuditHistoryEntity>>>
+public class GetAuditsHandler(IDbContext dbContext) : IRequestHandler<GetAuditsRequest, PagingResponse<AuditHistoryEntity>>
 {
-    public async Task<Ok<PagingResponse<AuditHistoryEntity>>> Handle(GetAuditsRequest request, CancellationToken ct)
+    public async Task<PagingResponse<AuditHistoryEntity>> Handle(GetAuditsRequest request, CancellationToken ct)
     {
         var audits = await dbContext.AuditHistories.PaginateAsync(x => x, request, ct);
-        return TypedResults.Ok(audits);
+        return audits;
     }
 }

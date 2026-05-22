@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
@@ -15,14 +14,14 @@ public class GetTodosEndpoint : IEndpoint
         .WithTags("Todos");
 }
 
-public class GetTodosHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetTodosRequest, Ok<PagingResponse<GetTodoResponse>>>
+public class GetTodosHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetTodosRequest, PagingResponse<GetTodoResponse>>
 {
-    public async Task<Ok<PagingResponse<GetTodoResponse>>> Handle(GetTodosRequest request, CancellationToken ct)
+    public async Task<PagingResponse<GetTodoResponse>> Handle(GetTodosRequest request, CancellationToken ct)
     {
         var todos = await dbContext.TodoItems
             .Where(x => x.UserId == currentUser.UserId && (request.Status == null || x.Status == request.Status) && (request.Date == null || x.Date == request.Date))
             .PaginateAsync(x => new GetTodoResponse(x), request, ct);
-        return TypedResults.Ok(todos);
+        return todos;
     }
 }
 

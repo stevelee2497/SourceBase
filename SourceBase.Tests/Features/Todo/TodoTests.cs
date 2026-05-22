@@ -50,7 +50,7 @@ public class TodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
     [Fact]
-    public async Task CreateTodo_WithValidData_ReturnsNoContent()
+    public async Task CreateTodo_WithValidData_ReturnsOk()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -64,7 +64,9 @@ public class TodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
+        body!.Id.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -125,7 +127,7 @@ public class TodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
     [Fact]
-    public async Task UpdateTodo_WithValidData_ReturnsNoContent()
+    public async Task UpdateTodo_WithValidData_ReturnsOk()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -143,7 +145,9 @@ public class TodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<UpdateTodoResponse>();
+        body!.Id.Should().Be(id);
         var updated = await (await client.GetAsync($"/api/todos/{id}")).Content.ReadFromJsonAsync<GetTodoResponse>();
         updated.Should().NotBeNull();
         updated!.Title.Should().Be("Updated Title");
@@ -151,7 +155,7 @@ public class TodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
     [Fact]
-    public async Task DeleteTodo_ExistingItem_ReturnsNoContent()
+    public async Task DeleteTodo_ExistingItem_ReturnsOk()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -164,7 +168,9 @@ public class TodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.DeleteAsync($"/api/todos/{id}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<DeleteTodoResponse>();
+        body!.Success.Should().BeTrue();
         var getResponse = await client.GetAsync($"/api/todos/{id}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

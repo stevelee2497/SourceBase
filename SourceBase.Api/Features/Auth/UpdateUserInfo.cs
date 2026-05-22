@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
@@ -9,6 +8,8 @@ using SourceBase.Api.Shared.Interfaces;
 namespace SourceBase.Api.Features.Auth;
 
 public record UpdateUserInfoRequest(string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles);
+
+public record UpdateUserInfoResponse(Guid Id);
 
 public class UpdateUserInfoEndpoint : IEndpoint
 {
@@ -20,9 +21,9 @@ public class UpdateUserInfoEndpoint : IEndpoint
 public class UpdateUserInfoHandler(
     UserManager<UserEntity> userManager,
     RoleManager<RoleEntity> roleManager,
-    ICurrentUser currentUser) : IRequestHandler<UpdateUserInfoRequest, NoContent>
+    ICurrentUser currentUser) : IRequestHandler<UpdateUserInfoRequest, UpdateUserInfoResponse>
 {
-    public async Task<NoContent> Handle(UpdateUserInfoRequest request, CancellationToken ct)
+    public async Task<UpdateUserInfoResponse> Handle(UpdateUserInfoRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByIdAsync(currentUser.UserId.ToString()) ?? throw new NotFoundException();
         user.FirstName = request.FirstName;
@@ -67,7 +68,7 @@ public class UpdateUserInfoHandler(
         if (!result.Succeeded)
             throw new BadRequestException(result.Errors.First().Description);
 
-        return TypedResults.NoContent();
+        return new UpdateUserInfoResponse(user.Id);
     }
 }
 

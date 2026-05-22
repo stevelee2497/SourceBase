@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared.Interfaces;
@@ -8,6 +7,8 @@ namespace SourceBase.Api.Features.Todos;
 
 public record CreateTodoRequest(DateOnly? Date, string Title, TodoItemStatus Status);
 
+public record CreateTodoResponse(Guid Id);
+
 public class CreateTodoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -15,19 +16,20 @@ public class CreateTodoEndpoint : IEndpoint
         .WithTags("Todos");
 }
 
-public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoRequest, NoContent>
+public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoRequest, CreateTodoResponse>
 {
-    public async Task<NoContent> Handle(CreateTodoRequest request, CancellationToken ct)
+    public async Task<CreateTodoResponse> Handle(CreateTodoRequest request, CancellationToken ct)
     {
-        dbContext.TodoItems.Add(new TodoItemEntity
+        var item = new TodoItemEntity
         {
             Title = request.Title,
             Date = request.Date!.Value,
             Status = request.Status,
             UserId = currentUser.UserId,
-        });
+        };
+        dbContext.TodoItems.Add(item);
         await dbContext.SaveChangesAsync(ct);
-        return TypedResults.NoContent();
+        return new CreateTodoResponse(item.Id);
     }
 }
 

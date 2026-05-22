@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Roles;
 public class RoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact]
-    public async Task CreateRole_WithValidData_ReturnsNoContent()
+    public async Task CreateRole_WithValidData_ReturnsOk()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -21,7 +21,9 @@ public class RoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.PostAsJsonAsync("/api/roles", new { name = roleName, description });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<CreateRoleResponse>();
+        body!.Id.Should().NotBeEmpty();
         var rolesResponse = await client.GetAsync("/api/roles");
         var roles = await rolesResponse.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
         roles.Should().NotBeNull();
@@ -29,7 +31,7 @@ public class RoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
     [Fact]
-    public async Task UpdateRole_WithValidData_ReturnsNoContent()
+    public async Task UpdateRole_WithValidData_ReturnsOk()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -42,13 +44,15 @@ public class RoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.PutAsJsonAsync($"/api/roles/{role.Id}", new { name = updatedRoleName, description = "After update" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<UpdateRoleResponse>();
+        body!.Id.Should().Be(role.Id);
         var updatedRole = await GetRoleByNameAsync(client, updatedRoleName);
         updatedRole.Description.Should().Be("After update");
     }
 
     [Fact]
-    public async Task DeleteRole_WithValidData_ReturnsNoContent()
+    public async Task DeleteRole_WithValidData_ReturnsOk()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -60,7 +64,9 @@ public class RoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.DeleteAsync($"/api/roles/{role.Id}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<DeleteRoleResponse>();
+        body!.Success.Should().BeTrue();
         var rolesResponse = await client.GetAsync("/api/roles");
         var roles = await rolesResponse.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
         roles.Should().NotBeNull();

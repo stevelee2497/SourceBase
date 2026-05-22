@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
@@ -23,9 +22,9 @@ public class GetTodoEndpoint : IEndpoint
         .WithTags("Todos");
 }
 
-public class GetTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetTodoRequest, Ok<GetTodoResponse>>
+public class GetTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetTodoRequest, GetTodoResponse>
 {
-    public async Task<Ok<GetTodoResponse>> Handle(GetTodoRequest request, CancellationToken ct)
+    public async Task<GetTodoResponse> Handle(GetTodoRequest request, CancellationToken ct)
     {
         var todo = await dbContext.TodoItems.FindAsync([request.Id], ct);
 
@@ -34,6 +33,6 @@ public class GetTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IR
             throw new NotFoundException(); // Don't reveal existence of the todo if the user doesn't own it
         }
 
-        return TypedResults.Ok(new GetTodoResponse(todo));
+        return new GetTodoResponse(todo);
     }
 }

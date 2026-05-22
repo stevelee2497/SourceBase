@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
@@ -17,12 +16,12 @@ public class GetUserInfoEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class GetUserInfoHandler(UserManager<UserEntity> userManager, ICurrentUser currentUser) : IRequestHandler<GetUserInfoRequest, Ok<GetUserInfoResponse>>
+public class GetUserInfoHandler(UserManager<UserEntity> userManager, ICurrentUser currentUser) : IRequestHandler<GetUserInfoRequest, GetUserInfoResponse>
 {
-    public async Task<Ok<GetUserInfoResponse>> Handle(GetUserInfoRequest request, CancellationToken ct)
+    public async Task<GetUserInfoResponse> Handle(GetUserInfoRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByIdAsync(currentUser.UserId.ToString()) ?? throw new NotFoundException();
         var roles = await userManager.GetRolesAsync(user);
-        return TypedResults.Ok(new GetUserInfoResponse(user.Id, user.Email, user.FirstName, user.LastName, user.PhoneNumber, roles));
+        return new GetUserInfoResponse(user.Id, user.Email, user.FirstName, user.LastName, user.PhoneNumber, roles);
     }
 }

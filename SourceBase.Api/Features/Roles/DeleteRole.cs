@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
@@ -9,6 +8,8 @@ namespace SourceBase.Api.Features.Roles;
 
 public record DeleteRoleCommand(Guid Id);
 
+public record DeleteRoleResponse(bool Success);
+
 public class DeleteRoleEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
@@ -17,9 +18,9 @@ public class DeleteRoleEndpoint : IEndpoint
         .WithTags("Roles");
 }
 
-public class DeleteRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<DeleteRoleCommand, NoContent>
+public class DeleteRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<DeleteRoleCommand, DeleteRoleResponse>
 {
-    public async Task<NoContent> Handle(DeleteRoleCommand request, CancellationToken ct)
+    public async Task<DeleteRoleResponse> Handle(DeleteRoleCommand request, CancellationToken ct)
     {
         var role = await roleManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
 
@@ -30,6 +31,6 @@ public class DeleteRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
         if (!result.Succeeded)
             throw new BadRequestException(result.Errors.First().Description);
 
-        return TypedResults.NoContent();
+        return new DeleteRoleResponse(true);
     }
 }
