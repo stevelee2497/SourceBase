@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using SourceBase.Api.Entities;
+using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Infrastructure.DbContexts;
@@ -25,14 +25,14 @@ public class ApplicationDbContextHistoryInterceptor(ICurrentUser currentUser) : 
                     Author = currentUser.UserEmail,
                     EntityType = entity.GetType().ToString(),
                     EntityId = entity.Id.ToString(),
-                    Current = JsonSerializer.Serialize(entry.CurrentValues.ToObject()),
-                    Original = JsonSerializer.Serialize(entry.OriginalValues.ToObject()),
-                    Changes = JsonSerializer.Serialize(entry.Properties.Where(prop => prop.IsModified).Select(prop => new
+                    Current = entry.CurrentValues.ToObject().Serialize(),
+                    Original = entry.OriginalValues.ToObject().Serialize(),
+                    Changes = entry.Properties.Where(prop => prop.IsModified).Select(prop => new
                     {
-                        Property = prop.Metadata.PropertyInfo?.Name,
-                        Current = prop.CurrentValue,
-                        Original = prop.OriginalValue,
-                    }))
+                        property = prop.Metadata.PropertyInfo?.Name,
+                        current = prop.CurrentValue,
+                        original = prop.OriginalValue,
+                    }).Serialize()
                 });
             }
 

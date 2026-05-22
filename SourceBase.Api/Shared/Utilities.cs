@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,15 +22,24 @@ public static class Utilities
         var keySelector = Expression.Lambda<Func<T, object>>(Expression.Convert(Expression.Property(parameter, property), typeof(object)), parameter);
         return order == PagingOrder.Asc ? query.OrderBy(keySelector) : query.OrderByDescending(keySelector);
     }
+
+    public static JsonSerializerOptions JsonOptions => new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters =
+        {
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+        }
+    };
+
+    public static string Serialize(this object obj)
+    {
+        return JsonSerializer.Serialize(obj, JsonOptions);
+    }
+
+    public static T Deserialize<T>(this string json)
+    {
+        return JsonSerializer.Deserialize<T>(json, JsonOptions) ?? throw new JsonException("Deserialization resulted in null");
+    }
 }
-
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum PagingOrder
-{
-    Asc,
-    Desc
-}
-
-public record PagingRequest(int? Page = 1, int? Limit = 10, PagingOrder? Order = PagingOrder.Asc, string? Direction = null);
-
-public record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
