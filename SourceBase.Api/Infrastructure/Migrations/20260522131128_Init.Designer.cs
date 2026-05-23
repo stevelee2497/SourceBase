@@ -11,8 +11,8 @@ using SourceBase.Api.Infrastructure.DbContexts;
 namespace SourceBase.Api.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260519102955_AddEmailEntity")]
-    partial class AddEmailEntity
+    [Migration("20260522131128_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -199,6 +199,9 @@ namespace SourceBase.Api.Infrastructure.Migrations
                     b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
@@ -303,6 +306,9 @@ namespace SourceBase.Api.Infrastructure.Migrations
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OtpCode")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PasswordHash")

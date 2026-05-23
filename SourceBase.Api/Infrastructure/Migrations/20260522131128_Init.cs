@@ -31,10 +31,26 @@ namespace SourceBase.Api.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Emails",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    To = table.Column<string>(type: "TEXT", nullable: false),
+                    Subject = table.Column<string>(type: "TEXT", nullable: false),
+                    Body = table.Column<string>(type: "TEXT", nullable: false),
+                    SentOn = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Emails", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: true),
                     UpdatedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
@@ -74,6 +90,7 @@ namespace SourceBase.Api.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     FirstName = table.Column<string>(type: "TEXT", nullable: true),
                     LastName = table.Column<string>(type: "TEXT", nullable: true),
+                    OtpCode = table.Column<string>(type: "TEXT", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: true),
                     UpdatedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
@@ -247,6 +264,9 @@ namespace SourceBase.Api.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "AuditHistories");
+
+            migrationBuilder.DropTable(
+                name: "Emails");
 
             migrationBuilder.DropTable(
                 name: "RoleClaims");
