@@ -405,4 +405,4 @@ app.db*
 http-client.env.json
 appsettings.Development.json
 
-.github
+graphify-out

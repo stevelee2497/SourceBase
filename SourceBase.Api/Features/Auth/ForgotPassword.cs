@@ -19,14 +19,18 @@ public class ForgotPasswordEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ForgotPasswordHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<ForgotPasswordRequest, ForgotPasswordResponse>
+public class ForgotPasswordHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ForgotPasswordRequest, ForgotPasswordResponse>
 {
     public async Task<ForgotPasswordResponse> Handle(ForgotPasswordRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
-        var otp = OtpHelper.Generate();
+        var (otp, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
         user.OtpCode = otp;
-        await userManager.UpdateAsync(user);
+        user.OtpCodeExpiresOn = expiresOn;
+        var updateResult = await userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+            throw new BadRequestException(updateResult.Errors.First().Description);
+
         await emailHelper.SendEmailAsync(request.Email, "Reset Password", $"Your password reset code is: <b>{otp}</b>");
         return new ForgotPasswordResponse(true);
     }

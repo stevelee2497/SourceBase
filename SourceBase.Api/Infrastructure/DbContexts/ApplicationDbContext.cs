@@ -8,7 +8,8 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Infrastructure.DbContexts;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IConfiguration configuration) : IdentityDbContext<UserEntity, RoleEntity, Guid>(options), IDbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IConfiguration configuration)
+    : IdentityDbContext<UserEntity, RoleEntity, Guid, IdentityUserClaim<Guid>, UserRoleEntity, IdentityUserLogin<Guid>, IdentityRoleClaim<Guid>, IdentityUserToken<Guid>>(options), IDbContext
 {
     public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
@@ -38,7 +39,17 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
         modelBuilder.Entity<RoleEntity>().ToTable("Roles");
         modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
-        modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+        modelBuilder.Entity<UserRoleEntity>(builder =>
+        {
+            builder.ToTable("UserRoles");
+            builder.HasKey(x => new { x.UserId, x.RoleId });
+            builder.HasOne(x => x.User)
+                .WithMany(x => x.UserRoles)
+                .HasForeignKey(x => x.UserId);
+            builder.HasOne(x => x.Role)
+                .WithMany(x => x.UserRoles)
+                .HasForeignKey(x => x.RoleId);
+        });
     }
 
     #region Helper Methods
@@ -108,7 +119,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             // Assign all roles to admin
             foreach (var role in context.Set<RoleEntity>().ToList())
             {
-                context.Set<IdentityUserRole<Guid>>().Add(new IdentityUserRole<Guid>
+                context.Set<UserRoleEntity>().Add(new UserRoleEntity
                 {
                     UserId = adminUserEntity.Id,
                     RoleId = role.Id

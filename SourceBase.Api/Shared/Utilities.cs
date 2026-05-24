@@ -14,6 +14,14 @@ public static class Utilities
         return new PagingResponse<TResponse>(items, paging.Page ?? 1, paging.Limit ?? 10, total);
     }
 
+    public static string[] Normalize(this IEnumerable<string> values)
+    {
+        return values
+            .Select(value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
     public static IQueryable<T> OrderBy<T>(this IQueryable<T> query, string? direction, PagingOrder? order = PagingOrder.Asc)
     {
         if (direction is null) return query;

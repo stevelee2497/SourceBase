@@ -20,12 +20,12 @@ public class ApplicationDbContextAuditInterceptor(ICurrentUser currentUser) : IS
                 {
                     case EntityState.Added:
                         entity.CreatedOn = entity.UpdatedOn = DateTime.UtcNow;
-                        entity.CreatedBy = entity.UpdatedBy = currentUser.UserEmail;
+                        entity.CreatedBy = entity.UpdatedBy = currentUser.UserName;
                         break;
 
                     case EntityState.Modified:
                         entity.UpdatedOn = DateTime.UtcNow;
-                        entity.UpdatedBy = currentUser.UserEmail;
+                        entity.UpdatedBy = currentUser.UserName;
                         break;
                 }
             }

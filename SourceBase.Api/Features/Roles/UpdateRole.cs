@@ -27,8 +27,8 @@ public class UpdateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
     public async Task<UpdateRoleResponse> Handle(UpdateRoleCommand request, CancellationToken ct)
     {
         var role = await roleManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
-        role.Name = request.Name.Trim();
-        role.Description = request.Description?.Trim();
+        role.Name = request.Name;
+        role.Description = request.Description;
 
         var result = await roleManager.UpdateAsync(role);
         if (!result.Succeeded)

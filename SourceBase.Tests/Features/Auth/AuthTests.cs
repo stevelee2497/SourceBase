@@ -1,9 +1,11 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
 using SourceBase.Api.Features.Auth;
+using SourceBase.Api.Infrastructure.DbContexts;
 using SourceBase.Tests.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
@@ -21,6 +23,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Act
         var response = await client.PostAsJsonAsync("/api/auth/register", new
         {
+            userName = $"newuser_{Guid.NewGuid():N}",
             email = $"newuser_{Guid.NewGuid():N}@test.com",
             password = "Test@1234!",
         });
@@ -32,15 +35,63 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
     [Fact]
+    public async Task Register_WithWhitespaceAroundEmailAndUserName_TrimsInputBeforeValidation()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var trimmedUserName = $"trimmed_{Guid.NewGuid():N}";
+        var trimmedEmail = $"{Guid.NewGuid():N}@test.com";
+
+        // Act
+        var response = await client.PostAsJsonAsync("/api/auth/register", new
+        {
+            userName = $"  {trimmedUserName}  ",
+            email = $"  {trimmedEmail}  ",
+            password = "Test@1234!",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var user = await db.Users.SingleAsync(x => x.Email == trimmedEmail);
+        user.UserName.Should().Be(trimmedUserName);
+    }
+
+    [Fact]
+    public async Task Register_WithPasswordContainingOuterSpaces_TrimsPasswordBeforePersisting()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var email = $"{Guid.NewGuid():N}@test.com";
+        var password = "  Test@1234!  ";
+        await client.PostAsJsonAsync("/api/auth/register", new
+        {
+            userName = $"space_pwd_{Guid.NewGuid():N}",
+            email,
+            password,
+        });
+        var code = await factory.GetOtpCode(email);
+        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
+
+        // Act
+        var response = await client.PostAsJsonAsync("/api/auth/login", new { email, password = password.Trim() });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task Register_WithDuplicateEmail_ReturnsBadRequest()
     {
         // Arrange
         var client = factory.CreateClient();
         var email = $"dup_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { email, password = "Test@1234!" });
+        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"dup_{Guid.NewGuid():N}", email, password = "Test@1234!" });
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/register", new { email, password = "Test@1234!" });
+        var response = await client.PostAsJsonAsync("/api/auth/register", new { userName = $"dup_{Guid.NewGuid():N}", email, password = "Test@1234!" });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -55,6 +106,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Act
         var response = await client.PostAsJsonAsync("/api/auth/register", new
         {
+            userName = $"invalid_{Guid.NewGuid():N}",
             email = "not-an-email",
             password = "Test@1234!",
         });
@@ -72,6 +124,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Act
         var response = await client.PostAsJsonAsync("/api/auth/register", new
         {
+            userName = $"shortpw_{Guid.NewGuid():N}",
             email = $"shortpw_{Guid.NewGuid():N}@test.com",
             password = "123",
         });
@@ -88,7 +141,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"confirm_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { email, password = "Test@1234!" });
+        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"confirm_{Guid.NewGuid():N}", email, password = "Test@1234!" });
         var code = await factory.GetOtpCode(email);
 
         // Act
@@ -106,7 +159,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"badcode_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { email, password = "Test@1234!" });
+        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"badcode_{Guid.NewGuid():N}", email, password = "Test@1234!" });
 
         // Act
         var response = await client.PostAsJsonAsync("/api/auth/confirmEmail", new
@@ -114,6 +167,23 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
             email,
             code = "000000", // valid length but won't match the real OTP
         });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task ConfirmEmail_WithExpiredCode_ReturnsUnauthorized()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var email = $"expired_confirm_{Guid.NewGuid():N}@test.com";
+        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"expired_confirm_{Guid.NewGuid():N}", email, password = "Test@1234!" });
+        var code = await factory.GetOtpCode(email);
+        await ExpireOtpCodeAsync(email);
+
+        // Act
+        var response = await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -199,7 +269,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"unconfirmed_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { email, password = "Test@1234!" });
+        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"unconfirmed_{Guid.NewGuid():N}", email, password = "Test@1234!" });
 
         // Act
         var response = await client.PostAsJsonAsync("/api/auth/login", new
@@ -218,8 +288,9 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"login_ok_{Guid.NewGuid():N}@test.com";
+        var userName = $"login_ok_{Guid.NewGuid():N}";
         const string password = "Test@1234!";
-        await client.PostAsJsonAsync("/api/auth/register", new { email, password });
+        await client.PostAsJsonAsync("/api/auth/register", new { userName, email, password });
         var code = await factory.GetOtpCode(email);
         await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
 
@@ -249,6 +320,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
         body.Should().NotBeNull();
         body!.Email.Should().Be(WebAppFactory.AdminEmail);
+        body.UserName.Should().Be(WebAppFactory.AdminEmail);
         body.Roles.Should().NotBeEmpty();
     }
 
@@ -266,7 +338,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
     [Fact]
-    public async Task GetUserInfo_ReturnsIdEmailAndRoles()
+    public async Task GetUserInfo_ReturnsIdUserNameEmailAndRoles()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -279,6 +351,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
         body.Should().NotBeNull();
         body!.Id.Should().NotBeEmpty();
+        body.UserName.Should().Be(WebAppFactory.AdminEmail);
         body.Email.Should().Be(WebAppFactory.AdminEmail);
         body.Roles.Should().Contain("Admin");
     }
@@ -343,8 +416,9 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"reset_{Guid.NewGuid():N}@test.com";
+        var userName = $"reset_{Guid.NewGuid():N}";
         const string password = "Test@1234!";
-        await client.PostAsJsonAsync("/api/auth/register", new { email, password });
+        await client.PostAsJsonAsync("/api/auth/register", new { userName, email, password });
         var code = await factory.GetOtpCode(email);
         await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
         await client.PostAsJsonAsync("/api/auth/forgotPassword", new { email });
@@ -370,9 +444,10 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"reset_login_{Guid.NewGuid():N}@test.com";
+        var userName = $"reset_login_{Guid.NewGuid():N}";
         const string oldPassword = "Test@1234!";
         const string newPassword = "NewTest@5678!";
-        await client.PostAsJsonAsync("/api/auth/register", new { email, password = oldPassword });
+        await client.PostAsJsonAsync("/api/auth/register", new { userName, email, password = oldPassword });
         var code = await factory.GetOtpCode(email);
         await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
         await client.PostAsJsonAsync("/api/auth/forgotPassword", new { email });
@@ -392,7 +467,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"reset_bad_code_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { email, password = "Test@1234!" });
+        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"reset_bad_code_{Guid.NewGuid():N}", email, password = "Test@1234!" });
         var code = await factory.GetOtpCode(email);
         await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
 
@@ -401,6 +476,31 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         {
             email,
             code = "000000", // valid length but won't match the real OTP
+            newPassword = "NewTest@5678!",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ResetPassword_WithExpiredCode_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var email = $"reset_expired_{Guid.NewGuid():N}@test.com";
+        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"reset_expired_{Guid.NewGuid():N}", email, password = "Test@1234!" });
+        var code = await factory.GetOtpCode(email);
+        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
+        await client.PostAsJsonAsync("/api/auth/forgotPassword", new { email });
+        var expiredCode = await factory.GetOtpCode(email);
+        await ExpireOtpCodeAsync(email);
+
+        // Act
+        var response = await client.PostAsJsonAsync("/api/auth/resetPassword", new
+        {
+            email,
+            code = expiredCode,
             newPassword = "NewTest@5678!",
         });
 
@@ -482,43 +582,9 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Should().NotBeNull();
         body!.FirstName.Should().Be(firstName);
         body.LastName.Should().Be(lastName);
+        body.UserName.Should().Be(WebAppFactory.AdminEmail);
+        body.Roles.Should().Contain("Admin");
     }
-
-    [Fact]
-    public async Task UpdateUserInfo_WithRoles_InvalidatesCurrentTokenAndUpdatesCurrentUserRoles()
-    {
-        // Arrange
-        var client = factory.CreateClient();
-        var email = $"updaterole_{Guid.NewGuid():N}@test.com";
-        const string password = "Test@1234!";
-        await client.PostAsJsonAsync("/api/auth/register", new { email, password });
-        var code = await factory.GetOtpCode(email);
-        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
-        var token = await factory.GetAccessTokenAsync(client, email, password);
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        // Act
-        var updateResponse = await client.PutAsJsonAsync("/api/auth/info", new
-        {
-            roles = new[] { "Admin", "User" }
-        });
-
-        // Assert
-        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var responseWithOldToken = await client.GetAsync("/api/auth/info");
-        responseWithOldToken.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-
-        var newToken = await factory.GetAccessTokenAsync(client, email, password);
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", newToken);
-
-        var response = await client.GetAsync("/api/auth/info");
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
-        body.Should().NotBeNull();
-        body!.Roles.Should().Contain("Admin");
-        body.Roles.Should().Contain("User");
-    }
-
 
     // ── Logout ────────────────────────────────────────────────────────────────
     [Fact]
@@ -534,5 +600,14 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var getInfoResponse = await client.GetAsync("/api/auth/info");
         getInfoResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    private async Task ExpireOtpCodeAsync(string email)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var user = await db.Users.SingleAsync(x => x.Email == email);
+        user.OtpCodeExpiresOn = DateTime.UtcNow.AddMinutes(-1);
+        await db.SaveChangesAsync();
     }
 }

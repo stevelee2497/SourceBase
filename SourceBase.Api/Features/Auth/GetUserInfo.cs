@@ -1,5 +1,4 @@
-using Microsoft.AspNetCore.Identity;
-using SourceBase.Api.Entities;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
@@ -7,7 +6,7 @@ namespace SourceBase.Api.Features.Auth;
 
 public record GetUserInfoRequest;
 
-public record GetUserInfoResponse(Guid Id, string? Email, string? FirstName, string? LastName, string? PhoneNumber, IEnumerable<string> Roles);
+public record GetUserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, IEnumerable<string> Roles);
 
 public class GetUserInfoEndpoint : IEndpoint
 {
@@ -16,12 +15,23 @@ public class GetUserInfoEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class GetUserInfoHandler(UserManager<UserEntity> userManager, ICurrentUser currentUser) : IRequestHandler<GetUserInfoRequest, GetUserInfoResponse>
+public class GetUserInfoHandler(ICurrentUser currentUser, IDbContext dbContext) : IRequestHandler<GetUserInfoRequest, GetUserInfoResponse>
 {
     public async Task<GetUserInfoResponse> Handle(GetUserInfoRequest request, CancellationToken ct)
     {
-        var user = await userManager.FindByIdAsync(currentUser.UserId.ToString()) ?? throw new NotFoundException();
-        var roles = await userManager.GetRolesAsync(user);
-        return new GetUserInfoResponse(user.Id, user.Email, user.FirstName, user.LastName, user.PhoneNumber, roles);
+        var user = await dbContext.Users
+            .AsNoTracking()
+            .Where(x => x.Id == currentUser.UserId)
+            .Select(x => new GetUserInfoResponse(
+                x.Id,
+                x.UserName,
+                x.Email,
+                x.FirstName,
+                x.LastName,
+                x.PhoneNumber,
+                x.UserRoles.Select(ur => ur.Role.Name!).ToList()))
+            .SingleOrDefaultAsync(ct) ?? throw new NotFoundException();
+
+        return user;
     }
 }

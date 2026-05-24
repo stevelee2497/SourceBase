@@ -24,15 +24,20 @@ public class ConfirmEmailHandler(UserManager<UserEntity> userManager) : IRequest
     public async Task<ConfirmEmailResponse> Handle(ConfirmEmailRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new UnAuthorizedException();
-        if (user.OtpCode != request.Code)
-        {
-            throw new UnAuthorizedException();
-        }
+        if (user.OtpCode != request.Code || user.OtpCodeExpiresOn is null || user.OtpCodeExpiresOn <= DateTime.UtcNow)
+            throw new UnAuthorizedException("Invalid or expired code");
 
         user.OtpCode = null;
+        user.OtpCodeExpiresOn = null;
         user.EmailConfirmed = true;
-        await userManager.UpdateAsync(user);
-        await userManager.AddToRoleAsync(user, AppRoles.User);
+        var updateResult = await userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+            throw new BadRequestException(updateResult.Errors.First().Description);
+
+        var addRoleResult = await userManager.AddToRoleAsync(user, AppRoles.User);
+        if (!addRoleResult.Succeeded)
+            throw new BadRequestException(addRoleResult.Errors.First().Description);
+
         return new ConfirmEmailResponse(true);
     }
 }

@@ -19,7 +19,7 @@ public class ResendConfirmationEmailEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ResendConfirmationEmailHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<ResendConfirmationEmailRequest, ResendConfirmationEmailResponse>
+public class ResendConfirmationEmailHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ResendConfirmationEmailRequest, ResendConfirmationEmailResponse>
 {
     public async Task<ResendConfirmationEmailResponse> Handle(ResendConfirmationEmailRequest request, CancellationToken ct)
     {
@@ -27,9 +27,13 @@ public class ResendConfirmationEmailHandler(UserManager<UserEntity> userManager,
         if (user.EmailConfirmed)
             throw new BadRequestException("Email already confirmed");
 
-        var otp = OtpHelper.Generate();
+        var (otp, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
         user.OtpCode = otp;
-        await userManager.UpdateAsync(user);
+        user.OtpCodeExpiresOn = expiresOn;
+        var updateResult = await userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+            throw new BadRequestException(updateResult.Errors.First().Description);
+
         await emailHelper.SendEmailAsync(request.Email, "Confirm your email", $"Your confirmation code is: <b>{otp}</b>");
         return new ResendConfirmationEmailResponse(true);
     }

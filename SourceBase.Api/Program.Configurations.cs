@@ -29,6 +29,7 @@ public static class ProgramConfigurations
     {
         services.ConfigureHttpJsonOptions(options =>
         {
+            options.SerializerOptions.Converters.Add(new TrimmingJsonConverter());
             options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
@@ -148,7 +149,12 @@ public static class ProgramConfigurations
     public static void AddInfrastructure(this IServiceCollection services)
     {
         services.AddDbContext<ApplicationDbContext>();
-        services.AddIdentityApiEndpoints<UserEntity>().AddRoles<RoleEntity>().AddEntityFrameworkStores<ApplicationDbContext>();
+        services.AddIdentityApiEndpoints<UserEntity>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+            })
+            .AddRoles<RoleEntity>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
 
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();

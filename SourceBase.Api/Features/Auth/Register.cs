@@ -7,7 +7,7 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public record RegisterRequest(string Email, string Password);
+public record RegisterRequest(string UserName, string Email, string Password);
 
 public record RegisterResponse(Guid Id);
 
@@ -19,25 +19,26 @@ public class RegisterEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper) : IRequestHandler<RegisterRequest, RegisterResponse>
+public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<RegisterRequest, RegisterResponse>
 {
     public async Task<RegisterResponse> Handle(RegisterRequest request, CancellationToken ct)
     {
-        var user = new UserEntity { Email = request.Email, UserName = request.Email };
+        var confirmationCode = OtpHelper.Generate();
+        var user = new UserEntity
+        {
+            Email = request.Email,
+            UserName = request.UserName,
+            OtpCode = confirmationCode,
+            OtpCodeExpiresOn = OtpHelper.GetExpiresOn(appSettings.OtpTokenExpirationMinutes),
+        };
+
         var createResult = await userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
             throw new BadRequestException(createResult.Errors.First().Description);
 
-        var persistedUser = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
-        if (persistedUser.EmailConfirmed)
-            throw new BadRequestException("Email already confirmed");
+        await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{confirmationCode}</b>");
 
-        var otp = OtpHelper.Generate();
-        persistedUser.OtpCode = otp;
-        await userManager.UpdateAsync(persistedUser);
-        await emailHelper.SendEmailAsync(request.Email, "Confirm your email", $"Your confirmation code is: <b>{otp}</b>");
-
-        return new RegisterResponse(persistedUser.Id);
+        return new RegisterResponse(user.Id);
     }
 }
 
@@ -45,6 +46,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
     public RegisterRequestValidator()
     {
+        RuleFor(x => x.UserName).NotEmpty().MaximumLength(256);
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
     }

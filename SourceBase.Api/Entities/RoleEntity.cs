@@ -13,4 +13,6 @@ public class RoleEntity : IdentityRole<Guid>, IAuditableEntity
     public DateTime? UpdatedOn { get; set; }
 
     public string? UpdatedBy { get; set; }
+
+    public ICollection<UserRoleEntity> UserRoles { get; set; } = [];
 }

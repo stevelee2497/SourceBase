@@ -10,6 +10,8 @@ public class UserEntity : IdentityUser<Guid>, IAuditableEntity
 
     public string? OtpCode { get; set; }
 
+    public DateTime? OtpCodeExpiresOn { get; set; }
+
     public DateTime? CreatedOn { get; set; }
 
     public string? CreatedBy { get; set; }
@@ -17,4 +19,6 @@ public class UserEntity : IdentityUser<Guid>, IAuditableEntity
     public DateTime? UpdatedOn { get; set; }
 
     public string? UpdatedBy { get; set; }
+
+    public ICollection<UserRoleEntity> UserRoles { get; set; } = [];
 }

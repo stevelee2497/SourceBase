@@ -26,8 +26,8 @@ public class CreateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
     {
         var role = new RoleEntity
         {
-            Name = request.Name.Trim(),
-            Description = request.Description?.Trim()
+            Name = request.Name,
+            Description = request.Description
         };
 
         var result = await roleManager.CreateAsync(role);

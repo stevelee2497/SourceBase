@@ -9,6 +9,8 @@ public interface IDbContext
 
     DbSet<RoleEntity> Roles { get; }
 
+    DbSet<UserRoleEntity> UserRoles { get; }
+
     DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
     DbSet<TodoItemEntity> TodoItems { get; set; }

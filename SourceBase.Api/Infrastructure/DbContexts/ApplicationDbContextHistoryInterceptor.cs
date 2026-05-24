@@ -22,7 +22,7 @@ public class ApplicationDbContextHistoryInterceptor(ICurrentUser currentUser) : 
                 {
                     Action = entry.State.ToString(),
                     ActionOn = DateTime.UtcNow,
-                    Author = currentUser.UserEmail,
+                    Author = currentUser.UserName,
                     EntityType = entity.GetType().ToString(),
                     EntityId = entity.Id.ToString(),
                     Current = entry.CurrentValues.ToObject().Serialize(),

@@ -24,11 +24,15 @@ public class ResetPasswordHandler(UserManager<UserEntity> userManager) : IReques
     public async Task<ResetPasswordResponse> Handle(ResetPasswordRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
-        if (user.OtpCode != request.Code)
+        if (user.OtpCode != request.Code || user.OtpCodeExpiresOn is null || user.OtpCodeExpiresOn <= DateTime.UtcNow)
             throw new BadRequestException("Invalid or expired code");
 
         user.OtpCode = null;
-        await userManager.UpdateAsync(user);
+        user.OtpCodeExpiresOn = null;
+        var updateResult = await userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+            throw new BadRequestException(updateResult.Errors.First().Description);
+
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
         var result = await userManager.ResetPasswordAsync(user, token, request.NewPassword);
         if (!result.Succeeded)
