@@ -1,12 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
 public record GetUserInfoRequest;
 
-public record GetUserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, IEnumerable<string> Roles);
+public record GetUserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);
 
 public class GetUserInfoEndpoint : IEndpoint
 {
@@ -19,19 +17,15 @@ public class GetUserInfoHandler(ICurrentUser currentUser, IDbContext dbContext) 
 {
     public async Task<GetUserInfoResponse> Handle(GetUserInfoRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users
-            .AsNoTracking()
-            .Where(x => x.Id == currentUser.UserId)
-            .Select(x => new GetUserInfoResponse(
-                x.Id,
-                x.UserName,
-                x.Email,
-                x.FirstName,
-                x.LastName,
-                x.PhoneNumber,
-                x.UserRoles.Select(ur => ur.Role.Name!).ToList()))
-            .SingleOrDefaultAsync(ct) ?? throw new NotFoundException();
-
-        return user;
+        var user = await dbContext.Users.FindAsync([currentUser.UserId], ct);
+        return new GetUserInfoResponse(
+            Id: user!.Id,
+            UserName: user.UserName,
+            Email: user.Email,
+            FirstName: user.FirstName,
+            LastName: user.LastName,
+            PhoneNumber: user.PhoneNumber,
+            Roles: currentUser.Roles
+        );
     }
 }

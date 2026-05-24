@@ -23,20 +23,20 @@ public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper e
 {
     public async Task<RegisterResponse> Handle(RegisterRequest request, CancellationToken ct)
     {
-        var confirmationCode = OtpHelper.Generate();
+        var (confirmationCode, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
         var user = new UserEntity
         {
             Email = request.Email,
             UserName = request.UserName,
             OtpCode = confirmationCode,
-            OtpCodeExpiresOn = OtpHelper.GetExpiresOn(appSettings.OtpTokenExpirationMinutes),
+            OtpCodeExpiresOn = expiresOn,
         };
 
         var createResult = await userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
             throw new BadRequestException(createResult.Errors.First().Description);
 
-        await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{confirmationCode}</b>");
+        await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>");
 
         return new RegisterResponse(user.Id);
     }
