@@ -7,21 +7,21 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Users;
 
-public record DeleteUserCommand(Guid Id);
+public record DeleteUserRequest(Guid Id);
 
 public record DeleteUserResponse(bool Success);
 
 public class DeleteUserEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapDelete("/users/{id:guid}", (Guid id, DeleteUserHandler handler, CancellationToken ct) => handler.Handle(new DeleteUserCommand(id), ct))
+        .MapDelete("/users/{id:guid}", (Guid id, DeleteUserHandler handler, CancellationToken ct) => handler.Handle(new DeleteUserRequest(id), ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Users");
 }
 
-public class DeleteUserHandler(UserManager<UserEntity> userManager) : IRequestHandler<DeleteUserCommand, DeleteUserResponse>
+public class DeleteUserHandler(UserManager<UserEntity> userManager) : IRequestHandler<DeleteUserRequest, DeleteUserResponse>
 {
-    public async Task<DeleteUserResponse> Handle(DeleteUserCommand request, CancellationToken ct)
+    public async Task<DeleteUserResponse> Handle(DeleteUserRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
         var result = await userManager.DeleteAsync(user);
@@ -32,9 +32,9 @@ public class DeleteUserHandler(UserManager<UserEntity> userManager) : IRequestHa
     }
 }
 
-public class DeleteUserCommandValidator : AbstractValidator<DeleteUserCommand>
+public class DeleteUserRequestValidator : AbstractValidator<DeleteUserRequest>
 {
-    public DeleteUserCommandValidator()
+    public DeleteUserRequestValidator()
     {
         RuleFor(x => x.Id).NotEmpty();
     }

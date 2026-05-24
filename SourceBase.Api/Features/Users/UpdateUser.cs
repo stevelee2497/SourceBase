@@ -8,16 +8,14 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Users;
 
-public record UpdateUserRequest(string Email, string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles);
-
-public record UpdateUserCommand(Guid Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles);
+public record UpdateUserRequest(Guid? Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles);
 
 public record UpdateUserResponse(Guid Id);
 
 public class UpdateUserEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut("/users/{id:guid}", (Guid id, [FromBody] UpdateUserRequest request, UpdateUserHandler handler, CancellationToken ct) => handler.Handle(new UpdateUserCommand(id, request.Email, request.FirstName, request.LastName, request.PhoneNumber, request.Roles), ct))
+        .MapPut("/users/{id:guid}", (Guid id, [FromBody] UpdateUserRequest body, UpdateUserHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Users");
 }
@@ -25,11 +23,11 @@ public class UpdateUserEndpoint : IEndpoint
 public class UpdateUserHandler(
     UserManager<UserEntity> userManager,
     IEmailHelper emailHelper,
-    AppSettings appSettings) : IRequestHandler<UpdateUserCommand, UpdateUserResponse>
+    AppSettings appSettings) : IRequestHandler<UpdateUserRequest, UpdateUserResponse>
 {
-    public async Task<UpdateUserResponse> Handle(UpdateUserCommand request, CancellationToken ct)
+    public async Task<UpdateUserResponse> Handle(UpdateUserRequest request, CancellationToken ct)
     {
-        var user = await userManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
+        var user = await userManager.FindByIdAsync(request.Id.ToString()!) ?? throw new NotFoundException();
         var normalizedRoles = request.Roles?.Normalize();
 
         var trimmedEmail = request.Email;

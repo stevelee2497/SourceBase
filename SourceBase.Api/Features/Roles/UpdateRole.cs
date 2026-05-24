@@ -8,25 +8,23 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Roles;
 
-public record UpdateRoleRequest(string Name, string? Description);
-
-public record UpdateRoleCommand(Guid Id, string Name, string? Description);
+public record UpdateRoleRequest(Guid? Id, string Name, string? Description);
 
 public record UpdateRoleResponse(Guid Id);
 
 public class UpdateRoleEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut("/roles/{id:guid}", (Guid id, [FromBody] UpdateRoleRequest request, UpdateRoleHandler handler, CancellationToken ct) => handler.Handle(new UpdateRoleCommand(id, request.Name, request.Description), ct))
+        .MapPut("/roles/{id:guid}", (Guid id, [FromBody] UpdateRoleRequest body, UpdateRoleHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Roles");
 }
 
-public class UpdateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<UpdateRoleCommand, UpdateRoleResponse>
+public class UpdateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<UpdateRoleRequest, UpdateRoleResponse>
 {
-    public async Task<UpdateRoleResponse> Handle(UpdateRoleCommand request, CancellationToken ct)
+    public async Task<UpdateRoleResponse> Handle(UpdateRoleRequest request, CancellationToken ct)
     {
-        var role = await roleManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
+        var role = await roleManager.FindByIdAsync(request.Id.ToString()!) ?? throw new NotFoundException();
         role.Name = request.Name;
         role.Description = request.Description;
 

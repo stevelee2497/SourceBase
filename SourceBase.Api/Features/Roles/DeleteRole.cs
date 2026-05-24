@@ -7,21 +7,21 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Roles;
 
-public record DeleteRoleCommand(Guid Id);
+public record DeleteRoleRequest(Guid Id);
 
 public record DeleteRoleResponse(bool Success);
 
 public class DeleteRoleEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapDelete("/roles/{id:guid}", (Guid id, DeleteRoleHandler handler, CancellationToken ct) => handler.Handle(new DeleteRoleCommand(id), ct))
+        .MapDelete("/roles/{id:guid}", (Guid id, DeleteRoleHandler handler, CancellationToken ct) => handler.Handle(new DeleteRoleRequest(id), ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Roles");
 }
 
-public class DeleteRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<DeleteRoleCommand, DeleteRoleResponse>
+public class DeleteRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<DeleteRoleRequest, DeleteRoleResponse>
 {
-    public async Task<DeleteRoleResponse> Handle(DeleteRoleCommand request, CancellationToken ct)
+    public async Task<DeleteRoleResponse> Handle(DeleteRoleRequest request, CancellationToken ct)
     {
         var role = await roleManager.FindByIdAsync(request.Id.ToString());
 
@@ -33,9 +33,9 @@ public class DeleteRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
     }
 }
 
-public class DeleteRoleCommandValidator : AbstractValidator<DeleteRoleCommand>
+public class DeleteRoleRequestValidator : AbstractValidator<DeleteRoleRequest>
 {
-    public DeleteRoleCommandValidator(RoleManager<RoleEntity> roleManager)
+    public DeleteRoleRequestValidator(RoleManager<RoleEntity> roleManager)
     {
         RuleFor(x => x.Id)
             .NotEmpty()

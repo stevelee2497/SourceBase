@@ -6,22 +6,20 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todos;
 
-public record UpdateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
-
-public record UpdateTodoCommand(Guid Id, DateOnly Date, string Title, TodoItemStatus Status);
+public record UpdateTodoRequest(Guid? Id, DateOnly Date, string Title, TodoItemStatus Status);
 
 public record UpdateTodoResponse(Guid Id);
 
 public class UpdateTodoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut("/todos/{id:guid}", (Guid id, [FromBody] UpdateTodoRequest body, UpdateTodoHandler handler, CancellationToken ct) => handler.Handle(new UpdateTodoCommand(id, body.Date, body.Title, body.Status), ct))
+        .MapPut("/todos/{id:guid}", (Guid id, [FromBody] UpdateTodoRequest body, UpdateTodoHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
         .WithTags("Todos");
 }
 
-public class UpdateTodoHandler(IDbContext dbContext) : IRequestHandler<UpdateTodoCommand, UpdateTodoResponse>
+public class UpdateTodoHandler(IDbContext dbContext) : IRequestHandler<UpdateTodoRequest, UpdateTodoResponse>
 {
-    public async Task<UpdateTodoResponse> Handle(UpdateTodoCommand request, CancellationToken ct)
+    public async Task<UpdateTodoResponse> Handle(UpdateTodoRequest request, CancellationToken ct)
     {
         var item = await dbContext.TodoItems.FindAsync([request.Id], ct) ?? throw new NotFoundException();
         item.Title = request.Title;
