@@ -8,7 +8,7 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Infrastructure.DbContexts;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IConfiguration configuration)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IConfiguration configuration, ILogger<ApplicationDbContextLoggingInterceptor> dbCommandLogger)
     : IdentityDbContext<UserEntity, RoleEntity, Guid, IdentityUserClaim<Guid>, UserRoleEntity, IdentityUserLogin<Guid>, IdentityRoleClaim<Guid>, IdentityUserToken<Guid>>(options), IDbContext
 {
     public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
@@ -23,6 +23,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         optionsBuilder.UseSqlite(connectionString).UseSeeding((context, _) => SeedData(context, configuration)).UseAsyncSeeding(async (context, _, _) => SeedData(context, configuration));
         optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser)); // Audit history for all actions
         optionsBuilder.AddInterceptors(new ApplicationDbContextAuditInterceptor(currentUser)); // Audit trailing for create/update/delete actions
+        optionsBuilder.AddInterceptors(new ApplicationDbContextLoggingInterceptor(dbCommandLogger));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
