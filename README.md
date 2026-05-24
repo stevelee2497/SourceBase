@@ -66,6 +66,16 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 
 ```
 
+### Update Requests Convention
+
+For update operations, the `Id` is passed as a route parameter and marked with `[property: SwaggerIgnore]` in the request record to exclude it from the OpenAPI schema:
+
+```csharp
+public record UpdateTodoRequest([property: SwaggerIgnore] Guid Id, DateOnly Date, string Title, TodoItemStatus Status);
+```
+
+So that the Id is required but not duplicated and being shown in the request body.
+
 ### Endpoint Formatting
 
 Keep `MapEndpoint` chains aligned like this:

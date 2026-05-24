@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
@@ -22,24 +21,22 @@ public class GetUsersHandler(IDbContext dbContext) : IRequestHandler<GetUsersReq
 {
     public async Task<PagingResponse<UserResponse>> Handle(GetUsersRequest request, CancellationToken ct)
     {
-        var query = dbContext.Users.AsNoTracking();
-        var total = await query.CountAsync(ct);
-        var items = await query
-            .OrderBy(request.Direction, request.Order)
-            .Skip(((request.Page ?? 1) - 1) * (request.Limit ?? 10))
-            .Take(request.Limit ?? 10)
-            .Select(user => new UserResponse(
-                user.Id,
-                user.UserName,
-                user.Email,
-                user.FirstName,
-                user.LastName,
-                user.PhoneNumber,
-                user.EmailConfirmed,
-                user.UserRoles.Select(ur => ur.Role.Name!).ToList()))
-            .ToListAsync(ct);
+        var users = await dbContext.Users.PaginateAsync(
+            selector: user => new UserResponse(
+                Id: user.Id,
+                UserName: user.UserName,
+                Email: user.Email,
+                FirstName: user.FirstName,
+                LastName: user.LastName,
+                PhoneNumber: user.PhoneNumber,
+                EmailConfirmed: user.EmailConfirmed,
+                Roles: user.UserRoles.Select(ur => ur.Role!.Name!)
+            ),
+            paging: request,
+            ct: ct
+        );
 
-        return new PagingResponse<UserResponse>(items, request.Page ?? 1, request.Limit ?? 10, total);
+        return users;
     }
 }
 

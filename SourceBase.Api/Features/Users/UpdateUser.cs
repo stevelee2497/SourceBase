@@ -5,10 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Api.Features.Users;
 
-public record UpdateUserRequest(Guid? Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles);
+public record UpdateUserRequest([property: SwaggerIgnore] Guid Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles);
 
 public record UpdateUserResponse(Guid Id);
 
@@ -27,7 +28,7 @@ public class UpdateUserHandler(
 {
     public async Task<UpdateUserResponse> Handle(UpdateUserRequest request, CancellationToken ct)
     {
-        var user = await userManager.FindByIdAsync(request.Id.ToString()!) ?? throw new NotFoundException();
+        var user = await userManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
         var normalizedRoles = request.Roles?.Normalize();
 
         var trimmedEmail = request.Email;

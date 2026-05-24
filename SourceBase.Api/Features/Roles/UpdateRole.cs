@@ -5,10 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Api.Features.Roles;
 
-public record UpdateRoleRequest(Guid? Id, string Name, string? Description);
+public record UpdateRoleRequest([property: SwaggerIgnore] Guid Id, string Name, string? Description);
 
 public record UpdateRoleResponse(Guid Id);
 
@@ -24,7 +25,7 @@ public class UpdateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
 {
     public async Task<UpdateRoleResponse> Handle(UpdateRoleRequest request, CancellationToken ct)
     {
-        var role = await roleManager.FindByIdAsync(request.Id.ToString()!) ?? throw new NotFoundException();
+        var role = await roleManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
         role.Name = request.Name;
         role.Description = request.Description;
 

@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Api.Features.Todos;
 
-public record UpdateTodoRequest(Guid? Id, DateOnly Date, string Title, TodoItemStatus Status);
+public record UpdateTodoRequest([property: SwaggerIgnore] Guid Id, DateOnly Date, string Title, TodoItemStatus Status);
 
 public record UpdateTodoResponse(Guid Id);
 

@@ -46,10 +46,11 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 
 ```
 
-- All DI wiring in `Program.cs`
+- All DI wiring in `Program.cs` and defined in Program.Configuration.cs via thin extension methods
 - `IEndpoint` implementations auto-discovered via assembly scanning
 - Endpoints mounted under `/api` with `RequireAuthorization()`
 - Keep `MapEndpoint` chains aligned on separate lines: `.MapXxx(...)`, `.AllowAnonymous()` / `.RequireAuthorization()`, then `.WithTags(...)`.
+- For update operations, the `Id` is passed as a route parameter and marked with `[property: SwaggerIgnore]` in the request record to exclude it from the OpenAPI schema
 
 ## Conventions
 
