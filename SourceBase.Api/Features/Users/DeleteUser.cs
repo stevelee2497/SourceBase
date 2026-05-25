@@ -13,8 +13,10 @@ public record DeleteUserResponse(bool Success);
 
 public class DeleteUserEndpoint : IEndpoint
 {
+    public const string Route = "users/{id:guid}";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapDelete("/users/{id:guid}", (Guid id, DeleteUserHandler handler, CancellationToken ct) => handler.Handle(new DeleteUserRequest(id), ct))
+        .MapDelete(Route, (Guid id, DeleteUserHandler handler, CancellationToken ct) => handler.Handle(new DeleteUserRequest(id), ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Users");
 }

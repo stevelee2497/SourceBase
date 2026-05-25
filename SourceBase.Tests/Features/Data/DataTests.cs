@@ -19,7 +19,7 @@ public class DataTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.GetAsync("/api/roles");
+        var response = await client.GetAsync(GetRolesEndpoint.Route);
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
 
@@ -38,7 +38,7 @@ public class DataTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var request = new GetEnumsRequest([AvailableEnums.TodoItemStatus]);
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/data/enums", request);
+        var response = await client.PostAsJsonAsync(GetEnumsEndpoint.Route, request);
 
         // Assert
         response.EnsureSuccessStatusCode();
@@ -57,11 +57,11 @@ public class DataTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = await factory.CreateAuthorizedClient();
         var roleName = $"Role_{Guid.NewGuid():N}";
         var description = "Default Admin Role";
-        await client.PostAsJsonAsync("/api/roles", new { name = roleName, description });
+        await client.PostAsJsonAsync(CreateRoleEndpoint.Route, new { name = roleName, description });
         var request = new GetEnumsRequest([AvailableEnums.Roles]);
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/data/enums", request);
+        var response = await client.PostAsJsonAsync(GetEnumsEndpoint.Route, request);
 
         // Assert
         response.EnsureSuccessStatusCode();

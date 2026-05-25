@@ -10,8 +10,10 @@ public record LogoutResponse(bool Success);
 
 public class LogoutEndpoint : IEndpoint
 {
+    public const string Route = "auth/logout";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/logout", (LogoutHandler handler, CancellationToken ct) => handler.Handle(new LogoutRequest(), ct))
+        .MapPost(Route, (LogoutHandler handler, CancellationToken ct) => handler.Handle(new LogoutRequest(), ct))
         .WithTags("Auth");
 }
 

@@ -15,8 +15,10 @@ public record UpdateUserResponse(Guid Id);
 
 public class UpdateUserEndpoint : IEndpoint
 {
+    public const string Route = "users/{id:guid}";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut("/users/{id:guid}", (Guid id, [FromBody] UpdateUserRequest body, UpdateUserHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPut(Route, (Guid id, [FromBody] UpdateUserRequest body, UpdateUserHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Users");
 }

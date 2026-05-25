@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SourceBase.Api.Features.Auth;
 using SourceBase.Api.Features.Todos;
 using SourceBase.Api.Features.Users;
 using SourceBase.Api.Infrastructure.DbContexts;
@@ -24,7 +25,7 @@ public class UserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var email = $"{Guid.NewGuid():N}@test.com";
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/users", new
+        var response = await client.PostAsJsonAsync(CreateUserEndpoint.Route, new
         {
             userName,
             email,
@@ -57,7 +58,7 @@ public class UserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = await factory.CreateAuthorizedClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/users", new
+        var response = await client.PostAsJsonAsync(CreateUserEndpoint.Route, new
         {
             userName = $"invalid_role_{Guid.NewGuid():N}",
             email = $"{Guid.NewGuid():N}@test.com",
@@ -78,7 +79,7 @@ public class UserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var updatedEmail = $"updated_{Guid.NewGuid():N}@test.com";
 
         // Act
-        var response = await client.PutAsJsonAsync($"/api/users/{user.Id}", new
+        var response = await client.PutAsJsonAsync(UpdateUserEndpoint.Route.WithId(user.Id), new
         {
             email = updatedEmail,
             firstName = "Updated",
@@ -108,7 +109,7 @@ public class UserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var user = await CreateManagedUserAsync(client);
 
         // Act
-        var response = await client.PutAsJsonAsync($"/api/users/{user.Id}", new
+        var response = await client.PutAsJsonAsync(UpdateUserEndpoint.Route.WithId(user.Id), new
         {
             email = user.Email,
             firstName = "Updated",
@@ -127,7 +128,7 @@ public class UserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var user = await CreateManagedUserAsync(client);
 
         // Act
-        var response = await client.DeleteAsync($"/api/users/{user.Id}");
+        var response = await client.DeleteAsync(DeleteUserEndpoint.Route.WithId(user.Id));
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -145,15 +146,15 @@ public class UserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var userName = $"audit_{Guid.NewGuid():N}";
         var email = $"{Guid.NewGuid():N}@test.com";
         const string password = "Test@1234!";
-        await client.PostAsJsonAsync("/api/auth/register", new { userName, email, password });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName, email, password });
         var code = await factory.GetOtpCode(email);
-        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new { email, code });
         var token = await factory.GetAccessTokenAsync(client, email, password);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var title = $"Audit_{Guid.NewGuid():N}";
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/todos", new
+        var response = await client.PostAsJsonAsync(CreateTodoEndpoint.Route, new
         {
             date = "2025-10-01",
             title,
@@ -179,7 +180,7 @@ public class UserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 
     private static async Task<PagingResponse<UserResponse>> GetUsersAsync(HttpClient client)
     {
-        var response = await client.GetAsync("/api/users");
+        var response = await client.GetAsync(GetUsersEndpoint.Route);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>() ?? throw new InvalidOperationException("Users response was null");
     }
@@ -188,7 +189,7 @@ public class UserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     {
         var userName = $"managed_{Guid.NewGuid():N}";
         var email = $"{Guid.NewGuid():N}@test.com";
-        var response = await client.PostAsJsonAsync("/api/users", new
+        var response = await client.PostAsJsonAsync(CreateUserEndpoint.Route, new
         {
             userName,
             email,

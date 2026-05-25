@@ -10,8 +10,10 @@ public record RoleResponse(Guid Id, string Name, string? Description);
 
 public class GetRolesEndpoint : IEndpoint
 {
+    public const string Route = "roles";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet("/roles", ([AsParameters] GetRolesRequest request, GetRolesHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapGet(Route, ([AsParameters] GetRolesRequest request, GetRolesHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Roles");
 }

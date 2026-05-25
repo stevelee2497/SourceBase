@@ -9,8 +9,10 @@ public record GetTodosRequest(TodoItemStatus? Status, DateOnly? Date, int? Page,
 
 public class GetTodosEndpoint : IEndpoint
 {
+    public const string Route = "todos";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet("/todos", ([AsParameters] GetTodosRequest request, GetTodosHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapGet(Route, ([AsParameters] GetTodosRequest request, GetTodosHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Todos");
 }
 

@@ -8,8 +8,10 @@ public record GetUserInfoResponse(Guid Id, string? UserName, string? Email, stri
 
 public class GetUserInfoEndpoint : IEndpoint
 {
+    public const string Route = "auth/info";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet("/auth/info", (GetUserInfoHandler handler, CancellationToken ct) => handler.Handle(new GetUserInfoRequest(), ct))
+        .MapGet(Route, (GetUserInfoHandler handler, CancellationToken ct) => handler.Handle(new GetUserInfoRequest(), ct))
         .WithTags("Auth");
 }
 

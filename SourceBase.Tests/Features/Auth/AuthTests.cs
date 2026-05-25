@@ -22,7 +22,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/register", new
+        var response = await client.PostAsJsonAsync(RegisterEndpoint.Route, new
         {
             userName = $"newuser_{Guid.NewGuid():N}",
             email = $"newuser_{Guid.NewGuid():N}@test.com",
@@ -44,7 +44,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var trimmedEmail = $"{Guid.NewGuid():N}@test.com";
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/register", new
+        var response = await client.PostAsJsonAsync(RegisterEndpoint.Route, new
         {
             userName = $"  {trimmedUserName}  ",
             email = $"  {trimmedEmail}  ",
@@ -67,17 +67,17 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
         var email = $"{Guid.NewGuid():N}@test.com";
         var password = "  Test@1234!  ";
-        await client.PostAsJsonAsync("/api/auth/register", new
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new
         {
             userName = $"space_pwd_{Guid.NewGuid():N}",
             email,
             password,
         });
         var code = await factory.GetOtpCode(email);
-        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new { email, code });
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/login", new { email, password = password.Trim() });
+        var response = await client.PostAsJsonAsync(LoginEndpoint.Route, new { email, password = password.Trim() });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -89,10 +89,10 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"dup_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"dup_{Guid.NewGuid():N}", email, password = "Test@1234!" });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName = $"dup_{Guid.NewGuid():N}", email, password = "Test@1234!" });
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/register", new { userName = $"dup_{Guid.NewGuid():N}", email, password = "Test@1234!" });
+        var response = await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName = $"dup_{Guid.NewGuid():N}", email, password = "Test@1234!" });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -105,7 +105,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/register", new
+        var response = await client.PostAsJsonAsync(RegisterEndpoint.Route, new
         {
             userName = $"invalid_{Guid.NewGuid():N}",
             email = "not-an-email",
@@ -123,7 +123,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/register", new
+        var response = await client.PostAsJsonAsync(RegisterEndpoint.Route, new
         {
             userName = $"shortpw_{Guid.NewGuid():N}",
             email = $"shortpw_{Guid.NewGuid():N}@test.com",
@@ -142,11 +142,11 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"confirm_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"confirm_{Guid.NewGuid():N}", email, password = "Test@1234!" });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName = $"confirm_{Guid.NewGuid():N}", email, password = "Test@1234!" });
         var code = await factory.GetOtpCode(email);
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
+        var response = await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new { email, code });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -160,10 +160,10 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"badcode_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"badcode_{Guid.NewGuid():N}", email, password = "Test@1234!" });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName = $"badcode_{Guid.NewGuid():N}", email, password = "Test@1234!" });
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/confirmEmail", new
+        var response = await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new
         {
             email,
             code = "000000", // valid length but won't match the real OTP
@@ -179,12 +179,12 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"expired_confirm_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"expired_confirm_{Guid.NewGuid():N}", email, password = "Test@1234!" });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName = $"expired_confirm_{Guid.NewGuid():N}", email, password = "Test@1234!" });
         var code = await factory.GetOtpCode(email);
         await ExpireOtpCodeAsync(email);
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
+        var response = await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new { email, code });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -197,7 +197,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/confirmEmail", new
+        var response = await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new
         {
             email = "nobody@example.com",
             code = "000000",
@@ -216,7 +216,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/login", new
+        var response = await client.PostAsJsonAsync(LoginEndpoint.Route, new
         {
             email = WebAppFactory.AdminEmail,
             password = WebAppFactory.AdminPassword,
@@ -237,7 +237,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/login", new
+        var response = await client.PostAsJsonAsync(LoginEndpoint.Route, new
         {
             email = WebAppFactory.AdminEmail,
             password = "wrong-password",
@@ -254,7 +254,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/login", new
+        var response = await client.PostAsJsonAsync(LoginEndpoint.Route, new
         {
             email = "nobody@example.com",
             password = "any-password",
@@ -270,10 +270,10 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"unconfirmed_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"unconfirmed_{Guid.NewGuid():N}", email, password = "Test@1234!" });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName = $"unconfirmed_{Guid.NewGuid():N}", email, password = "Test@1234!" });
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/login", new
+        var response = await client.PostAsJsonAsync(LoginEndpoint.Route, new
         {
             email,
             password = "Test@1234!",
@@ -291,12 +291,12 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var email = $"login_ok_{Guid.NewGuid():N}@test.com";
         var userName = $"login_ok_{Guid.NewGuid():N}";
         const string password = "Test@1234!";
-        await client.PostAsJsonAsync("/api/auth/register", new { userName, email, password });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName, email, password });
         var code = await factory.GetOtpCode(email);
-        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new { email, code });
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/login", new { email, password });
+        var response = await client.PostAsJsonAsync(LoginEndpoint.Route, new { email, password });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -314,17 +314,17 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var userName = $"claims_{Guid.NewGuid():N}";
         const string password = "Test@1234!";
 
-        await client.PostAsJsonAsync("/api/auth/register", new { userName, email, password });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName, email, password });
         var code = await factory.GetOtpCode(email);
-        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
-        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new { email, password });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new { email, code });
+        var loginResponse = await client.PostAsJsonAsync(LoginEndpoint.Route, new { email, password });
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var loginBody = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
         loginBody.Should().NotBeNull();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginBody!.AccessToken);
 
         // Act
-        var response = await client.GetAsync("/api/auth/info");
+        var response = await client.GetAsync(GetUserInfoEndpoint.Route);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -340,7 +340,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     {
         // Arrange
         var client = factory.CreateClient();
-        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
+        var loginResponse = await client.PostAsJsonAsync(LoginEndpoint.Route, new
         {
             email = WebAppFactory.AdminEmail,
             password = WebAppFactory.AdminPassword,
@@ -350,12 +350,12 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         loginBody.Should().NotBeNull();
 
         // Act
-        var refreshResponse = await client.PostAsJsonAsync("/api/auth/refresh", new { token = loginBody!.RefreshToken });
+        var refreshResponse = await client.PostAsJsonAsync(RefreshEndpoint.Route, new { token = loginBody!.RefreshToken });
         refreshResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var refreshBody = await refreshResponse.Content.ReadFromJsonAsync<LoginResponse>();
         refreshBody.Should().NotBeNull();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", refreshBody!.AccessToken);
-        var getInfoResponse = await client.GetAsync("/api/auth/info");
+        var getInfoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
 
         // Assert
         getInfoResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -373,7 +373,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = await factory.CreateAuthorizedClient();
 
         // Act
-        var response = await client.GetAsync("/api/auth/info");
+        var response = await client.GetAsync(GetUserInfoEndpoint.Route);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -391,7 +391,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.GetAsync("/api/auth/info");
+        var response = await client.GetAsync(GetUserInfoEndpoint.Route);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -404,7 +404,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = await factory.CreateAuthorizedClient();
 
         // Act
-        var response = await client.GetAsync("/api/auth/info");
+        var response = await client.GetAsync(GetUserInfoEndpoint.Route);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -425,7 +425,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/forgotPassword", new
+        var response = await client.PostAsJsonAsync(ForgotPasswordEndpoint.Route, new
         {
             email = WebAppFactory.AdminEmail,
         });
@@ -443,7 +443,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/forgotPassword", new
+        var response = await client.PostAsJsonAsync(ForgotPasswordEndpoint.Route, new
         {
             email = "nobody@example.com",
         });
@@ -459,7 +459,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/forgotPassword", new
+        var response = await client.PostAsJsonAsync(ForgotPasswordEndpoint.Route, new
         {
             email = "not-an-email",
         });
@@ -478,14 +478,14 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var email = $"reset_{Guid.NewGuid():N}@test.com";
         var userName = $"reset_{Guid.NewGuid():N}";
         const string password = "Test@1234!";
-        await client.PostAsJsonAsync("/api/auth/register", new { userName, email, password });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName, email, password });
         var code = await factory.GetOtpCode(email);
-        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
-        await client.PostAsJsonAsync("/api/auth/forgotPassword", new { email });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new { email, code });
+        await client.PostAsJsonAsync(ForgotPasswordEndpoint.Route, new { email });
         var newCode = await factory.GetOtpCode(email);
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/resetPassword", new
+        var response = await client.PostAsJsonAsync(ResetPasswordEndpoint.Route, new
         {
             email,
             code = newCode,
@@ -507,15 +507,15 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var userName = $"reset_login_{Guid.NewGuid():N}";
         const string oldPassword = "Test@1234!";
         const string newPassword = "NewTest@5678!";
-        await client.PostAsJsonAsync("/api/auth/register", new { userName, email, password = oldPassword });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName, email, password = oldPassword });
         var code = await factory.GetOtpCode(email);
-        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
-        await client.PostAsJsonAsync("/api/auth/forgotPassword", new { email });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new { email, code });
+        await client.PostAsJsonAsync(ForgotPasswordEndpoint.Route, new { email });
         var newCode = await factory.GetOtpCode(email);
-        await client.PostAsJsonAsync("/api/auth/resetPassword", new { email, code = newCode, newPassword });
+        await client.PostAsJsonAsync(ResetPasswordEndpoint.Route, new { email, code = newCode, newPassword });
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/login", new { email, password = newPassword });
+        var response = await client.PostAsJsonAsync(LoginEndpoint.Route, new { email, password = newPassword });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -527,12 +527,12 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"reset_bad_code_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"reset_bad_code_{Guid.NewGuid():N}", email, password = "Test@1234!" });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName = $"reset_bad_code_{Guid.NewGuid():N}", email, password = "Test@1234!" });
         var code = await factory.GetOtpCode(email);
-        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new { email, code });
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/resetPassword", new
+        var response = await client.PostAsJsonAsync(ResetPasswordEndpoint.Route, new
         {
             email,
             code = "000000", // valid length but won't match the real OTP
@@ -549,15 +549,15 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"reset_expired_{Guid.NewGuid():N}@test.com";
-        await client.PostAsJsonAsync("/api/auth/register", new { userName = $"reset_expired_{Guid.NewGuid():N}", email, password = "Test@1234!" });
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName = $"reset_expired_{Guid.NewGuid():N}", email, password = "Test@1234!" });
         var code = await factory.GetOtpCode(email);
-        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
-        await client.PostAsJsonAsync("/api/auth/forgotPassword", new { email });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new { email, code });
+        await client.PostAsJsonAsync(ForgotPasswordEndpoint.Route, new { email });
         var expiredCode = await factory.GetOtpCode(email);
         await ExpireOtpCodeAsync(email);
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/resetPassword", new
+        var response = await client.PostAsJsonAsync(ResetPasswordEndpoint.Route, new
         {
             email,
             code = expiredCode,
@@ -575,7 +575,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/resetPassword", new
+        var response = await client.PostAsJsonAsync(ResetPasswordEndpoint.Route, new
         {
             email = "nobody@example.com",
             code = "000000",
@@ -595,7 +595,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PutAsJsonAsync("/api/auth/info", new
+        var response = await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new
         {
             firstName = "John",
             lastName = "Doe",
@@ -612,7 +612,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = await factory.CreateAuthorizedClient();
 
         // Act
-        var response = await client.PutAsJsonAsync("/api/auth/info", new
+        var response = await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new
         {
             firstName = "Admin",
             lastName = "User",
@@ -633,10 +633,10 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var lastName = $"Last_{Guid.NewGuid():N}";
 
         // Act
-        await client.PutAsJsonAsync("/api/auth/info", new { firstName, lastName });
+        await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new { firstName, lastName });
 
         // Assert
-        var response = await client.GetAsync("/api/auth/info");
+        var response = await client.GetAsync(GetUserInfoEndpoint.Route);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
         body.Should().NotBeNull();
@@ -654,11 +654,11 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var client = await factory.CreateAuthorizedClient();
 
         // Act
-        var response = await client.PostAsync("/api/auth/logout", null);
+        var response = await client.PostAsync(LogoutEndpoint.Route, null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var getInfoResponse = await client.GetAsync("/api/auth/info");
+        var getInfoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
         getInfoResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 

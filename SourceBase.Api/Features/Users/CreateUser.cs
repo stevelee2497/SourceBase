@@ -14,8 +14,10 @@ public record CreateUserResponse(Guid Id);
 
 public class CreateUserEndpoint : IEndpoint
 {
+    public const string Route = "users";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/users", ([FromBody] CreateUserRequest request, CreateUserHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] CreateUserRequest request, CreateUserHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Users");
 }

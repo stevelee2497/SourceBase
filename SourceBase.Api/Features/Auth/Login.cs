@@ -16,8 +16,10 @@ public record LoginResponse(string TokenType, string AccessToken, int ExpiresIn,
 
 public class LoginEndpoint : IEndpoint
 {
+    public const string Route = "auth/login";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/login", ([FromBody] LoginRequest request, LoginHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] LoginRequest request, LoginHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

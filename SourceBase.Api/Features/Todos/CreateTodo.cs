@@ -11,8 +11,10 @@ public record CreateTodoResponse(Guid Id);
 
 public class CreateTodoEndpoint : IEndpoint
 {
+    public const string Route = "todos";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/todos", ([FromBody] CreateTodoRequest request, CreateTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] CreateTodoRequest request, CreateTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Todos");
 }
 

@@ -13,8 +13,10 @@ public record ResendConfirmationEmailResponse(bool Success);
 
 public class ResendConfirmationEmailEndpoint : IEndpoint
 {
+    public const string Route = "auth/resendConfirmationEmail";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/resendConfirmationEmail", ([FromBody] ResendConfirmationEmailRequest request, ResendConfirmationEmailHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] ResendConfirmationEmailRequest request, ResendConfirmationEmailHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

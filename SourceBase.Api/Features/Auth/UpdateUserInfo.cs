@@ -13,8 +13,10 @@ public record UpdateUserInfoResponse(Guid Id);
 
 public class UpdateUserInfoEndpoint : IEndpoint
 {
+    public const string Route = "auth/info";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut("/auth/info", ([FromBody] UpdateUserInfoRequest request, UpdateUserInfoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPut(Route, ([FromBody] UpdateUserInfoRequest request, UpdateUserInfoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Auth");
 }
 

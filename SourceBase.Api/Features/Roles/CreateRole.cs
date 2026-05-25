@@ -14,8 +14,10 @@ public record CreateRoleResponse(Guid Id);
 
 public class CreateRoleEndpoint : IEndpoint
 {
+    public const string Route = "roles";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/roles", ([FromBody] CreateRoleRequest request, CreateRoleHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] CreateRoleRequest request, CreateRoleHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Roles");
 }

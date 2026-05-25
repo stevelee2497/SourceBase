@@ -17,8 +17,10 @@ public record GetTodoResponse(Guid Id, DateOnly Date, string Title, TodoItemStat
 
 public class GetTodoEndpoint : IEndpoint
 {
+    public const string Route = "todos/{id:guid}";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet("/todos/{id:guid}", (Guid id, GetTodoHandler handler, CancellationToken ct) => handler.Handle(new GetTodoRequest(id), ct))
+        .MapGet(Route, (Guid id, GetTodoHandler handler, CancellationToken ct) => handler.Handle(new GetTodoRequest(id), ct))
         .WithTags("Todos");
 }
 

@@ -50,4 +50,9 @@ public static class Utilities
     {
         return JsonSerializer.Deserialize<T>(json, JsonOptions) ?? throw new JsonException("Deserialization resulted in null");
     }
+
+    public static string WithId(this string route, Guid id)
+    {
+        return route.Replace("{id:guid}", id.ToString(), StringComparison.Ordinal);
+    }
 }

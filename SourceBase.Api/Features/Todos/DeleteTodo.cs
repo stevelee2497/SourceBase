@@ -9,8 +9,10 @@ public record DeleteTodoResponse(bool Success);
 
 public class DeleteTodoEndpoint : IEndpoint
 {
+    public const string Route = "todos/{id:guid}";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapDelete("/todos/{id:guid}", (Guid id, DeleteTodoHandler handler, CancellationToken ct) => handler.Handle(new DeleteTodoRequest(id), ct))
+        .MapDelete(Route, (Guid id, DeleteTodoHandler handler, CancellationToken ct) => handler.Handle(new DeleteTodoRequest(id), ct))
         .WithTags("Todos");
 }
 

@@ -19,8 +19,10 @@ public record EnumResponse(string Name, string? Description);
 
 public class GetEnumsEndpoint : IEndpoint
 {
+    public const string Route = "data/enums";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/data/enums", ([FromBody] GetEnumsRequest request, GetEnumsHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] GetEnumsRequest request, GetEnumsHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Data");
 }

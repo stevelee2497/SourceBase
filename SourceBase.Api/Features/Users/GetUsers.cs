@@ -11,8 +11,10 @@ public record UserResponse(Guid Id, string? UserName, string? Email, string? Fir
 
 public class GetUsersEndpoint : IEndpoint
 {
+    public const string Route = "users";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet("/users", ([AsParameters] GetUsersRequest request, GetUsersHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapGet(Route, ([AsParameters] GetUsersRequest request, GetUsersHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Users");
 }

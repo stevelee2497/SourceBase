@@ -19,13 +19,13 @@ public class RoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var description = "Created in integration test";
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/roles", new { name = roleName, description });
+        var response = await client.PostAsJsonAsync(CreateRoleEndpoint.Route, new { name = roleName, description });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateRoleResponse>();
         body!.Id.Should().NotBeEmpty();
-        var rolesResponse = await client.GetAsync("/api/roles");
+        var rolesResponse = await client.GetAsync(GetRolesEndpoint.Route);
         var roles = await rolesResponse.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
         roles.Should().NotBeNull();
         roles!.Items.Should().ContainSingle(x => x.Name == roleName && x.Description == description);
@@ -37,12 +37,12 @@ public class RoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = await factory.CreateAuthorizedClient();
         var roleName = $"Role_{Guid.NewGuid():N}";
-        await client.PostAsJsonAsync("/api/roles", new { name = roleName, description = "Before update" });
+        await client.PostAsJsonAsync(CreateRoleEndpoint.Route, new { name = roleName, description = "Before update" });
         var role = await GetRoleByNameAsync(client, roleName);
         var updatedRoleName = $"{roleName}_Updated";
 
         // Act
-        var response = await client.PutAsJsonAsync($"/api/roles/{role.Id}", new { name = updatedRoleName, description = "After update" });
+        var response = await client.PutAsJsonAsync(UpdateRoleEndpoint.Route.WithId(role.Id), new { name = updatedRoleName, description = "After update" });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -58,17 +58,17 @@ public class RoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = await factory.CreateAuthorizedClient();
         var roleName = $"Role_{Guid.NewGuid():N}";
-        await client.PostAsJsonAsync("/api/roles", new { name = roleName, description = "Will be deleted" });
+        await client.PostAsJsonAsync(CreateRoleEndpoint.Route, new { name = roleName, description = "Will be deleted" });
         var role = await GetRoleByNameAsync(client, roleName);
 
         // Act
-        var response = await client.DeleteAsync($"/api/roles/{role.Id}");
+        var response = await client.DeleteAsync(DeleteRoleEndpoint.Route.WithId(role.Id));
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DeleteRoleResponse>();
         body!.Success.Should().BeTrue();
-        var rolesResponse = await client.GetAsync("/api/roles");
+        var rolesResponse = await client.GetAsync(GetRolesEndpoint.Route);
         var roles = await rolesResponse.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
         roles.Should().NotBeNull();
         roles!.Items.Should().NotContain(x => x.Id == role.Id);
@@ -76,7 +76,7 @@ public class RoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 
     private static async Task<RoleResponse> GetRoleByNameAsync(HttpClient client, string roleName)
     {
-        var rolesResponse = await client.GetAsync("/api/roles");
+        var rolesResponse = await client.GetAsync(GetRolesEndpoint.Route);
         rolesResponse.EnsureSuccessStatusCode();
         var roles = await rolesResponse.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
         roles.Should().NotBeNull();

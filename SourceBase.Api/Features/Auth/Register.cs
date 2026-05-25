@@ -13,8 +13,10 @@ public record RegisterResponse(Guid Id);
 
 public class RegisterEndpoint : IEndpoint
 {
+    public const string Route = "auth/register";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/register", ([FromBody] RegisterRequest request, RegisterHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] RegisterRequest request, RegisterHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

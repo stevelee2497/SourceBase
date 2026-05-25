@@ -13,8 +13,10 @@ public record ForgotPasswordResponse(bool Success);
 
 public class ForgotPasswordEndpoint : IEndpoint
 {
+    public const string Route = "auth/forgotPassword";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/forgotPassword", ([FromBody] ForgotPasswordRequest request, ForgotPasswordHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] ForgotPasswordRequest request, ForgotPasswordHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

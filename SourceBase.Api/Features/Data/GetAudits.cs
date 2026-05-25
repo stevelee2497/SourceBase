@@ -11,8 +11,10 @@ public record AuditHistoryResponse(Guid Id, string Author, string Action, string
 
 public class GetAuditsEndpoint : IEndpoint
 {
+    public const string Route = "data/audits";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet("/data/audits", ([AsParameters] GetAuditsRequest request, GetAuditsHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapGet(Route, ([AsParameters] GetAuditsRequest request, GetAuditsHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Data");
 }

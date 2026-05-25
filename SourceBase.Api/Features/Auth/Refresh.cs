@@ -16,8 +16,10 @@ public record RefreshTokenRequest(string Token);
 
 public class RefreshEndpoint : IEndpoint
 {
+    public const string Route = "auth/refresh";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/refresh", ([FromBody] RefreshTokenRequest request, RefreshHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] RefreshTokenRequest request, RefreshHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

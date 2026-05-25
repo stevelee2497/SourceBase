@@ -13,8 +13,10 @@ public record ConfirmEmailResponse(bool Success);
 
 public class ConfirmEmailEndpoint : IEndpoint
 {
+    public const string Route = "auth/confirmEmail";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/confirmEmail", ([FromBody] ConfirmEmailRequest request, ConfirmEmailHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] ConfirmEmailRequest request, ConfirmEmailHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }

@@ -46,7 +46,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 });
             });
         });
-
+        ClientOptions.BaseAddress = new Uri("http://localhost/api/");
     }
 
     public async Task InitializeAsync()
@@ -87,7 +87,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public async Task<string> GetAccessTokenAsync(HttpClient client, string email, string password)
     {
-        var response = await client.PostAsJsonAsync("/api/auth/login", new { email, password });
+        var response = await client.PostAsJsonAsync(LoginEndpoint.Route, new { email, password });
         var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
         return body?.AccessToken ?? throw new InvalidOperationException("Access token not found in login response");
     }

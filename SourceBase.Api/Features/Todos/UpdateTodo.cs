@@ -13,8 +13,10 @@ public record UpdateTodoResponse(Guid Id);
 
 public class UpdateTodoEndpoint : IEndpoint
 {
+    public const string Route = "todos/{id:guid}";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut("/todos/{id:guid}", (Guid id, [FromBody] UpdateTodoRequest body, UpdateTodoHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPut(Route, (Guid id, [FromBody] UpdateTodoRequest body, UpdateTodoHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
         .WithTags("Todos");
 }
 

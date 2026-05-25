@@ -13,8 +13,10 @@ public record ResetPasswordResponse(bool Success);
 
 public class ResetPasswordEndpoint : IEndpoint
 {
+    public const string Route = "auth/resetPassword";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/auth/resetPassword", ([FromBody] ResetPasswordRequest request, ResetPasswordHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] ResetPasswordRequest request, ResetPasswordHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
         .WithTags("Auth");
 }
