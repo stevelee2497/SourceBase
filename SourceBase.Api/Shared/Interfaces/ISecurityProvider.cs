@@ -7,7 +7,7 @@ public interface ISecurityProvider
 {
     ClaimsPrincipal CreateClaimsPrincipal(UserEntity user, IEnumerable<Claim>? additionalClaims = null);
 
-    ClaimsPrincipal ReadRefreshToken(string token);
+    ClaimsPrincipal ParseRefreshToken(string token);
 
     string HashPassword(UserEntity user, string password);
 

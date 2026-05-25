@@ -63,13 +63,13 @@ public static class Utilities
     {
         public Guid? UserId => Guid.TryParse(claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : null;
 
-        public string? UserEmail => claimsPrincipal.FindFirstValue(ClaimTypes.Email);
+        public string? Email => claimsPrincipal.FindFirstValue(ClaimTypes.Email);
 
         public string? UserName => claimsPrincipal.FindFirstValue(ClaimTypes.Name);
 
         public string? SecurityStamp => claimsPrincipal.FindFirstValue(Constants.SecurityStampClaimType);
 
-        public string[] Roles => [.. claimsPrincipal.FindAll(ClaimTypes.Role).Select(x => x.Value)];
+        public IEnumerable<string> Roles => claimsPrincipal.FindAll(ClaimTypes.Role).Select(x => x.Value);
     }
 
     public static JsonSerializerOptions JsonOptions => new()

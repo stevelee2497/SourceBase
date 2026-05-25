@@ -58,9 +58,6 @@ public class ApplicationDbContextLoggingInterceptor(ILogger<ApplicationDbContext
 
     private void LogCommand(DbCommand command, CommandExecutedEventData eventData)
     {
-        if (logger.IsEnabled(LogLevel.Information) is false)
-            return;
-
         var callSite = DbCommandCallSiteResolver.Resolve();
         var duration = eventData.Duration.TotalMilliseconds.ToString("0");
         var commandType = command.CommandType.ToString();

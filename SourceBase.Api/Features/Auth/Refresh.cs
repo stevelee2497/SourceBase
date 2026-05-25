@@ -27,7 +27,7 @@ public class RefreshHandler(
 {
     public async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handle(RefreshTokenRequest request, CancellationToken ct)
     {
-        var refreshPrincipal = securityProvider.ReadRefreshToken(request.Token);
+        var refreshPrincipal = securityProvider.ParseRefreshToken(request.Token);
         var userId = refreshPrincipal.UserId;
         var user = await dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(u => u.Id == userId, ct) ?? throw new UnAuthorizedException("User not found");
         if (user.SecurityStamp != refreshPrincipal.SecurityStamp)

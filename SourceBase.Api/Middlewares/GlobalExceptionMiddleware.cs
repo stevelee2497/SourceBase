@@ -72,7 +72,7 @@ public static class GlobalExceptionMiddlewareUtilities
         if (error.Code != "VALIDATION ERROR")
         {
             var logger = context.RequestServices.GetRequiredService<ILogger<GlobalExceptionMiddleware>>();
-            logger.LogWarning("Request failed for {Method} {Path}", context.Request.Method, context.Request.Path);
+            logger.LogError("Request failed for {Method} {Path}", context.Request.Method, context.Request.Path);
         }
 
         context.Response.StatusCode = error.StatusCode;

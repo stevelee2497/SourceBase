@@ -10,7 +10,9 @@ public class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUse
 
     public Guid UserId => User?.UserId ?? throw new UnAuthorizedException();
 
-    public string UserName => User?.UserName ?? "Unknown";
+    public string? Email => User?.Email;
 
-    public string[] Roles => User?.Roles ?? [];
+    public string? UserName => User?.UserName;
+
+    public string[] Roles => [.. User?.Roles ?? []];
 }

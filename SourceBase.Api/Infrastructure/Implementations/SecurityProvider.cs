@@ -31,7 +31,7 @@ public class SecurityProvider(IOptionsMonitor<BearerTokenOptions> bearerTokenOpt
         return new ClaimsPrincipal(identity);
     }
 
-    public ClaimsPrincipal ReadRefreshToken(string token)
+    public ClaimsPrincipal ParseRefreshToken(string token)
     {
         var refreshTokenProtector = bearerTokenOptions.Get(Constants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(token);
