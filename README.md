@@ -1,6 +1,6 @@
 # Source Base
 
-A .NET 10 API starter built on **Vertical Slice Architecture** — each feature lives in a single file, from the HTTP endpoint down to the database call. No layers, no abstractions for their own sake.
+A .NET 10 API starter built on **Vertical Slice Architecture** and **REPR Pattern** — each feature lives in a single file, from the HTTP endpoint down to the database call. No layers, no abstractions for their own sake.
 
 ## Architecture
 
@@ -30,22 +30,22 @@ SourceBase.Api/
 
 ### Feature Structure
 
-Each slice is a self-contained file:
+Each slice is a self-contained file follow the REPR Pattern:
 
 ```csharp
 
-public record CreateTodoRequest([Required] DateOnly? Date, [Required] string Title, TodoItemStatus Status);
+public record CreateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
 
 public record CreateTodoResponse(bool Success);
 
-public class CreateTodo : IEndpoint
+public class CreateTodoEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) => app
         .MapPost("/todos", ([FromBody] CreateTodoRequest request, CreateTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Todos");
 }
 
-public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoRequest, CreateTodoResponse>
+public class CreateTodoHandler(IDbContext dbContext) : IRequestHandler<CreateTodoRequest, CreateTodoResponse>
 {
     public async Task<CreateTodoResponse> Handle(CreateTodoRequest request, CancellationToken ct)
     {

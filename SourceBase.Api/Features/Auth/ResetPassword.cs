@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
@@ -21,24 +22,19 @@ public class ResetPasswordEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ResetPasswordHandler(UserManager<UserEntity> userManager) : IRequestHandler<ResetPasswordRequest, ResetPasswordResponse>
+public class ResetPasswordHandler(IDbContext dbContext, IPasswordHasher<UserEntity> passwordHasher) : IRequestHandler<ResetPasswordRequest, ResetPasswordResponse>
 {
     public async Task<ResetPasswordResponse> Handle(ResetPasswordRequest request, CancellationToken ct)
     {
-        var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email, ct) ?? throw new NotFoundException("User not found");
         if (user.OtpCode != request.Code || user.OtpCodeExpiresOn is null || user.OtpCodeExpiresOn <= DateTime.UtcNow)
             throw new BadRequestException("Invalid or expired code");
 
         user.OtpCode = null;
         user.OtpCodeExpiresOn = null;
-        var updateResult = await userManager.UpdateAsync(user);
-        if (!updateResult.Succeeded)
-            throw new BadRequestException(updateResult.Errors.First().Description);
-
-        var token = await userManager.GeneratePasswordResetTokenAsync(user);
-        var result = await userManager.ResetPasswordAsync(user, token, request.NewPassword);
-        if (!result.Succeeded)
-            throw new BadRequestException(result.Errors.First().Description);
+        user.PasswordHash = passwordHasher.HashPassword(user, request.NewPassword);
+        user.SecurityStamp = Guid.NewGuid().ToString(); // Invalidate existing tokens
+        await dbContext.SaveChangesAsync(ct);
 
         return new ResetPasswordResponse(true);
     }

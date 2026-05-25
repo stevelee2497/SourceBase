@@ -1,7 +1,6 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SourceBase.Api.Entities;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
@@ -21,20 +20,18 @@ public class ResendConfirmationEmailEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ResendConfirmationEmailHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ResendConfirmationEmailRequest, ResendConfirmationEmailResponse>
+public class ResendConfirmationEmailHandler(IDbContext dbContext, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ResendConfirmationEmailRequest, ResendConfirmationEmailResponse>
 {
     public async Task<ResendConfirmationEmailResponse> Handle(ResendConfirmationEmailRequest request, CancellationToken ct)
     {
-        var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email, ct) ?? throw new NotFoundException("User not found");
         if (user.EmailConfirmed)
             throw new BadRequestException("Email already confirmed");
 
         var (otp, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
         user.OtpCode = otp;
         user.OtpCodeExpiresOn = expiresOn;
-        var updateResult = await userManager.UpdateAsync(user);
-        if (!updateResult.Succeeded)
-            throw new BadRequestException(updateResult.Errors.First().Description);
+        await dbContext.SaveChangesAsync(ct);
 
         await emailHelper.SendEmailAsync(request.Email, "Confirm your email", $"Your confirmation code is: <b>{otp}</b>");
         return new ResendConfirmationEmailResponse(true);

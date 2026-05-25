@@ -1,7 +1,6 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SourceBase.Api.Entities;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
@@ -21,18 +20,15 @@ public class ForgotPasswordEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ForgotPasswordHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ForgotPasswordRequest, ForgotPasswordResponse>
+public class ForgotPasswordHandler(IDbContext dbContext, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<ForgotPasswordRequest, ForgotPasswordResponse>
 {
     public async Task<ForgotPasswordResponse> Handle(ForgotPasswordRequest request, CancellationToken ct)
     {
-        var user = await userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("User not found");
+        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email, ct) ?? throw new NotFoundException("User not found");
         var (otp, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
         user.OtpCode = otp;
         user.OtpCodeExpiresOn = expiresOn;
-        var updateResult = await userManager.UpdateAsync(user);
-        if (!updateResult.Succeeded)
-            throw new BadRequestException(updateResult.Errors.First().Description);
-
+        await dbContext.SaveChangesAsync(ct);
         await emailHelper.SendEmailAsync(request.Email, "Reset Password", $"Your password reset code is: <b>{otp}</b>");
         return new ForgotPasswordResponse(true);
     }

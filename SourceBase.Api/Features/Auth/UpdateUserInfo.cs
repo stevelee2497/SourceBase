@@ -1,7 +1,6 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SourceBase.Api.Entities;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
@@ -20,21 +19,15 @@ public class UpdateUserInfoEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class UpdateUserInfoHandler(
-    UserManager<UserEntity> userManager,
-    ICurrentUser currentUser) : IRequestHandler<UpdateUserInfoRequest, UpdateUserInfoResponse>
+public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<UpdateUserInfoRequest, UpdateUserInfoResponse>
 {
     public async Task<UpdateUserInfoResponse> Handle(UpdateUserInfoRequest request, CancellationToken ct)
     {
-        var user = await userManager.FindByIdAsync(currentUser.UserId.ToString()) ?? throw new NotFoundException();
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == currentUser.UserId, ct) ?? throw new NotFoundException();
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.PhoneNumber = request.PhoneNumber;
-
-        var result = await userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-            throw new BadRequestException(result.Errors.First().Description);
-
+        await dbContext.SaveChangesAsync(ct);
         return new UpdateUserInfoResponse(user.Id);
     }
 }

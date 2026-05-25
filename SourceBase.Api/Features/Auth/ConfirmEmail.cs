@@ -1,7 +1,6 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SourceBase.Api.Entities;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
@@ -21,24 +20,21 @@ public class ConfirmEmailEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ConfirmEmailHandler(UserManager<UserEntity> userManager) : IRequestHandler<ConfirmEmailRequest, ConfirmEmailResponse>
+public class ConfirmEmailHandler(IDbContext dbContext) : IRequestHandler<ConfirmEmailRequest, ConfirmEmailResponse>
 {
     public async Task<ConfirmEmailResponse> Handle(ConfirmEmailRequest request, CancellationToken ct)
     {
-        var user = await userManager.FindByEmailAsync(request.Email) ?? throw new UnAuthorizedException();
+        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email, ct) ?? throw new UnAuthorizedException();
+
         if (user.OtpCode != request.Code || user.OtpCodeExpiresOn is null || user.OtpCodeExpiresOn <= DateTime.UtcNow)
             throw new UnAuthorizedException("Invalid or expired code");
 
-        user.OtpCode = null;
-        user.OtpCodeExpiresOn = null;
         user.EmailConfirmed = true;
-        var updateResult = await userManager.UpdateAsync(user);
-        if (!updateResult.Succeeded)
-            throw new BadRequestException(updateResult.Errors.First().Description);
 
-        var addRoleResult = await userManager.AddToRoleAsync(user, AppRoles.User);
-        if (!addRoleResult.Succeeded)
-            throw new BadRequestException(addRoleResult.Errors.First().Description);
+        var userRole = await dbContext.Roles.FirstOrDefaultAsync(x => x.Name == AppRoles.User, ct) ?? throw new ApiInternalException("Default user role not found");
+        user.Roles.Add(userRole!);
+
+        await dbContext.SaveChangesAsync(ct);
 
         return new ConfirmEmailResponse(true);
     }

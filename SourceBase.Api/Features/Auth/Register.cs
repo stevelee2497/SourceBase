@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
@@ -21,22 +22,26 @@ public class RegisterEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<RegisterRequest, RegisterResponse>
+public class RegisterHandler(IDbContext dbContext, IPasswordHasher<UserEntity> passwordHasher, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<RegisterRequest, RegisterResponse>
 {
     public async Task<RegisterResponse> Handle(RegisterRequest request, CancellationToken ct)
     {
         var (confirmationCode, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
+        var passwordHash = passwordHasher.HashPassword(null!, request.Password);
         var user = new UserEntity
         {
             Email = request.Email,
+            NormalizedEmail = request.Email.ToUpper(),
             UserName = request.UserName,
+            NormalizedUserName = request.UserName.ToUpper(),
             OtpCode = confirmationCode,
             OtpCodeExpiresOn = expiresOn,
+            PasswordHash = passwordHash,
+            SecurityStamp = Guid.NewGuid().ToString(),
         };
 
-        var createResult = await userManager.CreateAsync(user, request.Password);
-        if (!createResult.Succeeded)
-            throw new BadRequestException(createResult.Errors.First().Description);
+        dbContext.Users.Add(user);
+        await dbContext.SaveChangesAsync(ct);
 
         await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>");
 
@@ -46,12 +51,12 @@ public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper e
 
 public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
-    public RegisterRequestValidator(UserManager<UserEntity> userManager)
+    public RegisterRequestValidator(IDbContext dbContext)
     {
         RuleFor(x => x.UserName).NotEmpty().MaximumLength(256);
         RuleFor(x => x.Email).NotEmpty().EmailAddress().MustAsync(async (email, ct) =>
         {
-            var existingUser = await userManager.FindByEmailAsync(email);
+            var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
             return existingUser == null;
         }).WithMessage("Email is already taken.");
         RuleFor(x => x.Password).NotEmpty().MinimumLength(6);

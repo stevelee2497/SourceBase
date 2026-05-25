@@ -14,7 +14,7 @@ docker compose up
 Single project VSA. `SourceBase.Api/Features/` — one file per use case (endpoint + handler + request/response records). No MediatR, no controllers.
 
 ```csharp
-public record CreateTodoRequest([Required] DateOnly? Date, [Required] string Title, TodoItemStatus Status);
+public record CreateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
 
 public record CreateTodoResponse(bool Success);
 
@@ -25,7 +25,7 @@ public class CreateTodoEndpoint : IEndpoint
         .WithTags("Todos");
 }
 
-public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoRequest, CreateTodoResponse>
+public class CreateTodoHandler(IDbContext dbContext) : IRequestHandler<CreateTodoRequest, CreateTodoResponse>
 {
     public async Task<CreateTodoResponse> Handle(CreateTodoRequest request, CancellationToken ct)
     {
