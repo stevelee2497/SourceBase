@@ -26,7 +26,7 @@ public class LoginHandler(UserManager<UserEntity> userManager, SignInManager<Use
 {
     public async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handle(LoginRequest request, CancellationToken ct)
     {
-        var user = await userManager.Users.Include(x => x.Roles).SingleAsync(x => x.Email == request.Email, ct);
+        var user = await userManager.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Email == request.Email, ct);
 
         if (user == null || !await userManager.IsEmailConfirmedAsync(user))
             throw new UnAuthorizedException("Invalid credentials");

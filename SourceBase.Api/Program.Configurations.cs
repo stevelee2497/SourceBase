@@ -1,8 +1,9 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
@@ -149,9 +150,17 @@ public static class ProgramConfigurations
     public static void AddInfrastructure(this IServiceCollection services)
     {
         services.AddDbContext<ApplicationDbContext>();
-        services.AddIdentityApiEndpoints<UserEntity>()
-            .AddRoles<RoleEntity>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+        services.AddIdentity<UserEntity, RoleEntity>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+        services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
+                options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
+                options.DefaultForbidScheme = IdentityConstants.BearerScheme;
+            })
+            .AddBearerToken(IdentityConstants.BearerScheme);
 
         services.AddScoped<IClaimsManager, ClaimsManager>();
         services.AddScoped<IDbContext, ApplicationDbContext>();

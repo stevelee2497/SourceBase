@@ -34,6 +34,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["AppSettings:Roles:0"] = "Admin",
                 ["AppSettings:Roles:1"] = "User",
                 ["AppSettings:OtpTokenExpirationMinutes"] = "15",
+                ["Serilog:MinimumLevel:Default"] = "Fatal"
             });
             builder.ConfigureServices(services =>
             {
