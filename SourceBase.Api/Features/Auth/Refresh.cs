@@ -1,9 +1,10 @@
 using FluentValidation;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
@@ -21,7 +22,7 @@ public class RefreshEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class RefreshHandler(SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions) : IRequestHandler<RefreshTokenRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
+public class RefreshHandler(SignInManager<UserEntity> signInManager, IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, IClaimsManager claimsManager) : IRequestHandler<RefreshTokenRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
 {
     public async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handle(RefreshTokenRequest request, CancellationToken ct)
     {
@@ -32,8 +33,12 @@ public class RefreshHandler(SignInManager<UserEntity> signInManager, IOptionsMon
         if (refreshTicket?.Properties.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc || user == null)
             throw new UnAuthorizedException("Invalid token");
 
-        signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
-        await signInManager.SignInWithClaimsAsync(user, false, [new Claim("amr", "pwd")]);
+        var userWithRoles = await signInManager.UserManager.Users
+            .Include(x => x.Roles)
+            .SingleAsync(x => x.Id == user.Id, ct);
+
+        var claims = await claimsManager.CreateClaimsPrincipalAsync(userWithRoles);
+        await signInManager.Context.SignInAsync(IdentityConstants.BearerScheme, claims);
         return TypedResults.Empty; // The actual token generation is handled by the JwtBearer middleware, so we return null here. The client will receive the token in the response headers.
     }
 }

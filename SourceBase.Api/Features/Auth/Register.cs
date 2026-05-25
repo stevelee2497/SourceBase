@@ -44,10 +44,14 @@ public class RegisterHandler(UserManager<UserEntity> userManager, IEmailHelper e
 
 public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
-    public RegisterRequestValidator()
+    public RegisterRequestValidator(UserManager<UserEntity> userManager)
     {
         RuleFor(x => x.UserName).NotEmpty().MaximumLength(256);
-        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Email).NotEmpty().EmailAddress().MustAsync(async (email, ct) =>
+        {
+            var existingUser = await userManager.FindByEmailAsync(email);
+            return existingUser == null;
+        }).WithMessage("Email is already taken.");
         RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
     }
 }

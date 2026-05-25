@@ -29,7 +29,7 @@ public class AuthorizationMiddleware(RequestDelegate next)
         if (user is null || !user.EmailConfirmed || (user.LockoutEnabled && user.LockoutEnd > DateTimeOffset.UtcNow))
             return false;
 
-        var stampClaim = context.User.FindFirstValue("AspNet.Identity.SecurityStamp");
+        var stampClaim = context.User.FindFirstValue(Constants.SecurityStampClaimType);
         if (string.IsNullOrWhiteSpace(stampClaim) || !string.Equals(user.SecurityStamp, stampClaim, StringComparison.Ordinal))
             return false;
 

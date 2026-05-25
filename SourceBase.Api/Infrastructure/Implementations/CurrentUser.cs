@@ -10,7 +10,7 @@ public class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUse
         ? userId
         : throw new UnAuthorizedException();
 
-    public string UserEmail => httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Name) ?? "Un authorized user";
+    public string UserEmail => httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Email) ?? "Un authorized user";
 
     public string UserName => httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Name) ?? "Un authorized user";
 

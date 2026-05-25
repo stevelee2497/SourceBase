@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
 using SourceBase.Api.Features.Auth;
@@ -302,6 +303,65 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
         body.Should().NotBeNull();
         body!.AccessToken.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task GetUserInfo_WithDistinctUserNameAndEmail_ReturnsMatchingClaims()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var email = $"{Guid.NewGuid():N}@test.com";
+        var userName = $"claims_{Guid.NewGuid():N}";
+        const string password = "Test@1234!";
+
+        await client.PostAsJsonAsync("/api/auth/register", new { userName, email, password });
+        var code = await factory.GetOtpCode(email);
+        await client.PostAsJsonAsync("/api/auth/confirmEmail", new { email, code });
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new { email, password });
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var loginBody = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
+        loginBody.Should().NotBeNull();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginBody!.AccessToken);
+
+        // Act
+        var response = await client.GetAsync("/api/auth/info");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
+        body.Should().NotBeNull();
+        body!.UserName.Should().Be(userName);
+        body.Email.Should().Be(email);
+        body.Roles.Should().Contain("User");
+    }
+
+    [Fact]
+    public async Task RefreshToken_WithValidToken_PreservesRoles()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
+        {
+            email = WebAppFactory.AdminEmail,
+            password = WebAppFactory.AdminPassword,
+        });
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var loginBody = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
+        loginBody.Should().NotBeNull();
+
+        // Act
+        var refreshResponse = await client.PostAsJsonAsync("/api/auth/refresh", new { token = loginBody!.RefreshToken });
+        refreshResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var refreshBody = await refreshResponse.Content.ReadFromJsonAsync<LoginResponse>();
+        refreshBody.Should().NotBeNull();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", refreshBody!.AccessToken);
+        var getInfoResponse = await client.GetAsync("/api/auth/info");
+
+        // Assert
+        getInfoResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await getInfoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
+        body.Should().NotBeNull();
+        body!.Roles.Should().Contain("Admin");
     }
 
     // ── Get user info ─────────────────────────────────────────────────────────

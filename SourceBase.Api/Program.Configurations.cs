@@ -149,13 +149,11 @@ public static class ProgramConfigurations
     public static void AddInfrastructure(this IServiceCollection services)
     {
         services.AddDbContext<ApplicationDbContext>();
-        services.AddIdentityApiEndpoints<UserEntity>(options =>
-            {
-                options.User.RequireUniqueEmail = true;
-            })
+        services.AddIdentityApiEndpoints<UserEntity>()
             .AddRoles<RoleEntity>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
+        services.AddScoped<IClaimsManager, ClaimsManager>();
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<IEmailHelper, SendGridEmailHelper>();
