@@ -156,13 +156,13 @@ public static class ProgramConfigurations
 
         services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
-                options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
-                options.DefaultForbidScheme = IdentityConstants.BearerScheme;
+                options.DefaultAuthenticateScheme = Constants.BearerScheme;
+                options.DefaultChallengeScheme = Constants.BearerScheme;
+                options.DefaultForbidScheme = Constants.BearerScheme;
             })
-            .AddBearerToken(IdentityConstants.BearerScheme);
+            .AddBearerToken(Constants.BearerScheme);
 
-        services.AddScoped<IClaimsManager, ClaimsManager>();
+        services.AddScoped<ISecurityProvider, SecurityProvider>();
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<IEmailHelper, SendGridEmailHelper>();

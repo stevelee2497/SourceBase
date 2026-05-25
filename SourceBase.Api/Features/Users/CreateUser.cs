@@ -1,7 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
@@ -23,35 +23,43 @@ public class CreateUserEndpoint : IEndpoint
 }
 
 public class CreateUserHandler(
-    UserManager<UserEntity> userManager,
+    IDbContext dbContext,
+    ISecurityProvider securityProvider,
     IEmailHelper emailHelper,
     AppSettings appSettings) : IRequestHandler<CreateUserRequest, CreateUserResponse>
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken ct)
     {
         var (confirmationCode, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
+        var normalizedRoles = request.Roles?.Normalize().Select(role => role.ToUpper()).ToArray();
         var user = new UserEntity
         {
             UserName = request.UserName,
+            NormalizedUserName = request.UserName.ToUpper(),
             Email = request.Email,
+            NormalizedEmail = request.Email.ToUpper(),
             FirstName = request.FirstName,
             LastName = request.LastName,
             PhoneNumber = request.PhoneNumber,
             OtpCode = confirmationCode,
             OtpCodeExpiresOn = expiresOn,
+            PasswordHash = securityProvider.HashPassword(null!, request.Password),
+            SecurityStamp = Guid.NewGuid().ToString(),
+            ConcurrencyStamp = Guid.NewGuid().ToString(),
         };
 
-        var createResult = await userManager.CreateAsync(user, request.Password);
-        if (!createResult.Succeeded)
-            throw new BadRequestException(createResult.Errors.First().Description);
-
-        var normalizedRoles = request.Roles?.Normalize();
         if (normalizedRoles is not null)
         {
-            var addRolesResult = await userManager.AddToRolesAsync(user, normalizedRoles);
-            if (!addRolesResult.Succeeded)
-                throw new BadRequestException(addRolesResult.Errors.First().Description);
+            var roles = await dbContext.Roles
+                .Where(role => role.NormalizedName != null && normalizedRoles.Contains(role.NormalizedName))
+                .ToListAsync(ct);
+
+            foreach (var role in roles)
+                user.Roles.Add(role);
         }
+
+        dbContext.Users.Add(user);
+        await dbContext.SaveChangesAsync(ct);
 
         await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{confirmationCode}</b>");
 
@@ -61,9 +69,19 @@ public class CreateUserHandler(
 
 public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 {
-    public CreateUserRequestValidator(RoleManager<RoleEntity> roleManager)
+    public CreateUserRequestValidator(IDbContext dbContext)
     {
-        RuleFor(x => x.UserName).NotEmpty().MaximumLength(256);
+        RuleFor(x => x.UserName)
+            .NotEmpty()
+            .MaximumLength(256)
+            .MustAsync(async (userName, ct) =>
+            {
+                if (string.IsNullOrWhiteSpace(userName))
+                    return true;
+
+                return await dbContext.Users.AnyAsync(user => user.NormalizedUserName == userName.ToUpper(), ct) is false;
+            })
+            .WithMessage("Username is already taken.");
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
         RuleFor(x => x.FirstName).MaximumLength(100).When(x => x.FirstName is not null);
@@ -77,7 +95,7 @@ public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 
             foreach (var role in roles.Normalize())
             {
-                if (await roleManager.RoleExistsAsync(role) is false)
+                if (await dbContext.Roles.AnyAsync(x => x.NormalizedName == role.ToUpper(), ct) is false)
                     context.AddFailure(nameof(CreateUserRequest.Roles), $"Role '{role}' does not exist");
             }
         });

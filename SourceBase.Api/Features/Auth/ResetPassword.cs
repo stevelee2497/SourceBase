@@ -1,8 +1,6 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
@@ -22,7 +20,7 @@ public class ResetPasswordEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ResetPasswordHandler(IDbContext dbContext, IPasswordHasher<UserEntity> passwordHasher) : IRequestHandler<ResetPasswordRequest, ResetPasswordResponse>
+public class ResetPasswordHandler(IDbContext dbContext, ISecurityProvider securityProvider) : IRequestHandler<ResetPasswordRequest, ResetPasswordResponse>
 {
     public async Task<ResetPasswordResponse> Handle(ResetPasswordRequest request, CancellationToken ct)
     {
@@ -32,7 +30,7 @@ public class ResetPasswordHandler(IDbContext dbContext, IPasswordHasher<UserEnti
 
         user.OtpCode = null;
         user.OtpCodeExpiresOn = null;
-        user.PasswordHash = passwordHasher.HashPassword(user, request.NewPassword);
+        user.PasswordHash = securityProvider.HashPassword(user, request.NewPassword);
         user.SecurityStamp = Guid.NewGuid().ToString(); // Invalidate existing tokens
         await dbContext.SaveChangesAsync(ct);
 

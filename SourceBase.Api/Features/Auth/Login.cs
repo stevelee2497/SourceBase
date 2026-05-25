@@ -1,10 +1,8 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
@@ -24,20 +22,20 @@ public class LoginEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class LoginHandler(IDbContext dbContext, IPasswordHasher<UserEntity> passwordHasher, IClaimsManager claimsManager, IHttpContextAccessor httpContextAccessor) : IRequestHandler<LoginRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
+public class LoginHandler(
+    IDbContext dbContext,
+    ISecurityProvider securityProvider,
+    IHttpContextAccessor httpContextAccessor) : IRequestHandler<LoginRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
 {
     public async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handle(LoginRequest request, CancellationToken ct)
     {
         var user = await dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Email == request.Email, ct);
 
-        if (user == null || !user.EmailConfirmed)
+        if (user == null || !user.EmailConfirmed || !securityProvider.VerifyPassword(user, request.Password))
             throw new UnAuthorizedException("Invalid credentials");
 
-        if (passwordHasher.VerifyHashedPassword(user, user.PasswordHash!, request.Password) != PasswordVerificationResult.Success)
-            throw new UnAuthorizedException("Invalid credentials");
-
-        var claims = await claimsManager.CreateClaimsPrincipalAsync(user);
-        await httpContextAccessor.HttpContext!.SignInAsync(IdentityConstants.BearerScheme, claims);
+        var claimsPrincipal = securityProvider.CreateClaimsPrincipal(user);
+        await httpContextAccessor.HttpContext!.SignInAsync(Constants.BearerScheme, claimsPrincipal);
         return TypedResults.Empty; // The actual token generation is handled by the JwtBearer middleware, so we return null here. The client will receive the token in the response headers.
     }
 }

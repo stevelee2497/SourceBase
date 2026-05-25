@@ -1,8 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SourceBase.Api.Entities;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -24,19 +23,22 @@ public class UpdateUserEndpoint : IEndpoint
 }
 
 public class UpdateUserHandler(
-    UserManager<UserEntity> userManager,
+    IDbContext dbContext,
     IEmailHelper emailHelper,
     AppSettings appSettings) : IRequestHandler<UpdateUserRequest, UpdateUserResponse>
 {
     public async Task<UpdateUserResponse> Handle(UpdateUserRequest request, CancellationToken ct)
     {
-        var user = await userManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
-        var normalizedRoles = request.Roles?.Normalize();
+        var user = await dbContext.Users
+            .Include(x => x.Roles)
+            .FirstOrDefaultAsync(u => u.Id == request.Id, ct) ?? throw new NotFoundException();
+        var normalizedRoles = request.Roles?.Normalize().Select(role => role.ToUpper()).ToArray();
 
         var trimmedEmail = request.Email;
         var emailChanged = string.Equals(user.Email, trimmedEmail, StringComparison.OrdinalIgnoreCase) is false;
 
         user.Email = trimmedEmail;
+        user.NormalizedEmail = trimmedEmail.ToUpper();
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.PhoneNumber = request.PhoneNumber;
@@ -49,40 +51,44 @@ public class UpdateUserHandler(
             user.OtpCodeExpiresOn = expiresOn;
         }
 
-        var updateResult = await userManager.UpdateAsync(user);
-        if (!updateResult.Succeeded)
-            throw new BadRequestException(updateResult.Errors.First().Description);
-
         var rolesChanged = false;
         if (normalizedRoles is not null)
         {
-            var existingRoles = await userManager.GetRolesAsync(user);
-            var rolesToRemove = existingRoles.Except(normalizedRoles, StringComparer.OrdinalIgnoreCase).ToArray();
-            var rolesToAdd = normalizedRoles.Except(existingRoles, StringComparer.OrdinalIgnoreCase).ToArray();
+            var existingRoles = user.Roles
+                .Where(role => !string.IsNullOrWhiteSpace(role.Name))
+                .ToDictionary(
+                    role => role.NormalizedName ?? role.Name!.ToUpper(),
+                    role => role,
+                    StringComparer.Ordinal);
+            var rolesToRemove = existingRoles
+                .Where(role => normalizedRoles.Contains(role.Key, StringComparer.Ordinal) is false)
+                .Select(role => role.Value)
+                .ToArray();
+            var rolesToAdd = normalizedRoles.Except(existingRoles.Keys, StringComparer.Ordinal).ToArray();
 
             if (rolesToRemove.Length > 0)
             {
-                var removeResult = await userManager.RemoveFromRolesAsync(user, rolesToRemove);
-                if (!removeResult.Succeeded)
-                    throw new BadRequestException(removeResult.Errors.First().Description);
+                foreach (var role in rolesToRemove)
+                    user.Roles.Remove(role);
             }
 
             if (rolesToAdd.Length > 0)
             {
-                var addResult = await userManager.AddToRolesAsync(user, rolesToAdd);
-                if (!addResult.Succeeded)
-                    throw new BadRequestException(addResult.Errors.First().Description);
+                var roles = await dbContext.Roles
+                    .Where(role => role.NormalizedName != null && rolesToAdd.Contains(role.NormalizedName))
+                    .ToListAsync(ct);
+
+                foreach (var role in roles)
+                    user.Roles.Add(role);
             }
 
             rolesChanged = rolesToRemove.Length > 0 || rolesToAdd.Length > 0;
         }
 
         if (emailChanged || rolesChanged)
-        {
-            var stampResult = await userManager.UpdateSecurityStampAsync(user);
-            if (!stampResult.Succeeded)
-                throw new BadRequestException(stampResult.Errors.First().Description);
-        }
+            user.SecurityStamp = SecurityStampHelper.Generate();
+
+        await dbContext.SaveChangesAsync(ct);
 
         if (emailChanged)
             await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>");
@@ -93,7 +99,7 @@ public class UpdateUserHandler(
 
 public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
 {
-    public UpdateUserRequestValidator(RoleManager<RoleEntity> roleManager)
+    public UpdateUserRequestValidator(IDbContext dbContext)
     {
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.FirstName).MaximumLength(100).When(x => x.FirstName is not null);
@@ -107,7 +113,7 @@ public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
 
             foreach (var role in roles.Normalize())
             {
-                if (await roleManager.RoleExistsAsync(role) is false)
+                if (await dbContext.Roles.AnyAsync(x => x.NormalizedName == role.ToUpper(), ct) is false)
                     context.AddFailure(nameof(UpdateUserRequest.Roles), $"Role '{role}' does not exist");
             }
         });

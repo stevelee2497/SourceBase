@@ -1,7 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
@@ -22,19 +22,20 @@ public class CreateRoleEndpoint : IEndpoint
         .WithTags("Roles");
 }
 
-public class CreateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<CreateRoleRequest, CreateRoleResponse>
+public class CreateRoleHandler(IDbContext dbContext) : IRequestHandler<CreateRoleRequest, CreateRoleResponse>
 {
     public async Task<CreateRoleResponse> Handle(CreateRoleRequest request, CancellationToken ct)
     {
         var role = new RoleEntity
         {
             Name = request.Name,
-            Description = request.Description
+            NormalizedName = request.Name.ToUpper(),
+            Description = request.Description,
+            ConcurrencyStamp = Guid.NewGuid().ToString()
         };
 
-        var result = await roleManager.CreateAsync(role);
-        if (!result.Succeeded)
-            throw new BadRequestException(result.Errors.First().Description);
+        dbContext.Roles.Add(role);
+        await dbContext.SaveChangesAsync(ct);
 
         return new CreateRoleResponse(role.Id);
     }
@@ -42,9 +43,19 @@ public class CreateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
 
 public class CreateRoleRequestValidator : AbstractValidator<CreateRoleRequest>
 {
-    public CreateRoleRequestValidator()
+    public CreateRoleRequestValidator(IDbContext dbContext)
     {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(256);
+        RuleFor(x => x.Name)
+            .NotEmpty()
+            .MaximumLength(256)
+            .MustAsync(async (name, ct) =>
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                    return true;
+
+                return await dbContext.Roles.AnyAsync(role => role.NormalizedName == name.ToUpper(), ct) is false;
+            })
+            .WithMessage("Role name is already taken.");
         RuleFor(x => x.Description).MaximumLength(500).When(x => x.Description is not null);
     }
 }

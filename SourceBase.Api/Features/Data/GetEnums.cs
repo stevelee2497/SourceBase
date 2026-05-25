@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -27,40 +26,33 @@ public class GetEnumsEndpoint : IEndpoint
         .WithTags("Data");
 }
 
-public class GetEnumsHandler : IRequestHandler<GetEnumsRequest, GetEnumsResponse>
+public class GetEnumsHandler(IDbContext dbContext) : IRequestHandler<GetEnumsRequest, GetEnumsResponse>
 {
-    private readonly RoleManager<RoleEntity> roleManager;
-    private readonly Dictionary<AvailableEnums, Task<List<EnumResponse>>> EnumTypeMapping;
-
-    public GetEnumsHandler(RoleManager<RoleEntity> roleManager)
-    {
-        this.roleManager = roleManager;
-
-        EnumTypeMapping = new Dictionary<AvailableEnums, Task<List<EnumResponse>>>
-        {
-            { AvailableEnums.RolesOrder, BuildEnumDefinitions<RolesOrder>() },
-            { AvailableEnums.TodoItemStatus, BuildEnumDefinitions<TodoItemStatus>() },
-            { AvailableEnums.Roles, GetRolesAsync() },
-        };
-    }
-
     public async Task<GetEnumsResponse> Handle(GetEnumsRequest request, CancellationToken ct)
     {
-        if (request.Enums.Any(enumType => !EnumTypeMapping.ContainsKey(enumType)))
-            throw new BadRequestException("One or more enum types are not supported");
-
-        var enumDefinitions = await Task.WhenAll(request.Enums.Select(enumType => EnumTypeMapping[enumType]));
+        var enumDefinitions = await Task.WhenAll(request.Enums.Select(enumType => GetEnumDefinitionsAsync(enumType, ct)));
         var res = request.Enums.Zip(enumDefinitions, (key, value) => new { key, value }).ToDictionary(x => x.key, x => x.value);
         return new GetEnumsResponse(res);
     }
 
-    private Task<List<EnumResponse>> GetRolesAsync()
+    private Task<List<EnumResponse>> GetEnumDefinitionsAsync(AvailableEnums enumType, CancellationToken ct)
     {
-        return roleManager.Roles
+        return enumType switch
+        {
+            AvailableEnums.RolesOrder => BuildEnumDefinitions<RolesOrder>(),
+            AvailableEnums.TodoItemStatus => BuildEnumDefinitions<TodoItemStatus>(),
+            AvailableEnums.Roles => GetRolesAsync(ct),
+            _ => throw new BadRequestException("One or more enum types are not supported")
+        };
+    }
+
+    private Task<List<EnumResponse>> GetRolesAsync(CancellationToken ct)
+    {
+        return dbContext.Roles
             .Where(x => x.Name != null)
             .OrderBy(x => x.Name)
             .Select(x => new EnumResponse(x.Name!, x.Description))
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 
     private Task<List<EnumResponse>> BuildEnumDefinitions<TEnum>() where TEnum : struct, Enum

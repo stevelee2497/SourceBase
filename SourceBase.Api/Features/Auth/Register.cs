@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Entities;
@@ -22,12 +21,11 @@ public class RegisterEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class RegisterHandler(IDbContext dbContext, IPasswordHasher<UserEntity> passwordHasher, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<RegisterRequest, RegisterResponse>
+public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityProvider, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<RegisterRequest, RegisterResponse>
 {
     public async Task<RegisterResponse> Handle(RegisterRequest request, CancellationToken ct)
     {
         var (confirmationCode, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
-        var passwordHash = passwordHasher.HashPassword(null!, request.Password);
         var user = new UserEntity
         {
             Email = request.Email,
@@ -36,7 +34,7 @@ public class RegisterHandler(IDbContext dbContext, IPasswordHasher<UserEntity> p
             NormalizedUserName = request.UserName.ToUpper(),
             OtpCode = confirmationCode,
             OtpCodeExpiresOn = expiresOn,
-            PasswordHash = passwordHash,
+            PasswordHash = securityProvider.HashPassword(null!, request.Password),
             SecurityStamp = Guid.NewGuid().ToString(),
         };
 

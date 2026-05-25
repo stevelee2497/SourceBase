@@ -1,8 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SourceBase.Api.Entities;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -23,17 +22,16 @@ public class UpdateRoleEndpoint : IEndpoint
         .WithTags("Roles");
 }
 
-public class UpdateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHandler<UpdateRoleRequest, UpdateRoleResponse>
+public class UpdateRoleHandler(IDbContext dbContext) : IRequestHandler<UpdateRoleRequest, UpdateRoleResponse>
 {
     public async Task<UpdateRoleResponse> Handle(UpdateRoleRequest request, CancellationToken ct)
     {
-        var role = await roleManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
+        var role = await dbContext.Roles.FirstOrDefaultAsync(x => x.Id == request.Id, ct) ?? throw new NotFoundException();
         role.Name = request.Name;
+        role.NormalizedName = request.Name.ToUpper();
         role.Description = request.Description;
 
-        var result = await roleManager.UpdateAsync(role);
-        if (!result.Succeeded)
-            throw new BadRequestException(result.Errors.First().Description);
+        await dbContext.SaveChangesAsync(ct);
 
         return new UpdateRoleResponse(role.Id);
     }
@@ -41,9 +39,21 @@ public class UpdateRoleHandler(RoleManager<RoleEntity> roleManager) : IRequestHa
 
 public class UpdateRoleRequestValidator : AbstractValidator<UpdateRoleRequest>
 {
-    public UpdateRoleRequestValidator()
+    public UpdateRoleRequestValidator(IDbContext dbContext)
     {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(256).NotEqual(AppRoles.Admin, StringComparer.OrdinalIgnoreCase).WithMessage("Admin role cannot be updated");
+        RuleFor(x => x.Name)
+            .NotEmpty()
+            .MaximumLength(256)
+            .NotEqual(AppRoles.Admin, StringComparer.OrdinalIgnoreCase)
+            .WithMessage("Admin role cannot be updated")
+            .MustAsync(async (request, name, ct) =>
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                    return true;
+
+                return await dbContext.Roles.AnyAsync(role => role.Id != request.Id && role.NormalizedName == name.ToUpper(), ct) is false;
+            })
+            .WithMessage("Role name is already taken.");
         RuleFor(x => x.Description).MaximumLength(500).When(x => x.Description is not null);
     }
 }

@@ -1,7 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using SourceBase.Api.Entities;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
 
@@ -21,14 +20,13 @@ public class DeleteUserEndpoint : IEndpoint
         .WithTags("Users");
 }
 
-public class DeleteUserHandler(UserManager<UserEntity> userManager) : IRequestHandler<DeleteUserRequest, DeleteUserResponse>
+public class DeleteUserHandler(IDbContext dbContext) : IRequestHandler<DeleteUserRequest, DeleteUserResponse>
 {
     public async Task<DeleteUserResponse> Handle(DeleteUserRequest request, CancellationToken ct)
     {
-        var user = await userManager.FindByIdAsync(request.Id.ToString()) ?? throw new NotFoundException();
-        var result = await userManager.DeleteAsync(user);
-        if (!result.Succeeded)
-            throw new BadRequestException(result.Errors.First().Description);
+        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == request.Id, ct) ?? throw new NotFoundException();
+        dbContext.Users.Remove(user);
+        await dbContext.SaveChangesAsync(ct);
 
         return new DeleteUserResponse(true);
     }
