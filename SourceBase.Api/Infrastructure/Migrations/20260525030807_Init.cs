@@ -91,6 +91,7 @@ namespace SourceBase.Api.Infrastructure.Migrations
                     FirstName = table.Column<string>(type: "TEXT", nullable: true),
                     LastName = table.Column<string>(type: "TEXT", nullable: true),
                     OtpCode = table.Column<string>(type: "TEXT", nullable: true),
+                    OtpCodeExpiresOn = table.Column<DateTime>(type: "TEXT", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: true),
                     UpdatedOn = table.Column<DateTime>(type: "TEXT", nullable: true),

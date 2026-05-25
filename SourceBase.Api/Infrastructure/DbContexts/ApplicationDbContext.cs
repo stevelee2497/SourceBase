@@ -9,7 +9,7 @@ using SourceBase.Api.Shared.Interfaces;
 namespace SourceBase.Api.Infrastructure.DbContexts;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IConfiguration configuration, ILogger<ApplicationDbContextLoggingInterceptor> dbCommandLogger)
-    : IdentityDbContext<UserEntity, RoleEntity, Guid, IdentityUserClaim<Guid>, UserRoleEntity, IdentityUserLogin<Guid>, IdentityRoleClaim<Guid>, IdentityUserToken<Guid>>(options), IDbContext
+    : IdentityDbContext<UserEntity, RoleEntity, Guid>(options), IDbContext
 {
     public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
@@ -34,23 +34,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         SetEnumStringConverter(modelBuilder);
 
         // Identity table mappings
-        modelBuilder.Entity<UserEntity>().ToTable("Users");
+        modelBuilder.Entity<UserEntity>().ToTable("Users").HasMany(e => e.Roles)
+                .WithMany(e => e.Users)
+                .UsingEntity<IdentityUserRole<Guid>>();
+        modelBuilder.Entity<RoleEntity>().ToTable("Roles").HasMany(e => e.Users)
+                .WithMany(e => e.Roles)
+                .UsingEntity<IdentityUserRole<Guid>>();
+        modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
         modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
         modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
         modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
-        modelBuilder.Entity<RoleEntity>().ToTable("Roles");
         modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
-        modelBuilder.Entity<UserRoleEntity>(builder =>
-        {
-            builder.ToTable("UserRoles");
-            builder.HasKey(x => new { x.UserId, x.RoleId });
-            builder.HasOne(x => x.User)
-                .WithMany(x => x.UserRoles)
-                .HasForeignKey(x => x.UserId);
-            builder.HasOne(x => x.Role)
-                .WithMany(x => x.UserRoles)
-                .HasForeignKey(x => x.RoleId);
-        });
+
     }
 
     #region Helper Methods
@@ -120,7 +115,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             // Assign all roles to admin
             foreach (var role in context.Set<RoleEntity>().ToList())
             {
-                context.Set<UserRoleEntity>().Add(new UserRoleEntity
+                context.Set<IdentityUserRole<Guid>>().Add(new IdentityUserRole<Guid>
                 {
                     UserId = adminUserEntity.Id,
                     RoleId = role.Id

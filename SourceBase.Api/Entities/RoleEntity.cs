@@ -14,5 +14,5 @@ public class RoleEntity : IdentityRole<Guid>, IAuditableEntity
 
     public string? UpdatedBy { get; set; }
 
-    public ICollection<UserRoleEntity> UserRoles { get; set; } = [];
+    public virtual ICollection<UserEntity> Users { get; set; } = [];
 }

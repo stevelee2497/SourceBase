@@ -11,7 +11,7 @@ using SourceBase.Api.Infrastructure.DbContexts;
 namespace SourceBase.Api.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260522131128_Init")]
+    [Migration("20260525030807_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -309,6 +309,9 @@ namespace SourceBase.Api.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("OtpCode")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("OtpCodeExpiresOn")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PasswordHash")

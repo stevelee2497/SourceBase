@@ -2,4 +2,4 @@
 
 set -eu
 
-dotnet watch --project SourceBase.Api
+dotnet watch --project SourceBase.AppHost

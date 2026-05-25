@@ -30,7 +30,7 @@ public class GetUsersHandler(IDbContext dbContext) : IRequestHandler<GetUsersReq
                 LastName: user.LastName,
                 PhoneNumber: user.PhoneNumber,
                 EmailConfirmed: user.EmailConfirmed,
-                Roles: user.UserRoles.Select(ur => ur.Role!.Name!)
+                Roles: user.Roles.Select(r => r.Name!)
             ),
             paging: request,
             ct: ct
