@@ -3,10 +3,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
 using SourceBase.Api.Features.Auth;
-using SourceBase.Api.Infrastructure.DbContexts;
 using SourceBase.Tests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
@@ -54,9 +52,7 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        using var scope = factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var user = await db.Users.SingleAsync(x => x.Email == trimmedEmail);
+        var user = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Email == trimmedEmail));
         user.UserName.Should().Be(trimmedUserName);
     }
 
@@ -664,10 +660,11 @@ public class AuthTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 
     private async Task ExpireOtpCodeAsync(string email)
     {
-        using var scope = factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var user = await db.Users.SingleAsync(x => x.Email == email);
-        user.OtpCodeExpiresOn = DateTime.UtcNow.AddMinutes(-1);
-        await db.SaveChangesAsync();
+        await factory.WithDbContextAsync(async db =>
+        {
+            var user = await db.Users.SingleAsync(x => x.Email == email);
+            user.OtpCodeExpiresOn = DateTime.UtcNow.AddMinutes(-1);
+            return await db.SaveChangesAsync();
+        });
     }
 }

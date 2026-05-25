@@ -3,11 +3,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using SourceBase.Api.Features.Auth;
 using SourceBase.Api.Features.Todos;
 using SourceBase.Api.Features.Users;
-using SourceBase.Api.Infrastructure.DbContexts;
 using SourceBase.Api.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -43,9 +41,7 @@ public class UserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var users = await GetUsersAsync(client);
         users.Items.Should().ContainSingle(x => x.Id == body.Id && x.UserName == userName && x.Email == email && x.Roles.Contains("User"));
 
-        using var scope = factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var user = await db.Users.SingleAsync(x => x.Id == body.Id);
+        var user = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Id == body.Id));
         user.EmailConfirmed.Should().BeFalse();
         user.OtpCode.Should().NotBeNullOrEmpty();
         user.OtpCodeExpiresOn.Should().NotBeNull();
@@ -166,14 +162,12 @@ public class UserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
         body!.Id.Should().NotBeEmpty();
 
-        using var scope = factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var todo = await db.TodoItems.SingleAsync(x => x.Id == body.Id);
+        var todo = await factory.WithDbContextAsync(db => db.TodoItems.SingleAsync(x => x.Id == body.Id));
         todo.CreatedBy.Should().Be(userName);
 
-        var audit = await db.AuditHistories
+        var audit = await factory.WithDbContextAsync(db => db.AuditHistories
             .OrderByDescending(x => x.ActionOn)
-            .FirstAsync(x => x.EntityId == body.Id.ToString());
+            .FirstAsync(x => x.EntityId == body.Id.ToString()));
 
         audit.Author.Should().Be(userName);
     }

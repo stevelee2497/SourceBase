@@ -54,9 +54,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         _anchorConnection = new SqliteConnection(_connectionString);
         await _anchorConnection.OpenAsync();
 
-        using var scope = Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await db.Database.EnsureCreatedAsync();
+        await WithDbContextAsync(db => db.Database.EnsureCreatedAsync());
     }
 
     public new async Task DisposeAsync()
@@ -76,13 +74,18 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public async Task<string> GetOtpCode(string email)
     {
-        using var scope = Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var otp = await db.Users
+        var otp = await WithDbContextAsync(async db => await db.Users
             .Where(u => u.Email == email)
             .Select(u => u.OtpCode)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync());
         return otp ?? throw new InvalidOperationException($"No OTP code found for '{email}'.");
+    }
+
+    public async Task<TResult> WithDbContextAsync<TResult>(Func<ApplicationDbContext, Task<TResult>> action)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        return await action(db);
     }
 
     public async Task<string> GetAccessTokenAsync(HttpClient client, string email, string password)
