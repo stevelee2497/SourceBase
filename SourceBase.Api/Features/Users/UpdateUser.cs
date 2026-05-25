@@ -86,7 +86,7 @@ public class UpdateUserHandler(
         }
 
         if (emailChanged || rolesChanged)
-            user.SecurityStamp = SecurityStampHelper.Generate();
+            user.SecurityStamp = Guid.NewGuid().ToString();
 
         await dbContext.SaveChangesAsync(ct);
 

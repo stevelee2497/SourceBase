@@ -12,8 +12,6 @@ public class SecurityProvider(IOptionsMonitor<BearerTokenOptions> bearerTokenOpt
 {
     public ClaimsPrincipal CreateClaimsPrincipal(UserEntity user, IEnumerable<Claim>? additionalClaims = null)
     {
-        ArgumentNullException.ThrowIfNull(user);
-
         var identity = new ClaimsIdentity(
             IdentityConstants.BearerScheme,
             ClaimTypes.Name,
@@ -35,8 +33,6 @@ public class SecurityProvider(IOptionsMonitor<BearerTokenOptions> bearerTokenOpt
 
     public ClaimsPrincipal ReadRefreshToken(string token)
     {
-        ArgumentNullException.ThrowIfNull(token);
-
         var refreshTokenProtector = bearerTokenOptions.Get(Constants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(token);
 
@@ -48,15 +44,11 @@ public class SecurityProvider(IOptionsMonitor<BearerTokenOptions> bearerTokenOpt
 
     public string HashPassword(UserEntity user, string password)
     {
-        ArgumentNullException.ThrowIfNull(user);
-        ArgumentNullException.ThrowIfNull(password);
         return passwordHasher.HashPassword(user, password);
     }
 
     public bool VerifyPassword(UserEntity user, string password)
     {
-        ArgumentNullException.ThrowIfNull(user);
-        ArgumentNullException.ThrowIfNull(password);
         var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash!, password);
         return result == PasswordVerificationResult.Success || result == PasswordVerificationResult.SuccessRehashNeeded;
     }

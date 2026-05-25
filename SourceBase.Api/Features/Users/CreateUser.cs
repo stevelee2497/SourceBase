@@ -31,7 +31,6 @@ public class CreateUserHandler(
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken ct)
     {
         var (confirmationCode, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
-        var normalizedRoles = request.Roles?.Normalize().Select(role => role.ToUpper()).ToArray();
         var user = new UserEntity
         {
             UserName = request.UserName,
@@ -48,14 +47,12 @@ public class CreateUserHandler(
             ConcurrencyStamp = Guid.NewGuid().ToString(),
         };
 
+        var normalizedRoles = request.Roles?.Normalize().Select(role => role.ToUpper()).ToArray();
         if (normalizedRoles is not null)
         {
-            var roles = await dbContext.Roles
-                .Where(role => role.NormalizedName != null && normalizedRoles.Contains(role.NormalizedName))
+            user.Roles = await dbContext.Roles
+                .Where(role => normalizedRoles.Contains(role.NormalizedName))
                 .ToListAsync(ct);
-
-            foreach (var role in roles)
-                user.Roles.Add(role);
         }
 
         dbContext.Users.Add(user);
@@ -93,11 +90,12 @@ public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
             if (roles is null)
                 return;
 
-            foreach (var role in roles.Normalize())
-            {
-                if (await dbContext.Roles.AnyAsync(x => x.NormalizedName == role.ToUpper(), ct) is false)
-                    context.AddFailure(nameof(CreateUserRequest.Roles), $"Role '{role}' does not exist");
-            }
+            var normalizedRoles = roles?.Normalize().Select(role => role.ToUpper()).ToArray();
+            var valid = await dbContext.Roles.AnyAsync(role => normalizedRoles!.Contains(role.NormalizedName), ct);
+            if (valid)
+                return;
+
+            context.AddFailure("One or more roles are invalid.");
         });
     }
 }

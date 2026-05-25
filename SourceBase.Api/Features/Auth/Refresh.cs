@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -29,11 +28,9 @@ public class RefreshHandler(
     public async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handle(RefreshTokenRequest request, CancellationToken ct)
     {
         var refreshPrincipal = securityProvider.ReadRefreshToken(request.Token);
-        var userId = Guid.Parse(refreshPrincipal.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var securityStamp = refreshPrincipal.FindFirstValue(Constants.SecurityStampClaimType)!;
-
+        var userId = refreshPrincipal.UserId;
         var user = await dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(u => u.Id == userId, ct) ?? throw new UnAuthorizedException("User not found");
-        if (user.SecurityStamp != securityStamp)
+        if (user.SecurityStamp != refreshPrincipal.SecurityStamp)
             throw new UnAuthorizedException("Invalid token");
 
         var claimsPrincipal = securityProvider.CreateClaimsPrincipal(user);

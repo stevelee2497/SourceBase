@@ -4,8 +4,6 @@ public interface ICurrentUser
 {
     Guid UserId { get; }
 
-    string UserEmail { get; }
-
     string UserName { get; }
 
     string[] Roles { get; }

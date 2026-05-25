@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using SourceBase.Api.Shared;
 using SourceBase.Api.Shared.Interfaces;
@@ -22,15 +21,11 @@ public class AuthorizationMiddleware(RequestDelegate next)
         if (context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() is not null)
             return true;
 
-        if (context.User.Identity is not { IsAuthenticated: true } || Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) is false)
+        if (context.User.Identity is not { IsAuthenticated: true })
             return false;
 
-        var user = await dbContext.Users.FindAsync([userId], context.RequestAborted);
-        if (user is null || !user.EmailConfirmed || (user.LockoutEnabled && user.LockoutEnd > DateTimeOffset.UtcNow))
-            return false;
-
-        var stampClaim = context.User.FindFirstValue(Constants.SecurityStampClaimType);
-        if (string.IsNullOrWhiteSpace(stampClaim) || !string.Equals(user.SecurityStamp, stampClaim, StringComparison.Ordinal))
+        var user = await dbContext.Users.FindAsync([context.User.UserId], context.RequestAborted);
+        if (user is null || !user.EmailConfirmed || (user.LockoutEnabled && user.LockoutEnd > DateTimeOffset.UtcNow) || !string.Equals(user.SecurityStamp, context.User.SecurityStamp, StringComparison.Ordinal))
             return false;
 
         return true;

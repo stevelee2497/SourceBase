@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
@@ -7,31 +8,71 @@ namespace SourceBase.Api.Shared;
 
 public static class Utilities
 {
-    public static async Task<PagingResponse<TResponse>> PaginateAsync<TEntity, TResponse>(this IQueryable<TEntity> query, Expression<Func<TEntity, TResponse>> selector, PagingRequest paging, CancellationToken ct)
+    extension<TEntity>(IQueryable<TEntity> query)
     {
-        var total = await query.CountAsync(ct);
-        var items = await query.OrderBy(paging.Direction, paging.Order).Skip(((paging.Page ?? 1) - 1) * (paging.Limit ?? 10)).Take(paging.Limit ?? 10).Select(selector).ToListAsync(ct);
-        return new PagingResponse<TResponse>(items, paging.Page ?? 1, paging.Limit ?? 10, total);
+        public async Task<PagingResponse<TResponse>> PaginateAsync<TResponse>(Expression<Func<TEntity, TResponse>> selector, PagingRequest paging, CancellationToken ct)
+        {
+            var total = await query.CountAsync(ct);
+            var items = await query.OrderBy(paging.Direction, paging.Order).Skip(((paging.Page ?? 1) - 1) * (paging.Limit ?? 10)).Take(paging.Limit ?? 10).Select(selector).ToListAsync(ct);
+            return new PagingResponse<TResponse>(items, paging.Page ?? 1, paging.Limit ?? 10, total);
+        }
+
+        public IQueryable<TEntity> OrderBy(string? direction, PagingOrder? order = PagingOrder.Asc)
+        {
+            if (direction is null) return query;
+            var property = typeof(TEntity).GetProperty(direction) ?? throw new ArgumentException($"Invalid sorting column: {direction}");
+            var parameter = Expression.Parameter(typeof(TEntity));
+            var keySelector = Expression.Lambda<Func<TEntity, object>>(Expression.Convert(Expression.Property(parameter, property), typeof(object)), parameter);
+            return order == PagingOrder.Asc ? query.OrderBy(keySelector) : query.OrderByDescending(keySelector);
+        }
     }
 
-    public static string[] Normalize(this IEnumerable<string> values)
+    extension(IEnumerable<string> self)
     {
-        return values
-            .Select(value => value.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        public string[] Normalize()
+        {
+            return self
+                .Select(value => value.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
     }
 
-    public static IQueryable<T> OrderBy<T>(this IQueryable<T> query, string? direction, PagingOrder? order = PagingOrder.Asc)
+    extension(object self)
     {
-        if (direction is null) return query;
-        var property = typeof(T).GetProperty(direction) ?? throw new ArgumentException($"Invalid sorting column: {direction}");
-        var parameter = Expression.Parameter(typeof(T));
-        var keySelector = Expression.Lambda<Func<T, object>>(Expression.Convert(Expression.Property(parameter, property), typeof(object)), parameter);
-        return order == PagingOrder.Asc ? query.OrderBy(keySelector) : query.OrderByDescending(keySelector);
+        public string Serialize()
+        {
+            return JsonSerializer.Serialize(self, JsonOptions);
+        }
     }
 
-    public static JsonSerializerOptions JsonOptions => new JsonSerializerOptions
+    extension(string self)
+    {
+        public T Deserialize<T>()
+        {
+            return JsonSerializer.Deserialize<T>(self, JsonOptions) ?? throw new JsonException("Deserialization resulted in null");
+        }
+
+        public string WithId(Guid id)
+        {
+            return self.Replace("{id:guid}", id.ToString(), StringComparison.Ordinal);
+        }
+    }
+
+    extension(ClaimsPrincipal claimsPrincipal)
+    {
+        public Guid? UserId => Guid.TryParse(claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : null;
+
+        public string? UserEmail => claimsPrincipal.FindFirstValue(ClaimTypes.Email);
+
+        public string? UserName => claimsPrincipal.FindFirstValue(ClaimTypes.Name);
+
+        public string? SecurityStamp => claimsPrincipal.FindFirstValue(Constants.SecurityStampClaimType);
+
+        public string[] Roles => [.. claimsPrincipal.FindAll(ClaimTypes.Role).Select(x => x.Value)];
+    }
+
+    public static JsonSerializerOptions JsonOptions => new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -40,19 +81,4 @@ public static class Utilities
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         }
     };
-
-    public static string Serialize(this object obj)
-    {
-        return JsonSerializer.Serialize(obj, JsonOptions);
-    }
-
-    public static T Deserialize<T>(this string json)
-    {
-        return JsonSerializer.Deserialize<T>(json, JsonOptions) ?? throw new JsonException("Deserialization resulted in null");
-    }
-
-    public static string WithId(this string route, Guid id)
-    {
-        return route.Replace("{id:guid}", id.ToString(), StringComparison.Ordinal);
-    }
 }
