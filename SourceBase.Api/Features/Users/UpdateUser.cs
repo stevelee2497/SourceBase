@@ -35,6 +35,9 @@ public class UpdateUserHandler(
         var normalizedRoles = request.Roles?.Normalize().Select(role => role.ToUpper()).ToArray();
 
         var trimmedEmail = request.Email;
+        if (await dbContext.Users.AnyAsync(u => u.Id != request.Id && u.NormalizedEmail == trimmedEmail.ToUpper(), ct))
+            throw new BadRequestException("Email is already taken.");
+
         var emailChanged = string.Equals(user.Email, trimmedEmail, StringComparison.OrdinalIgnoreCase) is false;
 
         user.Email = trimmedEmail;

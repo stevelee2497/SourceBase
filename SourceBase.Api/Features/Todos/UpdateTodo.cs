@@ -20,11 +20,14 @@ public class UpdateTodoEndpoint : IEndpoint
         .WithTags("Todos");
 }
 
-public class UpdateTodoHandler(IDbContext dbContext) : IRequestHandler<UpdateTodoRequest, UpdateTodoResponse>
+public class UpdateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<UpdateTodoRequest, UpdateTodoResponse>
 {
     public async Task<UpdateTodoResponse> Handle(UpdateTodoRequest request, CancellationToken ct)
     {
-        var item = await dbContext.TodoItems.FindAsync([request.Id], ct) ?? throw new NotFoundException();
+        var item = await dbContext.TodoItems.FindAsync([request.Id], ct);
+        if (item == null || item.UserId != currentUser.UserId)
+            throw new NotFoundException();
+
         item.Title = request.Title;
         item.Status = request.Status;
         item.Date = request.Date;

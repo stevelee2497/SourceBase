@@ -79,7 +79,17 @@ public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
                 return await dbContext.Users.AnyAsync(user => user.NormalizedUserName == userName.ToUpper(), ct) is false;
             })
             .WithMessage("Username is already taken.");
-        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Email)
+            .NotEmpty()
+            .EmailAddress()
+            .MustAsync(async (email, ct) =>
+            {
+                if (string.IsNullOrWhiteSpace(email))
+                    return true;
+
+                return await dbContext.Users.AnyAsync(user => user.NormalizedEmail == email.ToUpper(), ct) is false;
+            })
+            .WithMessage("Email is already taken.");
         RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
         RuleFor(x => x.FirstName).MaximumLength(100).When(x => x.FirstName is not null);
         RuleFor(x => x.LastName).MaximumLength(100).When(x => x.LastName is not null);
@@ -90,12 +100,11 @@ public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
             if (roles is null)
                 return;
 
-            var normalizedRoles = roles?.Normalize().Select(role => role.ToUpper()).ToArray();
-            var valid = await dbContext.Roles.AnyAsync(role => normalizedRoles!.Contains(role.NormalizedName), ct);
-            if (valid)
-                return;
-
-            context.AddFailure("One or more roles are invalid.");
+            foreach (var role in roles.Normalize())
+            {
+                if (await dbContext.Roles.AnyAsync(x => x.NormalizedName == role.ToUpper(), ct) is false)
+                    context.AddFailure(nameof(CreateUserRequest.Roles), $"Role '{role}' does not exist");
+            }
         });
     }
 }

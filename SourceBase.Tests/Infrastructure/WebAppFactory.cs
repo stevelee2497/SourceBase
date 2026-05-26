@@ -64,10 +64,26 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         await base.DisposeAsync().AsTask();
     }
 
-    public async Task<HttpClient> CreateAuthorizedClient()
+    public async Task<HttpClient> CreateAuthorizedClient(string email = AdminEmail, string password = AdminPassword)
     {
         var client = CreateClient();
-        var token = await GetAccessTokenAsync(client, AdminEmail, AdminPassword);
+
+        if (email != AdminEmail)
+        {
+            await client.PostAsJsonAsync(RegisterEndpoint.Route, new
+            {
+                userName = $"user_{Guid.NewGuid():N}",
+                email,
+                password,
+            });
+            await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new
+            {
+                email,
+                code = await GetOtpCode(email),
+            });
+        }
+
+        var token = await GetAccessTokenAsync(client, email, password);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return client;
     }

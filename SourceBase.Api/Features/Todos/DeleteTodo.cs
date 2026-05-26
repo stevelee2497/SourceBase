@@ -16,11 +16,14 @@ public class DeleteTodoEndpoint : IEndpoint
         .WithTags("Todos");
 }
 
-public class DeleteTodoHandler(IDbContext dbContext) : IRequestHandler<DeleteTodoRequest, DeleteTodoResponse>
+public class DeleteTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<DeleteTodoRequest, DeleteTodoResponse>
 {
     public async Task<DeleteTodoResponse> Handle(DeleteTodoRequest request, CancellationToken ct)
     {
-        var item = await dbContext.TodoItems.FindAsync([request.Id], ct) ?? throw new NotFoundException();
+        var item = await dbContext.TodoItems.FindAsync([request.Id], ct);
+        if (item == null || item.UserId != currentUser.UserId)
+            throw new NotFoundException();
+
         dbContext.TodoItems.Remove(item);
         await dbContext.SaveChangesAsync(ct);
         return new DeleteTodoResponse(true);

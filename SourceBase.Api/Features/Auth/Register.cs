@@ -54,8 +54,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
         RuleFor(x => x.UserName).NotEmpty().MaximumLength(256);
         RuleFor(x => x.Email).NotEmpty().EmailAddress().MustAsync(async (email, ct) =>
         {
-            var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
-            return existingUser == null;
+            return await dbContext.Users.AnyAsync(u => u.NormalizedEmail == email.ToUpper(), ct) is false;
         }).WithMessage("Email is already taken.");
         RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
     }

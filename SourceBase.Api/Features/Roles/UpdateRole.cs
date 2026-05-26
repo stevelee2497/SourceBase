@@ -27,6 +27,14 @@ public class UpdateRoleHandler(IDbContext dbContext) : IRequestHandler<UpdateRol
     public async Task<UpdateRoleResponse> Handle(UpdateRoleRequest request, CancellationToken ct)
     {
         var role = await dbContext.Roles.FirstOrDefaultAsync(x => x.Id == request.Id, ct) ?? throw new NotFoundException();
+
+        if (role.Name == AppRoles.Admin)
+            throw new BadRequestException("Admin role cannot be updated.");
+
+        var duplicateName = await dbContext.Roles.AnyAsync(r => r.Id != request.Id && r.NormalizedName == request.Name.ToUpper(), ct);
+        if (duplicateName)
+            throw new BadRequestException("Role name is already taken.");
+
         role.Name = request.Name;
         role.NormalizedName = request.Name.ToUpper();
         role.Description = request.Description;
@@ -39,21 +47,9 @@ public class UpdateRoleHandler(IDbContext dbContext) : IRequestHandler<UpdateRol
 
 public class UpdateRoleRequestValidator : AbstractValidator<UpdateRoleRequest>
 {
-    public UpdateRoleRequestValidator(IDbContext dbContext)
+    public UpdateRoleRequestValidator()
     {
-        RuleFor(x => x.Name)
-            .NotEmpty()
-            .MaximumLength(256)
-            .NotEqual(AppRoles.Admin, StringComparer.OrdinalIgnoreCase)
-            .WithMessage("Admin role cannot be updated")
-            .MustAsync(async (request, name, ct) =>
-            {
-                if (string.IsNullOrWhiteSpace(name))
-                    return true;
-
-                return await dbContext.Roles.AnyAsync(role => role.Id != request.Id && role.NormalizedName == name.ToUpper(), ct) is false;
-            })
-            .WithMessage("Role name is already taken.");
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(256);
         RuleFor(x => x.Description).MaximumLength(500).When(x => x.Description is not null);
     }
 }

@@ -15,7 +15,7 @@ public class DeleteRoleEndpoint : IEndpoint
     public const string Route = "roles/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapDelete(Route, (Guid id, DeleteRoleHandler handler, CancellationToken ct) => handler.Handle(new DeleteRoleRequest(id), ct))
+        .MapDelete(Route, ([AsParameters] DeleteRoleRequest request, DeleteRoleHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Roles");
 }
@@ -24,7 +24,7 @@ public class DeleteRoleHandler(IDbContext dbContext) : IRequestHandler<DeleteRol
 {
     public async Task<DeleteRoleResponse> Handle(DeleteRoleRequest request, CancellationToken ct)
     {
-        var role = await dbContext.Roles.FirstOrDefaultAsync(x => x.Id == request.Id, ct) ?? throw new NotFoundException();
+        var role = await dbContext.Roles.FirstOrDefaultAsync(x => x.Id == request.Id, ct) ?? throw new BadRequestException();
         dbContext.Roles.Remove(role);
         await dbContext.SaveChangesAsync(ct);
 
