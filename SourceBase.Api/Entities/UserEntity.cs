@@ -1,9 +1,19 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace SourceBase.Api.Entities;
 
-public class UserEntity : IdentityUser<Guid>, IAuditableEntity
+public class UserEntity : BaseAuditableEntity
 {
+    public required string UserName { get; set; }
+
+    public string? Email { get; set; }
+
+    public bool EmailConfirmed { get; set; }
+
+    public required string PasswordHash { get; set; }
+
+    public required string SecurityStamp { get; set; }
+
+    public string? PhoneNumber { get; set; }
+
     public string? FirstName { get; set; }
 
     public string? LastName { get; set; }
@@ -11,14 +21,6 @@ public class UserEntity : IdentityUser<Guid>, IAuditableEntity
     public string? OtpCode { get; set; }
 
     public DateTime? OtpCodeExpiresOn { get; set; }
-
-    public DateTime? CreatedOn { get; set; }
-
-    public string? CreatedBy { get; set; }
-
-    public DateTime? UpdatedOn { get; set; }
-
-    public string? UpdatedBy { get; set; }
 
     public virtual ICollection<RoleEntity> Roles { get; set; } = [];
 }

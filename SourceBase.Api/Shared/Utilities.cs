@@ -31,10 +31,7 @@ public static class Utilities
     {
         public string[] Normalize()
         {
-            return self
-                .Select(value => value.Trim())
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+            return [.. self.Select(value => value.Trim()).Distinct(StringComparer.OrdinalIgnoreCase)];
         }
     }
 

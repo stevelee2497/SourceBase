@@ -25,13 +25,14 @@ public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityPro
 {
     public async Task<RegisterResponse> Handle(RegisterRequest request, CancellationToken ct)
     {
+        if (await dbContext.Users.AnyAsync(u => u.UserName == request.UserName || u.Email == request.Email, ct))
+            throw new BadRequestException("Username or email is already taken.");
+
         var (confirmationCode, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
         var user = new UserEntity
         {
             Email = request.Email,
-            NormalizedEmail = request.Email.ToUpper(),
             UserName = request.UserName,
-            NormalizedUserName = request.UserName.ToUpper(),
             OtpCode = confirmationCode,
             OtpCodeExpiresOn = expiresOn,
             PasswordHash = securityProvider.HashPassword(null!, request.Password),
@@ -49,13 +50,10 @@ public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityPro
 
 public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
-    public RegisterRequestValidator(IDbContext dbContext)
+    public RegisterRequestValidator()
     {
         RuleFor(x => x.UserName).NotEmpty().MaximumLength(256);
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MustAsync(async (email, ct) =>
-        {
-            return await dbContext.Users.AnyAsync(u => u.NormalizedEmail == email.ToUpper(), ct) is false;
-        }).WithMessage("Email is already taken.");
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
     }
 }

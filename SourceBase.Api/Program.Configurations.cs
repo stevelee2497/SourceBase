@@ -150,9 +150,7 @@ public static class ProgramConfigurations
     public static void AddInfrastructure(this IServiceCollection services)
     {
         services.AddDbContext<ApplicationDbContext>();
-        services.AddIdentity<UserEntity, RoleEntity>()
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+        services.AddScoped<IPasswordHasher<UserEntity>, PasswordHasher<UserEntity>>();
 
         services.AddAuthentication(options =>
             {

@@ -32,16 +32,13 @@ public class UpdateUserHandler(
         var user = await dbContext.Users
             .Include(x => x.Roles)
             .FirstOrDefaultAsync(u => u.Id == request.Id, ct) ?? throw new NotFoundException();
-        var normalizedRoles = request.Roles?.Normalize().Select(role => role.ToUpper()).ToArray();
 
-        var trimmedEmail = request.Email;
-        if (await dbContext.Users.AnyAsync(u => u.Id != request.Id && u.NormalizedEmail == trimmedEmail.ToUpper(), ct))
+        if (await dbContext.Users.AnyAsync(u => u.Id != request.Id && u.Email == request.Email, ct))
             throw new BadRequestException("Email is already taken.");
 
-        var emailChanged = string.Equals(user.Email, trimmedEmail, StringComparison.OrdinalIgnoreCase) is false;
+        var emailChanged = !string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase);
 
-        user.Email = trimmedEmail;
-        user.NormalizedEmail = trimmedEmail.ToUpper();
+        user.Email = request.Email;
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.PhoneNumber = request.PhoneNumber;
@@ -55,19 +52,19 @@ public class UpdateUserHandler(
         }
 
         var rolesChanged = false;
+        var normalizedRoles = request.Roles?.Normalize();
         if (normalizedRoles is not null)
         {
             var existingRoles = user.Roles
                 .Where(role => !string.IsNullOrWhiteSpace(role.Name))
                 .ToDictionary(
-                    role => role.NormalizedName ?? role.Name!.ToUpper(),
-                    role => role,
-                    StringComparer.Ordinal);
+                    role => role.Name!,
+                    role => role);
             var rolesToRemove = existingRoles
-                .Where(role => normalizedRoles.Contains(role.Key, StringComparer.Ordinal) is false)
+                .Where(role => normalizedRoles.Contains(role.Key) is false)
                 .Select(role => role.Value)
                 .ToArray();
-            var rolesToAdd = normalizedRoles.Except(existingRoles.Keys, StringComparer.Ordinal).ToArray();
+            var rolesToAdd = normalizedRoles.Except(existingRoles.Keys).ToArray();
 
             if (rolesToRemove.Length > 0)
             {
@@ -78,7 +75,7 @@ public class UpdateUserHandler(
             if (rolesToAdd.Length > 0)
             {
                 var roles = await dbContext.Roles
-                    .Where(role => role.NormalizedName != null && rolesToAdd.Contains(role.NormalizedName))
+                    .Where(role => role.Name != null && rolesToAdd.Contains(role.Name))
                     .ToListAsync(ct);
 
                 if (roles.Count != rolesToAdd.Length)

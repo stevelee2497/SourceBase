@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SourceBase.Api.Entities;
@@ -9,8 +8,12 @@ using SourceBase.Api.Shared.Interfaces;
 namespace SourceBase.Api.Infrastructure.DbContexts;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IConfiguration configuration, ILogger<ApplicationDbContextLoggingInterceptor> dbCommandLogger)
-    : IdentityDbContext<UserEntity, RoleEntity, Guid>(options), IDbContext
+    : DbContext(options), IDbContext
 {
+    public DbSet<UserEntity> Users { get; set; }
+
+    public DbSet<RoleEntity> Roles { get; set; }
+
     public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
     public DbSet<TodoItemEntity> TodoItems { get; set; }
@@ -26,6 +29,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         optionsBuilder.AddInterceptors(new ApplicationDbContextLoggingInterceptor(dbCommandLogger));
     }
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        // Globally forces every string column in SQLite to be case-insensitive
+        configurationBuilder.Properties<string>().UseCollation("NOCASE");
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -33,18 +42,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         // Convert all enums to strings in the database
         SetEnumStringConverter(modelBuilder);
 
-        // Identity table mappings
-        modelBuilder.Entity<UserEntity>().ToTable("Users").HasMany(e => e.Roles)
-                .WithMany(e => e.Users)
-                .UsingEntity<IdentityUserRole<Guid>>();
-        modelBuilder.Entity<RoleEntity>().ToTable("Roles").HasMany(e => e.Users)
-                .WithMany(e => e.Roles)
-                .UsingEntity<IdentityUserRole<Guid>>();
-        modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
-        modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
-        modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
-        modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
-        modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
+        modelBuilder.Entity<UserEntity>()
+            .HasMany(u => u.Roles)
+            .WithMany(r => r.Users)
+            .UsingEntity(j => j.ToTable("UserRoles"));
 
     }
 
@@ -86,8 +87,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 {
                     Id = Guid.NewGuid(),
                     Name = role,
-                    NormalizedName = role.ToUpper(),
-                    ConcurrencyStamp = Guid.NewGuid().ToString()
+                    Description = $"{role} role"
                 };
                 context.Set<RoleEntity>().Add(existingRole);
             }
@@ -101,26 +101,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             {
                 Id = Guid.NewGuid(),
                 UserName = appSettings.AdminEmail,
-                NormalizedUserName = appSettings.AdminEmail.ToUpper(),
                 Email = appSettings.AdminEmail,
-                NormalizedEmail = appSettings.AdminEmail.ToUpper(),
                 EmailConfirmed = true,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                ConcurrencyStamp = Guid.NewGuid().ToString(),
                 PasswordHash = new PasswordHasher<UserEntity>().HashPassword(null!, appSettings.AdminPassword),
+                Roles = [.. context.Set<RoleEntity>()],
             };
             context.Set<UserEntity>().Add(adminUserEntity);
-            context.SaveChanges();
-
-            // Assign all roles to admin
-            foreach (var role in context.Set<RoleEntity>().ToList())
-            {
-                context.Set<IdentityUserRole<Guid>>().Add(new IdentityUserRole<Guid>
-                {
-                    UserId = adminUserEntity.Id,
-                    RoleId = role.Id
-                });
-            }
             context.SaveChanges();
         }
     }

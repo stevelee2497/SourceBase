@@ -13,7 +13,7 @@ public class SecurityProvider(IOptionsMonitor<BearerTokenOptions> bearerTokenOpt
     public ClaimsPrincipal CreateClaimsPrincipal(UserEntity user, IEnumerable<Claim>? additionalClaims = null)
     {
         var identity = new ClaimsIdentity(
-            IdentityConstants.BearerScheme,
+            Constants.BearerScheme,
             ClaimTypes.Name,
             ClaimTypes.Role);
 

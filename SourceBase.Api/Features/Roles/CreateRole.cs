@@ -8,7 +8,7 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Roles;
 
-public record CreateRoleRequest(string Name, string? Description);
+public record CreateRoleRequest(string Name, string Description);
 
 public record CreateRoleResponse(Guid Id);
 
@@ -26,16 +26,14 @@ public class CreateRoleHandler(IDbContext dbContext) : IRequestHandler<CreateRol
 {
     public async Task<CreateRoleResponse> Handle(CreateRoleRequest request, CancellationToken ct)
     {
-        var duplicateName = await dbContext.Roles.AnyAsync(r => r.NormalizedName == request.Name.ToUpper(), ct);
+        var duplicateName = await dbContext.Roles.AnyAsync(r => r.Name == request.Name, ct);
         if (duplicateName)
             throw new BadRequestException("Role name is already taken.");
 
         var role = new RoleEntity
         {
             Name = request.Name,
-            NormalizedName = request.Name.ToUpper(),
-            Description = request.Description,
-            ConcurrencyStamp = Guid.NewGuid().ToString()
+            Description = request.Description
         };
 
         dbContext.Roles.Add(role);
@@ -52,6 +50,8 @@ public class CreateRoleRequestValidator : AbstractValidator<CreateRoleRequest>
         RuleFor(x => x.Name)
             .NotEmpty()
             .MaximumLength(256);
-        RuleFor(x => x.Description).MaximumLength(500).When(x => x.Description is not null);
+        RuleFor(x => x.Description)
+            .NotEmpty()
+            .MaximumLength(500);
     }
 }

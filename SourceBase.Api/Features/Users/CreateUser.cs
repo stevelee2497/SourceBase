@@ -30,16 +30,14 @@ public class CreateUserHandler(
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken ct)
     {
-        if (await dbContext.Users.AnyAsync(u => u.NormalizedUserName == request.UserName.ToUpper() || u.NormalizedEmail == request.Email.ToUpper(), ct))
+        if (await dbContext.Users.AnyAsync(u => u.UserName == request.UserName || u.Email == request.Email, ct))
             throw new BadRequestException("Username or email is already taken.");
 
         var (confirmationCode, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
         var user = new UserEntity
         {
             UserName = request.UserName,
-            NormalizedUserName = request.UserName.ToUpper(),
             Email = request.Email,
-            NormalizedEmail = request.Email.ToUpper(),
             FirstName = request.FirstName,
             LastName = request.LastName,
             PhoneNumber = request.PhoneNumber,
@@ -47,14 +45,13 @@ public class CreateUserHandler(
             OtpCodeExpiresOn = expiresOn,
             PasswordHash = securityProvider.HashPassword(null!, request.Password),
             SecurityStamp = Guid.NewGuid().ToString(),
-            ConcurrencyStamp = Guid.NewGuid().ToString(),
         };
 
-        var normalizedRoles = request.Roles?.Normalize().Select(role => role.ToUpper()).ToArray();
+        var normalizedRoles = request.Roles?.Normalize();
         if (normalizedRoles is not null)
         {
             var roles = await dbContext.Roles
-                .Where(role => normalizedRoles.Contains(role.NormalizedName))
+                .Where(role => normalizedRoles.Contains(role.Name))
                 .ToListAsync(ct);
 
             if (roles.Count != normalizedRoles.Length)

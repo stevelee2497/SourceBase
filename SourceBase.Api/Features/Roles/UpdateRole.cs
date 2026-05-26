@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Api.Features.Roles;
 
-public record UpdateRoleRequest([property: SwaggerIgnore] Guid Id, string Name, string? Description);
+public record UpdateRoleRequest([property: SwaggerIgnore] Guid Id, string Name, string Description);
 
 public record UpdateRoleResponse(Guid Id);
 
@@ -31,12 +31,11 @@ public class UpdateRoleHandler(IDbContext dbContext) : IRequestHandler<UpdateRol
         if (role.Name == AppRoles.Admin)
             throw new BadRequestException("Admin role cannot be updated.");
 
-        var duplicateName = await dbContext.Roles.AnyAsync(r => r.Id != request.Id && r.NormalizedName == request.Name.ToUpper(), ct);
+        var duplicateName = await dbContext.Roles.AnyAsync(r => r.Id != request.Id && r.Name == request.Name, ct);
         if (duplicateName)
             throw new BadRequestException("Role name is already taken.");
 
         role.Name = request.Name;
-        role.NormalizedName = request.Name.ToUpper();
         role.Description = request.Description;
 
         await dbContext.SaveChangesAsync(ct);
@@ -50,6 +49,6 @@ public class UpdateRoleRequestValidator : AbstractValidator<UpdateRoleRequest>
     public UpdateRoleRequestValidator()
     {
         RuleFor(x => x.Name).NotEmpty().MaximumLength(256);
-        RuleFor(x => x.Description).MaximumLength(500).When(x => x.Description is not null);
+        RuleFor(x => x.Description).NotEmpty().MaximumLength(500);
     }
 }

@@ -1,18 +1,10 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace SourceBase.Api.Entities;
 
-public class RoleEntity : IdentityRole<Guid>, IAuditableEntity
+public class RoleEntity : BaseAuditableEntity
 {
-    public string? Description { get; set; }
+    public required string Name { get; set; }
 
-    public DateTime? CreatedOn { get; set; }
-
-    public string? CreatedBy { get; set; }
-
-    public DateTime? UpdatedOn { get; set; }
-
-    public string? UpdatedBy { get; set; }
+    public required string Description { get; set; }
 
     public virtual ICollection<UserEntity> Users { get; set; } = [];
 }

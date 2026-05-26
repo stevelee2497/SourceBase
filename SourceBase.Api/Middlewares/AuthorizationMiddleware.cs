@@ -25,7 +25,7 @@ public class AuthorizationMiddleware(RequestDelegate next)
             return false;
 
         var user = await dbContext.Users.FindAsync([context.User.UserId], context.RequestAborted);
-        if (user is null || !user.EmailConfirmed || (user.LockoutEnabled && user.LockoutEnd > DateTimeOffset.UtcNow) || !string.Equals(user.SecurityStamp, context.User.SecurityStamp, StringComparison.Ordinal))
+        if (user is null || !user.EmailConfirmed || !string.Equals(user.SecurityStamp, context.User.SecurityStamp, StringComparison.Ordinal))
             return false;
 
         return true;
