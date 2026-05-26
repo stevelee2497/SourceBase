@@ -41,7 +41,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         {
             email,
             code,
-            password = newPassword,
+            newPassword,
         });
 
         // Assert
@@ -90,7 +90,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         {
             email,
             code,
-            password = newPassword,
+            newPassword,
         });
 
         // Act
@@ -128,7 +128,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         {
             email,
             code = "000000",
-            password = "NewTest@5678!",
+            newPassword = "NewTest@5678!",
         });
 
         // Assert
@@ -170,7 +170,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         {
             email,
             code,
-            password = "NewTest@5678!",
+            newPassword = "NewTest@5678!",
         });
 
         // Assert
@@ -188,7 +188,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         {
             email = "nobody@example.com",
             code = "000000",
-            password = "NewTest@5678!",
+            newPassword = "NewTest@5678!",
         });
 
         // Assert

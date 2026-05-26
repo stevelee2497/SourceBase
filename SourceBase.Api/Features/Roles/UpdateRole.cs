@@ -26,7 +26,7 @@ public class UpdateRoleHandler(IDbContext dbContext) : IRequestHandler<UpdateRol
 {
     public async Task<UpdateRoleResponse> Handle(UpdateRoleRequest request, CancellationToken ct)
     {
-        var role = await dbContext.Roles.FirstOrDefaultAsync(x => x.Id == request.Id, ct) ?? throw new NotFoundException();
+        var role = await dbContext.Roles.FindAsync([request.Id], ct) ?? throw new NotFoundException();
 
         if (role.Name == AppRoles.Admin)
             throw new BadRequestException("Admin role cannot be updated.");

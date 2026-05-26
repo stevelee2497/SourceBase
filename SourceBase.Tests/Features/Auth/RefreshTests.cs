@@ -25,7 +25,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Act
         var refreshResponse = await client.PostAsJsonAsync(RefreshEndpoint.Route, new
         {
-            refreshToken = loginBody!.RefreshToken,
+            token = loginBody!.RefreshToken,
         });
 
         // Assert
@@ -49,7 +49,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Act
         var response = await client.PostAsJsonAsync(RefreshEndpoint.Route, new
         {
-            refreshToken = "invalid-token",
+            token = "invalid-token",
         });
 
         // Assert
@@ -81,14 +81,14 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
             password,
         });
         var loginBody = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
-        var refreshToken = loginBody!.RefreshToken;
+        var token = loginBody!.RefreshToken;
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginBody.AccessToken);
         await client.PostAsync(LogoutEndpoint.Route, null);
 
         // Act
         var response = await client.PostAsJsonAsync(RefreshEndpoint.Route, new
         {
-            refreshToken,
+            token,
         });
 
         // Assert

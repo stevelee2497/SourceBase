@@ -30,6 +30,9 @@ public class CreateUserHandler(
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken ct)
     {
+        if (await dbContext.Users.AnyAsync(u => u.NormalizedUserName == request.UserName.ToUpper() || u.NormalizedEmail == request.Email.ToUpper(), ct))
+            throw new BadRequestException("Username or email is already taken.");
+
         var (confirmationCode, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
         var user = new UserEntity
         {
@@ -50,9 +53,14 @@ public class CreateUserHandler(
         var normalizedRoles = request.Roles?.Normalize().Select(role => role.ToUpper()).ToArray();
         if (normalizedRoles is not null)
         {
-            user.Roles = await dbContext.Roles
+            var roles = await dbContext.Roles
                 .Where(role => normalizedRoles.Contains(role.NormalizedName))
                 .ToListAsync(ct);
+
+            if (roles.Count != normalizedRoles.Length)
+                throw new BadRequestException("One or more specified roles do not exist.");
+
+            user.Roles = roles;
         }
 
         dbContext.Users.Add(user);
@@ -66,45 +74,13 @@ public class CreateUserHandler(
 
 public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 {
-    public CreateUserRequestValidator(IDbContext dbContext)
+    public CreateUserRequestValidator()
     {
-        RuleFor(x => x.UserName)
-            .NotEmpty()
-            .MaximumLength(256)
-            .MustAsync(async (userName, ct) =>
-            {
-                if (string.IsNullOrWhiteSpace(userName))
-                    return true;
-
-                return await dbContext.Users.AnyAsync(user => user.NormalizedUserName == userName.ToUpper(), ct) is false;
-            })
-            .WithMessage("Username is already taken.");
-        RuleFor(x => x.Email)
-            .NotEmpty()
-            .EmailAddress()
-            .MustAsync(async (email, ct) =>
-            {
-                if (string.IsNullOrWhiteSpace(email))
-                    return true;
-
-                return await dbContext.Users.AnyAsync(user => user.NormalizedEmail == email.ToUpper(), ct) is false;
-            })
-            .WithMessage("Email is already taken.");
+        RuleFor(x => x.UserName).NotEmpty().MaximumLength(256);
         RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
         RuleFor(x => x.FirstName).MaximumLength(100).When(x => x.FirstName is not null);
         RuleFor(x => x.LastName).MaximumLength(100).When(x => x.LastName is not null);
         RuleFor(x => x.PhoneNumber).MaximumLength(20).When(x => x.PhoneNumber is not null);
         RuleForEach(x => x.Roles).NotEmpty().MaximumLength(256);
-        RuleFor(x => x.Roles).CustomAsync(async (roles, context, ct) =>
-        {
-            if (roles is null)
-                return;
-
-            foreach (var role in roles.Normalize())
-            {
-                if (await dbContext.Roles.AnyAsync(x => x.NormalizedName == role.ToUpper(), ct) is false)
-                    context.AddFailure(nameof(CreateUserRequest.Roles), $"Role '{role}' does not exist");
-            }
-        });
     }
 }
