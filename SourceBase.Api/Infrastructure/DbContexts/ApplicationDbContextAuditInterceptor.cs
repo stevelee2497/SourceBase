@@ -13,7 +13,7 @@ public class ApplicationDbContextAuditInterceptor(ICurrentUser currentUser) : IS
         {
             foreach (var entry in dbContext.ChangeTracker.Entries())
             {
-                if (entry is not { Entity: IAuditableEntity entity } || new[] { EntityState.Detached, EntityState.Unchanged }.Contains(entry.State))
+                if (entry is not { Entity: BaseAuditableEntity entity } || new[] { EntityState.Detached, EntityState.Unchanged }.Contains(entry.State))
                     continue;
 
                 switch (entry.State)
