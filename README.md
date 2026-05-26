@@ -25,7 +25,7 @@ SourceBase.Api/
 - **Single-file features**: Endpoint, request/response records, and handler are colocated in one `.cs` file per use case.
 - **Direct DI injection**: Route handlers receive `IRequestHandler<TRequest, TResponse>` plus normal dependencies (`IDbContext`, `ICurrentUser`, etc.) — no service locator, no ISender.
 - **Middleware-based error handling**: `ErrorResponseMiddleware` catches `ApiException` subclasses and maps them to `ProblemDetails` responses.
-- **Identity on `UserEntity`**: ASP.NET Core Identity is wired to `UserEntity : IdentityUser<Guid>` directly — no separate `ApplicationUser` projection.
+- **Identity on `UserEntity`**: ASP.NET Core Identity functionality is wired to `UserEntity` directly — no separate `ApplicationUser` projection.
 - **Startup is flat**: All service registration is in `Program.cs` via thin extension methods. No per-layer DI modules.
 
 ### Feature Structure
@@ -111,8 +111,6 @@ All entities inherit `BaseEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`, `Update
 ✅ Minimal API endpoints registered via `IEndpoint` and auto-discovered by assembly scanning
 
 ✅ .NET 10 + Entity Framework Core (SQLite)
-
-✅ ASP.NET Core Identity with bearer token auth (`AddIdentityApiEndpoints`)
 
 ✅ Role-based authorization
 
