@@ -20,10 +20,7 @@ public class RefreshEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class RefreshHandler(
-    IDbContext dbContext,
-    ISecurityProvider securityProvider,
-    IHttpContextAccessor httpContextAccessor) : IRequestHandler<RefreshTokenRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
+public class RefreshHandler(IDbContext dbContext, ISecurityProvider securityProvider, IHttpContextAccessor httpContextAccessor) : IRequestHandler<RefreshTokenRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
 {
     public async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handle(RefreshTokenRequest request, CancellationToken ct)
     {

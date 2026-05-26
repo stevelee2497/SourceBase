@@ -22,10 +22,7 @@ public class LoginEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class LoginHandler(
-    IDbContext dbContext,
-    ISecurityProvider securityProvider,
-    IHttpContextAccessor httpContextAccessor) : IRequestHandler<LoginRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
+public class LoginHandler(IDbContext dbContext, ISecurityProvider securityProvider, IHttpContextAccessor httpContextAccessor) : IRequestHandler<LoginRequest, Results<Ok<LoginResponse>, EmptyHttpResult>>
 {
     public async Task<Results<Ok<LoginResponse>, EmptyHttpResult>> Handle(LoginRequest request, CancellationToken ct)
     {

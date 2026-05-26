@@ -22,10 +22,7 @@ public class UpdateUserEndpoint : IEndpoint
         .WithTags("Users");
 }
 
-public class UpdateUserHandler(
-    IDbContext dbContext,
-    IEmailHelper emailHelper,
-    AppSettings appSettings) : IRequestHandler<UpdateUserRequest, UpdateUserResponse>
+public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<UpdateUserRequest, UpdateUserResponse>
 {
     public async Task<UpdateUserResponse> Handle(UpdateUserRequest request, CancellationToken ct)
     {

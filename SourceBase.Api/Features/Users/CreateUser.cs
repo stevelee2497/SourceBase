@@ -22,11 +22,7 @@ public class CreateUserEndpoint : IEndpoint
         .WithTags("Users");
 }
 
-public class CreateUserHandler(
-    IDbContext dbContext,
-    ISecurityProvider securityProvider,
-    IEmailHelper emailHelper,
-    AppSettings appSettings) : IRequestHandler<CreateUserRequest, CreateUserResponse>
+public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityProvider, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<CreateUserRequest, CreateUserResponse>
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken ct)
     {

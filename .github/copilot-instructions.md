@@ -50,6 +50,7 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 - `IEndpoint` implementations auto-discovered via assembly scanning
 - Endpoints mounted under `/api` with `RequireAuthorization()`
 - Keep `MapEndpoint` chains aligned on separate lines: `.MapXxx(...)`, `.AllowAnonymous()` / `.RequireAuthorization()`, then `.WithTags(...)`.
+- All Record/Handler/Constructors parameters should be in 1 lines, avoid multiple lines of parameters
 - For update operations, the `Id` is passed as a route parameter and marked with `[property: SwaggerIgnore]` in the request record to exclude it from the OpenAPI schema
 
 ## Conventions
