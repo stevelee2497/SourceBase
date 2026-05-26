@@ -1,0 +1,335 @@
+@page "/users"
+@attribute [Authorize(Roles = "Admin")]
+@inject HttpClient Http
+@inject BlazorAuthStateProvider Auth
+@inject JsonSerializerOptions JsonOptions
+
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-gray-900">Users</h1>
+    <button class="btn-primary" @onclick="OpenCreate">+ New User</button>
+</div>
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+}
+
+@if (_loading)
+{
+    <div class="text-center py-12 text-gray-400">Loading…</div>
+}
+else if (_data is not null)
+{
+    <div class="card p-0 overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                @foreach (var user in _data.Items)
+                {
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <div class="font-medium text-gray-900 text-sm">@user.UserName</div>
+                            <div class="text-xs text-gray-500">@user.Email</div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex flex-wrap gap-1">
+                                @foreach (var role in user.Roles)
+                                {
+                                    <span class="badge-blue">@role</span>
+                                }
+                            </div>
+                        </td>
+                        <td class="px-4 py-3">
+                            @if (user.EmailConfirmed)
+                            {
+                                <span class="badge-green">Confirmed</span>
+                            }
+                            else
+                            {
+                                <span class="badge-red">Pending</span>
+                            }
+                        </td>
+                        <td class="px-4 py-3 text-right space-x-2">
+                            <button class="btn-secondary btn-sm" @onclick="() => OpenEdit(user)">Edit</button>
+                            <button class="btn-danger btn-sm" @onclick="() => ConfirmDelete(user)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <Pagination CurrentPage="_page" TotalItems="_data.Total" PageSize="_pageSize" OnPageChanged="ChangePage" />
+}
+
+<!-- Create / Edit Modal -->
+@if (_showForm)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseForm"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingUser is null ? "Create User" : "Edit User")</h2>
+
+            @if (!string.IsNullOrEmpty(_formError))
+            {
+                <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_formError</div>
+            }
+
+            <div class="space-y-4">
+                @if (_editingUser is null)
+                {
+                    <div>
+                        <label class="form-label">Username *</label>
+                        <input @bind="_form.UserName" class="form-input" placeholder="johndoe" />
+                    </div>
+                    <div>
+                        <label class="form-label">Password *</label>
+                        <input @bind="_form.Password" class="form-input" type="password" placeholder="••••••••" />
+                    </div>
+                }
+                <div>
+                    <label class="form-label">Email *</label>
+                    <input @bind="_form.Email" class="form-input" type="email" placeholder="you@example.com" />
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="form-label">First name</label>
+                        <input @bind="_form.FirstName" class="form-input" placeholder="John" />
+                    </div>
+                    <div>
+                        <label class="form-label">Last name</label>
+                        <input @bind="_form.LastName" class="form-input" placeholder="Doe" />
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Phone number</label>
+                    <input @bind="_form.PhoneNumber" class="form-input" type="tel" />
+                </div>
+                <div>
+                    <label class="form-label">Roles</label>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                        @foreach (var role in _allRoles)
+                        {
+                            var roleName = role.Name;
+                            <label class="flex items-center gap-1.5 text-sm text-gray-700">
+                                <input type="checkbox" class="rounded border-gray-300 text-indigo-600"
+                                       checked="@_form.SelectedRoles.Contains(roleName)"
+                                       @onchange="e => ToggleRole(roleName, (bool)e.Value!)" />
+                                @roleName
+                            </label>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button class="btn-secondary" @onclick="CloseForm">Cancel</button>
+                <button class="btn-primary" @onclick="SaveAsync" disabled="@_saving">
+                    @(_saving ? "Saving…" : "Save")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<ConfirmDialog IsVisible="_showDelete" Title="Delete user"
+               Message="@($"Are you sure you want to delete '{_deletingUser?.UserName}'? This action cannot be undone.")"
+               OnConfirm="DeleteAsync" OnCancel="() => { _showDelete = false; _deletingUser = null; }" />
+
+@code {
+    private PagingResponse<UserResponse>? _data;
+    private List<RoleResponse> _allRoles = [];
+    private bool _loading = true;
+    private string? _error;
+    private int _page = 1;
+    private const int _pageSize = 10;
+
+    // Form state
+    private bool _showForm;
+    private UserResponse? _editingUser;
+    private readonly UserFormModel _form = new();
+    private string? _formError;
+    private bool _saving;
+
+    // Delete state
+    private bool _showDelete;
+    private UserResponse? _deletingUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Auth.AccessToken is not null)
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Auth.AccessToken);
+        await Task.WhenAll(LoadUsersAsync(), LoadRolesAsync());
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            _data = await Http.GetFromJsonAsync<PagingResponse<UserResponse>>($"/api/users?page={_page}&limit={_pageSize}",
+JsonOptions);
+        }
+        catch
+        {
+            _error = "Failed to load users.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadRolesAsync()
+    {
+        try
+        {
+            var result = await Http.GetFromJsonAsync<PagingResponse<RoleResponse>>("/api/roles?page=1&limit=100", JsonOptions);
+            _allRoles = result?.Items ?? [];
+        }
+        catch { /* non-critical */ }
+    }
+
+    private async Task ChangePage(int page)
+    {
+        _page = page;
+        await LoadUsersAsync();
+    }
+
+    private void OpenCreate()
+    {
+        _editingUser = null;
+        _form.Reset();
+        _formError = null;
+        _showForm = true;
+    }
+
+    private void OpenEdit(UserResponse user)
+    {
+        _editingUser = user;
+        _form.Email = user.Email ?? string.Empty;
+        _form.FirstName = user.FirstName;
+        _form.LastName = user.LastName;
+        _form.PhoneNumber = user.PhoneNumber;
+        _form.SelectedRoles = [.. user.Roles];
+        _formError = null;
+        _showForm = true;
+    }
+
+    private void CloseForm() => _showForm = false;
+
+    private void ToggleRole(string role, bool selected)
+    {
+        if (selected) _form.SelectedRoles.Add(role);
+        else _form.SelectedRoles.Remove(role);
+    }
+
+    private async Task SaveAsync()
+    {
+        _formError = null;
+        _saving = true;
+        try
+        {
+            if (_editingUser is null)
+            {
+                var createResp = await Http.PostAsJsonAsync("/api/users", new
+                {
+                    userName = _form.UserName,
+                    email = _form.Email,
+                    password
+= _form.Password,
+                    firstName = _form.FirstName,
+                    lastName = _form.LastName,
+                    phoneNumber = _form.PhoneNumber,
+                    roles =
+_form.SelectedRoles.ToArray()
+                });
+                createResp.EnsureSuccessStatusCode();
+            }
+            else
+            {
+                var updateResp = await Http.PutAsJsonAsync($"/api/users/{_editingUser.Id}", new
+                {
+                    email = _form.Email,
+                    firstName =
+_form.FirstName,
+                    lastName = _form.LastName,
+                    phoneNumber = _form.PhoneNumber,
+                    roles = _form.SelectedRoles.ToArray()
+                });
+                updateResp.EnsureSuccessStatusCode();
+            }
+            _showForm = false;
+            await LoadUsersAsync();
+        }
+        catch (HttpRequestException ex) when ((int?)ex.StatusCode == 400)
+        {
+            _formError = "Email or username is already taken.";
+        }
+        catch
+        {
+            _formError = "Failed to save user. Please try again.";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void ConfirmDelete(UserResponse user)
+    {
+        _deletingUser = user;
+        _showDelete = true;
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_deletingUser is null) return;
+        _showDelete = false;
+        try
+        {
+            var response = await Http.DeleteAsync($"/api/users/{_deletingUser.Id}");
+            response.EnsureSuccessStatusCode();
+            await LoadUsersAsync();
+        }
+        catch
+        {
+            _error = "Failed to delete user.";
+        }
+        finally
+        {
+            _deletingUser = null;
+        }
+    }
+
+    private sealed class UserFormModel
+    {
+        public string UserName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public HashSet<string> SelectedRoles { get; set; } = [];
+
+        public void Reset()
+        {
+            UserName = Email = Password = string.Empty;
+            FirstName = LastName = PhoneNumber = null;
+            SelectedRoles = [];
+        }
+    }
+
+    private sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
+    private sealed record UserResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName,
+string? PhoneNumber, bool EmailConfirmed, IEnumerable<string> Roles);
+    private sealed record RoleResponse(Guid Id, string Name, string? Description);
+}

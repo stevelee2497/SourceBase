@@ -1,9 +1,0 @@
-services:
-  api:
-    image: api:latest
-    build: .
-    restart: always
-    volumes:
-      - ./SourceBase.Api/app.db:/app/app.db
-    ports:
-      - "3000:8080"

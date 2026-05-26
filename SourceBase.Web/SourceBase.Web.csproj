@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<ItemGroup>
+		<ProjectReference Include="..\SourceBase.ServiceDefaults\SourceBase.ServiceDefaults.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Remove="node_modules\**" />
+		<None Remove="node_modules\**" />
+		<Watch Remove="node_modules\**" />
+	</ItemGroup>
+
+	<Target Name="NpmInstall" BeforeTargets="BuildTailwind" Condition="!Exists('$(MSBuildProjectDirectory)\node_modules')">
+		<Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)" />
+	</Target>
+
+	<Target Name="BuildTailwind" BeforeTargets="Build">
+		<Exec Command="npx @tailwindcss/cli -i ./wwwroot/app.css -o ./wwwroot/app.min.css --minify" WorkingDirectory="$(MSBuildProjectDirectory)" />
+	</Target>
+
+</Project>

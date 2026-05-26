@@ -1,0 +1,58 @@
+@inject BlazorAuthStateProvider AuthStateProvider
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inherits LayoutComponentBase
+
+<div class="flex h-screen bg-gray-50">
+    <NavMenu />
+
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Top bar -->
+        <div class="flex items-center justify-between h-16 px-6 bg-white border-b border-gray-200 shrink-0">
+            <div class="text-lg font-semibold text-gray-800">
+                @GetPageTitle()
+            </div>
+            <div class="flex items-center gap-3">
+                <AuthorizeView>
+                    <Authorized>
+                        <span class="text-sm text-gray-600">@context.User.Identity?.Name</span>
+                        <button class="btn-secondary btn-sm" @onclick="LogoutAsync">Sign out</button>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="flex-1 overflow-y-auto p-6">
+            @Body
+        </main>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (AuthStateProvider.AccessToken is not null)
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AuthStateProvider.AccessToken);
+    }
+
+    private async Task LogoutAsync()
+    {
+        try { await Http.PostAsync("/api/auth/logout", null); } catch { /* ignore */ }
+        Http.DefaultRequestHeaders.Remove("Authorization");
+        await AuthStateProvider.ClearAsync();
+        Navigation.NavigateTo("/login");
+    }
+
+    private string GetPageTitle()
+    {
+        var path = new Uri(Navigation.Uri).AbsolutePath.TrimStart('/');
+        return path switch
+        {
+            "" => "Dashboard",
+            "users" => "User Management",
+            "roles" => "Role Management",
+            _ => "SourceBase"
+        };
+    }
+}

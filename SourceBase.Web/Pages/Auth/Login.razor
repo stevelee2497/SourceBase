@@ -1,0 +1,89 @@
+@page "/login"
+@layout AuthLayout
+@attribute [AllowAnonymous]
+@inject HttpClient Http
+@inject BlazorAuthStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<h2 class="text-xl font-semibold text-gray-900 mb-6">Sign in to your account</h2>
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+}
+
+<EditForm Model="_model" OnValidSubmit="SubmitAsync">
+    <DataAnnotationsValidator />
+
+    <div class="space-y-4">
+        <div>
+            <label class="form-label" for="email">Email</label>
+            <InputText id="email" @bind-Value="_model.Email" class="form-input" type="email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div>
+            <label class="form-label" for="password">Password</label>
+            <InputText id="password" @bind-Value="_model.Password" class="form-input" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+    </div>
+
+    <div class="mt-6">
+        <button type="submit" class="btn-primary w-full" disabled="@_loading">
+            @if (_loading)
+            {
+                <span>Signing in…</span>
+            }
+            else
+            {
+
+                <span>Sign in</span>
+            }
+        </button>
+    </div>
+</EditForm>
+
+<div class="mt-4 flex flex-col gap-2 text-center text-sm">
+    <a href="/forgot-password" class="text-indigo-600 hover:text-indigo-500">Forgot your password?</a>
+    <span class="text-gray-500">No account? <a href="/register" class="text-indigo-600 hover:text-indigo-500">Sign
+        up</a></span>
+    </div>
+
+@code {
+    private readonly LoginFormModel _model = new();
+    private string? _error;
+    private bool _loading;
+
+    private async Task SubmitAsync()
+    {
+        _error = null;
+        _loading = true;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/api/auth/login", new { email = _model.Email, password = _model.Password });
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            if (result is null) { _error = "Login failed. Please try again."; return; }
+            await AuthStateProvider.SetTokensAsync(result.AccessToken, result.RefreshToken);
+            Navigation.NavigateTo("/");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            _error = "Invalid email or password, or email not confirmed.";
+        }
+        catch
+        {
+            _error = "An unexpected error occurred. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private sealed class LoginFormModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    private sealed record LoginResponse(string AccessToken, string RefreshToken, int ExpiresIn, string TokenType);
+}

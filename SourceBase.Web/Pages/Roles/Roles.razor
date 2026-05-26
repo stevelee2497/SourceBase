@@ -1,0 +1,245 @@
+@page "/roles"
+@attribute [Authorize(Roles = "Admin")]
+@inject HttpClient Http
+@inject BlazorAuthStateProvider Auth
+@inject JsonSerializerOptions JsonOptions
+
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-gray-900">Roles</h1>
+    <button class="btn-primary" @onclick="OpenCreate">+ New Role</button>
+</div>
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+}
+
+@if (_loading)
+{
+    <div class="text-center py-12 text-gray-400">Loading…</div>
+}
+else if (_data is not null)
+{
+    <div class="card p-0 overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description
+                    </th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                @foreach (var role in _data.Items)
+                {
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <span class="font-medium text-sm text-gray-900">@role.Name</span>
+                            @if (role.Name == "Admin")
+                            {
+                                <span class="ml-2 badge-blue">System</span>
+                            }
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-500">@(role.Description ?? "—")</td>
+                        <td class="px-4 py-3 text-right space-x-2">
+                            <button class="btn-secondary btn-sm" disabled="@(role.Name == "Admin")"
+                                    @onclick="() => OpenEdit(role)">Edit</button>
+                            <button class="btn-danger btn-sm" disabled="@(role.Name == "Admin")"
+                                    @onclick="() => ConfirmDelete(role)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <Pagination CurrentPage="_page" TotalItems="_data.Total" PageSize="_pageSize" OnPageChanged="ChangePage" />
+}
+
+<!-- Create / Edit Modal -->
+@if (_showForm)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseForm"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingRole is null ? "Create Role" : "Edit Role")</h2>
+
+            @if (!string.IsNullOrEmpty(_formError))
+            {
+                <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_formError</div>
+            }
+
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Name *</label>
+                    <input @bind="_form.Name" class="form-input" placeholder="e.g. Editor" />
+                </div>
+                <div>
+                    <label class="form-label">Description</label>
+                    <input @bind="_form.Description" class="form-input" placeholder="Optional description" />
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button class="btn-secondary" @onclick="CloseForm">Cancel</button>
+                <button class="btn-primary" @onclick="SaveAsync" disabled="@_saving">
+                    @(_saving ? "Saving…" : "Save")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<ConfirmDialog IsVisible="_showDelete" Title="Delete role"
+               Message="@($"Are you sure you want to delete '{_deletingRole?.Name}'? Users with this role will lose it.")"
+               OnConfirm="DeleteAsync" OnCancel="() => { _showDelete = false; _deletingRole = null; }" />
+
+@code {
+    private PagingResponse<RoleResponse>? _data;
+    private bool _loading = true;
+    private string? _error;
+    private int _page = 1;
+    private const int _pageSize = 10;
+
+    // Form state
+    private bool _showForm;
+    private RoleResponse? _editingRole;
+    private readonly RoleFormModel _form = new();
+    private string? _formError;
+    private bool _saving;
+
+    // Delete state
+    private bool _showDelete;
+    private RoleResponse? _deletingRole;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Auth.AccessToken is not null)
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Auth.AccessToken);
+        await LoadRolesAsync();
+    }
+
+    private async Task LoadRolesAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            _data = await
+Http.GetFromJsonAsync<PagingResponse<RoleResponse>>($"/api/roles?page={_page}&limit={_pageSize}", JsonOptions);
+        }
+        catch
+        {
+            _error = "Failed to load roles.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ChangePage(int page)
+    {
+        _page = page;
+        await LoadRolesAsync();
+    }
+
+    private void OpenCreate()
+    {
+        _editingRole = null;
+        _form.Name = _form.Description = string.Empty;
+        _formError = null;
+        _showForm = true;
+    }
+
+    private void OpenEdit(RoleResponse role)
+    {
+        _editingRole = role;
+        _form.Name = role.Name;
+        _form.Description = role.Description ?? string.Empty;
+        _formError = null;
+        _showForm = true;
+    }
+
+    private void CloseForm() => _showForm = false;
+
+    private async Task SaveAsync()
+    {
+        _formError = null;
+        _saving = true;
+        try
+        {
+            if (_editingRole is null)
+            {
+                var createResp = await Http.PostAsJsonAsync("/api/roles", new
+                {
+                    name = _form.Name,
+                    description =
+string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description
+                });
+                createResp.EnsureSuccessStatusCode();
+            }
+            else
+            {
+                var updateResp = await Http.PutAsJsonAsync($"/api/roles/{_editingRole.Id}", new
+                {
+                    name = _form.Name,
+                    description =
+string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description
+                });
+                updateResp.EnsureSuccessStatusCode();
+            }
+
+            _showForm = false;
+            await LoadRolesAsync();
+        }
+        catch (HttpRequestException ex) when ((int?)ex.StatusCode == 400)
+        {
+            _formError = "A role with that name already exists.";
+        }
+        catch
+        {
+            _formError = "Failed to save role. Please try again.";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void ConfirmDelete(RoleResponse role)
+    {
+        _deletingRole = role;
+        _showDelete = true;
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_deletingRole is null) return;
+        _showDelete = false;
+        try
+        {
+            var response = await Http.DeleteAsync($"/api/roles/{_deletingRole.Id}");
+            response.EnsureSuccessStatusCode();
+            await LoadRolesAsync();
+        }
+        catch
+        {
+            _error = "Failed to delete role.";
+        }
+        finally
+        {
+            _deletingRole = null;
+        }
+    }
+
+    private sealed class RoleFormModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+
+    private sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
+    private sealed record RoleResponse(Guid Id, string Name, string? Description);
+}

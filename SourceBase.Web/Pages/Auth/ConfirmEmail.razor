@@ -1,0 +1,72 @@
+@page "/confirm-email"
+@layout AuthLayout
+@attribute [AllowAnonymous]
+@inject HttpClient Http
+
+<h2 class="text-xl font-semibold text-gray-900 mb-4">Email Confirmation</h2>
+
+@if (_loading)
+{
+    <div class="flex items-center justify-center py-8">
+        <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+        </svg>
+        <span class="ml-3 text-gray-600">Confirming your email…</span>
+    </div>
+}
+else if (_success)
+{
+    <div class="rounded-md bg-green-50 border border-green-200 px-4 py-4 text-sm text-green-700">
+        <p class="font-medium">Email confirmed successfully!</p>
+        <p class="mt-1">Your account is now active. You can sign in.</p>
+        <div class="mt-3">
+            <a href="/login" class="text-indigo-600 hover:text-indigo-500 font-medium">Sign in →</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <p class="font-medium">Confirmation failed</p>
+        <p class="mt-1">@_error</p>
+    </div>
+    <div class="mt-4">
+        <a href="/login" class="text-indigo-600 hover:text-indigo-500 text-sm">← Back to sign in</a>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery] public string? Email { get; set; }
+    [SupplyParameterFromQuery] public string? Code { get; set; }
+
+    private bool _loading = true;
+    private bool _success;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Code))
+        {
+            _error = "Invalid confirmation link. Email and code are required.";
+            _loading = false;
+            return;
+        }
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/api/auth/confirmEmail", new { email = Email, code = Code });
+            response.EnsureSuccessStatusCode();
+            _success = true;
+        }
+        catch
+        {
+            _error = "The confirmation code is invalid or has expired. Please request a new one.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

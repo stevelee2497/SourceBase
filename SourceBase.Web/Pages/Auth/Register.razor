@@ -1,0 +1,124 @@
+@page "/register"
+@layout AuthLayout
+@attribute [AllowAnonymous]
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h2 class="text-xl font-semibold text-gray-900 mb-6">Create an account</h2>
+
+@if (_success)
+{
+    <div class="rounded-md bg-green-50 border border-green-200 px-4 py-4 text-sm text-green-700">
+        <p class="font-medium">Registration successful!</p>
+        <p class="mt-1">Please check your email to confirm your account before signing in.</p>
+        <div class="mt-3">
+            <a href="/login" class="text-indigo-600 hover:text-indigo-500 font-medium">Back to sign in →</a>
+        </div>
+    </div>
+}
+else
+{
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+    }
+
+    <EditForm Model="_model" OnValidSubmit="SubmitAsync">
+        <DataAnnotationsValidator />
+
+        <div class="space-y-4">
+            <div>
+                <label class="form-label">Username <span class="text-red-500">*</span></label>
+                <InputText @bind-Value="_model.UserName" class="form-input" placeholder="johndoe" autocomplete="username" />
+            </div>
+            <div>
+                <label class="form-label">Email <span class="text-red-500">*</span></label>
+                <InputText @bind-Value="_model.Email" class="form-input" type="email" placeholder="you@example.com"
+                           autocomplete="email" />
+            </div>
+            <div>
+                <label class="form-label">Password <span class="text-red-500">*</span></label>
+                <InputText @bind-Value="_model.Password" class="form-input" type="password" placeholder="••••••••"
+                           autocomplete="new-password" />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="form-label">First name</label>
+                    <InputText @bind-Value="_model.FirstName" class="form-input" placeholder="John" />
+                </div>
+                <div>
+                    <label class="form-label">Last name</label>
+                    <InputText @bind-Value="_model.LastName" class="form-input" placeholder="Doe" />
+                </div>
+            </div>
+            <div>
+                <label class="form-label">Phone number</label>
+                <InputText @bind-Value="_model.PhoneNumber" class="form-input" type="tel" placeholder="+1 555 000 0000" />
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <button type="submit" class="btn-primary w-full" disabled="@_loading">
+                @if (_loading)
+                {
+                    <span>Creating account…</span>
+                }
+                else
+                {
+
+                    <span>Create account</span>
+                }
+            </button>
+        </div>
+    </EditForm>
+
+    <p class="mt-4 text-center text-sm text-gray-500">
+        Already have an account? <a href="/login" class="text-indigo-600 hover:text-indigo-500">Sign in</a>
+    </p>
+}
+
+@code {
+    private readonly RegisterFormModel _model = new();
+    private string? _error;
+    private bool _loading;
+    private bool _success;
+
+    private async Task SubmitAsync()
+    {
+        _error = null;
+        _loading = true;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/api/auth/register", new
+            {
+                userName = _model.UserName,
+                email = _model.Email,
+                password = _model.Password
+            });
+            response.EnsureSuccessStatusCode();
+            _success = true;
+        }
+        catch (HttpRequestException ex) when ((int?)ex.StatusCode == 400)
+        {
+            _error = "Username or email is already taken.";
+        }
+        catch
+        {
+            _error = "Registration failed. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private sealed class RegisterFormModel
+    {
+        public string UserName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? PhoneNumber { get; set; }
+    }
+}

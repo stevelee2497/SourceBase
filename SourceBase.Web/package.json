@@ -1,0 +1,12 @@
+{
+    "name": "sourcebase-web",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build:css": "npx @tailwindcss/cli -i ./wwwroot/app.css -o ./wwwroot/app.min.css --minify",
+        "watch:css": "npx @tailwindcss/cli -i ./wwwroot/app.css -o ./wwwroot/app.min.css --watch"
+    },
+    "devDependencies": {
+        "@tailwindcss/cli": "^4.1.0"
+    }
+}

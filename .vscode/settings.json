@@ -1,8 +1,9 @@
 {
   "editor.formatOnSave": true,
+  "html.format.wrapLineLength": 200,
   "[csharp]": {
     "editor.defaultFormatter": "ms-dotnettools.csharp",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
   },
   "files.exclude": {
     "**/bin": true,

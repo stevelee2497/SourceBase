@@ -2,7 +2,6 @@
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
-    <File Path="docker-compose.yml" />
     <File Path="Dockerfile" />
     <File Path="README.md" />
   </Folder>
@@ -10,4 +9,5 @@
   <Project Path="SourceBase.AppHost/SourceBase.AppHost.csproj" />
   <Project Path="SourceBase.ServiceDefaults/SourceBase.ServiceDefaults.csproj" />
   <Project Path="SourceBase.Tests/SourceBase.Tests.csproj" />
+  <Project Path="SourceBase.Web/SourceBase.Web.csproj" />
 </Solution>

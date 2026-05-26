@@ -6,6 +6,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SourceBase.Api\SourceBase.Api.csproj" />
+		<ProjectReference Include="..\SourceBase.Web\SourceBase.Web.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -1,0 +1,40 @@
+@inject NavigationManager Navigation
+
+<aside class="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
+    <div class="flex items-center h-16 px-6 border-b border-gray-200">
+        <span class="text-xl font-bold text-indigo-600">SourceBase</span>
+    </div>
+
+    <nav class="flex-1 px-4 py-4 space-y-1">
+        <NavLink href="/" Match="NavLinkMatch.All" class="@NavClass"
+                 ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Dashboard
+        </NavLink>
+
+        <AuthorizeView Roles="Admin">
+            <NavLink href="/users" class="@NavClass" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Users
+            </NavLink>
+
+            <NavLink href="/roles" class="@NavClass" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                Roles
+            </NavLink>
+        </AuthorizeView>
+    </nav>
+</aside>
+
+@code {
+    private const string NavClass = "flex items-center px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors w-full";
+}

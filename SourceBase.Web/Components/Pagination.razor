@@ -1,0 +1,39 @@
+@if (TotalPages > 1)
+{
+    <div class="flex items-center justify-between px-4 py-3 sm:px-0 mt-4">
+        <div class="text-sm text-gray-500">
+            Page @CurrentPage of @TotalPages (@TotalItems items)
+        </div>
+        <div class="flex items-center gap-1">
+            <button class="btn-secondary btn-sm" disabled="@(CurrentPage <= 1)"
+                    @onclick="() => OnPageChanged.InvokeAsync(CurrentPage - 1)">
+                &larr; Prev
+            </button>
+
+            @for (var p = StartPage; p <= EndPage; p++)
+            {
+                var pageNum = p;
+                <button class="@(pageNum == CurrentPage ? "btn-primary btn-sm" : "btn-secondary btn-sm")"
+                        @onclick="() => OnPageChanged.InvokeAsync(pageNum)">
+                    @pageNum
+                </button>
+            }
+
+            <button class="btn-secondary btn-sm" disabled="@(CurrentPage >= TotalPages)"
+                    @onclick="() => OnPageChanged.InvokeAsync(CurrentPage + 1)">
+                Next &rarr;
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public int CurrentPage { get; set; }
+    [Parameter, EditorRequired] public int TotalItems { get; set; }
+    [Parameter, EditorRequired] public int PageSize { get; set; }
+    [Parameter, EditorRequired] public EventCallback<int> OnPageChanged { get; set; }
+
+    private int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalItems / PageSize) : 1;
+    private int StartPage => Math.Max(1, CurrentPage - 2);
+    private int EndPage => Math.Min(TotalPages, CurrentPage + 2);
+}
