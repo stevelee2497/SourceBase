@@ -1,4 +1,5 @@
 @inject BlazorAuthStateProvider AuthStateProvider
+@inject HttpClient Http
 @inject NavigationManager Navigation
 @inherits LayoutComponentBase
 
@@ -33,10 +34,16 @@
     {
         try
         {
-            await AuthStateProvider.SignOutAsync();
+            if (!string.IsNullOrWhiteSpace(AuthStateProvider.AccessToken))
+            {
+                var response = await Http.PostAsync("/api/auth/logout", null);
+                if (response.StatusCode != System.Net.HttpStatusCode.Unauthorized)
+                    response.EnsureSuccessStatusCode();
+            }
         }
         finally
         {
+            await AuthStateProvider.SignOutAsync();
             Navigation.NavigateTo("/login");
         }
     }

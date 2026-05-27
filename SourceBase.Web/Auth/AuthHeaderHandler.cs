@@ -1,7 +1,6 @@
 using System.Net.Http.Headers;
-using SourceBase.Web.Auth;
 
-namespace SourceBase.Web.Http;
+namespace SourceBase.Web.Auth;
 
 public class AuthHeaderHandler(BlazorAuthStateProvider authStateProvider) : DelegatingHandler
 {

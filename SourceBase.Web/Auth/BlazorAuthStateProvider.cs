@@ -1,19 +1,15 @@
-using System.Net;
-using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.JSInterop;
 
 namespace SourceBase.Web.Auth;
 
-public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage, IHttpClientFactory httpClientFactory) : AuthenticationStateProvider
+public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage) : AuthenticationStateProvider
 {
     private const string AccessTokenKey = "access_token";
     private const string RefreshTokenKey = "refresh_token";
     private static readonly ClaimsPrincipal Anonymous = new(new ClaimsIdentity());
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private bool _initialized;
     private ClaimsPrincipal _currentPrincipal = Anonymous;
 
@@ -22,14 +18,13 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage, IHttpCl
     public UserInfoResponse? UserInfo { get; private set; }
 
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
-    {
-        return Task.FromResult(new AuthenticationState(_currentPrincipal));
-    }
+        => Task.FromResult(new AuthenticationState(_currentPrincipal));
 
-    public async Task InitializeAsync()
+    // Loads tokens from localStorage. Returns true if an access token was found.
+    public async Task<bool> LoadTokensAsync()
     {
         if (_initialized)
-            return;
+            return !string.IsNullOrWhiteSpace(AccessToken);
 
         _initialized = true;
 
@@ -41,66 +36,39 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage, IHttpCl
             AccessToken = accessToken is { Success: true, Value.Length: > 0 } ? accessToken.Value : null;
             RefreshToken = refreshToken is { Success: true, Value.Length: > 0 } ? refreshToken.Value : null;
         }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (JSException)
-        {
-        }
+        catch (InvalidOperationException) { }
+        catch (JSException) { }
 
-        if (string.IsNullOrWhiteSpace(AccessToken))
-            return;
+        return !string.IsNullOrWhiteSpace(AccessToken);
+    }
+
+    // Saves tokens to localStorage and exposes them for AuthHeaderHandler.
+    public async Task SetTokensAsync(LoginTokensResponse tokens)
+    {
+        AccessToken = tokens.AccessToken;
+        RefreshToken = tokens.RefreshToken;
+        UserInfo = null;
+        _currentPrincipal = Anonymous;
 
         try
         {
-            await EnsureHydratedAsync();
+            await localStorage.SetAsync(AccessTokenKey, tokens.AccessToken);
+            await localStorage.SetAsync(RefreshTokenKey, tokens.RefreshToken);
         }
-        catch (HttpRequestException)
-        {
-            await ClearAsync();
-        }
-        catch (InvalidOperationException)
-        {
-            await ClearAsync();
-        }
-        catch (JsonException)
-        {
-            await ClearAsync();
-        }
-        catch (NotSupportedException)
-        {
-            await ClearAsync();
-        }
+        catch (InvalidOperationException) { }
+        catch (JSException) { }
     }
 
-    public async Task SignInAsync(LoginTokensResponse tokens)
+    // Sets the authenticated principal and notifies listeners.
+    public void SetUserInfo(UserInfoResponse userInfo)
     {
-        await SetTokensAsync(tokens.AccessToken, tokens.RefreshToken);
-
-        if (!await EnsureHydratedAsync())
-            throw new InvalidOperationException("Authenticated user info could not be loaded.");
+        UserInfo = userInfo;
+        _currentPrincipal = CreatePrincipal(userInfo);
+        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
+    // Clears all auth state, removes tokens from localStorage, and notifies listeners.
     public async Task SignOutAsync()
-    {
-        try
-        {
-            if (!string.IsNullOrWhiteSpace(AccessToken))
-            {
-                using var client = CreateAuthHttpClient();
-                var response = await client.PostAsync("/api/auth/logout", null);
-
-                if (response.StatusCode != HttpStatusCode.Unauthorized)
-                    response.EnsureSuccessStatusCode();
-            }
-        }
-        finally
-        {
-            await ClearAsync();
-        }
-    }
-
-    public async Task ClearAsync()
     {
         AccessToken = null;
         RefreshToken = null;
@@ -112,108 +80,9 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage, IHttpCl
             await localStorage.DeleteAsync(AccessTokenKey);
             await localStorage.DeleteAsync(RefreshTokenKey);
         }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (JSException)
-        {
-        }
+        catch (InvalidOperationException) { }
+        catch (JSException) { }
 
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-    }
-
-    private async Task SetTokensAsync(string accessToken, string refreshToken)
-    {
-        AccessToken = accessToken;
-        RefreshToken = refreshToken;
-        UserInfo = null;
-        _currentPrincipal = Anonymous;
-
-        try
-        {
-            await localStorage.SetAsync(AccessTokenKey, accessToken);
-            await localStorage.SetAsync(RefreshTokenKey, refreshToken);
-        }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (JSException)
-        {
-        }
-    }
-
-    private async Task<bool> EnsureHydratedAsync()
-    {
-        var userInfo = await TryGetUserInfoAsync();
-        if (userInfo is not null)
-        {
-            SetUserInfo(userInfo);
-            return true;
-        }
-
-        if (string.IsNullOrWhiteSpace(RefreshToken))
-        {
-            await ClearAsync();
-            return false;
-        }
-
-        using var client = CreateAuthHttpClient();
-        var refreshResponse = await client.PostAsJsonAsync("/api/auth/refresh", new
-        {
-            token = RefreshToken,
-        }, JsonOptions);
-
-        if (refreshResponse.StatusCode == HttpStatusCode.Unauthorized)
-        {
-            await ClearAsync();
-            return false;
-        }
-
-        refreshResponse.EnsureSuccessStatusCode();
-
-        var tokens = await refreshResponse.Content.ReadFromJsonAsync<LoginTokensResponse>(JsonOptions)
-            ?? throw new InvalidOperationException("Refresh response did not include tokens.");
-
-        await SetTokensAsync(tokens.AccessToken, tokens.RefreshToken);
-
-        userInfo = await TryGetUserInfoAsync();
-        if (userInfo is null)
-        {
-            await ClearAsync();
-            return false;
-        }
-
-        SetUserInfo(userInfo);
-        return true;
-    }
-
-    private async Task<UserInfoResponse?> TryGetUserInfoAsync()
-    {
-        try
-        {
-            using var client = CreateAuthHttpClient();
-            return await client.GetFromJsonAsync<UserInfoResponse>("/api/auth/info", JsonOptions);
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
-        {
-            return null;
-        }
-    }
-
-    private HttpClient CreateAuthHttpClient()
-    {
-        var client = httpClientFactory.CreateClient("auth-api");
-
-        if (!string.IsNullOrWhiteSpace(AccessToken))
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-
-        return client;
-    }
-
-    private void SetUserInfo(UserInfoResponse userInfo)
-    {
-        UserInfo = userInfo;
-        _currentPrincipal = CreatePrincipal(userInfo);
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
@@ -232,6 +101,7 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage, IHttpCl
         return new ClaimsPrincipal(new ClaimsIdentity(claims, "api-auth"));
     }
 }
+
 public sealed record UserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);
 
 public sealed record LoginTokensResponse(string AccessToken, string RefreshToken, int ExpiresIn, string TokenType);
