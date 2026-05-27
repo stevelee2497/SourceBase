@@ -60,9 +60,15 @@
         {
             var response = await Http.PostAsJsonAsync("/api/auth/login", new { email = _model.Email, password = _model.Password });
             response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-            if (result is null) { _error = "Login failed. Please try again."; return; }
-            await AuthStateProvider.SetTokensAsync(result.AccessToken, result.RefreshToken);
+
+            var result = await response.Content.ReadFromJsonAsync<LoginTokensResponse>();
+            if (result is null)
+            {
+                _error = "Login failed. Please try again.";
+                return;
+            }
+
+            await AuthStateProvider.SignInAsync(result);
             Navigation.NavigateTo("/");
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -85,5 +91,4 @@
         public string Password { get; set; } = string.Empty;
     }
 
-    private sealed record LoginResponse(string AccessToken, string RefreshToken, int ExpiresIn, string TokenType);
 }

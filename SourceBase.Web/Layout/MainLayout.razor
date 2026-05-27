@@ -1,5 +1,4 @@
 @inject BlazorAuthStateProvider AuthStateProvider
-@inject HttpClient Http
 @inject NavigationManager Navigation
 @inherits LayoutComponentBase
 
@@ -30,18 +29,16 @@
 </div>
 
 @code {
-    protected override void OnInitialized()
-    {
-        if (AuthStateProvider.AccessToken is not null)
-            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AuthStateProvider.AccessToken);
-    }
-
     private async Task LogoutAsync()
     {
-        try { await Http.PostAsync("/api/auth/logout", null); } catch { /* ignore */ }
-        Http.DefaultRequestHeaders.Remove("Authorization");
-        await AuthStateProvider.ClearAsync();
-        Navigation.NavigateTo("/login");
+        try
+        {
+            await AuthStateProvider.SignOutAsync();
+        }
+        finally
+        {
+            Navigation.NavigateTo("/login");
+        }
     }
 
     private string GetPageTitle()

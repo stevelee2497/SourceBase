@@ -1,48 +1,67 @@
-@using SourceBase.Web.Auth
-@inject BlazorAuthStateProvider AuthStateProvider
 @rendermode InteractiveServer
 
-<Router AppAssembly="typeof(App).Assembly">
-    <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
-            <NotAuthorized>
-                @if (!context.User.Identity?.IsAuthenticated ?? true)
-                {
-                    <RedirectToLogin />
-                }
-                else
-                {
-                    <div class="flex items-center justify-center min-h-screen">
-                        <div class="text-center">
-                            <h1 class="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h1>
-                            <p class="text-gray-500">You don't have permission to view this page.</p>
-                            <a href="/" class="mt-4 inline-block text-indigo-600 hover:text-indigo-500">Go home</a>
+@inject BlazorAuthStateProvider AuthStateProvider
+
+@if (_isReady)
+{
+    <Router AppAssembly="typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    @if (!context.User.Identity?.IsAuthenticated ?? true)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <div class="flex items-center justify-center min-h-screen">
+                            <div class="text-center">
+                                <h1 class="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h1>
+                                <p class="text-gray-500">You don't have permission to view this page.</p>
+                                <a href="/" class="mt-4 inline-block text-indigo-600 hover:text-indigo-500">Go home</a>
+                            </div>
                         </div>
-                    </div>
-                }
-            </NotAuthorized>
-            <Authorizing>
-                <div class="flex items-center justify-center min-h-screen text-gray-400">Loading…</div>
-            </Authorizing>
-        </AuthorizeRouteView>
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <div class="flex items-center justify-center min-h-screen">
-            <div class="text-center">
-                <h1 class="text-4xl font-bold text-gray-900 mb-2">404</h1>
-                <p class="text-gray-500 mb-4">Page not found.</p>
-                <a href="/" class="text-indigo-600 hover:text-indigo-500">Go home</a>
+                    }
+                </NotAuthorized>
+                <Authorizing>
+                    <div class="flex items-center justify-center min-h-screen text-gray-400">Loading…</div>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <div class="flex items-center justify-center min-h-screen">
+                <div class="text-center">
+                    <h1 class="text-4xl font-bold text-gray-900 mb-2">404</h1>
+                    <p class="text-gray-500 mb-4">Page not found.</p>
+                    <a href="/" class="text-indigo-600 hover:text-indigo-500">Go home</a>
+                </div>
             </div>
-        </div>
-    </NotFound>
-</Router>
+        </NotFound>
+    </Router>
+}
+else
+{
+    <div class="flex items-center justify-center min-h-screen text-gray-400">Loading…</div>
+}
 
 @code {
+    private bool _isReady;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (!firstRender)
+            return;
+
+        try
+        {
             await AuthStateProvider.InitializeAsync();
+        }
+        finally
+        {
+            _isReady = true;
+            StateHasChanged();
+        }
     }
 }

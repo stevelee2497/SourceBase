@@ -1,8 +1,6 @@
 @page "/roles"
 @attribute [Authorize(Roles = "Admin")]
 @inject HttpClient Http
-@inject BlazorAuthStateProvider Auth
-@inject JsonSerializerOptions JsonOptions
 
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-semibold text-gray-900">Roles</h1>
@@ -115,8 +113,6 @@ else if (_data is not null)
 
     protected override async Task OnInitializedAsync()
     {
-        if (Auth.AccessToken is not null)
-            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Auth.AccessToken);
         await LoadRolesAsync();
     }
 
@@ -126,8 +122,7 @@ else if (_data is not null)
         _error = null;
         try
         {
-            _data = await
-Http.GetFromJsonAsync<PagingResponse<RoleResponse>>($"/api/roles?page={_page}&limit={_pageSize}", JsonOptions);
+            _data = await Http.GetFromJsonAsync<PagingResponse<RoleResponse>>($"/api/roles?page={_page}&limit={_pageSize}");
         }
         catch
         {

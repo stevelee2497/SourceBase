@@ -1,23 +1,21 @@
 @page "/"
 @attribute [Authorize]
-@inject HttpClient Http
 @inject BlazorAuthStateProvider Auth
-@inject JsonSerializerOptions JsonOptions
 
 <div class="mb-6">
     <h1 class="text-2xl font-semibold text-gray-900">Dashboard</h1>
-    <p class="mt-1 text-sm text-gray-500">Welcome back, @_userInfo?.UserName</p>
+    <p class="mt-1 text-sm text-gray-500">Welcome back, @Auth.UserInfo?.UserName</p>
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div class="card">
         <div class="text-sm font-medium text-gray-500 mb-1">Email</div>
-        <div class="text-gray-900">@(_userInfo?.Email ?? "—")</div>
+        <div class="text-gray-900">@(Auth.UserInfo?.Email ?? "—")</div>
     </div>
     <div class="card">
         <div class="text-sm font-medium text-gray-500 mb-1">Roles</div>
         <div class="flex flex-wrap gap-1">
-            @foreach (var role in _userInfo?.Roles ?? [])
+            @foreach (var role in Auth.UserInfo?.Roles ?? [])
             {
                 <span class="badge-blue">@role</span>
             }
@@ -34,20 +32,3 @@
         </div>
     </div>
 </AuthorizeView>
-
-@code {
-    private UserInfoResponse? _userInfo;
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (Auth.AccessToken is not null)
-            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Auth.AccessToken);
-        try
-        {
-            _userInfo = await Http.GetFromJsonAsync<UserInfoResponse>("/api/auth/info", JsonOptions);
-        }
-        catch { /* non-critical */ }
-    }
-
-    private record UserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);
-}
