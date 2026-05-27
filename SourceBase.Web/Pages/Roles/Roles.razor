@@ -1,6 +1,6 @@
 @page "/roles"
 @attribute [Authorize(Roles = "Admin")]
-@inject HttpClient Http
+@inject ApiHttpClient Api
 
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-semibold text-gray-900">Roles</h1>
@@ -120,18 +120,11 @@ else if (_data is not null)
     {
         _loading = true;
         _error = null;
-        try
-        {
-            _data = await Http.GetFromJsonAsync<PagingResponse<RoleResponse>>($"/api/roles?page={_page}&limit={_pageSize}");
-        }
-        catch
-        {
+        var (data, error) = await Api.GetRolesAsync(_page, _pageSize);
+        _data = data;
+        if (error is not null)
             _error = "Failed to load roles.";
-        }
-        finally
-        {
-            _loading = false;
-        }
+        _loading = false;
     }
 
     private async Task ChangePage(int page)
@@ -163,44 +156,22 @@ else if (_data is not null)
     {
         _formError = null;
         _saving = true;
-        try
-        {
-            if (_editingRole is null)
-            {
-                var createResp = await Http.PostAsJsonAsync("/api/roles", new
-                {
-                    name = _form.Name,
-                    description =
-string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description
-                });
-                createResp.EnsureSuccessStatusCode();
-            }
-            else
-            {
-                var updateResp = await Http.PutAsJsonAsync($"/api/roles/{_editingRole.Id}", new
-                {
-                    name = _form.Name,
-                    description =
-string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description
-                });
-                updateResp.EnsureSuccessStatusCode();
-            }
+        var error = _editingRole is null
+            ? await Api.CreateRoleAsync(_form.Name, string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description)
+            : await Api.UpdateRoleAsync(_editingRole.Id, _form.Name, string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description);
 
-            _showForm = false;
-            await LoadRolesAsync();
-        }
-        catch (HttpRequestException ex) when ((int?)ex.StatusCode == 400)
+        if (error is not null)
         {
-            _formError = "A role with that name already exists.";
-        }
-        catch
-        {
-            _formError = "Failed to save role. Please try again.";
-        }
-        finally
-        {
+            _formError = error.Code is "VALIDATION ERROR" or "BAD REQUEST"
+                ? "A role with that name already exists."
+                : "Failed to save role. Please try again.";
             _saving = false;
+            return;
         }
+
+        _showForm = false;
+        await LoadRolesAsync();
+        _saving = false;
     }
 
     private void ConfirmDelete(RoleResponse role)
@@ -213,20 +184,12 @@ string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description
     {
         if (_deletingRole is null) return;
         _showDelete = false;
-        try
-        {
-            var response = await Http.DeleteAsync($"/api/roles/{_deletingRole.Id}");
-            response.EnsureSuccessStatusCode();
-            await LoadRolesAsync();
-        }
-        catch
-        {
+        var error = await Api.DeleteRoleAsync(_deletingRole.Id);
+        if (error is not null)
             _error = "Failed to delete role.";
-        }
-        finally
-        {
-            _deletingRole = null;
-        }
+        else
+            await LoadRolesAsync();
+        _deletingRole = null;
     }
 
     private sealed class RoleFormModel
@@ -234,7 +197,4 @@ string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
     }
-
-    private sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
-    private sealed record RoleResponse(Guid Id, string Name, string? Description);
 }

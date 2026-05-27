@@ -1,7 +1,7 @@
 @rendermode InteractiveServer
 
 @inject BlazorAuthStateProvider AuthStateProvider
-@inject HttpClient Http
+@inject ApiHttpClient Api
 
 @if (_isReady)
 {
@@ -55,26 +55,20 @@ else
         if (!firstRender)
             return;
 
-        try
-        {
-            await InitializeAuthAsync();
-        }
-        finally
-        {
-            _isReady = true;
-            StateHasChanged();
-        }
+        await InitializeAuthAsync();
+        _isReady = true;
+        StateHasChanged();
     }
 
     private async Task InitializeAuthAsync()
     {
-        var hasToken = await AuthStateProvider.LoadTokensAsync();
-        if (!hasToken)
-            return;
-
         try
         {
-            var userInfo = await TryGetUserInfoAsync();
+            var hasToken = await AuthStateProvider.LoadTokensAsync();
+            if (!hasToken)
+                return;
+
+            var (userInfo, _) = await Api.GetUserInfoAsync();
             if (userInfo is not null)
             {
                 AuthStateProvider.SetUserInfo(userInfo);
@@ -87,44 +81,27 @@ else
                 return;
             }
 
-            var refreshResponse = await Http.PostAsJsonAsync("/api/auth/refresh", new { token = AuthStateProvider.RefreshToken });
-            if (refreshResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            var (tokens, refreshError) = await Api.RefreshTokenAsync(AuthStateProvider.RefreshToken!);
+            if (refreshError is not null)
             {
                 await AuthStateProvider.SignOutAsync();
                 return;
             }
 
-            refreshResponse.EnsureSuccessStatusCode();
+            await AuthStateProvider.SetTokensAsync(tokens!);
 
-            var tokens = await refreshResponse.Content.ReadFromJsonAsync<LoginTokensResponse>()
-                ?? throw new InvalidOperationException("Refresh response did not include tokens.");
-
-            await AuthStateProvider.SetTokensAsync(tokens);
-
-            userInfo = await TryGetUserInfoAsync();
-            if (userInfo is null)
+            var (userInfo2, _) = await Api.GetUserInfoAsync();
+            if (userInfo2 is null)
             {
                 await AuthStateProvider.SignOutAsync();
                 return;
             }
 
-            AuthStateProvider.SetUserInfo(userInfo);
+            AuthStateProvider.SetUserInfo(userInfo2);
         }
         catch
         {
             await AuthStateProvider.SignOutAsync();
-        }
-    }
-
-    private async Task<UserInfoResponse?> TryGetUserInfoAsync()
-    {
-        try
-        {
-            return await Http.GetFromJsonAsync<UserInfoResponse>("/api/auth/info");
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-        {
-            return null;
         }
     }
 }

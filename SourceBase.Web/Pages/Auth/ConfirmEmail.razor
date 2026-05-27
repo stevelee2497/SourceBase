@@ -1,7 +1,7 @@
 @page "/confirm-email"
 @layout AuthLayout
 @attribute [AllowAnonymous]
-@inject HttpClient Http
+@inject ApiHttpClient Api
 
 <h2 class="text-xl font-semibold text-gray-900 mb-4">Email Confirmation</h2>
 
@@ -54,19 +54,10 @@ else
             return;
         }
 
-        try
-        {
-            var response = await Http.PostAsJsonAsync("/api/auth/confirmEmail", new { email = Email, code = Code });
-            response.EnsureSuccessStatusCode();
-            _success = true;
-        }
-        catch
-        {
+        var error = await Api.ConfirmEmailAsync(Email, Code);
+        _success = error is null;
+        if (error is not null)
             _error = "The confirmation code is invalid or has expired. Please request a new one.";
-        }
-        finally
-        {
-            _loading = false;
-        }
+        _loading = false;
     }
 }

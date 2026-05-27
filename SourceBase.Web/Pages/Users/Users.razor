@@ -1,6 +1,6 @@
 @page "/users"
 @attribute [Authorize(Roles = "Admin")]
-@inject HttpClient Http
+@inject ApiHttpClient Api
 
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-semibold text-gray-900">Users</h1>
@@ -167,30 +167,19 @@ else if (_data is not null)
 
     private async Task LoadUsersAsync()
     {
-        _loading = true;
+       _loading = true;
        _error = null;
-       try
-       {
-           _data = await Http.GetFromJsonAsync<PagingResponse<UserResponse>>($"/api/users?page={_page}&limit={_pageSize}");
-       }
-       catch
-       {
-            _error = "Failed to load users.";
-        }
-        finally
-        {
-            _loading = false;
-        }
+       var (data, error) = await Api.GetUsersAsync(_page, _pageSize);
+       _data = data;
+       if (error is not null)
+           _error = "Failed to load users.";
+       _loading = false;
     }
 
     private async Task LoadRolesAsync()
     {
-        try
-        {
-            var result = await Http.GetFromJsonAsync<PagingResponse<RoleResponse>>("/api/roles?page=1&limit=100");
-            _allRoles = result?.Items ?? [];
-        }
-        catch { /* non-critical */ }
+       var (result, _) = await Api.GetRolesAsync(1, 100);
+       _allRoles = result?.Items ?? [];
     }
 
     private async Task ChangePage(int page)
@@ -231,52 +220,22 @@ else if (_data is not null)
     {
         _formError = null;
         _saving = true;
-        try
+        var error = _editingUser is null
+            ? await Api.CreateUserAsync(_form.UserName, _form.Email, _form.Password, _form.FirstName, _form.LastName, _form.PhoneNumber, _form.SelectedRoles.ToArray())
+            : await Api.UpdateUserAsync(_editingUser.Id, _form.Email, _form.FirstName, _form.LastName, _form.PhoneNumber, _form.SelectedRoles.ToArray());
+
+        if (error is not null)
         {
-            if (_editingUser is null)
-            {
-                var createResp = await Http.PostAsJsonAsync("/api/users", new
-                {
-                    userName = _form.UserName,
-                    email = _form.Email,
-                    password
-= _form.Password,
-                    firstName = _form.FirstName,
-                    lastName = _form.LastName,
-                    phoneNumber = _form.PhoneNumber,
-                    roles =
-_form.SelectedRoles.ToArray()
-                });
-                createResp.EnsureSuccessStatusCode();
-            }
-            else
-            {
-                var updateResp = await Http.PutAsJsonAsync($"/api/users/{_editingUser.Id}", new
-                {
-                    email = _form.Email,
-                    firstName =
-_form.FirstName,
-                    lastName = _form.LastName,
-                    phoneNumber = _form.PhoneNumber,
-                    roles = _form.SelectedRoles.ToArray()
-                });
-                updateResp.EnsureSuccessStatusCode();
-            }
-            _showForm = false;
-            await LoadUsersAsync();
-        }
-        catch (HttpRequestException ex) when ((int?)ex.StatusCode == 400)
-        {
-            _formError = "Email or username is already taken.";
-        }
-        catch
-        {
-            _formError = "Failed to save user. Please try again.";
-        }
-        finally
-        {
+            _formError = error.Code is "VALIDATION ERROR" or "BAD REQUEST"
+                ? "Email or username is already taken."
+                : "Failed to save user. Please try again.";
             _saving = false;
+            return;
         }
+
+        _showForm = false;
+        await LoadUsersAsync();
+        _saving = false;
     }
 
     private void ConfirmDelete(UserResponse user)
@@ -289,20 +248,12 @@ _form.FirstName,
     {
         if (_deletingUser is null) return;
         _showDelete = false;
-        try
-        {
-            var response = await Http.DeleteAsync($"/api/users/{_deletingUser.Id}");
-            response.EnsureSuccessStatusCode();
-            await LoadUsersAsync();
-        }
-        catch
-        {
+        var error = await Api.DeleteUserAsync(_deletingUser.Id);
+        if (error is not null)
             _error = "Failed to delete user.";
-        }
-        finally
-        {
-            _deletingUser = null;
-        }
+        else
+            await LoadUsersAsync();
+        _deletingUser = null;
     }
 
     private sealed class UserFormModel
@@ -322,9 +273,4 @@ _form.FirstName,
             SelectedRoles = [];
         }
     }
-
-    private sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
-    private sealed record UserResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName,
-string? PhoneNumber, bool EmailConfirmed, IEnumerable<string> Roles);
-    private sealed record RoleResponse(Guid Id, string Name, string? Description);
 }

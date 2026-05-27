@@ -1,7 +1,7 @@
 @page "/login"
 @layout AuthLayout
 @attribute [AllowAnonymous]
-@inject HttpClient Http
+@inject ApiHttpClient Api
 @inject BlazorAuthStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 
@@ -56,33 +56,19 @@
     {
         _error = null;
         _loading = true;
-        try
+        var (tokens, error) = await Api.LoginAsync(_model.Email, _model.Password);
+        if (error is not null)
         {
-            var response = await Http.PostAsJsonAsync("/api/auth/login", new { email = _model.Email, password = _model.Password });
-            response.EnsureSuccessStatusCode();
-
-            var tokens = await response.Content.ReadFromJsonAsync<LoginTokensResponse>();
-            if (tokens is null)
-            {
-                _error = "Login failed. Please try again.";
-                return;
-            }
-
-            await AuthStateProvider.SetTokensAsync(tokens);
-            Navigation.NavigateTo("/");
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-        {
-            _error = "Invalid email or password, or email not confirmed.";
-        }
-        catch
-        {
-            _error = "An unexpected error occurred. Please try again.";
-        }
-        finally
-        {
+            _error = error.Code == "UNAUTHORIZE"
+                ? "Invalid email or password, or email not confirmed."
+                : "An unexpected error occurred. Please try again.";
             _loading = false;
+            return;
         }
+
+        await AuthStateProvider.SetTokensAsync(tokens!);
+        Navigation.NavigateTo("/");
+        _loading = false;
     }
 
     private sealed class LoginFormModel

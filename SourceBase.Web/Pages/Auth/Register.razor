@@ -1,7 +1,7 @@
 @page "/register"
 @layout AuthLayout
 @attribute [AllowAnonymous]
-@inject HttpClient Http
+@inject ApiHttpClient Api
 
 <h2 class="text-xl font-semibold text-gray-900 mb-6">Create an account</h2>
 
@@ -84,29 +84,17 @@ else
     {
         _error = null;
         _loading = true;
-        try
+        var error = await Api.RegisterAsync(_model.UserName, _model.Email, _model.Password, _model.FirstName, _model.LastName, _model.PhoneNumber);
+        if (error is not null)
         {
-            var response = await Http.PostAsJsonAsync("/api/auth/register", new
-            {
-                userName = _model.UserName,
-                email = _model.Email,
-                password = _model.Password
-            });
-            response.EnsureSuccessStatusCode();
-            _success = true;
-        }
-        catch (HttpRequestException ex) when ((int?)ex.StatusCode == 400)
-        {
-            _error = "Username or email is already taken.";
-        }
-        catch
-        {
-            _error = "Registration failed. Please try again.";
-        }
-        finally
-        {
+            _error = error.Code is "VALIDATION ERROR" or "BAD REQUEST"
+                ? "Username or email is already taken."
+                : "Registration failed. Please try again.";
             _loading = false;
+            return;
         }
+        _success = true;
+        _loading = false;
     }
 
     private sealed class RegisterFormModel

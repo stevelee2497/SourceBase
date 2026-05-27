@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Microsoft.JSInterop;
+using SourceBase.Web.Services;
 
 namespace SourceBase.Web.Auth;
 
@@ -17,8 +17,7 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage) : Authe
     public string? RefreshToken { get; private set; }
     public UserInfoResponse? UserInfo { get; private set; }
 
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
-        => Task.FromResult(new AuthenticationState(_currentPrincipal));
+    public override Task<AuthenticationState> GetAuthenticationStateAsync() => Task.FromResult(new AuthenticationState(_currentPrincipal));
 
     // Loads tokens from localStorage. Returns true if an access token was found.
     public async Task<bool> LoadTokensAsync()
@@ -28,35 +27,25 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage) : Authe
 
         _initialized = true;
 
-        try
-        {
-            var accessToken = await localStorage.GetAsync<string>(AccessTokenKey);
-            var refreshToken = await localStorage.GetAsync<string>(RefreshTokenKey);
+        var accessToken = await localStorage.GetAsync<string>(AccessTokenKey);
+        var refreshToken = await localStorage.GetAsync<string>(RefreshTokenKey);
 
-            AccessToken = accessToken is { Success: true, Value.Length: > 0 } ? accessToken.Value : null;
-            RefreshToken = refreshToken is { Success: true, Value.Length: > 0 } ? refreshToken.Value : null;
-        }
-        catch (InvalidOperationException) { }
-        catch (JSException) { }
+        AccessToken = accessToken is { Success: true, Value.Length: > 0 } ? accessToken.Value : null;
+        RefreshToken = refreshToken is { Success: true, Value.Length: > 0 } ? refreshToken.Value : null;
 
         return !string.IsNullOrWhiteSpace(AccessToken);
     }
 
     // Saves tokens to localStorage and exposes them for AuthHeaderHandler.
-    public async Task SetTokensAsync(LoginTokensResponse tokens)
+    public async Task SetTokensAsync(LoginResponse tokens)
     {
         AccessToken = tokens.AccessToken;
         RefreshToken = tokens.RefreshToken;
         UserInfo = null;
         _currentPrincipal = Anonymous;
 
-        try
-        {
-            await localStorage.SetAsync(AccessTokenKey, tokens.AccessToken);
-            await localStorage.SetAsync(RefreshTokenKey, tokens.RefreshToken);
-        }
-        catch (InvalidOperationException) { }
-        catch (JSException) { }
+        await localStorage.SetAsync(AccessTokenKey, tokens.AccessToken);
+        await localStorage.SetAsync(RefreshTokenKey, tokens.RefreshToken);
     }
 
     // Sets the authenticated principal and notifies listeners.
@@ -75,13 +64,8 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage) : Authe
         UserInfo = null;
         _currentPrincipal = Anonymous;
 
-        try
-        {
-            await localStorage.DeleteAsync(AccessTokenKey);
-            await localStorage.DeleteAsync(RefreshTokenKey);
-        }
-        catch (InvalidOperationException) { }
-        catch (JSException) { }
+        await localStorage.DeleteAsync(AccessTokenKey);
+        await localStorage.DeleteAsync(RefreshTokenKey);
 
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
@@ -92,16 +76,10 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage) : Authe
         [
             new Claim(ClaimTypes.NameIdentifier, userInfo.Id.ToString()),
             new Claim(ClaimTypes.Name, userInfo.UserName ?? string.Empty),
+            new Claim(ClaimTypes.Email, userInfo.Email ?? string.Empty),
             ..userInfo.Roles.Select(role => new Claim(ClaimTypes.Role, role))
         ];
-
-        if (!string.IsNullOrWhiteSpace(userInfo.Email))
-            claims.Add(new Claim(ClaimTypes.Email, userInfo.Email));
 
         return new ClaimsPrincipal(new ClaimsIdentity(claims, "api-auth"));
     }
 }
-
-public sealed record UserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);
-
-public sealed record LoginTokensResponse(string AccessToken, string RefreshToken, int ExpiresIn, string TokenType);
