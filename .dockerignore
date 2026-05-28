@@ -30,7 +30,14 @@ TestResults/
 
 # Ignore Docker files
 Dockerfile
+Dockerfile.web
 docker-compose.yml
+nginx/
+
+# Ignore secrets
+.env
+.env.*
+!.env.example
 
 # Ignore other config/secrets (uncomment if needed)
 # appsettings.Development.json

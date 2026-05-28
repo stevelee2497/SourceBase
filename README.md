@@ -178,3 +178,66 @@ docker compose up
 ```
 
 The database (`app.db`) is auto-created on first run and seeded with roles and the admin user defined in `AppSettings`.
+
+## Deploy to VPS (1 GB RAM)
+
+The stack runs as three Docker containers — API, Blazor Web, and Nginx — all managed by `docker compose`.
+
+### Architecture
+
+```
+Browser → Nginx :80 → sourcebase-web :8080 → sourcebase-api :8080 → SQLite (volume)
+```
+
+The Blazor Web app is server-rendered, so all API calls happen inside the Docker network — the browser never calls the API directly.
+
+### 1. Prepare the VPS (Ubuntu 22.04, one-time)
+
+```sh
+# Install Docker
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Allow HTTP + SSH
+sudo ufw allow 22 && sudo ufw allow 80 && sudo ufw enable
+```
+
+### 2. Deploy
+
+```sh
+# Clone the repo on the VPS
+git clone https://github.com/your-org/sourcebase.git && cd sourcebase
+
+# Fill in secrets
+cp .env.example .env
+nano .env   # set ADMIN_PASSWORD, WEB_URL, SENDGRID_API_KEY
+
+# Build and start
+docker compose up --build -d
+
+# Verify
+docker compose ps
+docker compose logs -f
+```
+
+Open `http://YOUR_VPS_IP` in your browser.
+
+### 3. Update
+
+```sh
+git pull
+docker compose up --build -d
+```
+
+### Environment variables (`.env`)
+
+| Variable | Description |
+|---|---|
+| `ADMIN_EMAIL` | Seed admin email |
+| `ADMIN_PASSWORD` | Seed admin password |
+| `WEB_URL` | Public URL, e.g. `http://1.2.3.4` — used for email links and CORS |
+| `SENDGRID_API_KEY` | Leave blank to disable outbound email |
+| `SENDGRID_ACCOUNT_OWNER` | Sender email address |
+
+The SQLite database is persisted in a Docker named volume (`sqlite_data`) and survives container restarts and rebuilds.

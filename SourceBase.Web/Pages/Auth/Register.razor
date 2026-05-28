@@ -87,9 +87,7 @@ else
         var error = await Api.RegisterAsync(_model.UserName, _model.Email, _model.Password, _model.FirstName, _model.LastName, _model.PhoneNumber);
         if (error is not null)
         {
-            _error = error.Code is "VALIDATION ERROR" or "BAD REQUEST"
-                ? "Username or email is already taken."
-                : "Registration failed. Please try again.";
+            _error = error.Message ?? "Registration failed. Please try again.";
             _loading = false;
             return;
         }

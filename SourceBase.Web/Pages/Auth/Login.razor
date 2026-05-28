@@ -59,16 +59,24 @@
         var (tokens, error) = await Api.LoginAsync(_model.Email, _model.Password);
         if (error is not null)
         {
-            _error = error.Code == "UNAUTHORIZE"
-                ? "Invalid email or password, or email not confirmed."
-                : "An unexpected error occurred. Please try again.";
+            _error = error.Message ?? "Login failed. Please check your credentials and try again.";
             _loading = false;
             return;
         }
 
         await AuthStateProvider.SetTokensAsync(tokens!);
-        Navigation.NavigateTo("/");
+
+        var (userInfo, userInfoError) = await Api.GetUserInfoAsync();
+        if (userInfoError is not null || userInfo is null)
+        {
+            _error = userInfoError?.Message ?? "An unexpected error occurred. Please try again.";
+            _loading = false;
+            return;
+        }
+
+        AuthStateProvider.SetUserInfo(userInfo);
         _loading = false;
+        Navigation.NavigateTo("/");
     }
 
     private sealed class LoginFormModel

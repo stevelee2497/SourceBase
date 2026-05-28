@@ -1,0 +1,24 @@
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+WORKDIR /app
+EXPOSE 8080
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+# Install Node.js (required for Tailwind CSS MSBuild target)
+RUN apt-get update && apt-get install -y nodejs npm && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY Directory.Packages.props .
+COPY Directory.Build.props .
+COPY SourceBase.ServiceDefaults/SourceBase.ServiceDefaults.csproj SourceBase.ServiceDefaults/
+COPY SourceBase.Web/SourceBase.Web.csproj SourceBase.Web/
+COPY SourceBase.Web/package.json SourceBase.Web/
+COPY SourceBase.Web/package-lock.json SourceBase.Web/
+RUN dotnet restore SourceBase.Web/SourceBase.Web.csproj
+
+COPY . .
+RUN dotnet publish SourceBase.Web/SourceBase.Web.csproj -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "SourceBase.Web.dll"]

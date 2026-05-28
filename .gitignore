@@ -406,3 +406,5 @@ http-client.env.json
 appsettings.Development.json
 
 graphify-out
+
+.env

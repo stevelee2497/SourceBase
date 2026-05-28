@@ -226,9 +226,7 @@ else if (_data is not null)
 
         if (error is not null)
         {
-            _formError = error.Code is "VALIDATION ERROR" or "BAD REQUEST"
-                ? "Email or username is already taken."
-                : "Failed to save user. Please try again.";
+            _formError = error.Message ?? "Failed to save user. Please try again.";
             _saving = false;
             return;
         }
@@ -250,7 +248,7 @@ else if (_data is not null)
         _showDelete = false;
         var error = await Api.DeleteUserAsync(_deletingUser.Id);
         if (error is not null)
-            _error = "Failed to delete user.";
+            _error = error.Message ?? "Failed to delete user.";
         else
             await LoadUsersAsync();
         _deletingUser = null;

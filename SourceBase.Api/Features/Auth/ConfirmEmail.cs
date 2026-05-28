@@ -24,7 +24,7 @@ public class ConfirmEmailHandler(IDbContext dbContext) : IRequestHandler<Confirm
 {
     public async Task<ConfirmEmailResponse> Handle(ConfirmEmailRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email, ct) ?? throw new UnAuthorizedException();
+        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email, ct) ?? throw new UnAuthorizedException("Invalid credentials");
 
         if (user.OtpCode != request.Code || user.OtpCodeExpiresOn is null || user.OtpCodeExpiresOn <= DateTime.UtcNow)
             throw new UnAuthorizedException("Invalid or expired code");

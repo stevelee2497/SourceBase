@@ -10,7 +10,7 @@ public class AuthorizationMiddleware(RequestDelegate next)
     {
         if (await IsUserValidAsync(context, dbContext) is false)
         {
-            throw new UnAuthorizedException();
+            throw new UnAuthorizedException("User is not authorized");
         }
 
         await next(context);
