@@ -70,34 +70,9 @@ else
 
             var (userInfo, _) = await Api.GetUserInfoAsync();
             if (userInfo is not null)
-            {
                 AuthStateProvider.SetUserInfo(userInfo);
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(AuthStateProvider.RefreshToken))
-            {
+            else
                 await AuthStateProvider.SignOutAsync();
-                return;
-            }
-
-            var (tokens, refreshError) = await Api.RefreshTokenAsync(AuthStateProvider.RefreshToken!);
-            if (refreshError is not null)
-            {
-                await AuthStateProvider.SignOutAsync();
-                return;
-            }
-
-            await AuthStateProvider.SetTokensAsync(tokens!);
-
-            var (userInfo2, _) = await Api.GetUserInfoAsync();
-            if (userInfo2 is null)
-            {
-                await AuthStateProvider.SignOutAsync();
-                return;
-            }
-
-            AuthStateProvider.SetUserInfo(userInfo2);
         }
         catch
         {
