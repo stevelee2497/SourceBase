@@ -62,21 +62,17 @@ else
 
     private async Task InitializeAuthAsync()
     {
-        try
-        {
-            var hasToken = await AuthStateProvider.LoadTokensAsync();
-            if (!hasToken)
-                return;
+        var hasToken = await AuthStateProvider.LoadTokensAsync();
+        if (!hasToken)
+            return;
 
-            var (userInfo, _) = await Api.GetUserInfoAsync();
-            if (userInfo is not null)
-                AuthStateProvider.SetUserInfo(userInfo);
-            else
-                await AuthStateProvider.SignOutAsync();
-        }
-        catch
+        var (userInfo, error) = await Api.GetUserInfoAsync();
+        if (error is not null || userInfo is null)
         {
             await AuthStateProvider.SignOutAsync();
+            return;
         }
+
+        AuthStateProvider.SetUserInfo(userInfo);
     }
 }
