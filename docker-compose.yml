@@ -1,5 +1,6 @@
 services:
   sourcebase-api:
+    image: ghcr.io/stevelee2497/sourcebase-api:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -21,6 +22,7 @@ services:
       - internal
 
   sourcebase-web:
+    image: ghcr.io/stevelee2497/sourcebase-web:latest
     build:
       context: .
       dockerfile: Dockerfile.web

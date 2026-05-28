@@ -181,7 +181,7 @@ The database (`app.db`) is auto-created on first run and seeded with roles and t
 
 ## Deploy to VPS (1 GB RAM)
 
-The stack runs as three Docker containers — API, Blazor Web, and Nginx — all managed by `docker compose`.
+Images are built by GitHub Actions and pushed to GitHub Container Registry (GHCR) on every merge to `main`. The VPS only needs to pull and run — no compiler, no Node.js, no build tools required.
 
 ### Architecture
 
@@ -190,6 +190,13 @@ Browser → Nginx :80 → sourcebase-web :8080 → sourcebase-api :8080 → SQLi
 ```
 
 The Blazor Web app is server-rendered, so all API calls happen inside the Docker network — the browser never calls the API directly.
+
+### CI/CD flow
+
+```
+git push → GitHub Actions: dotnet test → build images → push to GHCR
+VPS: docker compose pull → docker compose up -d
+```
 
 ### 1. Prepare the VPS (Ubuntu 22.04, one-time)
 
@@ -203,18 +210,29 @@ newgrp docker
 sudo ufw allow 22 && sudo ufw allow 80 && sudo ufw enable
 ```
 
-### 2. Deploy
+### 2. Authenticate with GHCR (one-time, private repos only)
+
+If the repository is **private**, create a GitHub Personal Access Token with the `read:packages` scope at <https://github.com/settings/tokens>, then log in:
 
 ```sh
-# Clone the repo on the VPS
-git clone https://github.com/your-org/sourcebase.git && cd sourcebase
+echo YOUR_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+```
+
+> Skip this step if the repository is public — GHCR images are public too.
+
+### 3. Deploy
+
+```sh
+# Clone the repo on the VPS (needed for nginx.conf and .env)
+git clone https://github.com/stevelee2497/SourceBase.git && cd SourceBase
 
 # Fill in secrets
 cp .env.example .env
-nano .env   # set ADMIN_PASSWORD, WEB_URL, SENDGRID_API_KEY
+nano .env   # set ADMIN_EMAIL, ADMIN_PASSWORD, WEB_URL, SENDGRID_API_KEY
 
-# Build and start
-docker compose up --build -d
+# Pull pre-built images and start
+docker compose pull
+docker compose up -d
 
 # Verify
 docker compose ps
@@ -223,11 +241,14 @@ docker compose logs -f
 
 Open `http://YOUR_VPS_IP` in your browser.
 
-### 3. Update
+### 4. Update (after pushing changes to main)
+
+Wait for the GitHub Actions workflow to finish, then on the VPS:
 
 ```sh
-git pull
-docker compose up --build -d
+git pull          # refresh nginx.conf / .env.example if they changed
+docker compose pull
+docker compose up -d
 ```
 
 ### Environment variables (`.env`)
@@ -240,4 +261,4 @@ docker compose up --build -d
 | `SENDGRID_API_KEY` | Leave blank to disable outbound email |
 | `SENDGRID_ACCOUNT_OWNER` | Sender email address |
 
-The SQLite database is persisted in a Docker named volume (`sqlite_data`) and survives container restarts and rebuilds.
+The SQLite database is persisted in a Docker named volume (`sqlite_data`) and survives container restarts and image updates.
