@@ -194,8 +194,7 @@ The Blazor Web app is server-rendered, so all API calls happen inside the Docker
 ### CI/CD flow
 
 ```
-git push → GitHub Actions: dotnet test → build images → push to GHCR
-VPS: docker compose pull → docker compose up -d
+git push → GitHub Actions: dotnet test → build images → push to GHCR → SSH into VPS → docker compose pull && up
 ```
 
 ### 1. Prepare the VPS (Ubuntu 22.04, one-time)
@@ -210,7 +209,28 @@ newgrp docker
 sudo ufw allow 22 && sudo ufw allow 80 && sudo ufw enable
 ```
 
-### 2. Authenticate with GHCR (one-time, private repos only)
+### 2. Configure GitHub Actions secrets (one-time)
+
+The pipeline SSHes into the VPS to deploy automatically. Add these in **GitHub → repo Settings → Secrets and variables → Actions**:
+
+| Secret | Value |
+|---|---|
+| `VPS_HOST` | VPS IP address or hostname |
+| `VPS_USER` | SSH username (e.g. `ubuntu`) |
+| `VPS_SSH_KEY` | Contents of your SSH private key (`cat ~/.ssh/id_rsa`) |
+
+And optionally set a **variable** (not secret) `VPS_APP_PATH` to the absolute path where the repo is cloned on the VPS (defaults to `~/SourceBase`).
+
+> **Tip — generate a dedicated deploy key:**
+> ```sh
+> # On your local machine
+> ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/deploy_key -N ""
+> # Add the public key to the VPS
+> ssh-copy-id -i ~/.ssh/deploy_key.pub YOUR_USER@YOUR_VPS_IP
+> # Paste the contents of ~/.ssh/deploy_key into the VPS_SSH_KEY secret
+> ```
+
+### 3. Authenticate with GHCR on the VPS (one-time, private repos only)
 
 If the repository is **private**, create a GitHub Personal Access Token with the `read:packages` scope at <https://github.com/settings/tokens>, then log in:
 
@@ -220,7 +240,7 @@ echo YOUR_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 
 > Skip this step if the repository is public — GHCR images are public too.
 
-### 3. Deploy
+### 4. Deploy (first time)
 
 ```sh
 # Clone the repo on the VPS (needed for nginx.conf and .env)
@@ -241,15 +261,14 @@ docker compose logs -f
 
 Open `http://YOUR_VPS_IP` in your browser.
 
-### 4. Update (after pushing changes to main)
+### 5. Update (automatic after this)
 
-Wait for the GitHub Actions workflow to finish, then on the VPS:
-
+Every push to `main` triggers the pipeline which, on success, SSHes into the VPS and runs:
 ```sh
-git pull          # refresh nginx.conf / .env.example if they changed
-docker compose pull
-docker compose up -d
+docker compose pull && docker compose up -d --remove-orphans
 ```
+
+No manual action needed. To force a redeploy, push any commit to `main` or re-run the workflow from the GitHub Actions tab.
 
 ### Environment variables (`.env`)
 
