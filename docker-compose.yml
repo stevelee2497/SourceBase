@@ -1,4 +1,31 @@
 services:
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    container_name: sourcebase-aspire-dashboard
+    restart: unless-stopped
+    environment:
+      - DASHBOARD__OTLP__AUTHMODE=Unsecured
+      - DASHBOARD__FRONTEND__AUTHMODE=Unsecured
+    ports:
+      - "18888:18888"
+      - "18889:18889"
+    networks:
+      - internal
+
+  sqlite-web:
+    image: coleifer/sqlite-web:latest
+    container_name: sourcebase-sqlite-web
+    restart: unless-stopped
+    command: sqlite_web --host 0.0.0.0 --port 8080 /data/app.db
+    volumes:
+      - sqlite_data:/data
+    ports:
+      - "18080:8080"
+    depends_on:
+      - sourcebase-api
+    networks:
+      - internal
+
   sourcebase-api:
     image: ghcr.io/stevelee2497/sourcebase-api:latest
     build:
@@ -16,8 +43,12 @@ services:
       - AppSettings__SendGridApiKey=${SENDGRID_API_KEY}
       - AppSettings__SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
       - AllowedSpecificOrigins__0=${WEB_URL}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+      - OTEL_SERVICE_NAME=sourcebase-api
     volumes:
       - sqlite_data:/data
+    depends_on:
+      - aspire-dashboard
     networks:
       - internal
 

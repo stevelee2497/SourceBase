@@ -130,9 +130,11 @@ All entities inherit `BaseEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`, `Update
 
 ✅ Docker support
 
-## Backlogs
+✅ Standalone Aspire dashboard on VPS (logs, traces, metrics) — accessible via Tailscale VPN on port `18888`
 
-🎯 Log page: set up aspire dashboard logs like in the local env for the vps. Expose port in local vps, use tailscale vpn to access it.
+✅ sqlite-web on VPS (SQLite database browser) — accessible via Tailscale VPN on port `18080`
+
+## Backlogs
 
 🎯 Todo page: able to create multiple todo lists, manage todos
 
@@ -152,9 +154,19 @@ The project uses **.NET Aspire** for distributed application orchestration and o
 
 - **`SourceBase.ServiceDefaults`** — Shared OpenTelemetry configuration (metrics, traces, health checks, service discovery)
 - **`SourceBase.AppHost`** — Aspire orchestrator that manages the API and dashboard
-- **Dashboard** — Real-time logs, traces, metrics, and resource monitoring at `http://localhost:15017`
+- **Local dashboard** — Real-time logs, traces, metrics, and resource monitoring at `http://localhost:15017`
+- **VPS dashboard** — Standalone Aspire dashboard container at `http://TAILSCALE_IP:18888` (accessible via Tailscale VPN)
 
-Logs are forwarded to the dashboard via Serilog's OpenTelemetry sink when `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
+Logs and traces are forwarded to the dashboard via OpenTelemetry when `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
+
+### VPS internal tools (Tailscale VPN only)
+
+| Tool | Port | Purpose |
+|---|---|---|
+| Aspire Dashboard | `18888` | Logs, traces, metrics |
+| sqlite-web | `18080` | SQLite database browser |
+
+These ports are **not** exposed via nginx — connect via Tailscale to access them.
 
 ## Getting Started
 

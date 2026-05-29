@@ -10,11 +10,11 @@ namespace SourceBase.Api.Infrastructure.DbContexts;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IConfiguration configuration, ILogger<ApplicationDbContextLoggingInterceptor> dbCommandLogger)
     : DbContext(options), IDbContext
 {
+    public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
+
     public DbSet<UserEntity> Users { get; set; }
 
     public DbSet<RoleEntity> Roles { get; set; }
-
-    public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
     public DbSet<TodoItemEntity> TodoItems { get; set; }
 
