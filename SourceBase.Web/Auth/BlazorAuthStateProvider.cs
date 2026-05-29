@@ -27,11 +27,23 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage) : Authe
 
         _initialized = true;
 
-        var accessToken = await localStorage.GetAsync<string>(AccessTokenKey);
-        var refreshToken = await localStorage.GetAsync<string>(RefreshTokenKey);
+        try
+        {
+            var accessToken = await localStorage.GetAsync<string>(AccessTokenKey);
+            var refreshToken = await localStorage.GetAsync<string>(RefreshTokenKey);
 
-        AccessToken = accessToken is { Success: true, Value.Length: > 0 } ? accessToken.Value : null;
-        RefreshToken = refreshToken is { Success: true, Value.Length: > 0 } ? refreshToken.Value : null;
+            AccessToken = accessToken is { Success: true, Value.Length: > 0 } ? accessToken.Value : null;
+            RefreshToken = refreshToken is { Success: true, Value.Length: > 0 } ? refreshToken.Value : null;
+        }
+        catch
+        {
+            // Data protection key changed (e.g. after redeploy) — stale tokens can't be decrypted.
+            // Clear them so the user gets a clean login prompt instead of a crash.
+            await localStorage.DeleteAsync(AccessTokenKey);
+            await localStorage.DeleteAsync(RefreshTokenKey);
+            AccessToken = null;
+            RefreshToken = null;
+        }
 
         return !string.IsNullOrWhiteSpace(AccessToken);
     }
