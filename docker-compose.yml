@@ -9,6 +9,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
       - internal
     healthcheck:
@@ -16,6 +18,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  pgweb:
+    image: sosedoff/pgweb:latest
+    container_name: sourcebase-pgweb
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+    ports:
+      - "3002:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
 
   sourcebase-api:
     image: ghcr.io/stevelee2497/sourcebase-api:latest

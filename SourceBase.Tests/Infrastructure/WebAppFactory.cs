@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SourceBase.Api.Features.Auth;
 using SourceBase.Api.Infrastructure.DbContexts;
 using Xunit;
@@ -48,9 +49,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
             });
 
             // Replace the production PostgreSQL DbContext with SQLite in-memory for tests
-            var optConfigType = typeof(IDbContextOptionsConfiguration<ApplicationDbContext>);
-            var toRemove = services.Where(d => d.ServiceType == optConfigType).ToList();
-            foreach (var d in toRemove) services.Remove(d);
+            services.RemoveAll<IDbContextOptionsConfiguration<ApplicationDbContext>>();
 
             var appConfig = ctx.Configuration;
             services.AddDbContext<ApplicationDbContext>((_, options) =>
