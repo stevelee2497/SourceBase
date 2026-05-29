@@ -32,7 +32,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: sourcebase-api
-    restart: unless-stopped
+    restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
@@ -58,7 +58,7 @@ services:
       context: .
       dockerfile: Dockerfile.web
     container_name: sourcebase-web
-    restart: unless-stopped
+    restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
