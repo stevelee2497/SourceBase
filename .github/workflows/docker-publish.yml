@@ -94,5 +94,6 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd ${{ vars.VPS_APP_PATH || '~/SourceBase' }}
+            git pull
             docker compose pull
             docker compose up -d --remove-orphans

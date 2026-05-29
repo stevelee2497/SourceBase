@@ -148,9 +148,15 @@ public static class ProgramConfigurations
             services.AddTransient(type, type);
     }
 
-    public static void AddInfrastructure(this IServiceCollection services)
+    public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>();
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
+        {
+            options.UseNpgsql(connectionString)
+                .UseSeeding((context, _) => ApplicationDbContext.SeedData(context, configuration))
+                .UseAsyncSeeding(async (context, _, _) => ApplicationDbContext.SeedData(context, configuration));
+        });
         services.AddScoped<IPasswordHasher<UserEntity>, PasswordHasher<UserEntity>>();
 
         services.AddAuthentication(options =>

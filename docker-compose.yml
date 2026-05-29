@@ -1,30 +1,21 @@
 services:
-  aspire-dashboard:
-    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
-    container_name: sourcebase-aspire-dashboard
+  postgres:
+    image: postgres:17-alpine
+    container_name: sourcebase-postgres
     restart: unless-stopped
     environment:
-      - DASHBOARD__OTLP__AUTHMODE=Unsecured
-      - DASHBOARD__FRONTEND__AUTHMODE=Unsecured
-    ports:
-      - "18888:18888"
-      - "18889:18889"
-    networks:
-      - internal
-
-  sqlite-web:
-    image: coleifer/sqlite-web:latest
-    container_name: sourcebase-sqlite-web
-    restart: unless-stopped
-    command: sqlite_web --host 0.0.0.0 --port 8080 /data/app.db
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
-      - sqlite_data:/data
-    ports:
-      - "18080:8080"
-    depends_on:
-      - sourcebase-api
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   sourcebase-api:
     image: ghcr.io/stevelee2497/sourcebase-api:latest
@@ -36,19 +27,16 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Data Source=/data/app.db
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - AppSettings__AdminEmail=${ADMIN_EMAIL}
       - AppSettings__AdminPassword=${ADMIN_PASSWORD}
       - AppSettings__WebUrl=${WEB_URL}
       - AppSettings__SendGridApiKey=${SENDGRID_API_KEY}
       - AppSettings__SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
       - AllowedSpecificOrigins__0=${WEB_URL}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
-      - OTEL_SERVICE_NAME=sourcebase-api
-    volumes:
-      - sqlite_data:/data
     depends_on:
-      - aspire-dashboard
+      postgres:
+        condition: service_healthy
     networks:
       - internal
 
@@ -82,7 +70,7 @@ services:
       - internal
 
 volumes:
-  sqlite_data:
+  postgres_data:
 
 networks:
   internal:
