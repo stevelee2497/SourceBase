@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +42,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
         builder.ConfigureServices((ctx, services) =>
         {
-            services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+            services.Configure<JsonOptions>(options =>
             {
                 options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;

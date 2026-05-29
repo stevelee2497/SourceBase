@@ -26,7 +26,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser)); // Audit history for all actions
         optionsBuilder.AddInterceptors(new ApplicationDbContextAuditInterceptor(currentUser)); // Audit trailing for create/update/delete actions
-        optionsBuilder.AddInterceptors(new ApplicationDbContextLoggingInterceptor(dbCommandLogger));
+        optionsBuilder.AddInterceptors(new ApplicationDbContextLoggingInterceptor(dbCommandLogger)); // Logs all executed SQL commands with parameters for debugging and performance monitoring
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
