@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using SourceBase.Api.Features.TodoLists;
 using SourceBase.Api.Features.Todos;
 using SourceBase.Api.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -135,5 +136,40 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         todos.Limit.Should().Be(1);
         todos.Items.Should().ContainSingle();
         todos.Items.Single().Id.Should().Be(expectedTodoBody!.Id);
+    }
+
+    [Fact]
+    public async Task GetTodos_FilteredByTodoListId_ReturnsMatchingItems()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"list_filter_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var listResponse = await client.PostAsJsonAsync("todo-lists", new { name = $"Filter_List_{Guid.NewGuid():N}" });
+        var list = await listResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
+
+        var inListResponse = await client.PostAsJsonAsync(CreateTodoEndpoint.Route, new
+        {
+            date = "2025-05-01",
+            title = "In List Todo",
+            status = "Open",
+            todoListId = list!.Id,
+        });
+        var inListBody = await inListResponse.Content.ReadFromJsonAsync<CreateTodoResponse>();
+
+        await client.PostAsJsonAsync(CreateTodoEndpoint.Route, new
+        {
+            date = "2025-05-01",
+            title = "No List Todo",
+            status = "Open",
+        });
+
+        // Act
+        var response = await client.GetAsync($"{GetTodosEndpoint.Route}?todoListId={list.Id}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var todos = await response.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
+        todos!.Items.Should().ContainSingle(x => x.Id == inListBody!.Id);
+        todos.Items.Should().NotContain(x => x.Title == "No List Todo");
     }
 }

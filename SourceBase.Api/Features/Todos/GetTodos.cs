@@ -5,7 +5,7 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Todos;
 
-public record GetTodosRequest(TodoItemStatus? Status, DateOnly? Date, int? Page, int? Limit, PagingOrder? Order, GetTodosOrder? OrderBy) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
+public record GetTodosRequest(TodoItemStatus? Status, DateOnly? Date, Guid? TodoListId, int? Page, int? Limit, PagingOrder? Order, GetTodosOrder? OrderBy) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
 
 public class GetTodosEndpoint : IEndpoint
 {
@@ -21,7 +21,10 @@ public class GetTodosHandler(IDbContext dbContext, ICurrentUser currentUser) : I
     public async Task<PagingResponse<GetTodoResponse>> Handle(GetTodosRequest request, CancellationToken ct)
     {
         var todos = await dbContext.TodoItems
-            .Where(x => x.UserId == currentUser.UserId && (request.Status == null || x.Status == request.Status) && (request.Date == null || x.Date == request.Date))
+            .Where(x => x.UserId == currentUser.UserId
+                && (request.Status == null || x.Status == request.Status)
+                && (request.Date == null || x.Date == request.Date)
+                && (request.TodoListId == null || x.TodoListId == request.TodoListId))
             .PaginateAsync(x => new GetTodoResponse(x), request, ct);
         return todos;
     }

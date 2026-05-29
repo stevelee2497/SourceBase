@@ -126,11 +126,25 @@ All entities inherit `BaseEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`, `Update
 
 ✅ CORS policy (configurable origins via `appsettings.json`)
 
-✅ SendGrid email integration
-
 ✅ .NET Aspire orchestration with dashboard for monitoring and logs
 
 ✅ Docker support
+
+## Backlogs
+
+🎯 Log page: set up aspire dashboard logs like in the local env for the vps. Expose port in local vps, use tailscale vpn to access it.
+
+🎯 Todo page: able to create multiple todo lists, manage todos
+
+🎯 User page:
+
+- Able to reset user pass, set user to a new random pass and sent the newly created password to user email.
+- When admin reset pass, the new pass should show up for the 1st time before submit so admin can copy it.
+- Able to set status email confirmed for user
+
+🎯 Email service: set up free email provider to send email to user
+
+🎯 Dash board: set up more friendly dash boards with informative widgets: number of users, sum of todo items, sum of done items
 
 ## Observability & Aspire
 
@@ -213,15 +227,16 @@ sudo ufw allow 22 && sudo ufw allow 80 && sudo ufw enable
 
 The pipeline SSHes into the VPS to deploy automatically. Add these in **GitHub → repo Settings → Secrets and variables → Actions**:
 
-| Secret | Value |
-|---|---|
-| `VPS_HOST` | VPS IP address or hostname |
-| `VPS_USER` | SSH username (e.g. `ubuntu`) |
+| Secret        | Value                                                  |
+| ------------- | ------------------------------------------------------ |
+| `VPS_HOST`    | VPS IP address or hostname                             |
+| `VPS_USER`    | SSH username (e.g. `ubuntu`)                           |
 | `VPS_SSH_KEY` | Contents of your SSH private key (`cat ~/.ssh/id_rsa`) |
 
 And optionally set a **variable** (not secret) `VPS_APP_PATH` to the absolute path where the repo is cloned on the VPS (defaults to `~/SourceBase`).
 
 > **Tip — generate a dedicated deploy key:**
+>
 > ```sh
 > # On your local machine
 > ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/deploy_key -N ""
@@ -264,6 +279,7 @@ Open `http://YOUR_VPS_IP` in your browser.
 ### 5. Update (automatic after this)
 
 Every push to `main` triggers the pipeline which, on success, SSHes into the VPS and runs:
+
 ```sh
 docker compose pull && docker compose up -d --remove-orphans
 ```
@@ -272,12 +288,12 @@ No manual action needed. To force a redeploy, push any commit to `main` or re-ru
 
 ### Environment variables (`.env`)
 
-| Variable | Description |
-|---|---|
-| `ADMIN_EMAIL` | Seed admin email |
-| `ADMIN_PASSWORD` | Seed admin password |
-| `WEB_URL` | Public URL, e.g. `http://1.2.3.4` — used for email links and CORS |
-| `SENDGRID_API_KEY` | Leave blank to disable outbound email |
-| `SENDGRID_ACCOUNT_OWNER` | Sender email address |
+| Variable                 | Description                                                       |
+| ------------------------ | ----------------------------------------------------------------- |
+| `ADMIN_EMAIL`            | Seed admin email                                                  |
+| `ADMIN_PASSWORD`         | Seed admin password                                               |
+| `WEB_URL`                | Public URL, e.g. `http://1.2.3.4` — used for email links and CORS |
+| `SENDGRID_API_KEY`       | Leave blank to disable outbound email                             |
+| `SENDGRID_ACCOUNT_OWNER` | Sender email address                                              |
 
 The SQLite database is persisted in a Docker named volume (`sqlite_data`) and survives container restarts and image updates.

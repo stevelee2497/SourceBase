@@ -1,0 +1,380 @@
+@page "/todos"
+@attribute [Authorize]
+@inject ApiHttpClient Api
+
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-gray-900">Todos</h1>
+</div>
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+}
+
+<div class="flex gap-6 h-[calc(100vh-180px)]">
+
+    <!-- Todo Lists panel -->
+    <div class="w-72 shrink-0 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Lists</h2>
+            <button class="btn-primary btn-sm" @onclick="OpenCreateList">+ New List</button>
+        </div>
+
+        @if (_loadingLists)
+        {
+            <div class="text-sm text-gray-400 py-4 text-center">Loading…</div>
+        }
+        else if (_lists.Count == 0)
+        {
+            <div class="text-sm text-gray-400 py-4 text-center">No lists yet</div>
+        }
+        else
+        {
+            <div class="flex flex-col gap-1 overflow-y-auto">
+                @foreach (var list in _lists)
+                {
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors @(list.Id == _selectedListId ? "bg-indigo-50 text-indigo-700 font-medium" : "hover:bg-gray-100 text-gray-700")"
+                         @onclick="() => SelectList(list.Id)">
+                        <span class="flex-1 text-sm truncate">@list.Name</span>
+                        <span class="text-xs text-gray-400">@list.ItemCount</span>
+                        <button class="text-gray-400 hover:text-indigo-600 shrink-0" @onclick:stopPropagation @onclick="() => OpenEditList(list)" title="Rename">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                        <button class="text-gray-400 hover:text-red-600 shrink-0" @onclick:stopPropagation @onclick="() => ConfirmDeleteList(list)" title="Delete">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Todos panel -->
+    <div class="flex-1 flex flex-col gap-3 overflow-hidden">
+        @if (_selectedListId == Guid.Empty)
+        {
+            <div class="flex-1 flex items-center justify-center text-sm text-gray-400">Select a list to view todos</div>
+        }
+        else
+        {
+            <div class="flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">@(_lists.FirstOrDefault(l => l.Id == _selectedListId)?.Name ?? "Todos")</h2>
+                <button class="btn-primary btn-sm" @onclick="OpenCreateTodo">+ Add Todo</button>
+            </div>
+
+            @if (_loadingTodos)
+            {
+                <div class="text-sm text-gray-400 py-4 text-center">Loading…</div>
+            }
+            else if (_todos.Count == 0)
+            {
+                <div class="flex-1 flex items-center justify-center text-sm text-gray-400">No todos in this list</div>
+            }
+            else
+            {
+                <div class="flex-1 overflow-y-auto flex flex-col gap-2">
+                    @foreach (var todo in _todos)
+                    {
+                        <div class="card flex items-center gap-3 py-3">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium text-sm text-gray-900 truncate">@todo.Title</div>
+                                <div class="text-xs text-gray-400">@todo.Date</div>
+                            </div>
+                            <span class="@StatusBadgeClass(todo.Status) shrink-0">@todo.Status</span>
+                            <button class="btn-secondary btn-sm shrink-0" @onclick="() => OpenEditTodo(todo)">Edit</button>
+                            <button class="btn-danger btn-sm shrink-0" @onclick="() => ConfirmDeleteTodo(todo)">Delete</button>
+                        </div>
+                    }
+                </div>
+
+                <Pagination CurrentPage="_todosPage" TotalItems="_todosTotal" PageSize="_todosPageSize" OnPageChanged="ChangeTodosPage" />
+            }
+        }
+    </div>
+</div>
+
+<!-- List Form Modal -->
+@if (_showListForm)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseListForm"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingList is null ? "New List" : "Rename List")</h2>
+            @if (!string.IsNullOrEmpty(_listFormError))
+            {
+                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_listFormError</div>
+            }
+            <div>
+                <label class="form-label">Name *</label>
+                <input @bind="_listName" class="form-input" placeholder="e.g. Work, Personal…" />
+            </div>
+            <div class="flex justify-end gap-3 mt-5">
+                <button class="btn-secondary" @onclick="CloseListForm">Cancel</button>
+                <button class="btn-primary" @onclick="SaveListAsync" disabled="@_savingList">@(_savingList ? "Saving…" : "Save")</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Todo Form Modal -->
+@if (_showTodoForm)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseTodoForm"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingTodo is null ? "Add Todo" : "Edit Todo")</h2>
+            @if (!string.IsNullOrEmpty(_todoFormError))
+            {
+                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_todoFormError</div>
+            }
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Title *</label>
+                    <input @bind="_todoTitle" class="form-input" placeholder="What needs to be done?" />
+                </div>
+                <div>
+                    <label class="form-label">Date *</label>
+                    <input @bind="_todoDate" class="form-input" type="date" />
+                </div>
+                <div>
+                    <label class="form-label">Status</label>
+                    <select @bind="_todoStatus" class="form-input">
+                        <option value="Open">Open</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Archived">Archived</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-5">
+                <button class="btn-secondary" @onclick="CloseTodoForm">Cancel</button>
+                <button class="btn-primary" @onclick="SaveTodoAsync" disabled="@_savingTodo">@(_savingTodo ? "Saving…" : "Save")</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Confirm delete list -->
+<ConfirmDialog IsVisible="_showDeleteList" Title="Delete list"
+               Message="@($"Delete '{_deletingList?.Name}'? All todos in this list will also be deleted.")"
+               OnConfirm="DeleteListAsync" OnCancel="() => { _showDeleteList = false; _deletingList = null; }" />
+
+<!-- Confirm delete todo -->
+<ConfirmDialog IsVisible="_showDeleteTodo" Title="Delete todo"
+               Message="@($"Delete '{_deletingTodo?.Title}'?")"
+               OnConfirm="DeleteTodoAsync" OnCancel="() => { _showDeleteTodo = false; _deletingTodo = null; }" />
+
+@code {
+    // Lists state
+    private List<TodoListResponse> _lists = [];
+    private bool _loadingLists = true;
+    private Guid _selectedListId = Guid.Empty;
+
+    // Todos state
+    private List<TodoItemResponse> _todos = [];
+    private bool _loadingTodos;
+    private int _todosPage = 1;
+    private int _todosTotal;
+    private const int _todosPageSize = 20;
+
+    // Shared error
+    private string? _error;
+
+    // List form
+    private bool _showListForm;
+    private TodoListResponse? _editingList;
+    private string _listName = string.Empty;
+    private string? _listFormError;
+    private bool _savingList;
+
+    // Delete list
+    private bool _showDeleteList;
+    private TodoListResponse? _deletingList;
+
+    // Todo form
+    private bool _showTodoForm;
+    private TodoItemResponse? _editingTodo;
+    private string _todoTitle = string.Empty;
+    private DateOnly _todoDate = DateOnly.FromDateTime(DateTime.Today);
+    private string _todoStatus = "Open";
+    private string? _todoFormError;
+    private bool _savingTodo;
+
+    // Delete todo
+    private bool _showDeleteTodo;
+    private TodoItemResponse? _deletingTodo;
+
+    protected override async Task OnInitializedAsync() => await LoadListsAsync();
+
+    private async Task LoadListsAsync()
+    {
+        _loadingLists = true;
+        _error = null;
+        var (data, error) = await Api.GetTodoListsAsync(1, 100);
+        _lists = data?.Items ?? [];
+        if (error is not null) _error = "Failed to load lists.";
+        _loadingLists = false;
+    }
+
+    private async Task SelectList(Guid id)
+    {
+        _selectedListId = id;
+        _todosPage = 1;
+        await LoadTodosAsync();
+    }
+
+    private async Task LoadTodosAsync()
+    {
+        _loadingTodos = true;
+        var (data, _) = await Api.GetTodosAsync(_todosPage, _todosPageSize, _selectedListId);
+        _todos = data?.Items ?? [];
+        _todosTotal = data?.Total ?? 0;
+        _loadingTodos = false;
+    }
+
+    private async Task ChangeTodosPage(int page)
+    {
+        _todosPage = page;
+        await LoadTodosAsync();
+    }
+
+    // ── List CRUD ──
+
+    private void OpenCreateList()
+    {
+        _editingList = null;
+        _listName = string.Empty;
+        _listFormError = null;
+        _showListForm = true;
+    }
+
+    private void OpenEditList(TodoListResponse list)
+    {
+        _editingList = list;
+        _listName = list.Name;
+        _listFormError = null;
+        _showListForm = true;
+    }
+
+    private void CloseListForm() => _showListForm = false;
+
+    private async Task SaveListAsync()
+    {
+        _listFormError = null;
+        _savingList = true;
+        var error = _editingList is null
+            ? await Api.CreateTodoListAsync(_listName)
+            : await Api.UpdateTodoListAsync(_editingList.Id, _listName);
+
+        if (error is not null)
+        {
+            _listFormError = error.Message ?? "Failed to save.";
+            _savingList = false;
+            return;
+        }
+        _showListForm = false;
+        _savingList = false;
+        await LoadListsAsync();
+    }
+
+    private void ConfirmDeleteList(TodoListResponse list)
+    {
+        _deletingList = list;
+        _showDeleteList = true;
+    }
+
+    private async Task DeleteListAsync()
+    {
+        if (_deletingList is null) return;
+        _showDeleteList = false;
+        var error = await Api.DeleteTodoListAsync(_deletingList.Id);
+        if (error is not null)
+            _error = error.Message ?? "Failed to delete list.";
+        else
+        {
+            if (_selectedListId == _deletingList.Id)
+            {
+                _selectedListId = Guid.Empty;
+                _todos = [];
+            }
+            await LoadListsAsync();
+        }
+        _deletingList = null;
+    }
+
+    // ── Todo CRUD ──
+
+    private void OpenCreateTodo()
+    {
+        _editingTodo = null;
+        _todoTitle = string.Empty;
+        _todoDate = DateOnly.FromDateTime(DateTime.Today);
+        _todoStatus = "Open";
+        _todoFormError = null;
+        _showTodoForm = true;
+    }
+
+    private void OpenEditTodo(TodoItemResponse todo)
+    {
+        _editingTodo = todo;
+        _todoTitle = todo.Title;
+        _todoDate = DateOnly.TryParse(todo.Date, out var d) ? d : DateOnly.FromDateTime(DateTime.Today);
+        _todoStatus = todo.Status;
+        _todoFormError = null;
+        _showTodoForm = true;
+    }
+
+    private void CloseTodoForm() => _showTodoForm = false;
+
+    private async Task SaveTodoAsync()
+    {
+        _todoFormError = null;
+        _savingTodo = true;
+        var dateStr = _todoDate.ToString("yyyy-MM-dd");
+        var error = _editingTodo is null
+            ? await Api.CreateTodoAsync(_todoTitle, dateStr, _todoStatus, _selectedListId)
+            : await Api.UpdateTodoAsync(_editingTodo.Id, _todoTitle, dateStr, _todoStatus);
+
+        if (error is not null)
+        {
+            _todoFormError = error.Message ?? "Failed to save.";
+            _savingTodo = false;
+            return;
+        }
+        _showTodoForm = false;
+        _savingTodo = false;
+        await LoadTodosAsync();
+        await LoadListsAsync();
+    }
+
+    private void ConfirmDeleteTodo(TodoItemResponse todo)
+    {
+        _deletingTodo = todo;
+        _showDeleteTodo = true;
+    }
+
+    private async Task DeleteTodoAsync()
+    {
+        if (_deletingTodo is null) return;
+        _showDeleteTodo = false;
+        var error = await Api.DeleteTodoAsync(_deletingTodo.Id);
+        if (error is not null)
+            _error = error.Message ?? "Failed to delete todo.";
+        else
+        {
+            await LoadTodosAsync();
+            await LoadListsAsync();
+        }
+        _deletingTodo = null;
+    }
+
+    private static string StatusBadgeClass(string status) => status switch
+    {
+        "Completed" => "badge-green",
+        "Archived" => "badge-red",
+        _ => "badge-blue"
+    };
+}

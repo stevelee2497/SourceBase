@@ -18,6 +18,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<TodoItemEntity> TodoItems { get; set; }
 
+    public DbSet<TodoListEntity> TodoLists { get; set; }
+
     public DbSet<EmailEntity> Emails { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

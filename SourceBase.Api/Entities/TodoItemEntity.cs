@@ -11,6 +11,10 @@ public class TodoItemEntity : BaseAuditableEntity
     public TodoItemStatus Status { get; set; }
 
     public required Guid UserId { get; set; }
+
+    public Guid? TodoListId { get; set; }
+
+    public TodoListEntity? TodoList { get; set; }
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]

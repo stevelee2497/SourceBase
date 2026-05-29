@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Features.Auth;
+using SourceBase.Api.Features.TodoLists;
 using SourceBase.Api.Features.Todos;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -110,5 +111,48 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+        var listResponse = await client.PostAsJsonAsync("todo-lists", new { name = $"List_{Guid.NewGuid():N}" });
+        var list = await listResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateTodoEndpoint.Route, new
+        {
+            date = "2025-06-01",
+            title = "Todo in list",
+            status = "Open",
+            todoListId = list!.Id,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
+        var todo = await factory.WithDbContextAsync(db => db.TodoItems.SingleAsync(x => x.Id == body!.Id));
+        todo!.TodoListId.Should().Be(list.Id);
+    }
+
+    [Fact]
+    public async Task CreateTodo_WithInvalidTodoListId_ReturnsNotFound()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateTodoEndpoint.Route, new
+        {
+            date = "2025-06-01",
+            title = "Todo with bad list",
+            status = "Open",
+            todoListId = Guid.NewGuid(),
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }

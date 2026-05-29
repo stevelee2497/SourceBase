@@ -138,6 +138,47 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
 
     public Task<ErrorResponse?> DeleteUserAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/users/{id}"));
+
+    // ── Todos ────────────────────────────────────────────────────────────────
+
+    public Task<(PagingResponse<TodoItemResponse>? data, ErrorResponse? error)> GetTodosAsync(int page, int limit, Guid? todoListId = null) =>
+        ExecuteAsync<PagingResponse<TodoItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/todos?page={page}&limit={limit}{(todoListId.HasValue ? $"&todoListId={todoListId}" : "")}"));
+
+    public Task<ErrorResponse?> CreateTodoAsync(string title, string date, string status, Guid? todoListId = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/todos", new { title, date, status, todoListId }));
+
+    public Task<ErrorResponse?> UpdateTodoAsync(Guid id, string title, string date, string status) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/todos/{id}", new { title, date, status }));
+
+    public Task<ErrorResponse?> DeleteTodoAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/todos/{id}"));
+
+    // ── TodoLists ────────────────────────────────────────────────────────────
+
+    public Task<(PagingResponse<TodoListResponse>? data, ErrorResponse? error)> GetTodoListsAsync(int page, int limit) =>
+        ExecuteAsync<PagingResponse<TodoListResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/todo-lists?page={page}&limit={limit}"));
+
+    public Task<ErrorResponse?> CreateTodoListAsync(string name) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/todo-lists", new { name }));
+
+    public Task<ErrorResponse?> UpdateTodoListAsync(Guid id, string name) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/todo-lists/{id}", new { name }));
+
+    public Task<ErrorResponse?> DeleteTodoListAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/todo-lists/{id}"));
+
+    // ── Stats ─────────────────────────────────────────────────────────────────
+
+    public Task<(StatsResponse? data, ErrorResponse? error)> GetStatsAsync() =>
+        ExecuteAsync<StatsResponse>(() => AuthorizedRequest(HttpMethod.Get, "/api/data/stats"));
+
+    // ── User Admin Actions ───────────────────────────────────────────────────
+
+    public Task<ErrorResponse?> ResetUserPasswordAsync(Guid id, string newPassword) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, $"/api/users/{id}/reset-password", new { newPassword }));
+
+    public Task<ErrorResponse?> ConfirmUserEmailAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, $"/api/users/{id}/confirm-email"));
 }
 
 public sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
@@ -145,4 +186,7 @@ public sealed record UserInfoResponse(Guid Id, string? UserName, string? Email, 
 public sealed record LoginResponse(string AccessToken, string RefreshToken, int ExpiresIn, string TokenType);
 public sealed record RoleResponse(Guid Id, string Name, string? Description);
 public sealed record UserResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, bool EmailConfirmed, IEnumerable<string> Roles);
+public sealed record TodoItemResponse(Guid Id, string Title, string Date, string Status, Guid? TodoListId);
+public sealed record TodoListResponse(Guid Id, string Name, int ItemCount, DateTime? CreatedOn, string? CreatedBy);
+public sealed record StatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems);
 public sealed record ErrorResponse(string Code, string Message, Dictionary<string, string[]>? Errors = null);

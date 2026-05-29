@@ -1,13 +1,14 @@
 @page "/"
 @attribute [Authorize]
 @inject BlazorAuthStateProvider Auth
+@inject ApiHttpClient Api
 
 <div class="mb-6">
     <h1 class="text-2xl font-semibold text-gray-900">Dashboard</h1>
     <p class="mt-1 text-sm text-gray-500">Welcome back, @Auth.UserInfo?.UserName</p>
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
     <div class="card">
         <div class="text-sm font-medium text-gray-500 mb-1">Email</div>
         <div class="text-gray-900">@(Auth.UserInfo?.Email ?? "—")</div>
@@ -23,8 +24,35 @@
     </div>
 </div>
 
+@if (_stats is not null)
+{
+    <div class="mb-8">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">Overview</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <AuthorizeView Roles="Admin">
+                <div class="card text-center">
+                    <div class="text-3xl font-bold text-indigo-600">@_stats.UserCount</div>
+                    <div class="text-sm text-gray-500 mt-1">Users</div>
+                </div>
+            </AuthorizeView>
+            <div class="card text-center">
+                <div class="text-3xl font-bold text-indigo-600">@_stats.TotalTodoLists</div>
+                <div class="text-sm text-gray-500 mt-1">Todo Lists</div>
+            </div>
+            <div class="card text-center">
+                <div class="text-3xl font-bold text-indigo-600">@_stats.TotalTodoItems</div>
+                <div class="text-sm text-gray-500 mt-1">Total Todos</div>
+            </div>
+            <div class="card text-center">
+                <div class="text-3xl font-bold text-green-600">@_stats.CompletedTodoItems</div>
+                <div class="text-sm text-gray-500 mt-1">Completed</div>
+            </div>
+        </div>
+    </div>
+}
+
 <AuthorizeView Roles="Admin">
-    <div class="mt-8">
+    <div class="mt-4">
         <h2 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
         <div class="flex gap-3">
             <a href="/users" class="btn-primary">Manage Users</a>
@@ -32,3 +60,13 @@
         </div>
     </div>
 </AuthorizeView>
+
+@code {
+    private StatsResponse? _stats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (data, _) = await Api.GetStatsAsync();
+        _stats = data;
+    }
+}
