@@ -3,11 +3,14 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SourceBase.Api.Features.Auth;
 using SourceBase.Api.Infrastructure.DbContexts;
 using Xunit;
@@ -28,7 +31,6 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:DefaultConnection"] = _connectionString,
                 ["AppSettings:AdminEmail"] = AdminEmail,
                 ["AppSettings:AdminPassword"] = AdminPassword,
                 ["AppSettings:Roles:0"] = "Admin",
@@ -36,16 +38,29 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["AppSettings:OtpTokenExpirationMinutes"] = "15",
                 ["Serilog:MinimumLevel:Default"] = "Fatal"
             });
-            builder.ConfigureServices(services =>
+        });
+
+        builder.ConfigureServices((ctx, services) =>
+        {
+            services.Configure<JsonOptions>(options =>
             {
-                services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
-                {
-                    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-                    options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-                });
+                options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+            });
+
+            // Replace the production PostgreSQL DbContext with SQLite in-memory for tests
+            services.RemoveAll<IDbContextOptionsConfiguration<ApplicationDbContext>>();
+
+            var appConfig = ctx.Configuration;
+            services.AddDbContext<ApplicationDbContext>((_, options) =>
+            {
+                options.UseSqlite(_connectionString)
+                    .UseSeeding((context, _) => ApplicationDbContext.SeedData(context, appConfig))
+                    .UseAsyncSeeding(async (context, _, _) => ApplicationDbContext.SeedData(context, appConfig));
             });
         });
+
         ClientOptions.BaseAddress = new Uri("http://localhost/api/");
     }
 

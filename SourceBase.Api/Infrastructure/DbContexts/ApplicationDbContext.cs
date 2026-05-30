@@ -7,7 +7,7 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Infrastructure.DbContexts;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IConfiguration configuration, ILogger<ApplicationDbContextLoggingInterceptor> dbCommandLogger)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, ILogger<ApplicationDbContextLoggingInterceptor> dbCommandLogger)
     : DbContext(options), IDbContext
 {
     public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
@@ -24,22 +24,26 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-        optionsBuilder.UseSqlite(connectionString).UseSeeding((context, _) => SeedData(context, configuration)).UseAsyncSeeding(async (context, _, _) => SeedData(context, configuration));
         optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser)); // Audit history for all actions
         optionsBuilder.AddInterceptors(new ApplicationDbContextAuditInterceptor(currentUser)); // Audit trailing for create/update/delete actions
-        optionsBuilder.AddInterceptors(new ApplicationDbContextLoggingInterceptor(dbCommandLogger));
+        optionsBuilder.AddInterceptors(new ApplicationDbContextLoggingInterceptor(dbCommandLogger)); // Logs all executed SQL commands with parameters for debugging and performance monitoring
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        // Globally forces every string column in SQLite to be case-insensitive
-        configurationBuilder.Properties<string>().UseCollation("NOCASE");
+        if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+            configurationBuilder.Properties<string>().UseCollation("NOCASE");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+        {
+            modelBuilder.HasCollation("case_insensitive", locale: "und-x-icu", provider: "icu", deterministic: false);
+            modelBuilder.UseCollation("case_insensitive");
+        }
 
         // Convert all enums to strings in the database
         SetEnumStringConverter(modelBuilder);

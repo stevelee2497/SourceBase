@@ -13,7 +13,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMvcConfigs();
 builder.Services.AddAppSettings(builder.Configuration);
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCorsPolicies(builder.Configuration);
 builder.Services.AddFluentValidation(typeof(Program).Assembly);
 builder.Services.AddEndpoints(typeof(Program).Assembly);
