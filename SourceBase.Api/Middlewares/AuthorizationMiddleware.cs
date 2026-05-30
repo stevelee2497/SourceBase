@@ -18,11 +18,7 @@ public class AuthorizationMiddleware(RequestDelegate next)
 
     private static async Task<bool> IsUserValidAsync(HttpContext context, IDbContext dbContext)
     {
-        var endpoint = context.GetEndpoint();
-        if (endpoint is null)
-            return true;
-
-        if (endpoint.Metadata.GetMetadata<IAllowAnonymous>() is not null)
+        if (context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() is not null)
             return true;
 
         if (context.User.Identity is not { IsAuthenticated: true })
