@@ -102,9 +102,9 @@ else if (_data is not null)
     <Pagination CurrentPage="_page" TotalItems="_data.Total" PageSize="_pageSize" OnPageChanged="ChangePage" />
 }
 
-<UserModal IsVisible="@_showUserModal"
-           User="@_userModalUser"
-           AllRoles="@_allRoles"
+<UserModal IsVisible="_showUserModal"
+           User="_userModalUser"
+           AllRoles="_allRoles"
            OnClose="@(() => { _showUserModal = false; _userModalUser = null; })"
            OnSaved="OnUserSavedAsync" />
 
@@ -112,50 +112,10 @@ else if (_data is not null)
                Message="@($"Are you sure you want to delete '{_deletingUser?.UserName}'? This action cannot be undone.")"
                OnConfirm="DeleteAsync" OnCancel="() => { _showDelete = false; _deletingUser = null; }" />
 
-<!-- Reset Password Modal -->
-@if (_showResetPassword)
-{
-    <div class="fixed inset-0 z-40 flex items-center justify-center">
-        <div class="absolute inset-0 bg-black/40" @onclick="CloseResetPassword"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-1">Reset Password</h2>
-            <p class="text-sm text-gray-500 mb-4">Resetting password for <strong>@_resetPasswordUser?.UserName</strong>. Copy the password below before submitting — it won't be shown again.</p>
-
-            @if (!string.IsNullOrEmpty(_resetPasswordError))
-            {
-                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_resetPasswordError</div>
-            }
-
-            <div>
-                <label class="form-label">New Password</label>
-                <div class="flex gap-2">
-                    <input @bind="_newPassword" class="form-input flex-1" type="text" readonly />
-                    <button class="btn-secondary btn-sm" @onclick="RegeneratePassword">
-                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Regenerate
-                    </button>
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-3 mt-5">
-                <button class="btn-secondary" @onclick="CloseResetPassword">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Cancel
-                </button>
-                <button class="btn-primary" @onclick="SubmitResetPasswordAsync" disabled="@_resettingPassword">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    @(_resettingPassword ? "Sending…" : "Reset & Email")
-                </button>
-            </div>
-        </div>
-    </div>
-}
+<ResetPasswordModal IsVisible="_showResetPassword"
+                   User="_resetPasswordUser"
+                   OnClose="@(() => { _showResetPassword = false; _resetPasswordUser = null; })"
+                   OnSaved="@(() => { _showResetPassword = false; _resetPasswordUser = null; })" />
 
 <ConfirmDialog IsVisible="_showConfirmEmail" Title="Confirm email"
                Message="@($"Mark '{_confirmEmailUser?.UserName}' email as confirmed?")"
@@ -181,9 +141,6 @@ else if (_data is not null)
     // Reset password state
     private bool _showResetPassword;
     private UserResponse? _resetPasswordUser;
-    private string _newPassword = string.Empty;
-    private string? _resetPasswordError;
-    private bool _resettingPassword;
 
     // Confirm email state
     private bool _showConfirmEmail;
@@ -257,28 +214,7 @@ else if (_data is not null)
     private void OpenResetPassword(UserResponse user)
     {
         _resetPasswordUser = user;
-        _resetPasswordError = null;
-        _newPassword = GeneratePassword();
         _showResetPassword = true;
-    }
-
-    private void CloseResetPassword() => _showResetPassword = false;
-
-    private void RegeneratePassword() => _newPassword = GeneratePassword();
-
-    private async Task SubmitResetPasswordAsync()
-    {
-        _resetPasswordError = null;
-        _resettingPassword = true;
-        var error = await Api.ResetUserPasswordAsync(_resetPasswordUser!.Id, _newPassword);
-        if (error is not null)
-        {
-            _resetPasswordError = error.Message ?? "Failed to reset password.";
-            _resettingPassword = false;
-            return;
-        }
-        _showResetPassword = false;
-        _resettingPassword = false;
     }
 
     private void ConfirmUserEmail(UserResponse user)
@@ -297,24 +233,6 @@ else if (_data is not null)
         else
             await LoadUsersAsync();
         _confirmEmailUser = null;
-    }
-
-    private static string GeneratePassword()
-    {
-        const string upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        const string lower = "abcdefghijklmnopqrstuvwxyz";
-        const string digits = "0123456789";
-        const string special = "!@#$%^&*";
-        const string all = upper + lower + digits + special;
-        var rng = new Random();
-        var chars = new char[12];
-        chars[0] = upper[rng.Next(upper.Length)];
-        chars[1] = lower[rng.Next(lower.Length)];
-        chars[2] = digits[rng.Next(digits.Length)];
-        chars[3] = special[rng.Next(special.Length)];
-        for (var i = 4; i < 12; i++)
-            chars[i] = all[rng.Next(all.Length)];
-        return new string(chars.OrderBy(_ => rng.Next()).ToArray());
     }
 
 }
