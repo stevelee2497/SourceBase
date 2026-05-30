@@ -10,8 +10,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "USERS-RESET-PWD-001")]
-    [Fact]
+    [Fact(DisplayName = "USERS-RESET-PWD-001: ResetUserPassword_WithoutToken_ReturnsUnauthorized")]
     public async Task ResetUserPassword_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,8 +22,8 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "USERS-RESET-PWD-002")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-RESET-PWD-002: ResetUserPassword_AsNonAdmin_ReturnsForbidden")]
     public async Task ResetUserPassword_AsNonAdmin_ReturnsForbidden()
     {
         // Arrange
@@ -36,8 +35,8 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-    [Trait("TestCaseId", "USERS-RESET-PWD-003")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-RESET-PWD-003: ResetUserPassword_WithNonExistentUser_ReturnsNotFound")]
     public async Task ResetUserPassword_WithNonExistentUser_ReturnsNotFound()
     {
         // Arrange
@@ -49,8 +48,8 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    [Trait("TestCaseId", "USERS-RESET-PWD-004")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-RESET-PWD-004: ResetUserPassword_WithValidData_ReturnsOk")]
     public async Task ResetUserPassword_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -73,8 +72,8 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         var body = await response.Content.ReadFromJsonAsync<ResetUserPasswordResponse>();
         body!.Success.Should().BeTrue();
     }
-    [Trait("TestCaseId", "USERS-RESET-PWD-005")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-RESET-PWD-005: ResetUserPassword_SendsEmailWithNewPassword")]
     public async Task ResetUserPassword_SendsEmailWithNewPassword()
     {
         // Arrange
@@ -102,8 +101,8 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         latestEmail!.Subject.Should().Be("Your password has been reset");
         latestEmail.Body.Should().Contain(newPassword);
     }
-    [Trait("TestCaseId", "USERS-RESET-PWD-006")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-RESET-PWD-006: ResetUserPassword_WithTooShortPassword_ReturnsBadRequest")]
     public async Task ResetUserPassword_WithTooShortPassword_ReturnsBadRequest()
     {
         // Arrange

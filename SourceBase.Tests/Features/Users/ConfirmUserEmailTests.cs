@@ -10,8 +10,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "USERS-CONFIRM-EMAIL-001")]
-    [Fact]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-001: ConfirmUserEmail_WithoutToken_ReturnsUnauthorized")]
     public async Task ConfirmUserEmail_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,8 +22,8 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "USERS-CONFIRM-EMAIL-002")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-002: ConfirmUserEmail_AsNonAdmin_ReturnsForbidden")]
     public async Task ConfirmUserEmail_AsNonAdmin_ReturnsForbidden()
     {
         // Arrange
@@ -36,8 +35,8 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-    [Trait("TestCaseId", "USERS-CONFIRM-EMAIL-003")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-003: ConfirmUserEmail_WithNonExistentUser_ReturnsNotFound")]
     public async Task ConfirmUserEmail_WithNonExistentUser_ReturnsNotFound()
     {
         // Arrange
@@ -49,8 +48,8 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    [Trait("TestCaseId", "USERS-CONFIRM-EMAIL-004")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-004: ConfirmUserEmail_WithValidUser_ReturnsOk")]
     public async Task ConfirmUserEmail_WithValidUser_ReturnsOk()
     {
         // Arrange
@@ -73,8 +72,8 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         var body = await response.Content.ReadFromJsonAsync<ConfirmUserEmailResponse>();
         body!.Success.Should().BeTrue();
     }
-    [Trait("TestCaseId", "USERS-CONFIRM-EMAIL-005")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-005: ConfirmUserEmail_SetsEmailConfirmedTrue")]
     public async Task ConfirmUserEmail_SetsEmailConfirmedTrue()
     {
         // Arrange

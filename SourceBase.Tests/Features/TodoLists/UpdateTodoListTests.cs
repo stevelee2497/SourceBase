@@ -9,8 +9,7 @@ namespace SourceBase.Tests.Features.TodoLists;
 
 public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "TODOLISTS-UPDATE-001")]
-    [Fact]
+    [Fact(DisplayName = "TODOLISTS-UPDATE-001: UpdateTodoList_WithoutToken_ReturnsUnauthorized")]
     public async Task UpdateTodoList_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -22,8 +21,8 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "TODOLISTS-UPDATE-002")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOLISTS-UPDATE-002: UpdateTodoList_WithValidData_ReturnsOk")]
     public async Task UpdateTodoList_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -39,8 +38,8 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var body = await response.Content.ReadFromJsonAsync<UpdateTodoListResponse>();
         body!.Id.Should().Be(created.Id);
     }
-    [Trait("TestCaseId", "TODOLISTS-UPDATE-003")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOLISTS-UPDATE-003: UpdateTodoList_OwnedByAnotherUser_ReturnsNotFound")]
     public async Task UpdateTodoList_OwnedByAnotherUser_ReturnsNotFound()
     {
         // Arrange

@@ -11,8 +11,7 @@ namespace SourceBase.Tests.Features.Todo;
 
 public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "TODOS-GET-ALL-001")]
-    [Fact]
+    [Fact(DisplayName = "TODOS-GET-ALL-001: GetTodos_WithoutToken_ReturnsUnauthorized")]
     public async Task GetTodos_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -24,8 +23,8 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "TODOS-GET-ALL-002")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOS-GET-ALL-002: GetTodos_Authenticated_ReturnsOk")]
     public async Task GetTodos_Authenticated_ReturnsOk()
     {
         // Arrange
@@ -40,8 +39,8 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Should().NotBeNull();
         body!.Items.Should().NotBeNull();
     }
-    [Trait("TestCaseId", "TODOS-GET-ALL-003")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOS-GET-ALL-003: GetTodos_WithMultipleUsers_ReturnsOnlyCurrentUsersItems")]
     public async Task GetTodos_WithMultipleUsers_ReturnsOnlyCurrentUsersItems()
     {
         // Arrange
@@ -71,8 +70,8 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         todos!.Items.Should().ContainSingle(x => x.Id == ownTodoBody!.Id);
         todos.Items.Should().NotContain(x => x.Title == "Other Todo");
     }
-    [Trait("TestCaseId", "TODOS-GET-ALL-004")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOS-GET-ALL-004: GetTodos_WithStatusAndDateFilters_ReturnsMatchingItems")]
     public async Task GetTodos_WithStatusAndDateFilters_ReturnsMatchingItems()
     {
         // Arrange
@@ -106,8 +105,8 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var todos = await response.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
         todos!.Items.Should().ContainSingle(x => x.Id == matchingTodoBody!.Id);
     }
-    [Trait("TestCaseId", "TODOS-GET-ALL-005")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOS-GET-ALL-005: GetTodos_WithPagingAndOrdering_ReturnsRequestedPage")]
     public async Task GetTodos_WithPagingAndOrdering_ReturnsRequestedPage()
     {
         // Arrange
@@ -138,8 +137,8 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         todos.Items.Should().ContainSingle();
         todos.Items.Single().Id.Should().Be(expectedTodoBody!.Id);
     }
-    [Trait("TestCaseId", "TODOS-GET-ALL-006")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOS-GET-ALL-006: GetTodos_FilteredByTodoListId_ReturnsMatchingItems")]
     public async Task GetTodos_FilteredByTodoListId_ReturnsMatchingItems()
     {
         // Arrange

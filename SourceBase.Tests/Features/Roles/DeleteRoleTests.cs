@@ -10,8 +10,7 @@ namespace SourceBase.Tests.Features.Roles;
 
 public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "ROLES-DELETE-001")]
-    [Fact]
+    [Fact(DisplayName = "ROLES-DELETE-001: DeleteRole_WithoutToken_ReturnsUnauthorized")]
     public async Task DeleteRole_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,8 +22,8 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "ROLES-DELETE-002")]
-    [Fact]
+
+    [Fact(DisplayName = "ROLES-DELETE-002: DeleteRole_WithNonAdminUser_ReturnsForbidden")]
     public async Task DeleteRole_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -44,8 +43,8 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-    [Trait("TestCaseId", "ROLES-DELETE-003")]
-    [Fact]
+
+    [Fact(DisplayName = "ROLES-DELETE-003: DeleteRole_WithValidData_ReturnsOk")]
     public async Task DeleteRole_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -69,8 +68,8 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var roles = await rolesResponse.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
         roles!.Items.Should().NotContain(x => x.Id == createBody.Id);
     }
-    [Trait("TestCaseId", "ROLES-DELETE-004")]
-    [Fact]
+
+    [Fact(DisplayName = "ROLES-DELETE-004: DeleteRole_WithAdminRole_ReturnsBadRequest")]
     public async Task DeleteRole_WithAdminRole_ReturnsBadRequest()
     {
         // Arrange
@@ -85,8 +84,8 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-    [Trait("TestCaseId", "ROLES-DELETE-005")]
-    [Fact]
+
+    [Fact(DisplayName = "ROLES-DELETE-005: DeleteRole_WithUnknownId_ReturnsBadRequest")]
     public async Task DeleteRole_WithUnknownId_ReturnsBadRequest()
     {
         // Arrange

@@ -10,8 +10,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "RESEND-CONF-001")]
-    [Fact]
+    [Fact(DisplayName = "RESEND-CONF-001: ResendConfirmationEmail_WithValidEmail_ReturnsOk")]
     public async Task ResendConfirmationEmail_WithValidEmail_ReturnsOk()
     {
         // Arrange
@@ -50,8 +49,8 @@ public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture
         latestEmail!.Subject.Should().Be("Confirm your email");
         latestEmail.Body.Should().NotBeNullOrWhiteSpace();
     }
-    [Trait("TestCaseId", "RESEND-CONF-002")]
-    [Fact]
+
+    [Fact(DisplayName = "RESEND-CONF-002: ResendConfirmationEmail_WithConfirmedEmail_ReturnsBadRequest")]
     public async Task ResendConfirmationEmail_WithConfirmedEmail_ReturnsBadRequest()
     {
         // Arrange
@@ -79,8 +78,8 @@ public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-    [Trait("TestCaseId", "RESEND-CONF-003")]
-    [Fact]
+
+    [Fact(DisplayName = "RESEND-CONF-003: ResendConfirmationEmail_WithUnknownEmail_ReturnsNotFound")]
     public async Task ResendConfirmationEmail_WithUnknownEmail_ReturnsNotFound()
     {
         // Arrange
@@ -95,8 +94,8 @@ public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    [Trait("TestCaseId", "RESEND-CONF-004")]
-    [Fact]
+
+    [Fact(DisplayName = "RESEND-CONF-004: ResendConfirmationEmail_WithInvalidEmail_ReturnsBadRequest")]
     public async Task ResendConfirmationEmail_WithInvalidEmail_ReturnsBadRequest()
     {
         // Arrange

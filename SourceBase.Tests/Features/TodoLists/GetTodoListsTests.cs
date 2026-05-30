@@ -10,8 +10,7 @@ namespace SourceBase.Tests.Features.TodoLists;
 
 public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "TODOLISTS-GET-001")]
-    [Fact]
+    [Fact(DisplayName = "TODOLISTS-GET-001: GetTodoLists_WithoutToken_ReturnsUnauthorized")]
     public async Task GetTodoLists_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,8 +22,8 @@ public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "TODOLISTS-GET-002")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOLISTS-GET-002: GetTodoLists_ReturnsOk")]
     public async Task GetTodoLists_ReturnsOk()
     {
         // Arrange
@@ -39,8 +38,8 @@ public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body.Should().NotBeNull();
         body!.Items.Should().NotBeNull();
     }
-    [Trait("TestCaseId", "TODOLISTS-GET-003")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOLISTS-GET-003: GetTodoLists_ReturnsOnlyCurrentUserLists")]
     public async Task GetTodoLists_ReturnsOnlyCurrentUserLists()
     {
         // Arrange

@@ -9,8 +9,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "UPDATE-INFO-001")]
-    [Fact]
+    [Fact(DisplayName = "UPDATE-INFO-001: UpdateUserInfo_WithoutToken_ReturnsUnauthorized")]
     public async Task UpdateUserInfo_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -27,8 +26,8 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "UPDATE-INFO-002")]
-    [Fact]
+
+    [Fact(DisplayName = "UPDATE-INFO-002: UpdateUserInfo_WithValidData_ReturnsOk")]
     public async Task UpdateUserInfo_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -47,8 +46,8 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var body = await response.Content.ReadFromJsonAsync<UpdateUserInfoResponse>();
         body!.Id.Should().NotBeEmpty();
     }
-    [Trait("TestCaseId", "UPDATE-INFO-003")]
-    [Fact]
+
+    [Fact(DisplayName = "UPDATE-INFO-003: UpdateUserInfo_ChangesReflectedInGetUserInfo")]
     public async Task UpdateUserInfo_ChangesReflectedInGetUserInfo()
     {
         // Arrange
@@ -74,8 +73,8 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body.LastName.Should().Be(lastName);
         body.PhoneNumber.Should().Be(phoneNumber);
     }
-    [Trait("TestCaseId", "UPDATE-INFO-004")]
-    [Fact]
+
+    [Fact(DisplayName = "UPDATE-INFO-004: UpdateUserInfo_WithPhoneNumberTooLong_ReturnsBadRequest")]
     public async Task UpdateUserInfo_WithPhoneNumberTooLong_ReturnsBadRequest()
     {
         // Arrange

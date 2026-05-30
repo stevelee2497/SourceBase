@@ -10,8 +10,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "CONFIRM-EMAIL-001")]
-    [Fact]
+    [Fact(DisplayName = "CONFIRM-EMAIL-001: ConfirmEmail_WithValidCode_ReturnsOk")]
     public async Task ConfirmEmail_WithValidCode_ReturnsOk()
     {
         // Arrange
@@ -44,8 +43,8 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         dbUser.Roles.Should().Contain(x => x.Name == "User");
     }
 
-    [Trait("TestCaseId", "CONFIRM-EMAIL-002")]
-    [Fact]
+
+    [Fact(DisplayName = "CONFIRM-EMAIL-002: ConfirmEmail_WithInvalidCode_ReturnsUnauthorized")]
     public async Task ConfirmEmail_WithInvalidCode_ReturnsUnauthorized()
     {
         // Arrange
@@ -70,8 +69,8 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Trait("TestCaseId", "CONFIRM-EMAIL-003")]
-    [Fact]
+
+    [Fact(DisplayName = "CONFIRM-EMAIL-003: ConfirmEmail_WithExpiredCode_ReturnsUnauthorized")]
     public async Task ConfirmEmail_WithExpiredCode_ReturnsUnauthorized()
     {
         // Arrange
@@ -103,8 +102,8 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Trait("TestCaseId", "CONFIRM-EMAIL-004")]
-    [Fact]
+
+    [Fact(DisplayName = "CONFIRM-EMAIL-004: ConfirmEmail_WithUnknownEmail_ReturnsUnauthorized")]
     public async Task ConfirmEmail_WithUnknownEmail_ReturnsUnauthorized()
     {
         // Arrange
@@ -121,8 +120,8 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Trait("TestCaseId", "CONFIRM-EMAIL-005")]
-    [Fact]
+
+    [Fact(DisplayName = "CONFIRM-EMAIL-005: ConfirmEmail_WithInvalidPayload_ReturnsBadRequest")]
     public async Task ConfirmEmail_WithInvalidPayload_ReturnsBadRequest()
     {
         // Arrange

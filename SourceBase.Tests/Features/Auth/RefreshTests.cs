@@ -10,8 +10,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "REFRESH-001")]
-    [Fact]
+    [Fact(DisplayName = "REFRESH-001: RefreshToken_WithValidToken_PreservesRoles")]
     public async Task RefreshToken_WithValidToken_PreservesRoles()
     {
         // Arrange
@@ -40,8 +39,8 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var body = await getInfoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
         body!.Roles.Should().Contain("Admin");
     }
-    [Trait("TestCaseId", "REFRESH-002")]
-    [Fact]
+
+    [Fact(DisplayName = "REFRESH-002: RefreshToken_WithInvalidToken_ReturnsUnauthorized")]
     public async Task RefreshToken_WithInvalidToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -56,8 +55,8 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "REFRESH-003")]
-    [Fact]
+
+    [Fact(DisplayName = "REFRESH-003: RefreshToken_AfterLogout_ReturnsUnauthorized")]
     public async Task RefreshToken_AfterLogout_ReturnsUnauthorized()
     {
         // Arrange
@@ -95,8 +94,8 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "REFRESH-004")]
-    [Fact]
+
+    [Fact(DisplayName = "REFRESH-004: RefreshToken_WithMissingToken_ReturnsBadRequest")]
     public async Task RefreshToken_WithMissingToken_ReturnsBadRequest()
     {
         // Arrange

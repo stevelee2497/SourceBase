@@ -10,8 +10,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "USERS-GET-001")]
-    [Fact]
+    [Fact(DisplayName = "USERS-GET-001: GetUsers_WithoutToken_ReturnsUnauthorized")]
     public async Task GetUsers_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,8 +22,8 @@ public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "USERS-GET-002")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-GET-002: GetUsers_WithNonAdminUser_ReturnsForbidden")]
     public async Task GetUsers_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -36,8 +35,8 @@ public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-    [Trait("TestCaseId", "USERS-GET-003")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-GET-003: GetUsers_WithAdminUser_ReturnsCreatedUsers")]
     public async Task GetUsers_WithAdminUser_ReturnsCreatedUsers()
     {
         // Arrange
@@ -62,8 +61,8 @@ public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Should().NotBeNull();
         body!.Items.Should().Contain(x => x.Id == createBody!.Id && x.Email == managedEmail && x.Roles.Contains("User"));
     }
-    [Trait("TestCaseId", "USERS-GET-004")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-GET-004: GetUsers_WithPagingAndOrdering_ReturnsRequestedPage")]
     public async Task GetUsers_WithPagingAndOrdering_ReturnsRequestedPage()
     {
         // Arrange

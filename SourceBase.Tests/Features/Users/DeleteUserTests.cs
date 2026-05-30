@@ -11,8 +11,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "USERS-DELETE-001")]
-    [Fact]
+    [Fact(DisplayName = "USERS-DELETE-001: DeleteUser_WithoutToken_ReturnsUnauthorized")]
     public async Task DeleteUser_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -24,8 +23,8 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "USERS-DELETE-002")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-DELETE-002: DeleteUser_WithNonAdminUser_ReturnsForbidden")]
     public async Task DeleteUser_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -47,8 +46,8 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-    [Trait("TestCaseId", "USERS-DELETE-003")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-DELETE-003: DeleteUser_WithExistingUser_ReturnsOk")]
     public async Task DeleteUser_WithExistingUser_ReturnsOk()
     {
         // Arrange
@@ -74,8 +73,8 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var users = await usersResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
         users!.Items.Should().NotContain(x => x.Id == createBody.Id);
     }
-    [Trait("TestCaseId", "USERS-DELETE-004")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-DELETE-004: DeleteUser_WithUnknownUser_ReturnsNotFound")]
     public async Task DeleteUser_WithUnknownUser_ReturnsNotFound()
     {
         // Arrange
@@ -87,8 +86,8 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    [Trait("TestCaseId", "USERS-DELETE-005")]
-    [Fact]
+
+    [Fact(DisplayName = "USERS-DELETE-005: DeleteUser_WithDeletedUser_RevokesExistingToken")]
     public async Task DeleteUser_WithDeletedUser_RevokesExistingToken()
     {
         // Arrange

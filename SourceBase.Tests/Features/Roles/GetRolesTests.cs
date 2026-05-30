@@ -10,8 +10,7 @@ namespace SourceBase.Tests.Features.Roles;
 
 public class GetRolesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "ROLES-GET-001")]
-    [Fact]
+    [Fact(DisplayName = "ROLES-GET-001: GetRoles_WithAnonymousClient_ReturnsSeededRoles")]
     public async Task GetRoles_WithAnonymousClient_ReturnsSeededRoles()
     {
         // Arrange
@@ -27,8 +26,8 @@ public class GetRolesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.Items.Should().ContainSingle(role => role.Name == "Admin");
         body.Items.Should().ContainSingle(role => role.Name == "User");
     }
-    [Trait("TestCaseId", "ROLES-GET-002")]
-    [Fact]
+
+    [Fact(DisplayName = "ROLES-GET-002: GetRoles_WithCreatedRole_ReturnsRole")]
     public async Task GetRoles_WithCreatedRole_ReturnsRole()
     {
         // Arrange
@@ -50,8 +49,8 @@ public class GetRolesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var roles = await response.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
         roles!.Items.Should().Contain(x => x.Name == roleName && x.Description == "Created role");
     }
-    [Trait("TestCaseId", "ROLES-GET-003")]
-    [Fact]
+
+    [Fact(DisplayName = "ROLES-GET-003: GetRoles_WithPagingAndOrdering_ReturnsRequestedPage")]
     public async Task GetRoles_WithPagingAndOrdering_ReturnsRequestedPage()
     {
         // Arrange

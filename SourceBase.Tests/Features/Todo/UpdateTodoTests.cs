@@ -11,8 +11,7 @@ namespace SourceBase.Tests.Features.Todo;
 
 public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Trait("TestCaseId", "TODOS-UPDATE-001")]
-    [Fact]
+    [Fact(DisplayName = "TODOS-UPDATE-001: UpdateTodo_WithoutToken_ReturnsUnauthorized")]
     public async Task UpdateTodo_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -29,8 +28,8 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    [Trait("TestCaseId", "TODOS-UPDATE-002")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOS-UPDATE-002: UpdateTodo_WithValidData_ReturnsOk")]
     public async Task UpdateTodo_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -61,8 +60,8 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         updated!.Title.Should().Be("Updated Title");
         updated.Status.Should().Be(TodoItemStatus.Completed);
     }
-    [Trait("TestCaseId", "TODOS-UPDATE-003")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOS-UPDATE-003: UpdateTodo_WithMissingTitle_ReturnsBadRequest")]
     public async Task UpdateTodo_WithMissingTitle_ReturnsBadRequest()
     {
         // Arrange
@@ -78,8 +77,8 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-    [Trait("TestCaseId", "TODOS-UPDATE-004")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOS-UPDATE-004: UpdateTodo_WithNonExistentId_ReturnsNotFound")]
     public async Task UpdateTodo_WithNonExistentId_ReturnsNotFound()
     {
         // Arrange
@@ -96,8 +95,8 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    [Trait("TestCaseId", "TODOS-UPDATE-005")]
-    [Fact]
+
+    [Fact(DisplayName = "TODOS-UPDATE-005: UpdateTodo_WithOtherUsersTodo_ReturnsNotFound")]
     public async Task UpdateTodo_WithOtherUsersTodo_ReturnsNotFound()
     {
         // Arrange
