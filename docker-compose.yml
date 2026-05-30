@@ -50,6 +50,8 @@ services:
       - AppSettings__SendGridApiKey=${SENDGRID_API_KEY}
       - AppSettings__SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
       - AllowedSpecificOrigins__0=${WEB_URL}
+    volumes:
+      - ./logs/api:/app/Logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -67,8 +69,21 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ApiBaseUrl=http://sourcebase-api:8080
+    volumes:
+      - ./logs/web:/app/Logs
     depends_on:
       - sourcebase-api
+    networks:
+      - internal
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: sourcebase-dozzle
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "3003:8080"
     networks:
       - internal
 
