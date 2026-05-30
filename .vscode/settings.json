@@ -1,4 +1,5 @@
 {
+  "editor.formatOnSave": true,
   "html.format.wrapLineLength": 200,
   "[csharp]": {
     "editor.defaultFormatter": "ms-dotnettools.csharp",
