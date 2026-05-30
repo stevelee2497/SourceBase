@@ -3,8 +3,12 @@
 @inject ApiHttpClient Api
 
 <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-semibold text-gray-900">Users</h1>
-    <button class="btn-primary" @onclick="OpenCreate">+ New User</button>
+    <button class="btn-primary" @onclick="OpenCreate">
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        New User
+    </button>
 </div>
 
 @if (!string.IsNullOrEmpty(_error))
@@ -19,6 +23,7 @@
 else if (_data is not null)
 {
     <div class="card p-0 overflow-hidden">
+        <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
@@ -37,36 +42,55 @@ else if (_data is not null)
                             <div class="text-xs text-gray-500">@user.Email</div>
                         </td>
                         <td class="px-4 py-3">
-                            <div class="flex flex-wrap gap-1">
+                            <div class="flex gap-1">
                                 @foreach (var role in user.Roles)
                                 {
-                                    <span class="badge-blue">@role</span>
+                                    <span class="badge-blue text-xsm">@role</span>
                                 }
                             </div>
                         </td>
                         <td class="px-4 py-3">
                             @if (user.EmailConfirmed)
                             {
-                                <span class="badge-green">Confirmed</span>
+                                <span class="badge-green text-xsm">Confirmed</span>
                             }
                             else
                             {
-                                <span class="badge-red">Pending</span>
+                                <span class="badge-red text-xsm">Pending</span>
                             }
                         </td>
-                        <td class="px-4 py-3 text-right space-x-2">
-                            <button class="btn-secondary btn-sm" @onclick="() => OpenEdit(user)">Edit</button>
-                            @if (!user.EmailConfirmed)
-                            {
-                                <button class="btn-secondary btn-sm" @onclick="() => ConfirmUserEmail(user)">Confirm Email</button>
-                            }
-                            <button class="btn-secondary btn-sm" @onclick="() => OpenResetPassword(user)">Reset Pass</button>
-                            <button class="btn-danger btn-sm" @onclick="() => ConfirmDelete(user)">Delete</button>
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex items-center justify-end gap-3">
+                                <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="() => OpenEdit(user)" title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                @if (!user.EmailConfirmed)
+                                {
+                                    <button class="text-gray-400 hover:text-green-600 transition-colors" @onclick="() => ConfirmUserEmail(user)" title="Confirm Email">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </button>
+                                }
+                                <button class="text-gray-400 hover:text-amber-600 transition-colors" @onclick="() => OpenResetPassword(user)" title="Reset Password">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                    </svg>
+                                </button>
+                                <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="() => ConfirmDelete(user)" title="Delete">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
+        </div>
     </div>
 
     <Pagination CurrentPage="_page" TotalItems="_data.Total" PageSize="_pageSize" OnPageChanged="ChangePage" />
@@ -133,8 +157,16 @@ else if (_data is not null)
             </div>
 
             <div class="flex justify-end gap-3 mt-6">
-                <button class="btn-secondary" @onclick="CloseForm">Cancel</button>
+                <button class="btn-secondary" @onclick="CloseForm">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Cancel
+                </button>
                 <button class="btn-primary" @onclick="SaveAsync" disabled="@_saving">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
                     @(_saving ? "Saving…" : "Save")
                 </button>
             </div>
@@ -164,13 +196,26 @@ else if (_data is not null)
                 <label class="form-label">New Password</label>
                 <div class="flex gap-2">
                     <input @bind="_newPassword" class="form-input flex-1" type="text" readonly />
-                    <button class="btn-secondary btn-sm" @onclick="RegeneratePassword">Regenerate</button>
+                    <button class="btn-secondary btn-sm" @onclick="RegeneratePassword">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Regenerate
+                    </button>
                 </div>
             </div>
 
             <div class="flex justify-end gap-3 mt-5">
-                <button class="btn-secondary" @onclick="CloseResetPassword">Cancel</button>
+                <button class="btn-secondary" @onclick="CloseResetPassword">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Cancel
+                </button>
                 <button class="btn-primary" @onclick="SubmitResetPasswordAsync" disabled="@_resettingPassword">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
                     @(_resettingPassword ? "Sending…" : "Reset & Email")
                 </button>
             </div>

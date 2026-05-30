@@ -1,10 +1,10 @@
 @if (TotalPages > 1)
 {
-    <div class="flex items-center justify-between px-4 py-3 sm:px-0 mt-4">
-        <div class="text-sm text-gray-500">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-2 py-3 sm:px-0 mt-4 gap-2">
+        <div class="text-sm text-gray-500 text-center sm:text-left">
             Page @CurrentPage of @TotalPages (@TotalItems items)
         </div>
-        <div class="flex items-center gap-1">
+        <div class="flex items-center justify-center gap-1 flex-wrap">
             <button class="btn-secondary btn-sm" disabled="@(CurrentPage <= 1)"
                     @onclick="() => OnPageChanged.InvokeAsync(CurrentPage - 1)">
                 &larr; Prev
