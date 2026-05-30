@@ -10,6 +10,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "CONFIRM-EMAIL-001")]
     [Fact]
     public async Task ConfirmEmail_WithValidCode_ReturnsOk()
     {
@@ -43,6 +44,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         dbUser.Roles.Should().Contain(x => x.Name == "User");
     }
 
+    [Trait("TestCaseId", "CONFIRM-EMAIL-002")]
     [Fact]
     public async Task ConfirmEmail_WithInvalidCode_ReturnsUnauthorized()
     {
@@ -68,6 +70,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    [Trait("TestCaseId", "CONFIRM-EMAIL-003")]
     [Fact]
     public async Task ConfirmEmail_WithExpiredCode_ReturnsUnauthorized()
     {
@@ -100,6 +103,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    [Trait("TestCaseId", "CONFIRM-EMAIL-004")]
     [Fact]
     public async Task ConfirmEmail_WithUnknownEmail_ReturnsUnauthorized()
     {
@@ -117,6 +121,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    [Trait("TestCaseId", "CONFIRM-EMAIL-005")]
     [Fact]
     public async Task ConfirmEmail_WithInvalidPayload_ReturnsBadRequest()
     {

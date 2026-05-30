@@ -9,6 +9,7 @@ namespace SourceBase.Tests.Features.TodoLists;
 
 public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "TODOLISTS-DELETE-001")]
     [Fact]
     public async Task DeleteTodoList_WithoutToken_ReturnsUnauthorized()
     {
@@ -21,7 +22,7 @@ public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "TODOLISTS-DELETE-002")]
     [Fact]
     public async Task DeleteTodoList_WithValidId_ReturnsOk()
     {
@@ -38,7 +39,7 @@ public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var body = await response.Content.ReadFromJsonAsync<DeleteTodoListResponse>();
         body!.Success.Should().BeTrue();
     }
-
+    [Trait("TestCaseId", "TODOLISTS-DELETE-003")]
     [Fact]
     public async Task DeleteTodoList_OwnedByAnotherUser_ReturnsNotFound()
     {

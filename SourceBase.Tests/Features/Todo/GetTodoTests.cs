@@ -11,6 +11,7 @@ namespace SourceBase.Tests.Features.Todo;
 
 public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "TODOS-GET-001")]
     [Fact]
     public async Task GetTodo_WithoutToken_ReturnsUnauthorized()
     {
@@ -23,7 +24,7 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "TODOS-GET-002")]
     [Fact]
     public async Task GetTodo_AfterCreate_ReturnsCorrectData()
     {
@@ -48,7 +49,7 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Status.Should().Be(TodoItemStatus.Open);
         body.Date.Should().Be(new DateOnly(2025, 7, 15));
     }
-
+    [Trait("TestCaseId", "TODOS-GET-003")]
     [Fact]
     public async Task GetTodo_NonExistentId_ReturnsNotFound()
     {
@@ -61,7 +62,7 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
+    [Trait("TestCaseId", "TODOS-GET-004")]
     [Fact]
     public async Task GetTodo_WithOtherUsersTodo_ReturnsNotFound()
     {

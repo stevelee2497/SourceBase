@@ -13,6 +13,7 @@ namespace SourceBase.Tests.Features.Data;
 
 public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "DATA-AUDITS-001")]
     [Fact]
     public async Task GetAudits_WithoutToken_ReturnsUnauthorized()
     {
@@ -25,7 +26,7 @@ public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "DATA-AUDITS-002")]
     [Fact]
     public async Task GetAudits_WithNonAdminUser_ReturnsForbidden()
     {
@@ -38,7 +39,7 @@ public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-
+    [Trait("TestCaseId", "DATA-AUDITS-003")]
     [Fact]
     public async Task GetAudits_WithAdminUser_ReturnsAuditHistory()
     {
@@ -71,7 +72,7 @@ public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
             x.Action == "Added" &&
             x.EntityType.EndsWith("TodoItemEntity", StringComparison.Ordinal));
     }
-
+    [Trait("TestCaseId", "DATA-AUDITS-004")]
     [Fact]
     public async Task GetAudits_WithRecentChanges_ReturnsMostRecentEntriesFirst()
     {

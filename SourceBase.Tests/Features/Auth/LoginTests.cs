@@ -9,6 +9,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "LOGIN-001")]
     [Fact]
     public async Task Login_WithValidCredentials_ReturnsOkAndAccessToken()
     {
@@ -30,6 +31,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.RefreshToken.Should().NotBeNullOrEmpty();
     }
 
+    [Trait("TestCaseId", "LOGIN-002")]
     [Fact]
     public async Task Login_WithWrongPassword_ReturnsUnauthorized()
     {
@@ -47,6 +49,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    [Trait("TestCaseId", "LOGIN-003")]
     [Fact]
     public async Task Login_WithUnknownEmail_ReturnsUnauthorized()
     {
@@ -64,6 +67,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    [Trait("TestCaseId", "LOGIN-004")]
     [Fact]
     public async Task Login_WithUnconfirmedEmail_ReturnsUnauthorized()
     {
@@ -89,6 +93,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    [Trait("TestCaseId", "LOGIN-005")]
     [Fact]
     public async Task Login_AfterEmailConfirmed_ReturnsOkAndAccessToken()
     {
@@ -123,6 +128,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.AccessToken.Should().NotBeNullOrEmpty();
     }
 
+    [Trait("TestCaseId", "LOGIN-006")]
     [Fact]
     public async Task Login_WithMissingPassword_ReturnsBadRequest()
     {

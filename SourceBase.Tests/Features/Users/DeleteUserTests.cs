@@ -11,6 +11,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "USERS-DELETE-001")]
     [Fact]
     public async Task DeleteUser_WithoutToken_ReturnsUnauthorized()
     {
@@ -23,7 +24,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "USERS-DELETE-002")]
     [Fact]
     public async Task DeleteUser_WithNonAdminUser_ReturnsForbidden()
     {
@@ -46,7 +47,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-
+    [Trait("TestCaseId", "USERS-DELETE-003")]
     [Fact]
     public async Task DeleteUser_WithExistingUser_ReturnsOk()
     {
@@ -73,7 +74,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var users = await usersResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
         users!.Items.Should().NotContain(x => x.Id == createBody.Id);
     }
-
+    [Trait("TestCaseId", "USERS-DELETE-004")]
     [Fact]
     public async Task DeleteUser_WithUnknownUser_ReturnsNotFound()
     {
@@ -86,7 +87,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
+    [Trait("TestCaseId", "USERS-DELETE-005")]
     [Fact]
     public async Task DeleteUser_WithDeletedUser_RevokesExistingToken()
     {

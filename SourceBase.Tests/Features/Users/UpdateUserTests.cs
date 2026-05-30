@@ -12,6 +12,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "USERS-UPDATE-001")]
     [Fact]
     public async Task UpdateUser_WithoutToken_ReturnsUnauthorized()
     {
@@ -30,7 +31,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "USERS-UPDATE-002")]
     [Fact]
     public async Task UpdateUser_WithNonAdminUser_ReturnsForbidden()
     {
@@ -60,7 +61,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-
+    [Trait("TestCaseId", "USERS-UPDATE-003")]
     [Fact]
     public async Task UpdateUser_WithValidData_ReturnsOk()
     {
@@ -101,7 +102,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         updatedUser.Roles.Should().Contain("Admin");
         updatedUser.Roles.Should().Contain("User");
     }
-
+    [Trait("TestCaseId", "USERS-UPDATE-004")]
     [Fact]
     public async Task UpdateUser_WithUnknownRole_ReturnsBadRequest()
     {
@@ -128,7 +129,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-
+    [Trait("TestCaseId", "USERS-UPDATE-005")]
     [Fact]
     public async Task UpdateUser_WithDuplicateEmailIgnoringCase_ReturnsBadRequest()
     {
@@ -165,7 +166,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-
+    [Trait("TestCaseId", "USERS-UPDATE-006")]
     [Fact]
     public async Task UpdateUser_WithEmailChange_RequiresReconfirmationAndIssuesOtp()
     {
@@ -207,7 +208,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         latestEmail!.Subject.Should().Be("Confirm your email");
         latestEmail.Body.Should().NotBeNullOrWhiteSpace();
     }
-
+    [Trait("TestCaseId", "USERS-UPDATE-007")]
     [Fact]
     public async Task UpdateUser_WithRoleChange_InvalidatesUsersExistingToken()
     {

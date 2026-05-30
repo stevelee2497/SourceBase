@@ -10,6 +10,7 @@ namespace SourceBase.Tests.Features.TodoLists;
 
 public class CreateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "TODOLISTS-CREATE-001")]
     [Fact]
     public async Task CreateTodoList_WithoutToken_ReturnsUnauthorized()
     {
@@ -22,7 +23,7 @@ public class CreateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "TODOLISTS-CREATE-002")]
     [Fact]
     public async Task CreateTodoList_WithValidData_ReturnsOk()
     {
@@ -37,7 +38,7 @@ public class CreateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var body = await response.Content.ReadFromJsonAsync<CreateTodoListResponse>();
         body!.Id.Should().NotBeEmpty();
     }
-
+    [Trait("TestCaseId", "TODOLISTS-CREATE-003")]
     [Fact]
     public async Task CreateTodoList_WithMissingName_ReturnsBadRequest()
     {
@@ -50,7 +51,7 @@ public class CreateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-
+    [Trait("TestCaseId", "TODOLISTS-CREATE-004")]
     [Fact]
     public async Task CreateTodoList_BelongsToAuthenticatedUser()
     {

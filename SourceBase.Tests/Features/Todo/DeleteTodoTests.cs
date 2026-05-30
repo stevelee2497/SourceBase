@@ -10,6 +10,7 @@ namespace SourceBase.Tests.Features.Todo;
 
 public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "TODOS-DELETE-001")]
     [Fact]
     public async Task DeleteTodo_WithoutToken_ReturnsUnauthorized()
     {
@@ -22,7 +23,7 @@ public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "TODOS-DELETE-002")]
     [Fact]
     public async Task DeleteTodo_ExistingItem_ReturnsOk()
     {
@@ -47,7 +48,7 @@ public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var getResponse = await client.GetAsync(GetTodoEndpoint.Route.WithId(createBody.Id));
         getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
+    [Trait("TestCaseId", "TODOS-DELETE-003")]
     [Fact]
     public async Task DeleteTodo_WithNonExistentId_ReturnsNotFound()
     {
@@ -60,7 +61,7 @@ public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
+    [Trait("TestCaseId", "TODOS-DELETE-004")]
     [Fact]
     public async Task DeleteTodo_WithOtherUsersTodo_ReturnsNotFound()
     {

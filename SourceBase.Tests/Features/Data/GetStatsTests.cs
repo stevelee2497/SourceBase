@@ -9,6 +9,7 @@ namespace SourceBase.Tests.Features.Data;
 
 public class GetStatsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "DATA-STATS-001")]
     [Fact]
     public async Task GetStats_WithoutToken_ReturnsUnauthorized()
     {
@@ -21,7 +22,7 @@ public class GetStatsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "DATA-STATS-002")]
     [Fact]
     public async Task GetStats_AsAuthenticatedUser_ReturnsOk()
     {
@@ -40,7 +41,7 @@ public class GetStatsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.CompletedTodoItems.Should().BeGreaterThanOrEqualTo(0);
         body.TotalTodoLists.Should().BeGreaterThanOrEqualTo(0);
     }
-
+    [Trait("TestCaseId", "DATA-STATS-003")]
     [Fact]
     public async Task GetStats_CompletedTodoItems_DoesNotExceedTotal()
     {

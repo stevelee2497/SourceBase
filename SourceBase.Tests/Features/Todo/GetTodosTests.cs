@@ -11,6 +11,7 @@ namespace SourceBase.Tests.Features.Todo;
 
 public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "TODOS-GET-ALL-001")]
     [Fact]
     public async Task GetTodos_WithoutToken_ReturnsUnauthorized()
     {
@@ -23,7 +24,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "TODOS-GET-ALL-002")]
     [Fact]
     public async Task GetTodos_Authenticated_ReturnsOk()
     {
@@ -39,7 +40,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Should().NotBeNull();
         body!.Items.Should().NotBeNull();
     }
-
+    [Trait("TestCaseId", "TODOS-GET-ALL-003")]
     [Fact]
     public async Task GetTodos_WithMultipleUsers_ReturnsOnlyCurrentUsersItems()
     {
@@ -70,7 +71,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         todos!.Items.Should().ContainSingle(x => x.Id == ownTodoBody!.Id);
         todos.Items.Should().NotContain(x => x.Title == "Other Todo");
     }
-
+    [Trait("TestCaseId", "TODOS-GET-ALL-004")]
     [Fact]
     public async Task GetTodos_WithStatusAndDateFilters_ReturnsMatchingItems()
     {
@@ -105,7 +106,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var todos = await response.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
         todos!.Items.Should().ContainSingle(x => x.Id == matchingTodoBody!.Id);
     }
-
+    [Trait("TestCaseId", "TODOS-GET-ALL-005")]
     [Fact]
     public async Task GetTodos_WithPagingAndOrdering_ReturnsRequestedPage()
     {
@@ -137,7 +138,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         todos.Items.Should().ContainSingle();
         todos.Items.Single().Id.Should().Be(expectedTodoBody!.Id);
     }
-
+    [Trait("TestCaseId", "TODOS-GET-ALL-006")]
     [Fact]
     public async Task GetTodos_FilteredByTodoListId_ReturnsMatchingItems()
     {

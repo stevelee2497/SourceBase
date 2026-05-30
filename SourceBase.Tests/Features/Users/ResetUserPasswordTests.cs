@@ -10,6 +10,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "USERS-RESET-PWD-001")]
     [Fact]
     public async Task ResetUserPassword_WithoutToken_ReturnsUnauthorized()
     {
@@ -22,7 +23,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "USERS-RESET-PWD-002")]
     [Fact]
     public async Task ResetUserPassword_AsNonAdmin_ReturnsForbidden()
     {
@@ -35,7 +36,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-
+    [Trait("TestCaseId", "USERS-RESET-PWD-003")]
     [Fact]
     public async Task ResetUserPassword_WithNonExistentUser_ReturnsNotFound()
     {
@@ -48,7 +49,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
+    [Trait("TestCaseId", "USERS-RESET-PWD-004")]
     [Fact]
     public async Task ResetUserPassword_WithValidData_ReturnsOk()
     {
@@ -72,7 +73,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         var body = await response.Content.ReadFromJsonAsync<ResetUserPasswordResponse>();
         body!.Success.Should().BeTrue();
     }
-
+    [Trait("TestCaseId", "USERS-RESET-PWD-005")]
     [Fact]
     public async Task ResetUserPassword_SendsEmailWithNewPassword()
     {
@@ -101,7 +102,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         latestEmail!.Subject.Should().Be("Your password has been reset");
         latestEmail.Body.Should().Contain(newPassword);
     }
-
+    [Trait("TestCaseId", "USERS-RESET-PWD-006")]
     [Fact]
     public async Task ResetUserPassword_WithTooShortPassword_ReturnsBadRequest()
     {

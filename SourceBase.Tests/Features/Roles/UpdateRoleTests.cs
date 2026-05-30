@@ -10,6 +10,7 @@ namespace SourceBase.Tests.Features.Roles;
 
 public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "ROLES-UPDATE-001")]
     [Fact]
     public async Task UpdateRole_WithoutToken_ReturnsUnauthorized()
     {
@@ -26,7 +27,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "ROLES-UPDATE-002")]
     [Fact]
     public async Task UpdateRole_WithNonAdminUser_ReturnsForbidden()
     {
@@ -51,7 +52,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-
+    [Trait("TestCaseId", "ROLES-UPDATE-003")]
     [Fact]
     public async Task UpdateRole_WithValidData_ReturnsOk()
     {
@@ -82,7 +83,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var roles = await rolesResponse.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
         roles!.Items.Should().Contain(x => x.Id == createBody.Id && x.Name == updatedRoleName && x.Description == "After update");
     }
-
+    [Trait("TestCaseId", "ROLES-UPDATE-004")]
     [Fact]
     public async Task UpdateRole_WithDuplicateNameIgnoringCase_ReturnsBadRequest()
     {
@@ -111,7 +112,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-
+    [Trait("TestCaseId", "ROLES-UPDATE-005")]
     [Fact]
     public async Task UpdateRole_WithAdminRole_ReturnsBadRequest()
     {
@@ -131,7 +132,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-
+    [Trait("TestCaseId", "ROLES-UPDATE-006")]
     [Fact]
     public async Task UpdateRole_WithSameNameOnSameRole_ReturnsOk()
     {

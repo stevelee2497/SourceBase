@@ -12,6 +12,7 @@ namespace SourceBase.Tests.Features.Todo;
 
 public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "TODOS-CREATE-001")]
     [Fact]
     public async Task CreateTodo_WithoutToken_ReturnsUnauthorized()
     {
@@ -29,7 +30,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "TODOS-CREATE-002")]
     [Fact]
     public async Task CreateTodo_WithValidData_ReturnsOk()
     {
@@ -49,7 +50,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
         body!.Id.Should().NotBeEmpty();
     }
-
+    [Trait("TestCaseId", "TODOS-CREATE-003")]
     [Fact]
     public async Task CreateTodo_WithValidData_SetsCreatedByToAuthenticatedUserName()
     {
@@ -78,7 +79,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         todo.CreatedBy.Should().Be(userInfo!.UserName);
         todo.UserId.Should().Be(userInfo.Id);
     }
-
+    [Trait("TestCaseId", "TODOS-CREATE-004")]
     [Fact]
     public async Task CreateTodo_WithMissingTitle_ReturnsBadRequest()
     {
@@ -95,7 +96,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-
+    [Trait("TestCaseId", "TODOS-CREATE-005")]
     [Fact]
     public async Task CreateTodo_WithMissingDate_ReturnsBadRequest()
     {
@@ -112,7 +113,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-
+    [Trait("TestCaseId", "TODOS-CREATE-006")]
     [Fact]
     public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
     {
@@ -136,7 +137,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var todo = await factory.WithDbContextAsync(db => db.TodoItems.SingleAsync(x => x.Id == body!.Id));
         todo!.TodoListId.Should().Be(list.Id);
     }
-
+    [Trait("TestCaseId", "TODOS-CREATE-007")]
     [Fact]
     public async Task CreateTodo_WithInvalidTodoListId_ReturnsNotFound()
     {

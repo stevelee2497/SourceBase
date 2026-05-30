@@ -10,6 +10,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "REGISTER-001")]
     [Fact]
     public async Task Register_WithValidData_ReturnsOk()
     {
@@ -45,6 +46,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         latestEmail.Body.Should().NotBeNullOrWhiteSpace();
     }
 
+    [Trait("TestCaseId", "REGISTER-002")]
     [Fact]
     public async Task Register_WithWhitespaceAroundEmailAndUserName_TrimsInputBeforeValidation()
     {
@@ -67,6 +69,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         user.UserName.Should().Be(trimmedUserName);
     }
 
+    [Trait("TestCaseId", "REGISTER-003")]
     [Fact]
     public async Task Register_WithPasswordContainingOuterSpaces_TrimsPasswordBeforePersisting()
     {
@@ -99,6 +102,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
+    [Trait("TestCaseId", "REGISTER-004")]
     [Fact]
     public async Task Register_WithDuplicateEmailIgnoringCase_ReturnsBadRequest()
     {
@@ -125,6 +129,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    [Trait("TestCaseId", "REGISTER-005")]
     [Fact]
     public async Task Register_WithInvalidEmail_ReturnsBadRequest()
     {
@@ -143,6 +148,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    [Trait("TestCaseId", "REGISTER-006")]
     [Fact]
     public async Task Register_WithShortPassword_ReturnsBadRequest()
     {

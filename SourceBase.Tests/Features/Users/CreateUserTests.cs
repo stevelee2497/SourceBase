@@ -11,6 +11,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    [Trait("TestCaseId", "USERS-CREATE-001")]
     [Fact]
     public async Task CreateUser_WithoutToken_ReturnsUnauthorized()
     {
@@ -29,7 +30,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+    [Trait("TestCaseId", "USERS-CREATE-002")]
     [Fact]
     public async Task CreateUser_WithNonAdminUser_ReturnsForbidden()
     {
@@ -48,7 +49,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-
+    [Trait("TestCaseId", "USERS-CREATE-003")]
     [Fact]
     public async Task CreateUser_WithValidData_ReturnsOk()
     {
@@ -91,7 +92,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         latestEmail!.Subject.Should().Be("Confirm your email");
         latestEmail.Body.Should().NotBeNullOrWhiteSpace();
     }
-
+    [Trait("TestCaseId", "USERS-CREATE-004")]
     [Fact]
     public async Task CreateUser_WithUnknownRole_ReturnsBadRequest()
     {
@@ -110,7 +111,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-
+    [Trait("TestCaseId", "USERS-CREATE-005")]
     [Fact]
     public async Task CreateUser_WithMixedValidAndInvalidRoles_ReturnsBadRequest()
     {
@@ -129,7 +130,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-
+    [Trait("TestCaseId", "USERS-CREATE-006")]
     [Fact]
     public async Task CreateUser_WithDuplicateEmailIgnoringCase_ReturnsBadRequest()
     {
@@ -157,7 +158,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-
+    [Trait("TestCaseId", "USERS-CREATE-007")]
     [Fact]
     public async Task CreateUser_WithRolesContainingWhitespace_StoresNormalizedDistinctRoles()
     {
