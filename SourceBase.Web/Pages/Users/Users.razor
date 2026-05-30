@@ -102,88 +102,11 @@ else if (_data is not null)
     <Pagination CurrentPage="_page" TotalItems="_data.Total" PageSize="_pageSize" OnPageChanged="ChangePage" />
 }
 
-<!-- Create Modal -->
-@if (_showCreate)
-{
-    <div class="fixed inset-0 z-40 flex items-center justify-center">
-        <div class="absolute inset-0 bg-black/40" @onclick="CloseCreate"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Create User</h2>
-
-            @if (!string.IsNullOrEmpty(_formError))
-            {
-                <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_formError</div>
-            }
-
-            <div class="space-y-4">
-                <div>
-                    <label class="form-label">Username *</label>
-                    <input @bind="_form.UserName" class="form-input" placeholder="johndoe" />
-                </div>
-                <div>
-                    <label class="form-label">Password *</label>
-                    <input @bind="_form.Password" class="form-input" type="password" placeholder="••••••••" />
-                </div>
-                <div>
-                    <label class="form-label">Email *</label>
-                    <input @bind="_form.Email" class="form-input" type="email" placeholder="you@example.com" />
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="form-label">First name</label>
-                        <input @bind="_form.FirstName" class="form-input" placeholder="John" />
-                    </div>
-                    <div>
-                        <label class="form-label">Last name</label>
-                        <input @bind="_form.LastName" class="form-input" placeholder="Doe" />
-                    </div>
-                </div>
-                <div>
-                    <label class="form-label">Phone number</label>
-                    <input @bind="_form.PhoneNumber" class="form-input" type="tel" />
-                </div>
-                <div>
-                    <label class="form-label">Roles</label>
-                    <div class="flex flex-wrap gap-2 mt-1">
-                        @foreach (var role in _allRoles)
-                        {
-                            var roleName = role.Name;
-                            <label class="flex items-center gap-1.5 text-sm text-gray-700">
-                                <input type="checkbox" class="rounded border-gray-300 text-indigo-600"
-                                       checked="@_form.SelectedRoles.Contains(roleName)"
-                                       @onchange="e => ToggleRole(roleName, (bool)e.Value!)" />
-                                @roleName
-                            </label>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-3 mt-6">
-                <button class="btn-secondary" @onclick="CloseCreate">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Cancel
-                </button>
-                <button class="btn-primary" @onclick="SaveAsync" disabled="@_saving">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" 
-                        stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    @(_saving ? "Saving…" : "Save")
-                </button>
-            </div>
-        </div>
-    </div>
-}
-
-<!-- Edit Modal -->
-<EditUserModal IsVisible="@_showEdit"
-               User="@(_editingUser is null ? null : new UserInfoResponse(_editingUser.Id, _editingUser.UserName, _editingUser.Email, _editingUser.FirstName, _editingUser.LastName, _editingUser.PhoneNumber, _editingUser.Roles.ToArray()))"
-               AllRoles="@_allRoles"
-               OnClose="@(() => { _showEdit = false; _editingUser = null; })"
-               OnSaved="LoadUsersAsync" />
+<UserModal IsVisible="@_showUserModal"
+           User="@_userModalUser"
+           AllRoles="@_allRoles"
+           OnClose="@(() => { _showUserModal = false; _userModalUser = null; })"
+           OnSaved="OnUserSavedAsync" />
 
 <ConfirmDialog IsVisible="_showDelete" Title="Delete user"
                Message="@($"Are you sure you want to delete '{_deletingUser?.UserName}'? This action cannot be undone.")"
@@ -247,15 +170,9 @@ else if (_data is not null)
     private int _page = 1;
     private const int _pageSize = 10;
 
-    // Create form state
-    private bool _showCreate;
-    private readonly UserFormModel _form = new();
-    private string? _formError;
-    private bool _saving;
-
-    // Edit modal state
-    private bool _showEdit;
-    private UserResponse? _editingUser;
+    // User modal state (create when _userModalUser is null, edit otherwise)
+    private bool _showUserModal;
+    private UserInfoResponse? _userModalUser;
 
     // Delete state
     private bool _showDelete;
@@ -302,41 +219,21 @@ else if (_data is not null)
 
     private void OpenCreate()
     {
-        _form.Reset();
-        _formError = null;
-        _showCreate = true;
+        _userModalUser = null;
+        _showUserModal = true;
     }
 
     private void OpenEdit(UserResponse user)
     {
-        _editingUser = user;
-        _showEdit = true;
+        _userModalUser = new UserInfoResponse(user.Id, user.UserName, user.Email, user.FirstName, user.LastName, user.PhoneNumber, user.Roles.ToArray());
+        _showUserModal = true;
     }
 
-    private void CloseCreate() => _showCreate = false;
-
-    private void ToggleRole(string role, bool selected)
+    private async Task OnUserSavedAsync()
     {
-            if (selected) _form.SelectedRoles.Add(role);
-        else _form.SelectedRoles.Remove(role);
-    }
-
-    private async Task SaveAsync()
-    {
-        _formError = null;
-        _saving = true;
-        var error = await Api.CreateUserAsync(_form.UserName, _form.Email, _form.Password, _form.FirstName, _form.LastName, _form.PhoneNumber, _form.SelectedRoles.ToArray());
-
-        if (error is not null)
-        {
-            _formError = error.Message ?? "Failed to save user. Please try again.";
-            _saving = false;
-            return;
-        }
-
-        _showCreate = false;
+        _showUserModal = false;
+        _userModalUser = null;
         await LoadUsersAsync();
-        _saving = false;
     }
 
     private void ConfirmDelete(UserResponse user)
@@ -420,21 +317,4 @@ else if (_data is not null)
         return new string(chars.OrderBy(_ => rng.Next()).ToArray());
     }
 
-    private sealed class UserFormModel
-    {
-        public string UserName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? PhoneNumber { get; set; }
-        public HashSet<string> SelectedRoles { get; set; } = [];
-
-        public void Reset()
-        {
-            UserName = Email = Password = string.Empty;
-            FirstName = LastName = PhoneNumber = null;
-            SelectedRoles = [];
-        }
-    }
 }

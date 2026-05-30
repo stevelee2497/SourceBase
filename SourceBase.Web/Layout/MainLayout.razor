@@ -67,7 +67,7 @@
     </div>
 </div>
 
-<EditUserModal IsVisible="@_showEditCurrentUser" User="@AuthStateProvider.UserInfo" AllRoles="@_allRoles" OnClose="@(() => _showEditCurrentUser = false)" OnSaved="OnCurrentUserSavedAsync" />
+<UserModal IsVisible="@_showEditCurrentUser" User="@AuthStateProvider.UserInfo" AllRoles="@_allRoles" OnClose="@(() => _showEditCurrentUser = false)" OnSaved="OnCurrentUserSavedAsync" />
 
 @code {
     private bool _mobileMenuOpen;
