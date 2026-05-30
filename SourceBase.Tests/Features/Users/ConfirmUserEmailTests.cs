@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-001: ConfirmUserEmail_WithoutToken_ReturnsUnauthorized")]
     public async Task ConfirmUserEmail_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-002: ConfirmUserEmail_AsNonAdmin_ReturnsForbidden")]
     public async Task ConfirmUserEmail_AsNonAdmin_ReturnsForbidden()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-003: ConfirmUserEmail_WithNonExistentUser_ReturnsNotFound")]
     public async Task ConfirmUserEmail_WithNonExistentUser_ReturnsNotFound()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-004: ConfirmUserEmail_WithValidUser_ReturnsOk")]
     public async Task ConfirmUserEmail_WithValidUser_ReturnsOk()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         body!.Success.Should().BeTrue();
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-005: ConfirmUserEmail_SetsEmailConfirmedTrue")]
     public async Task ConfirmUserEmail_SetsEmailConfirmedTrue()
     {
         // Arrange

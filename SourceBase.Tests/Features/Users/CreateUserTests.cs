@@ -11,7 +11,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "USERS-CREATE-001: CreateUser_WithoutToken_ReturnsUnauthorized")]
     public async Task CreateUser_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -30,7 +30,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-CREATE-002: CreateUser_WithNonAdminUser_ReturnsForbidden")]
     public async Task CreateUser_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-CREATE-003: CreateUser_WithValidData_ReturnsOk")]
     public async Task CreateUser_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         latestEmail.Body.Should().NotBeNullOrWhiteSpace();
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-CREATE-004: CreateUser_WithUnknownRole_ReturnsBadRequest")]
     public async Task CreateUser_WithUnknownRole_ReturnsBadRequest()
     {
         // Arrange
@@ -111,7 +111,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-CREATE-005: CreateUser_WithMixedValidAndInvalidRoles_ReturnsBadRequest")]
     public async Task CreateUser_WithMixedValidAndInvalidRoles_ReturnsBadRequest()
     {
         // Arrange
@@ -130,7 +130,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-CREATE-006: CreateUser_WithDuplicateEmailIgnoringCase_ReturnsBadRequest")]
     public async Task CreateUser_WithDuplicateEmailIgnoringCase_ReturnsBadRequest()
     {
         // Arrange
@@ -158,7 +158,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-CREATE-007: CreateUser_WithRolesContainingWhitespace_StoresNormalizedDistinctRoles")]
     public async Task CreateUser_WithRolesContainingWhitespace_StoresNormalizedDistinctRoles()
     {
         // Arrange

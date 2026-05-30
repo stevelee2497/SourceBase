@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Roles;
 
 public class GetRolesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "ROLES-GET-001: GetRoles_WithAnonymousClient_ReturnsSeededRoles")]
     public async Task GetRoles_WithAnonymousClient_ReturnsSeededRoles()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class GetRolesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Items.Should().ContainSingle(role => role.Name == "User");
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-GET-002: GetRoles_WithCreatedRole_ReturnsRole")]
     public async Task GetRoles_WithCreatedRole_ReturnsRole()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class GetRolesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         roles!.Items.Should().Contain(x => x.Name == roleName && x.Description == "Created role");
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-GET-003: GetRoles_WithPagingAndOrdering_ReturnsRequestedPage")]
     public async Task GetRoles_WithPagingAndOrdering_ReturnsRequestedPage()
     {
         // Arrange

@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "USERS-RESET-PWD-001: ResetUserPassword_WithoutToken_ReturnsUnauthorized")]
     public async Task ResetUserPassword_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-RESET-PWD-002: ResetUserPassword_AsNonAdmin_ReturnsForbidden")]
     public async Task ResetUserPassword_AsNonAdmin_ReturnsForbidden()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-RESET-PWD-003: ResetUserPassword_WithNonExistentUser_ReturnsNotFound")]
     public async Task ResetUserPassword_WithNonExistentUser_ReturnsNotFound()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-RESET-PWD-004: ResetUserPassword_WithValidData_ReturnsOk")]
     public async Task ResetUserPassword_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         body!.Success.Should().BeTrue();
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-RESET-PWD-005: ResetUserPassword_SendsEmailWithNewPassword")]
     public async Task ResetUserPassword_SendsEmailWithNewPassword()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         latestEmail.Body.Should().Contain(newPassword);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-RESET-PWD-006: ResetUserPassword_WithTooShortPassword_ReturnsBadRequest")]
     public async Task ResetUserPassword_WithTooShortPassword_ReturnsBadRequest()
     {
         // Arrange

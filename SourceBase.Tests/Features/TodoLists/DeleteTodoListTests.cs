@@ -9,7 +9,7 @@ namespace SourceBase.Tests.Features.TodoLists;
 
 public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "TODOLISTS-DELETE-001: DeleteTodoList_WithoutToken_ReturnsUnauthorized")]
     public async Task DeleteTodoList_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -22,7 +22,7 @@ public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOLISTS-DELETE-002: DeleteTodoList_WithValidId_ReturnsOk")]
     public async Task DeleteTodoList_WithValidId_ReturnsOk()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body!.Success.Should().BeTrue();
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOLISTS-DELETE-003: DeleteTodoList_OwnedByAnotherUser_ReturnsNotFound")]
     public async Task DeleteTodoList_OwnedByAnotherUser_ReturnsNotFound()
     {
         // Arrange

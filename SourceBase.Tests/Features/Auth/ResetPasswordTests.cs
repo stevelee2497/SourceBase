@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "RESET-PWD-001: ResetPassword_WithValidToken_ReturnsOk")]
     public async Task ResetPassword_WithValidToken_ReturnsOk()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         oldPasswordResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "RESET-PWD-002: ResetPassword_AfterReset_CanLoginWithNewPassword")]
     public async Task ResetPassword_AfterReset_CanLoginWithNewPassword()
     {
         // Arrange
@@ -104,7 +104,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-    [Fact]
+    [Fact(DisplayName = "RESET-PWD-003: ResetPassword_WithInvalidCode_ReturnsBadRequest")]
     public async Task ResetPassword_WithInvalidCode_ReturnsBadRequest()
     {
         // Arrange
@@ -135,7 +135,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "RESET-PWD-004: ResetPassword_WithExpiredCode_ReturnsBadRequest")]
     public async Task ResetPassword_WithExpiredCode_ReturnsBadRequest()
     {
         // Arrange
@@ -177,7 +177,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "RESET-PWD-005: ResetPassword_WithUnknownEmail_ReturnsNotFound")]
     public async Task ResetPassword_WithUnknownEmail_ReturnsNotFound()
     {
         // Arrange

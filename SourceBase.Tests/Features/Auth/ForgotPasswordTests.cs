@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class ForgotPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "FORGOT-PWD-001: ForgotPassword_WithValidEmail_ReturnsOk")]
     public async Task ForgotPassword_WithValidEmail_ReturnsOk()
     {
         // Arrange
@@ -50,7 +50,8 @@ public class ForgotPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFa
         latestEmail.Body.Should().NotBeNullOrWhiteSpace();
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "FORGOT-PWD-002: ForgotPassword_WithUnknownEmail_ReturnsNotFound")]
     public async Task ForgotPassword_WithUnknownEmail_ReturnsNotFound()
     {
         // Arrange
@@ -66,7 +67,8 @@ public class ForgotPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "FORGOT-PWD-003: ForgotPassword_WithInvalidEmail_ReturnsBadRequest")]
     public async Task ForgotPassword_WithInvalidEmail_ReturnsBadRequest()
     {
         // Arrange

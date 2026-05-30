@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "REGISTER-001: Register_WithValidData_ReturnsOk")]
     public async Task Register_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -45,7 +45,8 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         latestEmail.Body.Should().NotBeNullOrWhiteSpace();
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "REGISTER-002: Register_WithWhitespaceAroundEmailAndUserName_TrimsInputBeforeValidation")]
     public async Task Register_WithWhitespaceAroundEmailAndUserName_TrimsInputBeforeValidation()
     {
         // Arrange
@@ -67,7 +68,8 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         user.UserName.Should().Be(trimmedUserName);
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "REGISTER-003: Register_WithPasswordContainingOuterSpaces_TrimsPasswordBeforePersisting")]
     public async Task Register_WithPasswordContainingOuterSpaces_TrimsPasswordBeforePersisting()
     {
         // Arrange
@@ -99,7 +101,8 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "REGISTER-004: Register_WithDuplicateEmailIgnoringCase_ReturnsBadRequest")]
     public async Task Register_WithDuplicateEmailIgnoringCase_ReturnsBadRequest()
     {
         // Arrange
@@ -125,7 +128,8 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "REGISTER-005: Register_WithInvalidEmail_ReturnsBadRequest")]
     public async Task Register_WithInvalidEmail_ReturnsBadRequest()
     {
         // Arrange
@@ -143,7 +147,8 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "REGISTER-006: Register_WithShortPassword_ReturnsBadRequest")]
     public async Task Register_WithShortPassword_ReturnsBadRequest()
     {
         // Arrange

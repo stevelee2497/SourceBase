@@ -11,7 +11,7 @@ namespace SourceBase.Tests.Features.Todo;
 
 public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "TODOS-GET-ALL-001: GetTodos_WithoutToken_ReturnsUnauthorized")]
     public async Task GetTodos_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-GET-ALL-002: GetTodos_Authenticated_ReturnsOk")]
     public async Task GetTodos_Authenticated_ReturnsOk()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.Items.Should().NotBeNull();
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-GET-ALL-003: GetTodos_WithMultipleUsers_ReturnsOnlyCurrentUsersItems")]
     public async Task GetTodos_WithMultipleUsers_ReturnsOnlyCurrentUsersItems()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         todos.Items.Should().NotContain(x => x.Title == "Other Todo");
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-GET-ALL-004: GetTodos_WithStatusAndDateFilters_ReturnsMatchingItems")]
     public async Task GetTodos_WithStatusAndDateFilters_ReturnsMatchingItems()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         todos!.Items.Should().ContainSingle(x => x.Id == matchingTodoBody!.Id);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-GET-ALL-005: GetTodos_WithPagingAndOrdering_ReturnsRequestedPage")]
     public async Task GetTodos_WithPagingAndOrdering_ReturnsRequestedPage()
     {
         // Arrange
@@ -138,7 +138,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         todos.Items.Single().Id.Should().Be(expectedTodoBody!.Id);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-GET-ALL-006: GetTodos_FilteredByTodoListId_ReturnsMatchingItems")]
     public async Task GetTodos_FilteredByTodoListId_ReturnsMatchingItems()
     {
         // Arrange

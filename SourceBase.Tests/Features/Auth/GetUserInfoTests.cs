@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "GET-INFO-001: GetUserInfo_WithValidToken_ReturnsOk")]
     public async Task GetUserInfo_WithValidToken_ReturnsOk()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         body.Roles.Should().Contain("Admin");
     }
 
-    [Fact]
+    [Fact(DisplayName = "GET-INFO-002: GetUserInfo_WithDistinctUserNameAndEmail_ReturnsMatchingClaims")]
     public async Task GetUserInfo_WithDistinctUserNameAndEmail_ReturnsMatchingClaims()
     {
         // Arrange
@@ -69,7 +69,7 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         body.Roles.Should().Contain("User");
     }
 
-    [Fact]
+    [Fact(DisplayName = "GET-INFO-003: GetUserInfo_WithoutToken_ReturnsUnauthorized")]
     public async Task GetUserInfo_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange

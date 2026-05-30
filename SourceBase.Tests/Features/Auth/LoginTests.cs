@@ -9,7 +9,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "LOGIN-001: Login_WithValidCredentials_ReturnsOkAndAccessToken")]
     public async Task Login_WithValidCredentials_ReturnsOkAndAccessToken()
     {
         // Arrange
@@ -30,7 +30,8 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.RefreshToken.Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "LOGIN-002: Login_WithWrongPassword_ReturnsUnauthorized")]
     public async Task Login_WithWrongPassword_ReturnsUnauthorized()
     {
         // Arrange
@@ -47,7 +48,8 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "LOGIN-003: Login_WithUnknownEmail_ReturnsUnauthorized")]
     public async Task Login_WithUnknownEmail_ReturnsUnauthorized()
     {
         // Arrange
@@ -64,7 +66,8 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "LOGIN-004: Login_WithUnconfirmedEmail_ReturnsUnauthorized")]
     public async Task Login_WithUnconfirmedEmail_ReturnsUnauthorized()
     {
         // Arrange
@@ -89,7 +92,8 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "LOGIN-005: Login_AfterEmailConfirmed_ReturnsOkAndAccessToken")]
     public async Task Login_AfterEmailConfirmed_ReturnsOkAndAccessToken()
     {
         // Arrange
@@ -123,7 +127,8 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.AccessToken.Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
+
+    [Fact(DisplayName = "LOGIN-006: Login_WithMissingPassword_ReturnsBadRequest")]
     public async Task Login_WithMissingPassword_ReturnsBadRequest()
     {
         // Arrange

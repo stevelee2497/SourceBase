@@ -12,7 +12,7 @@ namespace SourceBase.Tests.Features.Users;
 
 public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "USERS-UPDATE-001: UpdateUser_WithoutToken_ReturnsUnauthorized")]
     public async Task UpdateUser_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-UPDATE-002: UpdateUser_WithNonAdminUser_ReturnsForbidden")]
     public async Task UpdateUser_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-UPDATE-003: UpdateUser_WithValidData_ReturnsOk")]
     public async Task UpdateUser_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         updatedUser.Roles.Should().Contain("User");
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-UPDATE-004: UpdateUser_WithUnknownRole_ReturnsBadRequest")]
     public async Task UpdateUser_WithUnknownRole_ReturnsBadRequest()
     {
         // Arrange
@@ -129,7 +129,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-UPDATE-005: UpdateUser_WithDuplicateEmailIgnoringCase_ReturnsBadRequest")]
     public async Task UpdateUser_WithDuplicateEmailIgnoringCase_ReturnsBadRequest()
     {
         // Arrange
@@ -166,7 +166,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-UPDATE-006: UpdateUser_WithEmailChange_RequiresReconfirmationAndIssuesOtp")]
     public async Task UpdateUser_WithEmailChange_RequiresReconfirmationAndIssuesOtp()
     {
         // Arrange
@@ -208,7 +208,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         latestEmail.Body.Should().NotBeNullOrWhiteSpace();
     }
 
-    [Fact]
+    [Fact(DisplayName = "USERS-UPDATE-007: UpdateUser_WithRoleChange_InvalidatesUsersExistingToken")]
     public async Task UpdateUser_WithRoleChange_InvalidatesUsersExistingToken()
     {
         // Arrange

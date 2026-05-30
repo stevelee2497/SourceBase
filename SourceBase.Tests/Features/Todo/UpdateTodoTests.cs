@@ -11,7 +11,7 @@ namespace SourceBase.Tests.Features.Todo;
 
 public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "TODOS-UPDATE-001: UpdateTodo_WithoutToken_ReturnsUnauthorized")]
     public async Task UpdateTodo_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-UPDATE-002: UpdateTodo_WithValidData_ReturnsOk")]
     public async Task UpdateTodo_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         updated.Status.Should().Be(TodoItemStatus.Completed);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-UPDATE-003: UpdateTodo_WithMissingTitle_ReturnsBadRequest")]
     public async Task UpdateTodo_WithMissingTitle_ReturnsBadRequest()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-UPDATE-004: UpdateTodo_WithNonExistentId_ReturnsNotFound")]
     public async Task UpdateTodo_WithNonExistentId_ReturnsNotFound()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-UPDATE-005: UpdateTodo_WithOtherUsersTodo_ReturnsNotFound")]
     public async Task UpdateTodo_WithOtherUsersTodo_ReturnsNotFound()
     {
         // Arrange

@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Roles;
 
 public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "ROLES-DELETE-001: DeleteRole_WithoutToken_ReturnsUnauthorized")]
     public async Task DeleteRole_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-DELETE-002: DeleteRole_WithNonAdminUser_ReturnsForbidden")]
     public async Task DeleteRole_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-DELETE-003: DeleteRole_WithValidData_ReturnsOk")]
     public async Task DeleteRole_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -69,7 +69,7 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         roles!.Items.Should().NotContain(x => x.Id == createBody.Id);
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-DELETE-004: DeleteRole_WithAdminRole_ReturnsBadRequest")]
     public async Task DeleteRole_WithAdminRole_ReturnsBadRequest()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-DELETE-005: DeleteRole_WithUnknownId_ReturnsBadRequest")]
     public async Task DeleteRole_WithUnknownId_ReturnsBadRequest()
     {
         // Arrange

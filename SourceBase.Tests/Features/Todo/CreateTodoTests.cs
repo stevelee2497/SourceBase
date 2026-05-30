@@ -12,7 +12,7 @@ namespace SourceBase.Tests.Features.Todo;
 
 public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "TODOS-CREATE-001: CreateTodo_WithoutToken_ReturnsUnauthorized")]
     public async Task CreateTodo_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -30,7 +30,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-CREATE-002: CreateTodo_WithValidData_ReturnsOk")]
     public async Task CreateTodo_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         body!.Id.Should().NotBeEmpty();
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-CREATE-003: CreateTodo_WithValidData_SetsCreatedByToAuthenticatedUserName")]
     public async Task CreateTodo_WithValidData_SetsCreatedByToAuthenticatedUserName()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         todo.UserId.Should().Be(userInfo.Id);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-CREATE-004: CreateTodo_WithMissingTitle_ReturnsBadRequest")]
     public async Task CreateTodo_WithMissingTitle_ReturnsBadRequest()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-CREATE-005: CreateTodo_WithMissingDate_ReturnsBadRequest")]
     public async Task CreateTodo_WithMissingDate_ReturnsBadRequest()
     {
         // Arrange
@@ -113,7 +113,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-CREATE-006: CreateTodo_WithValidTodoListId_ReturnsOk")]
     public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         todo!.TodoListId.Should().Be(list.Id);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOS-CREATE-007: CreateTodo_WithInvalidTodoListId_ReturnsNotFound")]
     public async Task CreateTodo_WithInvalidTodoListId_ReturnsNotFound()
     {
         // Arrange

@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class LogoutTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "LOGOUT-001: Logout_WithValidToken_ReturnsOk")]
     public async Task Logout_WithValidToken_ReturnsOk()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class LogoutTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         getInfoResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "LOGOUT-002: Logout_WithoutToken_ReturnsUnauthorized")]
     public async Task Logout_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class LogoutTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "LOGOUT-003: Logout_WithValidToken_InvalidatesRefreshToken")]
     public async Task Logout_WithValidToken_InvalidatesRefreshToken()
     {
         // Arrange

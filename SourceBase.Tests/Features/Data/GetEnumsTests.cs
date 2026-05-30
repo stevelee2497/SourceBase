@@ -11,7 +11,7 @@ namespace SourceBase.Tests.Features.Data;
 
 public class GetEnumsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "DATA-ENUMS-001: GetEnums_WithRequestedStaticEnums_ReturnsOnlyRequestedDefinitions")]
     public async Task GetEnums_WithRequestedStaticEnums_ReturnsOnlyRequestedDefinitions()
     {
         // Arrange
@@ -33,7 +33,7 @@ public class GetEnumsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Data[AvailableEnums.TodoItemStatus].Should().Contain(x => x.Name == TodoItemStatus.Archived.ToString());
     }
 
-    [Fact]
+    [Fact(DisplayName = "DATA-ENUMS-002: GetEnums_WithRolesRequested_ReturnsRolesFromDatabase")]
     public async Task GetEnums_WithRolesRequested_ReturnsRolesFromDatabase()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class GetEnumsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Data[AvailableEnums.Roles].Should().Contain(x => x.Name == roleName && x.Description == "Dynamic role");
     }
 
-    [Fact]
+    [Fact(DisplayName = "DATA-ENUMS-003: GetEnums_WithEmptyEnums_ReturnsBadRequest")]
     public async Task GetEnums_WithEmptyEnums_ReturnsBadRequest()
     {
         // Arrange

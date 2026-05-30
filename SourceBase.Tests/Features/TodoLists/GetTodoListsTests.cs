@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.TodoLists;
 
 public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "TODOLISTS-GET-001: GetTodoLists_WithoutToken_ReturnsUnauthorized")]
     public async Task GetTodoLists_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOLISTS-GET-002: GetTodoLists_ReturnsOk")]
     public async Task GetTodoLists_ReturnsOk()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Items.Should().NotBeNull();
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODOLISTS-GET-003: GetTodoLists_ReturnsOnlyCurrentUserLists")]
     public async Task GetTodoLists_ReturnsOnlyCurrentUserLists()
     {
         // Arrange

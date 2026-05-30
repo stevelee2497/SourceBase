@@ -2,6 +2,18 @@
 
 A .NET 10 API starter built on **Vertical Slice Architecture** and **REPR Pattern** — each feature lives in a single file, from the HTTP endpoint down to the database call. No layers, no abstractions for their own sake.
 
+## Documentation
+
+Feature documentation — user stories, detailed flows, and test case traceability:
+
+| Domain | Description |
+|--------|-------------|
+| [Auth](docs/features/auth.md) | Login, Register, Email Confirmation, Password Reset, Token Refresh, User Profile |
+| [Users](docs/features/users.md) | Admin-managed user accounts — create, list, update, delete, password reset |
+| [Roles](docs/features/roles.md) | Role management — create, list, update, delete |
+| [Todos](docs/features/todos.md) | Todo lists and todo items — full CRUD, filters, paging |
+| [Data](docs/features/data.md) | Audit history, enum definitions, application statistics |
+
 ## Architecture
 
 One project. One folder per concern.
@@ -106,33 +118,22 @@ All entities inherit `BaseEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`, `Update
 
 ## Features
 
-✅ Vertical Slice Architecture — one file per use case, zero shared layers
-
-✅ Minimal API endpoints registered via `IEndpoint` and auto-discovered by assembly scanning
-
-✅ .NET 10 + Entity Framework Core (SQLite)
-
-✅ Role-based authorization
-
-✅ `GlobalExceptionMiddleware` → `ProblemDetails` error responses
-
-✅ Request validation via `FluentValidation` with automatic 400 responses
-
-✅ EF Core audit interceptor (CreatedOn / UpdatedOn / CreatedBy / UpdatedBy)
-
-✅ Strongly-typed `AppSettings` with `IOptions<T>` pattern
-
-✅ Serilog structured logging with OpenTelemetry sink for Aspire dashboard
-
-✅ CORS policy (configurable origins via `appsettings.json`)
-
-✅ .NET Aspire orchestration with dashboard for monitoring and logs
-
-✅ Docker support
-
-✅ Standalone Aspire dashboard on VPS (logs, traces, metrics) — accessible via Tailscale VPN on port `18888`
-
-✅ sqlite-web on VPS (SQLite database browser) — accessible via Tailscale VPN on port `18080`
+| Capability | Notes |
+|---|---|
+| Vertical Slice Architecture | One file per use case, zero shared layers |
+| Minimal API + `IEndpoint` | Auto-discovered by assembly scanning — no controllers |
+| .NET 10 + EF Core (SQLite) | Lightweight, zero-config database |
+| Role-based authorization | JWT-based with per-endpoint `RequireAuthorization` |
+| `GlobalExceptionMiddleware` | Typed exceptions → `ProblemDetails` responses |
+| FluentValidation | Auto-wired — invalid requests return `400` before reaching handlers |
+| EF Core audit interceptor | `CreatedOn / UpdatedOn / CreatedBy / UpdatedBy` set automatically |
+| Strongly-typed `AppSettings` | `IOptions<T>` pattern, injected as singleton |
+| Serilog + OpenTelemetry | Structured logging forwarded to Aspire dashboard |
+| CORS | Configurable origins via `appsettings.json` |
+| .NET Aspire orchestration | Dashboard for logs, traces, metrics at `http://localhost:15017` |
+| Docker support | Multi-stage images, `docker compose up` for local dev |
+| Standalone Aspire dashboard on VPS | Logs, traces, metrics via Tailscale on port `18888` |
+| sqlite-web on VPS | SQLite browser via Tailscale on port `18080` |
 
 ## Backlogs
 

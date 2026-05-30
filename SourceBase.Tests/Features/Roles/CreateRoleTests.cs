@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Roles;
 
 public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "ROLES-CREATE-001: CreateRole_WithoutToken_ReturnsUnauthorized")]
     public async Task CreateRole_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-CREATE-002: CreateRole_WithNonAdminUser_ReturnsForbidden")]
     public async Task CreateRole_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-CREATE-003: CreateRole_WithValidData_ReturnsOk")]
     public async Task CreateRole_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         roles!.Items.Should().ContainSingle(x => x.Name == roleName && x.Description == "Created in integration test");
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-CREATE-004: CreateRole_WithDuplicateNameIgnoringCase_ReturnsBadRequest")]
     public async Task CreateRole_WithDuplicateNameIgnoringCase_ReturnsBadRequest()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-CREATE-005: CreateRole_WithWhitespaceAroundName_TrimsBeforePersisting")]
     public async Task CreateRole_WithWhitespaceAroundName_TrimsBeforePersisting()
     {
         // Arrange

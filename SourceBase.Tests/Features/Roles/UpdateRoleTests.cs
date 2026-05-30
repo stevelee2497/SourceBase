@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Roles;
 
 public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact]
+    [Fact(DisplayName = "ROLES-UPDATE-001: UpdateRole_WithoutToken_ReturnsUnauthorized")]
     public async Task UpdateRole_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-UPDATE-002: UpdateRole_WithNonAdminUser_ReturnsForbidden")]
     public async Task UpdateRole_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-UPDATE-003: UpdateRole_WithValidData_ReturnsOk")]
     public async Task UpdateRole_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         roles!.Items.Should().Contain(x => x.Id == createBody.Id && x.Name == updatedRoleName && x.Description == "After update");
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-UPDATE-004: UpdateRole_WithDuplicateNameIgnoringCase_ReturnsBadRequest")]
     public async Task UpdateRole_WithDuplicateNameIgnoringCase_ReturnsBadRequest()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-UPDATE-005: UpdateRole_WithAdminRole_ReturnsBadRequest")]
     public async Task UpdateRole_WithAdminRole_ReturnsBadRequest()
     {
         // Arrange
@@ -132,7 +132,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(DisplayName = "ROLES-UPDATE-006: UpdateRole_WithSameNameOnSameRole_ReturnsOk")]
     public async Task UpdateRole_WithSameNameOnSameRole_ReturnsOk()
     {
         // Arrange
