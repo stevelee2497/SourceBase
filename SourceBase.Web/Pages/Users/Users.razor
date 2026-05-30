@@ -3,11 +3,16 @@
 @inject ApiHttpClient Api
 
 <div class="flex items-center justify-between mb-6">
-    <button class="btn-primary" @onclick="OpenCreate">
+    <button class="btn-primary" @onclick="OpenCreate" disabled="@_loading">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        New User
+        <span>New User</span>
+    </button>
+    <button class="btn-secondary" @onclick="LoadUsersAsync" disabled="@_loading" title="Reload">
+        <svg class="w-4 h-4 @(_loading ? "animate-spin" : "")" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
     </button>
 </div>
 
@@ -22,6 +27,7 @@
 }
 else if (_data is not null)
 {
+
     <div class="card p-0 overflow-hidden">
         <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
@@ -162,7 +168,8 @@ else if (_data is not null)
                 </button>
                 <button class="btn-primary" @onclick="SaveAsync" disabled="@_saving">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        <path stroke-linecap="round" 
+                        stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
                     @(_saving ? "Saving…" : "Save")
                 </button>
@@ -284,14 +291,14 @@ else if (_data is not null)
     private async Task LoadRolesAsync()
     {
        var (result, _) = await Api.GetRolesAsync(1, 100);
-       _allRoles = result?.Items ?? [];
+            _allRoles = result?.Items ?? [];
     }
 
     private async Task ChangePage(int page)
     {
         _page = page;
-        await LoadUsersAsync();
-    }
+         await LoadUsersAsync();
+    }   
 
     private void OpenCreate()
     {
@@ -310,7 +317,7 @@ else if (_data is not null)
 
     private void ToggleRole(string role, bool selected)
     {
-        if (selected) _form.SelectedRoles.Add(role);
+            if (selected) _form.SelectedRoles.Add(role);
         else _form.SelectedRoles.Remove(role);
     }
 
