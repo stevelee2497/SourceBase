@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Components.Authorization;
+using Serilog;
 using SourceBase.Web.Auth;
 using SourceBase.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration));
 
 builder.AddServiceDefaults();
 

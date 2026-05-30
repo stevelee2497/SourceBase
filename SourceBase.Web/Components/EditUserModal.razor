@@ -1,0 +1,129 @@
+@inject ApiHttpClient Api
+
+@if (IsVisible)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="HandleClose"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Edit User</h2>
+
+            @if (!string.IsNullOrEmpty(_error))
+            {
+                <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+            }
+
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Email *</label>
+                    <input @bind="_form.Email" class="form-input" type="email" placeholder="you@example.com" />
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="form-label">First name</label>
+                        <input @bind="_form.FirstName" class="form-input" placeholder="John" />
+                    </div>
+                    <div>
+                        <label class="form-label">Last name</label>
+                        <input @bind="_form.LastName" class="form-input" placeholder="Doe" />
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Phone number</label>
+                    <input @bind="_form.PhoneNumber" class="form-input" type="tel" />
+                </div>
+                @if (AllRoles.Count > 0)
+                {
+                    <div>
+                        <label class="form-label">Roles</label>
+                        <div class="flex flex-wrap gap-2 mt-1">
+                            @foreach (var role in AllRoles)
+                            {
+                                var roleName = role.Name;
+                                <label class="flex items-center gap-1.5 text-sm text-gray-700">
+                                    <input type="checkbox" class="rounded border-gray-300 text-indigo-600"
+                                           checked="@_form.SelectedRoles.Contains(roleName)"
+                                           @onchange="e => ToggleRole(roleName, (bool)e.Value!)" />
+                                    @roleName
+                                </label>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button class="btn-secondary" @onclick="HandleClose">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Cancel
+                </button>
+                <button class="btn-primary" @onclick="SaveAsync" disabled="@_saving">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    @(_saving ? "Saving…" : "Save")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public bool IsVisible { get; set; }
+    [Parameter, EditorRequired] public UserInfoResponse? User { get; set; }
+    [Parameter] public List<RoleResponse> AllRoles { get; set; } = [];
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    private bool _prevIsVisible;
+    private readonly FormModel _form = new();
+    private string? _error;
+    private bool _saving;
+
+    protected override void OnParametersSet()
+    {
+        if (IsVisible && !_prevIsVisible)
+        {
+            _form.Email = User?.Email ?? string.Empty;
+            _form.FirstName = User?.FirstName;
+            _form.LastName = User?.LastName;
+            _form.PhoneNumber = User?.PhoneNumber;
+            _form.SelectedRoles = [.. User?.Roles ?? []];
+            _error = null;
+        }
+        _prevIsVisible = IsVisible;
+    }
+
+    private void ToggleRole(string role, bool selected)
+    {
+        if (selected) _form.SelectedRoles.Add(role);
+        else _form.SelectedRoles.Remove(role);
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        _saving = true;
+        var error = await Api.UpdateUserAsync(User!.Id, _form.Email, _form.FirstName, _form.LastName, _form.PhoneNumber, [.. _form.SelectedRoles]);
+        if (error is not null)
+        {
+            _error = error.Message ?? "Failed to save user. Please try again.";
+            _saving = false;
+            return;
+        }
+        _saving = false;
+        await OnSaved.InvokeAsync();
+    }
+
+    private Task HandleClose() => OnClose.InvokeAsync();
+
+    private sealed class FormModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public HashSet<string> SelectedRoles { get; set; } = [];
+    }
+}

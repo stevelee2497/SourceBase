@@ -3,11 +3,16 @@
 @inject ApiHttpClient Api
 
 <div class="flex items-center justify-between mb-6">
-    <button class="btn-primary" @onclick="OpenCreate">
+    <button class="btn-primary" @onclick="OpenCreate" disabled="@_loading">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        New User
+        <span>New User</span>
+    </button>
+    <button class="btn-secondary" @onclick="LoadUsersAsync" disabled="@_loading" title="Reload">
+        <svg class="w-4 h-4 @(_loading ? "animate-spin" : "")" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
     </button>
 </div>
 
@@ -22,6 +27,7 @@
 }
 else if (_data is not null)
 {
+
     <div class="card p-0 overflow-hidden">
         <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
@@ -96,13 +102,13 @@ else if (_data is not null)
     <Pagination CurrentPage="_page" TotalItems="_data.Total" PageSize="_pageSize" OnPageChanged="ChangePage" />
 }
 
-<!-- Create / Edit Modal -->
-@if (_showForm)
+<!-- Create Modal -->
+@if (_showCreate)
 {
     <div class="fixed inset-0 z-40 flex items-center justify-center">
-        <div class="absolute inset-0 bg-black/40" @onclick="CloseForm"></div>
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseCreate"></div>
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingUser is null ? "Create User" : "Edit User")</h2>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Create User</h2>
 
             @if (!string.IsNullOrEmpty(_formError))
             {
@@ -110,17 +116,14 @@ else if (_data is not null)
             }
 
             <div class="space-y-4">
-                @if (_editingUser is null)
-                {
-                    <div>
-                        <label class="form-label">Username *</label>
-                        <input @bind="_form.UserName" class="form-input" placeholder="johndoe" />
-                    </div>
-                    <div>
-                        <label class="form-label">Password *</label>
-                        <input @bind="_form.Password" class="form-input" type="password" placeholder="••••••••" />
-                    </div>
-                }
+                <div>
+                    <label class="form-label">Username *</label>
+                    <input @bind="_form.UserName" class="form-input" placeholder="johndoe" />
+                </div>
+                <div>
+                    <label class="form-label">Password *</label>
+                    <input @bind="_form.Password" class="form-input" type="password" placeholder="••••••••" />
+                </div>
                 <div>
                     <label class="form-label">Email *</label>
                     <input @bind="_form.Email" class="form-input" type="email" placeholder="you@example.com" />
@@ -157,7 +160,7 @@ else if (_data is not null)
             </div>
 
             <div class="flex justify-end gap-3 mt-6">
-                <button class="btn-secondary" @onclick="CloseForm">
+                <button class="btn-secondary" @onclick="CloseCreate">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -165,7 +168,8 @@ else if (_data is not null)
                 </button>
                 <button class="btn-primary" @onclick="SaveAsync" disabled="@_saving">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        <path stroke-linecap="round" 
+                        stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
                     @(_saving ? "Saving…" : "Save")
                 </button>
@@ -173,6 +177,13 @@ else if (_data is not null)
         </div>
     </div>
 }
+
+<!-- Edit Modal -->
+<EditUserModal IsVisible="@_showEdit"
+               User="@(_editingUser is null ? null : new UserInfoResponse(_editingUser.Id, _editingUser.UserName, _editingUser.Email, _editingUser.FirstName, _editingUser.LastName, _editingUser.PhoneNumber, _editingUser.Roles.ToArray()))"
+               AllRoles="@_allRoles"
+               OnClose="@(() => { _showEdit = false; _editingUser = null; })"
+               OnSaved="LoadUsersAsync" />
 
 <ConfirmDialog IsVisible="_showDelete" Title="Delete user"
                Message="@($"Are you sure you want to delete '{_deletingUser?.UserName}'? This action cannot be undone.")"
@@ -236,12 +247,15 @@ else if (_data is not null)
     private int _page = 1;
     private const int _pageSize = 10;
 
-    // Form state
-    private bool _showForm;
-    private UserResponse? _editingUser;
+    // Create form state
+    private bool _showCreate;
     private readonly UserFormModel _form = new();
     private string? _formError;
     private bool _saving;
+
+    // Edit modal state
+    private bool _showEdit;
+    private UserResponse? _editingUser;
 
     // Delete state
     private bool _showDelete;
@@ -277,40 +291,33 @@ else if (_data is not null)
     private async Task LoadRolesAsync()
     {
        var (result, _) = await Api.GetRolesAsync(1, 100);
-       _allRoles = result?.Items ?? [];
+            _allRoles = result?.Items ?? [];
     }
 
     private async Task ChangePage(int page)
     {
         _page = page;
-        await LoadUsersAsync();
-    }
+         await LoadUsersAsync();
+    }   
 
     private void OpenCreate()
     {
-        _editingUser = null;
         _form.Reset();
         _formError = null;
-        _showForm = true;
+        _showCreate = true;
     }
 
     private void OpenEdit(UserResponse user)
     {
         _editingUser = user;
-        _form.Email = user.Email ?? string.Empty;
-        _form.FirstName = user.FirstName;
-        _form.LastName = user.LastName;
-        _form.PhoneNumber = user.PhoneNumber;
-        _form.SelectedRoles = [.. user.Roles];
-        _formError = null;
-        _showForm = true;
+        _showEdit = true;
     }
 
-    private void CloseForm() => _showForm = false;
+    private void CloseCreate() => _showCreate = false;
 
     private void ToggleRole(string role, bool selected)
     {
-        if (selected) _form.SelectedRoles.Add(role);
+            if (selected) _form.SelectedRoles.Add(role);
         else _form.SelectedRoles.Remove(role);
     }
 
@@ -318,9 +325,7 @@ else if (_data is not null)
     {
         _formError = null;
         _saving = true;
-        var error = _editingUser is null
-            ? await Api.CreateUserAsync(_form.UserName, _form.Email, _form.Password, _form.FirstName, _form.LastName, _form.PhoneNumber, _form.SelectedRoles.ToArray())
-            : await Api.UpdateUserAsync(_editingUser.Id, _form.Email, _form.FirstName, _form.LastName, _form.PhoneNumber, _form.SelectedRoles.ToArray());
+        var error = await Api.CreateUserAsync(_form.UserName, _form.Email, _form.Password, _form.FirstName, _form.LastName, _form.PhoneNumber, _form.SelectedRoles.ToArray());
 
         if (error is not null)
         {
@@ -329,7 +334,7 @@ else if (_data is not null)
             return;
         }
 
-        _showForm = false;
+        _showCreate = false;
         await LoadUsersAsync();
         _saving = false;
     }
