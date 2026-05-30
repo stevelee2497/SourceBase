@@ -408,3 +408,5 @@ appsettings.Development.json
 graphify-out
 
 .env
+
+run.sh

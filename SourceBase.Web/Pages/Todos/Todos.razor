@@ -2,22 +2,23 @@
 @attribute [Authorize]
 @inject ApiHttpClient Api
 
-<div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-semibold text-gray-900">Todos</h1>
-</div>
-
 @if (!string.IsNullOrEmpty(_error))
 {
     <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
 }
 
-<div class="flex gap-6 h-[calc(100vh-180px)]">
+<div class="flex flex-col md:flex-row gap-6 md:h-[calc(100vh-180px)]">
 
     <!-- Todo Lists panel -->
-    <div class="w-72 shrink-0 flex flex-col gap-3">
+    <div class="@(_selectedListId != Guid.Empty ? "hidden md:flex" : "flex") flex-col gap-3 md:w-72 md:shrink-0">
         <div class="flex items-center justify-between">
             <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Lists</h2>
-            <button class="btn-primary btn-sm" @onclick="OpenCreateList">+ New List</button>
+            <button class="btn-primary btn-sm" @onclick="OpenCreateList">
+                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                New List
+            </button>
         </div>
 
         @if (_loadingLists)
@@ -54,16 +55,29 @@
     </div>
 
     <!-- Todos panel -->
-    <div class="flex-1 flex flex-col gap-3 overflow-hidden">
+    <div class="@(_selectedListId == Guid.Empty ? "hidden md:flex" : "flex") flex-1 flex-col gap-3 md:overflow-hidden">
         @if (_selectedListId == Guid.Empty)
         {
             <div class="flex-1 flex items-center justify-center text-sm text-gray-400">Select a list to view todos</div>
         }
         else
         {
+            <!-- Back button (mobile only) -->
+            <button class="md:hidden btn-secondary btn-sm self-start" @onclick="GoBackToLists">
+                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Lists
+            </button>
+
             <div class="flex items-center justify-between">
                 <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">@(_lists.FirstOrDefault(l => l.Id == _selectedListId)?.Name ?? "Todos")</h2>
-                <button class="btn-primary btn-sm" @onclick="OpenCreateTodo">+ Add Todo</button>
+                <button class="btn-primary btn-sm" @onclick="OpenCreateTodo">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Todo
+                </button>
             </div>
 
             @if (_loadingTodos)
@@ -76,17 +90,27 @@
             }
             else
             {
-                <div class="flex-1 overflow-y-auto flex flex-col gap-2">
+                <div class="md:flex-1 md:overflow-y-auto flex flex-col gap-2">
                     @foreach (var todo in _todos)
                     {
-                        <div class="card flex items-center gap-3 py-3">
+                        <div class="card flex items-start sm:items-center gap-3 py-3">
                             <div class="flex-1 min-w-0">
                                 <div class="font-medium text-sm text-gray-900 truncate">@todo.Title</div>
                                 <div class="text-xs text-gray-400">@todo.Date</div>
                             </div>
-                            <span class="@StatusBadgeClass(todo.Status) shrink-0">@todo.Status</span>
-                            <button class="btn-secondary btn-sm shrink-0" @onclick="() => OpenEditTodo(todo)">Edit</button>
-                            <button class="btn-danger btn-sm shrink-0" @onclick="() => ConfirmDeleteTodo(todo)">Delete</button>
+                            <div class="flex items-center gap-2 flex-wrap justify-end">
+                                <span class="@StatusBadgeClass(todo.Status) shrink-0">@todo.Status</span>
+                                <button class="text-gray-400 hover:text-indigo-600 shrink-0 transition-colors" @onclick="() => OpenEditTodo(todo)" title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button class="text-gray-400 hover:text-red-600 shrink-0 transition-colors" @onclick="() => ConfirmDeleteTodo(todo)" title="Delete">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     }
                 </div>
@@ -113,8 +137,18 @@
                 <input @bind="_listName" class="form-input" placeholder="e.g. Work, Personal…" />
             </div>
             <div class="flex justify-end gap-3 mt-5">
-                <button class="btn-secondary" @onclick="CloseListForm">Cancel</button>
-                <button class="btn-primary" @onclick="SaveListAsync" disabled="@_savingList">@(_savingList ? "Saving…" : "Save")</button>
+                <button class="btn-secondary" @onclick="CloseListForm">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Cancel
+                </button>
+                <button class="btn-primary" @onclick="SaveListAsync" disabled="@_savingList">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    @(_savingList ? "Saving…" : "Save")
+                </button>
             </div>
         </div>
     </div>
@@ -150,8 +184,18 @@
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-5">
-                <button class="btn-secondary" @onclick="CloseTodoForm">Cancel</button>
-                <button class="btn-primary" @onclick="SaveTodoAsync" disabled="@_savingTodo">@(_savingTodo ? "Saving…" : "Save")</button>
+                <button class="btn-secondary" @onclick="CloseTodoForm">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Cancel
+                </button>
+                <button class="btn-primary" @onclick="SaveTodoAsync" disabled="@_savingTodo">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    @(_savingTodo ? "Saving…" : "Save")
+                </button>
             </div>
         </div>
     </div>
@@ -225,6 +269,8 @@
         _todosPage = 1;
         await LoadTodosAsync();
     }
+
+    private void GoBackToLists() => _selectedListId = Guid.Empty;
 
     private async Task LoadTodosAsync()
     {

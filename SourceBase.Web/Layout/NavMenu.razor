@@ -1,8 +1,19 @@
 @inject NavigationManager Navigation
 
-<aside class="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
-    <div class="flex items-center h-16 px-6 border-b border-gray-200">
+<!-- Mobile overlay backdrop -->
+@if (MobileOpen)
+{
+    <div class="fixed inset-0 z-40 bg-black/50 md:hidden" @onclick="CloseMenu"></div>
+}
+
+<aside class="@AsideClass w-64 bg-white border-r border-gray-200 flex-col shrink-0">
+    <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200">
         <span class="text-xl font-bold text-indigo-600">SourceBase</span>
+        <button class="md:hidden p-1 rounded text-gray-400 hover:text-gray-600" @onclick="CloseMenu" aria-label="Close menu">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
     </div>
 
     <nav class="flex-1 px-4 py-4 space-y-1">
@@ -43,5 +54,14 @@
 </aside>
 
 @code {
+    [Parameter] public bool MobileOpen { get; set; }
+    [Parameter] public EventCallback OnMobileClose { get; set; }
+
     private const string NavClass = "flex items-center px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors w-full";
+
+    private string AsideClass => MobileOpen
+        ? "fixed inset-y-0 left-0 z-50 flex"
+        : "hidden md:flex";
+
+    private Task CloseMenu() => OnMobileClose.InvokeAsync();
 }
