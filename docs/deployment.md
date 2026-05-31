@@ -28,12 +28,11 @@ cp .env.example .env
 
 Key values to set:
 
-| Variable | Value |
-|---|---|
-| `WEB_URL` | `https://quoctran.qzz.io` |
-| `ADMIN_EMAIL` | Your admin email |
-| `ADMIN_PASSWORD` | Strong password |
-| `POSTGRES_PASSWORD` | Strong password |
+| Variable            | Value            |
+| ------------------- | ---------------- |
+| `ADMIN_EMAIL`       | Your admin email |
+| `ADMIN_PASSWORD`    | Strong password  |
+| `POSTGRES_PASSWORD` | Strong password  |
 
 ### 3. Start all services
 

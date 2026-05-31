@@ -46,10 +46,9 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - AppSettings__AdminEmail=${ADMIN_EMAIL}
       - AppSettings__AdminPassword=${ADMIN_PASSWORD}
-      - AppSettings__WebUrl=${WEB_URL}
       - AppSettings__SendGridApiKey=${SENDGRID_API_KEY}
       - AppSettings__SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
-      - AllowedSpecificOrigins__0=${WEB_URL}
+      - AllowedSpecificOrigins__0=https://quoctran.qzz.io
     volumes:
       - ./logs/api:/app/Logs
     depends_on:

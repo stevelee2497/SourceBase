@@ -6,13 +6,13 @@ A .NET 10 API starter built on **Vertical Slice Architecture** and **REPR Patter
 
 Feature documentation — user stories, detailed flows, and test case traceability:
 
-| Domain | Description |
-|--------|-------------|
-| [Auth](docs/features/auth.md) | Login, Register, Email Confirmation, Password Reset, Token Refresh, User Profile |
-| [Users](docs/features/users.md) | Admin-managed user accounts — create, list, update, delete, password reset |
-| [Roles](docs/features/roles.md) | Role management — create, list, update, delete |
-| [Todos](docs/features/todos.md) | Todo lists and todo items — full CRUD, filters, paging |
-| [Data](docs/features/data.md) | Audit history, enum definitions, application statistics |
+| Domain                          | Description                                                                      |
+| ------------------------------- | -------------------------------------------------------------------------------- |
+| [Auth](docs/features/auth.md)   | Login, Register, Email Confirmation, Password Reset, Token Refresh, User Profile |
+| [Users](docs/features/users.md) | Admin-managed user accounts — create, list, update, delete, password reset       |
+| [Roles](docs/features/roles.md) | Role management — create, list, update, delete                                   |
+| [Todos](docs/features/todos.md) | Todo lists and todo items — full CRUD, filters, paging                           |
+| [Data](docs/features/data.md)   | Audit history, enum definitions, application statistics                          |
 
 ## Architecture
 
@@ -118,22 +118,22 @@ All entities inherit `BaseEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`, `Update
 
 ## Features
 
-| Capability | Notes |
-|---|---|
-| Vertical Slice Architecture | One file per use case, zero shared layers |
-| Minimal API + `IEndpoint` | Auto-discovered by assembly scanning — no controllers |
-| .NET 10 + EF Core (SQLite) | Lightweight, zero-config database |
-| Role-based authorization | JWT-based with per-endpoint `RequireAuthorization` |
-| `GlobalExceptionMiddleware` | Typed exceptions → `ProblemDetails` responses |
-| FluentValidation | Auto-wired — invalid requests return `400` before reaching handlers |
-| EF Core audit interceptor | `CreatedOn / UpdatedOn / CreatedBy / UpdatedBy` set automatically |
-| Strongly-typed `AppSettings` | `IOptions<T>` pattern, injected as singleton |
-| Serilog + OpenTelemetry | Structured logging forwarded to Aspire dashboard |
-| CORS | Configurable origins via `appsettings.json` |
-| .NET Aspire orchestration | Dashboard for logs, traces, metrics at `http://localhost:15017` |
-| Docker support | Multi-stage images, `docker compose up` for local dev |
-| Standalone Aspire dashboard on VPS | Logs, traces, metrics via Tailscale on port `18888` |
-| sqlite-web on VPS | SQLite browser via Tailscale on port `18080` |
+| Capability                         | Notes                                                               |
+| ---------------------------------- | ------------------------------------------------------------------- |
+| Vertical Slice Architecture        | One file per use case, zero shared layers                           |
+| Minimal API + `IEndpoint`          | Auto-discovered by assembly scanning — no controllers               |
+| .NET 10 + EF Core (SQLite)         | Lightweight, zero-config database                                   |
+| Role-based authorization           | JWT-based with per-endpoint `RequireAuthorization`                  |
+| `GlobalExceptionMiddleware`        | Typed exceptions → `ProblemDetails` responses                       |
+| FluentValidation                   | Auto-wired — invalid requests return `400` before reaching handlers |
+| EF Core audit interceptor          | `CreatedOn / UpdatedOn / CreatedBy / UpdatedBy` set automatically   |
+| Strongly-typed `AppSettings`       | `IOptions<T>` pattern, injected as singleton                        |
+| Serilog + OpenTelemetry            | Structured logging forwarded to Aspire dashboard                    |
+| CORS                               | Configurable origins via `appsettings.json`                         |
+| .NET Aspire orchestration          | Dashboard for logs, traces, metrics at `http://localhost:15017`     |
+| Docker support                     | Multi-stage images, `docker compose up` for local dev               |
+| Standalone Aspire dashboard on VPS | Logs, traces, metrics via Tailscale on port `18888`                 |
+| sqlite-web on VPS                  | SQLite browser via Tailscale on port `18080`                        |
 
 ## Backlogs
 
@@ -162,10 +162,10 @@ Logs and traces are forwarded to the dashboard via OpenTelemetry when `OTEL_EXPO
 
 ### VPS internal tools (Tailscale VPN only)
 
-| Tool | Port | Purpose |
-|---|---|---|
-| Aspire Dashboard | `18888` | Logs, traces, metrics |
-| sqlite-web | `18080` | SQLite database browser |
+| Tool             | Port    | Purpose                 |
+| ---------------- | ------- | ----------------------- |
+| Aspire Dashboard | `18888` | Logs, traces, metrics   |
+| sqlite-web       | `18080` | SQLite database browser |
 
 These ports are **not** exposed via nginx — connect via Tailscale to access them.
 
@@ -276,7 +276,7 @@ git clone https://github.com/stevelee2497/SourceBase.git && cd SourceBase
 
 # Fill in secrets
 cp .env.example .env
-nano .env   # set ADMIN_EMAIL, ADMIN_PASSWORD, WEB_URL, SENDGRID_API_KEY
+nano .env   # set ADMIN_EMAIL, ADMIN_PASSWORD, SENDGRID_API_KEY
 
 # Pull pre-built images and start
 docker compose pull
@@ -301,12 +301,11 @@ No manual action needed. To force a redeploy, push any commit to `main` or re-ru
 
 ### Environment variables (`.env`)
 
-| Variable                 | Description                                                       |
-| ------------------------ | ----------------------------------------------------------------- |
-| `ADMIN_EMAIL`            | Seed admin email                                                  |
-| `ADMIN_PASSWORD`         | Seed admin password                                               |
-| `WEB_URL`                | Public URL, e.g. `http://1.2.3.4` — used for email links and CORS |
-| `SENDGRID_API_KEY`       | Leave blank to disable outbound email                             |
-| `SENDGRID_ACCOUNT_OWNER` | Sender email address                                              |
+| Variable                 | Description                           |
+| ------------------------ | ------------------------------------- |
+| `ADMIN_EMAIL`            | Seed admin email                      |
+| `ADMIN_PASSWORD`         | Seed admin password                   |
+| `SENDGRID_API_KEY`       | Leave blank to disable outbound email |
+| `SENDGRID_ACCOUNT_OWNER` | Sender email address                  |
 
 The SQLite database is persisted in a Docker named volume (`sqlite_data`) and survives container restarts and image updates.
