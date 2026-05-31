@@ -19,7 +19,11 @@
     </div>
 </div>
 
-@if (_stats is not null)
+@if (_statsLoading)
+{
+    <div class="text-sm text-gray-400 py-4 text-center mb-8">Loading overview…</div>
+}
+else if (_stats is not null)
 {
     <div class="mb-8">
         <h2 class="text-lg font-medium text-gray-900 mb-4">Overview</h2>
@@ -125,6 +129,7 @@
 
 @code {
     private StatsResponse? _stats;
+    private bool _statsLoading = true;
     private GetWalletSummaryResponse? _walletSummary;
     private bool _walletsLoaded;
     private bool _hasWallets;
@@ -133,8 +138,10 @@
 
     private async Task LoadStatsAsync()
     {
+        _statsLoading = true;
         var (data, _) = await Api.GetStatsAsync();
         _stats = data;
+        _statsLoading = false;
     }
 
     private async Task LoadWalletSummaryAsync()

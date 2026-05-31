@@ -197,9 +197,9 @@ else
                     <input @bind="_transactionNote" class="form-input" placeholder="Optional description" />
                 </div>
                 <div>
-                    <label class="form-label">Category</label>
+                    <label class="form-label">Category *</label>
                     <select @bind="_transactionCategoryId" class="form-input">
-                        <option value="">No category</option>
+                        <option value="">Select category</option>
                         @foreach (var category in FilteredTransactionCategories)
                         {
                             <option value="@category.Id">@($"{CategoryIcon(category.Icon)} {category.Name}")</option>
@@ -487,10 +487,16 @@ else
             return;
         }
 
+        if (ParseGuid(_transactionCategoryId) is not Guid categoryId)
+        {
+            _transactionFormError = "Category is required.";
+            return;
+        }
+
         _savingTransaction = true;
         var error = _editingTransaction is null
-            ? await Api.CreateTransactionAsync(Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), ParseGuid(_transactionCategoryId))
-            : await Api.UpdateTransactionAsync(_editingTransaction.Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), ParseGuid(_transactionCategoryId));
+            ? await Api.CreateTransactionAsync(Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId)
+            : await Api.UpdateTransactionAsync(_editingTransaction.Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId);
 
         if (error is not null)
         {

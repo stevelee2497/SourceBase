@@ -31,8 +31,11 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task GetCategories_ReturnsSystemAndUserCategories()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        var custom = await CreateCategoryAsync(client, type: CategoryType.Expense);
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var createCatResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
+        createCatResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var custom = await createCatResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Act
         var response = await client.GetAsync(GetCategoriesEndpoint.Route);
@@ -40,7 +43,7 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<List<CategoryResponse>>();
-        body!.Should().Contain(x => x.Id == custom.Id && !x.IsSystem);
+        body!.Should().Contain(x => x.Id == custom!.Id && !x.IsSystem);
         body.Should().Contain(x => x.IsSystem);
     }
 
@@ -48,10 +51,16 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task GetCategories_WithMultipleUsers_ExcludesOtherUsersCategories()
     {
         // Arrange
-        var ownerClient = await CreateUserClientAsync();
-        var otherClient = await CreateUserClientAsync();
-        var ownCategory = await CreateCategoryAsync(ownerClient, name: UniqueCategoryName("Own"), type: CategoryType.Income);
-        var otherCategory = await CreateCategoryAsync(otherClient, name: UniqueCategoryName("Other"), type: CategoryType.Expense);
+        var ownerClient = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var otherClient = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var ownCatResponse = await ownerClient.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Own_{Guid.NewGuid():N}", type = "Income", icon = "🏷️" });
+        ownCatResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var ownCategory = await ownCatResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
+
+        var otherCatResponse = await otherClient.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Other_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
+        otherCatResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var otherCategory = await otherCatResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Act
         var response = await ownerClient.GetAsync(GetCategoriesEndpoint.Route);
@@ -59,17 +68,18 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<List<CategoryResponse>>();
-        body!.Should().Contain(x => x.Id == ownCategory.Id);
-        body.Should().NotContain(x => x.Id == otherCategory.Id);
+        body!.Should().Contain(x => x.Id == ownCategory!.Id);
+        body.Should().NotContain(x => x.Id == otherCategory!.Id);
     }
 
     [Fact(DisplayName = "CATS-GET-004: GetCategories_WithIncomeFilter_ReturnsOnlyIncomeCategories")]
     public async Task GetCategories_WithIncomeFilter_ReturnsOnlyIncomeCategories()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        await CreateCategoryAsync(client, type: CategoryType.Income);
-        await CreateCategoryAsync(client, type: CategoryType.Expense);
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Income", icon = "🏷️" });
+        await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
 
         // Act
         var response = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type={CategoryType.Income}");
@@ -85,9 +95,10 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task GetCategories_WithExpenseFilter_ReturnsOnlyExpenseCategories()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        await CreateCategoryAsync(client, type: CategoryType.Income);
-        await CreateCategoryAsync(client, type: CategoryType.Expense);
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Income", icon = "🏷️" });
+        await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
 
         // Act
         var response = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type={CategoryType.Expense}");
@@ -108,7 +119,7 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
         // Act
         var response = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new
         {
-            name = UniqueCategoryName("Unauthorized"),
+            name = $"Unauthorized_{Guid.NewGuid():N}",
             type = CategoryType.Expense.ToString(),
         });
 
@@ -120,12 +131,12 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task CreateCategory_WithValidData_ReturnsOkAndId()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         // Act
         var response = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new
         {
-            name = UniqueCategoryName("Created"),
+            name = $"Created_{Guid.NewGuid():N}",
             type = CategoryType.Expense.ToString(),
             icon = "🧾",
         });
@@ -140,7 +151,7 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task CreateCategory_WithMissingName_ReturnsBadRequest()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         // Act
         var response = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new
@@ -156,12 +167,12 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task CreateCategory_WithMissingType_ReturnsBadRequest()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         // Act
         var response = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new
         {
-            name = UniqueCategoryName("NoType"),
+            name = $"NoType_{Guid.NewGuid():N}",
         });
 
         // Assert
@@ -172,12 +183,12 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task CreateCategory_WithInvalidType_ReturnsBadRequest()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         // Act
         var response = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new
         {
-            name = UniqueCategoryName("InvalidType"),
+            name = $"InvalidType_{Guid.NewGuid():N}",
             type = "InvalidType",
         });
 
@@ -193,12 +204,14 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var client = await factory.CreateAuthorizedClient(email, "Test@1234!");
 
         // Act
-        var create = await CreateCategoryAsync(client, type: CategoryType.Income);
+        var createResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Income", icon = "🏷️" });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Assert
         var data = await factory.WithDbContextAsync(async db => new
         {
-            Category = await db.Categories.SingleAsync(x => x.Id == create.Id),
+            Category = await db.Categories.SingleAsync(x => x.Id == create!.Id),
             UserId = await db.Users.Where(x => x.Email == email).Select(x => x.Id).SingleAsync()
         });
         data.Category.UserId.Should().Be(data.UserId);
@@ -214,7 +227,7 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
         // Act
         var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(Guid.NewGuid()), new
         {
-            name = UniqueCategoryName("Updated"),
+            name = $"Updated_{Guid.NewGuid():N}",
             icon = "✏️",
         });
 
@@ -226,12 +239,15 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task UpdateCategory_WithValidData_ReturnsOk()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        var create = await CreateCategoryAsync(client, type: CategoryType.Expense);
-        var updatedName = UniqueCategoryName("Updated");
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var createResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
+        var updatedName = $"Updated_{Guid.NewGuid():N}";
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create.Id), new
+        var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create!.Id), new
         {
             name = updatedName,
             icon = "🏷️",
@@ -253,13 +269,16 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task UpdateCategory_WithMissingName_ReturnsBadRequest()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        var create = await CreateCategoryAsync(client, type: CategoryType.Expense);
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var createResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create.Id), new
+        var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create!.Id), new
         {
-            icon = "🏷️",
+            icon = "��️",
         });
 
         // Assert
@@ -270,13 +289,17 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task UpdateCategory_WithSystemCategory_ReturnsForbidden()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        var systemCategory = await GetSystemCategoryAsync(client, CategoryType.Expense);
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var catListResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Expense");
+        catListResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var categories = await catListResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var systemCategory = categories!.First(x => x.IsSystem);
 
         // Act
         var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(systemCategory.Id), new
         {
-            name = UniqueCategoryName("System"),
+            name = $"System_{Guid.NewGuid():N}",
             icon = "🚫",
         });
 
@@ -288,14 +311,17 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task UpdateCategory_WithOtherUsersCategory_ReturnsNotFound()
     {
         // Arrange
-        var ownerClient = await CreateUserClientAsync();
-        var otherClient = await CreateUserClientAsync();
-        var create = await CreateCategoryAsync(ownerClient, type: CategoryType.Income);
+        var ownerClient = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var otherClient = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var createResponse = await ownerClient.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Income", icon = "🏷️" });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Act
-        var response = await otherClient.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create.Id), new
+        var response = await otherClient.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create!.Id), new
         {
-            name = UniqueCategoryName("OtherUser"),
+            name = $"OtherUser_{Guid.NewGuid():N}",
             icon = "🚫",
         });
 
@@ -307,12 +333,12 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task UpdateCategory_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         // Act
         var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(Guid.NewGuid()), new
         {
-            name = UniqueCategoryName("Unknown"),
+            name = $"Unknown_{Guid.NewGuid():N}",
             icon = "🏷️",
         });
 
@@ -337,11 +363,14 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task DeleteCategory_WithOwnedUnusedCategory_ReturnsOk()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        var create = await CreateCategoryAsync(client, type: CategoryType.Expense);
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var createResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Act
-        var response = await client.DeleteAsync(DeleteCategoryEndpoint.Route.WithId(create.Id));
+        var response = await client.DeleteAsync(DeleteCategoryEndpoint.Route.WithId(create!.Id));
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -357,8 +386,12 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task DeleteCategory_WithSystemCategory_ReturnsForbidden()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        var systemCategory = await GetSystemCategoryAsync(client, CategoryType.Expense);
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var catListResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Expense");
+        catListResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var categories = await catListResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var systemCategory = categories!.First(x => x.IsSystem);
 
         // Act
         var response = await client.DeleteAsync(DeleteCategoryEndpoint.Route.WithId(systemCategory.Id));
@@ -371,12 +404,15 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task DeleteCategory_WithOtherUsersCategory_ReturnsNotFound()
     {
         // Arrange
-        var ownerClient = await CreateUserClientAsync();
-        var otherClient = await CreateUserClientAsync();
-        var create = await CreateCategoryAsync(ownerClient, type: CategoryType.Expense);
+        var ownerClient = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var otherClient = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var createResponse = await ownerClient.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Act
-        var response = await otherClient.DeleteAsync(DeleteCategoryEndpoint.Route.WithId(create.Id));
+        var response = await otherClient.DeleteAsync(DeleteCategoryEndpoint.Route.WithId(create!.Id));
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -386,7 +422,7 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task DeleteCategory_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         // Act
         var response = await client.DeleteAsync(DeleteCategoryEndpoint.Route.WithId(Guid.NewGuid()));
@@ -399,10 +435,18 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
     public async Task DeleteCategory_WithReferencedTransactions_ReturnsBadRequest()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        var wallet = await CreateWalletAsync(client);
-        var category = await CreateCategoryAsync(client, type: CategoryType.Expense);
-        await CreateTransactionAsync(client, wallet.Id, category.Id, 20m, TransactionType.Expense, "2025-03-01");
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
+        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var catResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
+        catResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var category = await catResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
+
+        var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 20m, type = "Expense", date = "2025-03-01", note = $"Txn_{Guid.NewGuid():N}", categoryId = category!.Id });
+        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Act
         var response = await client.DeleteAsync(DeleteCategoryEndpoint.Route.WithId(category.Id));
@@ -411,63 +455,5 @@ public class CategoryCrudTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("Category is in use by transactions");
-    }
-
-    private async Task<HttpClient> CreateUserClientAsync()
-    {
-        return await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
-    }
-
-    private static string UniqueCategoryName(string prefix)
-    {
-        return $"{prefix}_{Guid.NewGuid():N}";
-    }
-
-    private async Task<CreateCategoryResponse> CreateCategoryAsync(HttpClient client, string? name = null, CategoryType type = CategoryType.Expense, string? icon = "🏷️")
-    {
-        var response = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new
-        {
-            name = name ?? UniqueCategoryName("Category"),
-            type = type.ToString(),
-            icon,
-        });
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        return (await response.Content.ReadFromJsonAsync<CreateCategoryResponse>())!;
-    }
-
-    private async Task<CreateWalletResponse> CreateWalletAsync(HttpClient client)
-    {
-        var response = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new
-        {
-            name = $"Wallet_{Guid.NewGuid():N}",
-            initialBalance = 100m,
-            currency = "USD",
-            icon = "💳",
-        });
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        return (await response.Content.ReadFromJsonAsync<CreateWalletResponse>())!;
-    }
-
-    private async Task<CreateTransactionResponse> CreateTransactionAsync(HttpClient client, Guid walletId, Guid categoryId, decimal amount, TransactionType type, string date)
-    {
-        var response = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new
-        {
-            walletId,
-            amount,
-            type = type.ToString(),
-            date,
-            note = $"Txn_{Guid.NewGuid():N}",
-            categoryId,
-        });
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        return (await response.Content.ReadFromJsonAsync<CreateTransactionResponse>())!;
-    }
-
-    private async Task<CategoryResponse> GetSystemCategoryAsync(HttpClient client, CategoryType type)
-    {
-        var response = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type={type}");
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var categories = await response.Content.ReadFromJsonAsync<List<CategoryResponse>>();
-        return categories!.First(x => x.IsSystem && x.Type == type);
     }
 }

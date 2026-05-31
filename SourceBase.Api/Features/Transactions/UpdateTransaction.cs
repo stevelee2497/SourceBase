@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Api.Features.Transactions;
 
-public record UpdateTransactionRequest([property: SwaggerIgnore] Guid Id, decimal Amount, TransactionType Type, DateOnly? Date, string? Note, Guid? CategoryId);
+public record UpdateTransactionRequest([property: SwaggerIgnore] Guid Id, decimal Amount, TransactionType Type, DateOnly? Date, string? Note, Guid CategoryId);
 
 public record UpdateTransactionResponse(Guid Id);
 
@@ -31,12 +31,9 @@ public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser current
         if (transaction.IsTransfer)
             throw new SourceBase.Api.Shared.ValidationException("Transfer transactions cannot be edited directly. Delete the transfer instead.");
 
-        if (request.CategoryId.HasValue)
-        {
-            var categoryExists = await dbContext.Categories.AnyAsync(c => c.Id == request.CategoryId.Value && (c.IsSystem || c.UserId == currentUser.UserId), ct);
-            if (!categoryExists)
-                throw new NotFoundException("Category not found.");
-        }
+        var categoryExists = await dbContext.Categories.AnyAsync(c => c.Id == request.CategoryId && (c.IsSystem || c.UserId == currentUser.UserId), ct);
+        if (!categoryExists)
+            throw new NotFoundException("Category not found.");
 
         transaction.Amount = request.Amount;
         transaction.Type = request.Type;
@@ -54,5 +51,6 @@ public class UpdateTransactionRequestValidator : AbstractValidator<UpdateTransac
     {
         RuleFor(x => x.Amount).GreaterThan(0);
         RuleFor(x => x.Date).NotNull();
+        RuleFor(x => x.CategoryId).NotEmpty();
     }
 }

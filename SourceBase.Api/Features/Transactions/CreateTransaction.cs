@@ -7,7 +7,7 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Transactions;
 
-public record CreateTransactionRequest(Guid WalletId, decimal Amount, TransactionType? Type, DateOnly? Date, string? Note, Guid? CategoryId);
+public record CreateTransactionRequest(Guid WalletId, decimal Amount, TransactionType? Type, DateOnly? Date, string? Note, Guid CategoryId);
 
 public record CreateTransactionResponse(Guid Id);
 
@@ -28,12 +28,9 @@ public class CreateTransactionHandler(IDbContext dbContext, ICurrentUser current
         if (!walletExists)
             throw new NotFoundException("Wallet not found.");
 
-        if (request.CategoryId.HasValue)
-        {
-            var categoryExists = await dbContext.Categories.AnyAsync(c => c.Id == request.CategoryId.Value && (c.IsSystem || c.UserId == currentUser.UserId), ct);
-            if (!categoryExists)
-                throw new NotFoundException("Category not found.");
-        }
+        var categoryExists = await dbContext.Categories.AnyAsync(c => c.Id == request.CategoryId && (c.IsSystem || c.UserId == currentUser.UserId), ct);
+        if (!categoryExists)
+            throw new NotFoundException("Category not found.");
 
         var transaction = new TransactionEntity
         {
@@ -60,5 +57,6 @@ public class CreateTransactionRequestValidator : AbstractValidator<CreateTransac
         RuleFor(x => x.Amount).GreaterThan(0);
         RuleFor(x => x.Type).NotNull();
         RuleFor(x => x.Date).NotNull();
+        RuleFor(x => x.CategoryId).NotEmpty();
     }
 }

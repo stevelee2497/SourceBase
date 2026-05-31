@@ -232,10 +232,10 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
         return ExecuteAsync<PagingResponse<TransactionResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
     }
 
-    public Task<ErrorResponse?> CreateTransactionAsync(Guid walletId, decimal amount, string type, string date, string? note, Guid? categoryId) =>
+    public Task<ErrorResponse?> CreateTransactionAsync(Guid walletId, decimal amount, string type, string date, string? note, Guid categoryId) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/transactions", new { walletId, amount, type, date, note, categoryId }));
 
-    public Task<ErrorResponse?> UpdateTransactionAsync(Guid id, decimal amount, string type, string date, string? note, Guid? categoryId) =>
+    public Task<ErrorResponse?> UpdateTransactionAsync(Guid id, decimal amount, string type, string date, string? note, Guid categoryId) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/transactions/{id}", new { amount, type, date, note, categoryId }));
 
     public Task<ErrorResponse?> DeleteTransactionAsync(Guid id) =>

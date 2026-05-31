@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using SourceBase.Api.Entities;
 using SourceBase.Api.Features.Categories;
 using SourceBase.Api.Features.Transactions;
 using SourceBase.Api.Features.Wallets;
@@ -29,11 +28,26 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
     public async Task GetWalletSummary_WithWalletBalances_ReturnsCorrectTotalBalance()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        var firstWallet = await CreateWalletAsync(client, 100m);
-        var secondWallet = await CreateWalletAsync(client, 50m);
-        await CreateTransactionAsync(client, firstWallet.Id, 25m, TransactionType.Income, "2025-02-01");
-        await CreateTransactionAsync(client, secondWallet.Id, 10m, TransactionType.Expense, "2025-02-02");
+        var client = await factory.CreateAuthorizedClient($"wallet_summary_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var firstWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💼" });
+        firstWalletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var firstWallet = await firstWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var secondWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💼" });
+        secondWalletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var secondWallet = await secondWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var incomeCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
+        var incomeCategories = await incomeCatResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var incomeCategoryId = incomeCategories!.First(x => x.IsSystem).Id;
+
+        var expenseCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Expense");
+        var expenseCategories = await expenseCatResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var expenseCategoryId = expenseCategories!.First(x => x.IsSystem).Id;
+
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = firstWallet!.Id, amount = 25m, type = "Income", date = "2025-02-01", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = secondWallet!.Id, amount = 10m, type = "Expense", date = "2025-02-02", note = $"Txn_{Guid.NewGuid():N}", categoryId = expenseCategoryId });
 
         // Act
         var response = await client.GetAsync(GetWalletSummaryEndpoint.Route);
@@ -48,13 +62,25 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
     public async Task GetWalletSummary_WithCurrentMonthTransactions_ReturnsMonthlyTotals()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        var wallet = await CreateWalletAsync(client, 0m);
+        var client = await factory.CreateAuthorizedClient($"wallet_summary_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💼" });
+        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var incomeCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
+        var incomeCategories = await incomeCatResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var incomeCategoryId = incomeCategories!.First(x => x.IsSystem).Id;
+
+        var expenseCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Expense");
+        var expenseCategories = await expenseCatResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var expenseCategoryId = expenseCategories!.First(x => x.IsSystem).Id;
+
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var previousMonth = today.AddMonths(-1);
-        await CreateTransactionAsync(client, wallet.Id, 100m, TransactionType.Income, today.ToString("yyyy-MM-dd"));
-        await CreateTransactionAsync(client, wallet.Id, 40m, TransactionType.Expense, today.AddDays(-1).ToString("yyyy-MM-dd"));
-        await CreateTransactionAsync(client, wallet.Id, 70m, TransactionType.Income, previousMonth.ToString("yyyy-MM-dd"));
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 100m, type = "Income", date = today.ToString("yyyy-MM-dd"), note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet.Id, amount = 40m, type = "Expense", date = today.AddDays(-1).ToString("yyyy-MM-dd"), note = $"Txn_{Guid.NewGuid():N}", categoryId = expenseCategoryId });
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet.Id, amount = 70m, type = "Income", date = previousMonth.ToString("yyyy-MM-dd"), note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
 
         // Act
         var response = await client.GetAsync(GetWalletSummaryEndpoint.Route);
@@ -70,14 +96,23 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
     public async Task GetWalletSummary_WithMoreThanFiveTransactions_ReturnsAtMostFiveRecentTransactions()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
-        var wallet = await CreateWalletAsync(client, 0m);
-        var createdTransactionIds = new List<Guid>();
+        var client = await factory.CreateAuthorizedClient($"wallet_summary_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
+        var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💼" });
+        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var incomeCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
+        var incomeCategories = await incomeCatResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var incomeCategoryId = incomeCategories!.First(x => x.IsSystem).Id;
+
+        var createdTransactionIds = new List<Guid>();
         for (var day = 1; day <= 6; day++)
         {
-            var transaction = await CreateTransactionAsync(client, wallet.Id, 10m + day, TransactionType.Income, $"2025-06-{day:00}", $"Recent_{day}");
-            createdTransactionIds.Add(transaction.Id);
+            var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 10m + day, type = "Income", date = $"2025-06-{day:00}", note = $"Recent_{day}", categoryId = incomeCategoryId });
+            txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var txn = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
+            createdTransactionIds.Add(txn!.Id);
         }
 
         // Act
@@ -95,7 +130,7 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
     public async Task GetWalletSummary_WithNoWallets_ReturnsZerosAndEmptyRecentTransactions()
     {
         // Arrange
-        var client = await CreateUserClientAsync();
+        var client = await factory.CreateAuthorizedClient($"wallet_summary_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         // Act
         var response = await client.GetAsync(GetWalletSummaryEndpoint.Route);
@@ -108,46 +143,5 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.MonthlyExpense.Should().Be(0m);
         body.RecentTransactions.Should().BeEmpty();
     }
-
-    private async Task<HttpClient> CreateUserClientAsync()
-    {
-        return await factory.CreateAuthorizedClient($"wallet_summary_{Guid.NewGuid():N}@test.com", "Test@1234!");
-    }
-
-    private async Task<CreateWalletResponse> CreateWalletAsync(HttpClient client, decimal initialBalance)
-    {
-        var response = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new
-        {
-            name = $"Wallet_{Guid.NewGuid():N}",
-            initialBalance,
-            currency = "USD",
-            icon = "💼",
-        });
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        return (await response.Content.ReadFromJsonAsync<CreateWalletResponse>())!;
-    }
-
-    private async Task<CreateTransactionResponse> CreateTransactionAsync(HttpClient client, Guid walletId, decimal amount, TransactionType type, string date, string? note = null)
-    {
-        var category = await GetSystemCategoryAsync(client, type == TransactionType.Income ? CategoryType.Income : CategoryType.Expense);
-        var response = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new
-        {
-            walletId,
-            amount,
-            type = type.ToString(),
-            date,
-            note = note ?? $"Txn_{Guid.NewGuid():N}",
-            categoryId = category.Id,
-        });
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        return (await response.Content.ReadFromJsonAsync<CreateTransactionResponse>())!;
-    }
-
-    private async Task<CategoryResponse> GetSystemCategoryAsync(HttpClient client, CategoryType type)
-    {
-        var response = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type={type}");
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var categories = await response.Content.ReadFromJsonAsync<List<CategoryResponse>>();
-        return categories!.First(x => x.IsSystem && x.Type == type);
-    }
 }
+
