@@ -1,0 +1,7 @@
+quoctran.qzz.io {
+    reverse_proxy sourcebase-web:8080
+}
+
+api.quoctran.qzz.io {
+    reverse_proxy sourcebase-api:8080
+}
