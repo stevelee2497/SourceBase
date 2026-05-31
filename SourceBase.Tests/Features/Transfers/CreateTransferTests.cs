@@ -1,0 +1,296 @@
+using System.Net;
+using System.Net.Http.Json;
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using SourceBase.Api.Entities;
+using SourceBase.Api.Features.Transfers;
+using SourceBase.Api.Features.Wallets;
+using SourceBase.Api.Shared;
+using SourceBase.Tests.Infrastructure;
+using Xunit;
+
+namespace SourceBase.Tests.Features.Transfers;
+
+public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
+{
+    [Fact(DisplayName = "TRANSFER-CREATE-001: CreateTransfer_WithoutToken_ReturnsUnauthorized")]
+    public async Task CreateTransfer_WithoutToken_ReturnsUnauthorized()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new
+        {
+            fromWalletId = Guid.NewGuid(),
+            toWalletId = Guid.NewGuid(),
+            amount = 10m,
+            date = "2025-04-01",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact(DisplayName = "TRANSFER-CREATE-002: CreateTransfer_WithValidData_UpdatesBothWalletBalances")]
+    public async Task CreateTransfer_WithValidData_UpdatesBothWalletBalances()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var fromWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
+        fromWalletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var fromWallet = await fromWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var toWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💳" });
+        toWalletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new
+        {
+            fromWalletId = fromWallet!.Id,
+            toWalletId = toWallet!.Id,
+            amount = 30m,
+            date = "2025-04-02",
+            note = $"Transfer_{Guid.NewGuid():N}",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<CreateTransferResponse>();
+        body!.Id.Should().NotBeEmpty();
+
+        var fromWalletBody = await client.GetAsync(GetWalletEndpoint.Route.WithId(fromWallet.Id));
+        var fromWalletData = await fromWalletBody.Content.ReadFromJsonAsync<WalletResponse>();
+        fromWalletData!.Balance.Should().Be(70m);
+
+        var toWalletBody = await client.GetAsync(GetWalletEndpoint.Route.WithId(toWallet.Id));
+        var toWalletData = await toWalletBody.Content.ReadFromJsonAsync<WalletResponse>();
+        toWalletData!.Balance.Should().Be(80m);
+    }
+
+    [Fact(DisplayName = "TRANSFER-CREATE-003: CreateTransfer_WithSameWallets_ReturnsBadRequest")]
+    public async Task CreateTransfer_WithSameWallets_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
+        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new
+        {
+            fromWalletId = wallet!.Id,
+            toWalletId = wallet.Id,
+            amount = 10m,
+            date = "2025-04-03",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact(DisplayName = "TRANSFER-CREATE-004: CreateTransfer_WithOtherUsersFromWallet_ReturnsNotFound")]
+    public async Task CreateTransfer_WithOtherUsersFromWallet_ReturnsNotFound()
+    {
+        // Arrange
+        var ownerClient = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var otherClient = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var otherWalletResponse = await otherClient.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
+        var otherWallet = await otherWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var ownWalletResponse = await ownerClient.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💳" });
+        var ownWallet = await ownWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        // Act
+        var response = await ownerClient.PostAsJsonAsync(CreateTransferEndpoint.Route, new
+        {
+            fromWalletId = otherWallet!.Id,
+            toWalletId = ownWallet!.Id,
+            amount = 10m,
+            date = "2025-04-04",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact(DisplayName = "TRANSFER-CREATE-005: CreateTransfer_WithOtherUsersToWallet_ReturnsNotFound")]
+    public async Task CreateTransfer_WithOtherUsersToWallet_ReturnsNotFound()
+    {
+        // Arrange
+        var ownerClient = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var otherClient = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var ownWalletResponse = await ownerClient.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
+        var ownWallet = await ownWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var otherWalletResponse = await otherClient.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💳" });
+        var otherWallet = await otherWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        // Act
+        var response = await ownerClient.PostAsJsonAsync(CreateTransferEndpoint.Route, new
+        {
+            fromWalletId = ownWallet!.Id,
+            toWalletId = otherWallet!.Id,
+            amount = 10m,
+            date = "2025-04-05",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact(DisplayName = "TRANSFER-CREATE-006: CreateTransfer_WithZeroOrNegativeAmount_ReturnsBadRequest")]
+    public async Task CreateTransfer_WithZeroOrNegativeAmount_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var fromWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
+        var fromWallet = await fromWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+        var toWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💳" });
+        var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        // Act
+        var zeroResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new
+        {
+            fromWalletId = fromWallet!.Id,
+            toWalletId = toWallet!.Id,
+            amount = 0m,
+            date = "2025-04-06",
+        });
+        var negativeResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new
+        {
+            fromWalletId = fromWallet.Id,
+            toWalletId = toWallet.Id,
+            amount = -1m,
+            date = "2025-04-06",
+        });
+
+        // Assert
+        zeroResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        negativeResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact(DisplayName = "TRANSFER-CREATE-007: CreateTransfer_WithMissingDate_ReturnsBadRequest")]
+    public async Task CreateTransfer_WithMissingDate_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var fromWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
+        var fromWallet = await fromWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+        var toWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💳" });
+        var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new
+        {
+            fromWalletId = fromWallet!.Id,
+            toWalletId = toWallet!.Id,
+            amount = 10m,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact(DisplayName = "TRANSFER-CREATE-008: CreateTransfer_CreatesLinkedTransferTransactions")]
+    public async Task CreateTransfer_CreatesLinkedTransferTransactions()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var fromWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
+        var fromWallet = await fromWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+        var toWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💳" });
+        var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var transferResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet!.Id, toWalletId = toWallet!.Id, amount = 35m, date = "2025-04-07", note = $"Transfer_{Guid.NewGuid():N}" });
+        transferResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var transfer = await transferResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
+
+        // Assert
+        var data = await factory.WithDbContextAsync(async db =>
+        {
+            var transferEntity = await db.Transfers.SingleAsync(x => x.Id == transfer!.Id);
+            var transactions = await db.Transactions
+                .Where(x => x.Id == transferEntity.FromTransactionId || x.Id == transferEntity.ToTransactionId)
+                .ToListAsync();
+            return new { Transfer = transferEntity, Transactions = transactions };
+        });
+        data.Transactions.Should().HaveCount(2);
+        data.Transactions.Should().Contain(x => x.Id == data.Transfer.FromTransactionId && x.Type == TransactionType.Expense && x.IsTransfer);
+        data.Transactions.Should().Contain(x => x.Id == data.Transfer.ToTransactionId && x.Type == TransactionType.Income && x.IsTransfer);
+    }
+
+    [Fact(DisplayName = "TRANSFER-CREATE-009: CreateTransfer_WithMissingFromWallet_ReturnsBadRequest")]
+    public async Task CreateTransfer_WithMissingFromWallet_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var toWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💳" });
+        var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new
+        {
+            toWalletId = toWallet!.Id,
+            amount = 10m,
+            date = "2025-04-08",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact(DisplayName = "TRANSFER-CREATE-010: CreateTransfer_WithUnknownFromWallet_ReturnsNotFound")]
+    public async Task CreateTransfer_WithUnknownFromWallet_ReturnsNotFound()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var toWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💳" });
+        var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new
+        {
+            fromWalletId = Guid.NewGuid(),
+            toWalletId = toWallet!.Id,
+            amount = 10m,
+            date = "2025-04-09",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact(DisplayName = "TRANSFER-CREATE-011: CreateTransfer_WithUnknownToWallet_ReturnsNotFound")]
+    public async Task CreateTransfer_WithUnknownToWallet_ReturnsNotFound()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var fromWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
+        var fromWallet = await fromWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new
+        {
+            fromWalletId = fromWallet!.Id,
+            toWalletId = Guid.NewGuid(),
+            amount = 10m,
+            date = "2025-04-10",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+}
