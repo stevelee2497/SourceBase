@@ -22,6 +22,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<EmailEntity> Emails { get; set; }
 
+    public DbSet<WalletEntity> Wallets { get; set; }
+
+    public DbSet<CategoryEntity> Categories { get; set; }
+
+    public DbSet<TransactionEntity> Transactions { get; set; }
+
+    public DbSet<TransferEntity> Transfers { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser)); // Audit history for all actions
@@ -116,6 +124,47 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             context.Set<UserEntity>().Add(adminUserEntity);
             context.SaveChanges();
         }
+
+        SeedCategories(context);
+    }
+
+    private static void SeedCategories(DbContext context)
+    {
+        var defaultCategories = new List<(string Name, CategoryType Type, string Icon)>
+        {
+            ("Salary", CategoryType.Income, "💼"),
+            ("Freelance", CategoryType.Income, "💻"),
+            ("Investment", CategoryType.Income, "📈"),
+            ("Gift", CategoryType.Income, "🎁"),
+            ("Other Income", CategoryType.Income, "💰"),
+            ("Food & Drink", CategoryType.Expense, "🍔"),
+            ("Transport", CategoryType.Expense, "🚗"),
+            ("Shopping", CategoryType.Expense, "🛍️"),
+            ("Bills & Utilities", CategoryType.Expense, "💡"),
+            ("Health", CategoryType.Expense, "❤️"),
+            ("Entertainment", CategoryType.Expense, "🎬"),
+            ("Education", CategoryType.Expense, "📚"),
+            ("Travel", CategoryType.Expense, "✈️"),
+            ("Other Expense", CategoryType.Expense, "📦"),
+        };
+
+        foreach (var (name, type, icon) in defaultCategories)
+        {
+            var exists = context.Set<CategoryEntity>().Any(c => c.IsSystem && c.Name == name && c.Type == type);
+            if (!exists)
+            {
+                context.Set<CategoryEntity>().Add(new CategoryEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Name = name,
+                    Type = type,
+                    Icon = icon,
+                    IsSystem = true,
+                    UserId = null
+                });
+            }
+        }
+        context.SaveChanges();
     }
 
     #endregion
