@@ -105,3 +105,23 @@ public async Task DoSomething_WithCondition_ReturnsExpected()
 **Test naming** — `MethodName_WithCondition_ReturnsExpected` (e.g. `Login_WithWrongPassword_ReturnsUnauthorized`).
 
 **Test isolation** — use `Guid.NewGuid()` to generate unique emails per test (e.g. `$"user_{Guid.NewGuid():N}@test.com"`) to avoid state conflicts between tests sharing the same `WebAppFactory` instance.
+
+## Blazor
+
+**Event handlers** — never use inline lambdas (`() => Method(param)`) for event handlers or component parameters. Use named delegates instead:
+
+- `void` method with loop-captured parameter → return `Action`:
+  ```csharp
+  private Action OpenEdit(T item) => () => { _editing = item; _showForm = true; };
+  // usage: @onclick="OpenEdit(item)"
+  ```
+- `async Task` method with loop-captured parameter → return `Func<Task>`:
+  ```csharp
+  private Func<Task> SelectItem(Guid id) => async () => { _selectedId = id; await LoadAsync(); };
+  // usage: @onclick="SelectItem(item.Id)"
+  ```
+- Multi-statement or single-expression inline lambdas on component parameters (`OnClose`, `OnCancel`, `OnSaved`, etc.) → extract to named `void` methods:
+  ```csharp
+  private void CancelDelete() { _showDelete = false; _deleting = null; }
+  // usage: OnCancel="CancelDelete"
+  ```

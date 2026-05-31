@@ -29,47 +29,47 @@ else if (_data is not null)
 {
     <div class="card p-0 overflow-hidden">
         <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description
-                    </th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-100">
-                @foreach (var role in _data.Items)
-                {
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3">
-                            <span class="font-medium text-xsm text-gray-900">@role.Name</span>
-                            @if (role.Name == "Admin")
-                            {
-                                <span class="ml-2 badge-blue">System</span>
-                            }
-                        </td>
-                        <td class="px-4 py-3 text-sm text-gray-500">@(role.Description ?? "—")</td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="flex items-center justify-end gap-3">
-                                <button class="text-gray-400 hover:text-indigo-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                        disabled="@(role.Name == "Admin")" @onclick="() => OpenEdit(role)" title="Edit">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                                <button class="text-gray-400 hover:text-red-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                        disabled="@(role.Name == "Admin")" @onclick="() => ConfirmDelete(role)" title="Delete">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Description
+                        </th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
+                        </th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    @foreach (var role in _data.Items)
+                    {
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3">
+                                <span class="font-medium text-xsm text-gray-900">@role.Name</span>
+                                @if (role.Name == "Admin")
+                                {
+                                    <span class="ml-2 badge-blue">System</span>
+                                }
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-500">@(role.Description ?? "—")</td>
+                            <td class="px-4 py-3 text-right">
+                                <div class="flex items-center justify-end gap-3">
+                                    <button class="text-gray-400 hover:text-indigo-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled="@(role.Name == "Admin")" @onclick="OpenEdit(role)" title="Edit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button class="text-gray-400 hover:text-red-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled="@(role.Name == "Admin")" @onclick="ConfirmDelete(role)" title="Delete">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -118,9 +118,7 @@ else if (_data is not null)
     </div>
 }
 
-<ConfirmDialog IsVisible="_showDelete" Title="Delete role"
-               Message="@($"Are you sure you want to delete '{_deletingRole?.Name}'? Users with this role will lose it.")"
-               OnConfirm="DeleteAsync" OnCancel="() => { _showDelete = false; _deletingRole = null; }" />
+<ConfirmDialog IsVisible="_showDelete" Title="Delete role" Message="@($"Are you sure you want to delete '{_deletingRole?.Name}'? Users with this role will lose it.")" OnConfirm="DeleteAsync" OnCancel="CancelDelete" />
 
 @code {
     private PagingResponse<RoleResponse>? _data;
@@ -170,14 +168,14 @@ else if (_data is not null)
         _showForm = true;
     }
 
-    private void OpenEdit(RoleResponse role)
+    private Action OpenEdit(RoleResponse role) => () =>
     {
         _editingRole = role;
         _form.Name = role.Name;
         _form.Description = role.Description ?? string.Empty;
         _formError = null;
         _showForm = true;
-    }
+    };
 
     private void CloseForm() => _showForm = false;
 
@@ -187,7 +185,8 @@ else if (_data is not null)
         _saving = true;
         var error = _editingRole is null
             ? await Api.CreateRoleAsync(_form.Name, string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description)
-            : await Api.UpdateRoleAsync(_editingRole.Id, _form.Name, string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description);
+            : await Api.UpdateRoleAsync(_editingRole.Id, _form.Name, string.IsNullOrWhiteSpace(_form.Description) ? null :
+_form.Description);
 
         if (error is not null)
         {
@@ -201,10 +200,16 @@ else if (_data is not null)
         _saving = false;
     }
 
-    private void ConfirmDelete(RoleResponse role)
+    private Action ConfirmDelete(RoleResponse role) => () =>
     {
         _deletingRole = role;
         _showDelete = true;
+    };
+
+    private void CancelDelete()
+    {
+        _showDelete = false;
+        _deletingRole = null;
     }
 
     private async Task DeleteAsync()

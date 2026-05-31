@@ -5,7 +5,7 @@
 <div class="flex items-center justify-between mb-6">
     <button class="btn-primary" @onclick="OpenCreate" disabled="@_loading">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         <span>New User</span>
     </button>
@@ -30,97 +30,88 @@ else if (_data is not null)
 
     <div class="card p-0 overflow-hidden">
         <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-100">
-                @foreach (var user in _data.Items)
-                {
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3">
-                            <div class="font-medium text-gray-900 text-sm">@user.UserName</div>
-                            <div class="text-xs text-gray-500">@user.Email</div>
-                        </td>
-                        <td class="px-4 py-3">
-                            <div class="flex gap-1">
-                                @foreach (var role in user.Roles)
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email
+                        </th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    @foreach (var user in _data.Items)
+                    {
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3">
+                                <div class="font-medium text-gray-900 text-sm">@user.UserName</div>
+                                <div class="text-xs text-gray-500">@user.Email</div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex gap-1">
+                                    @foreach (var role in user.Roles)
+                                    {
+                                        <span class="badge-blue text-xsm">@role</span>
+                                    }
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                @if (user.EmailConfirmed)
                                 {
-                                    <span class="badge-blue text-xsm">@role</span>
+                                    <span class="badge-green text-xsm">Confirmed</span>
                                 }
-                            </div>
-                        </td>
-                        <td class="px-4 py-3">
-                            @if (user.EmailConfirmed)
-                            {
-                                <span class="badge-green text-xsm">Confirmed</span>
-                            }
-                            else
-                            {
-                                <span class="badge-red text-xsm">Pending</span>
-                            }
-                        </td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="flex items-center justify-end gap-3">
-                                <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="() => OpenEdit(user)" title="Edit">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                                @if (!user.EmailConfirmed)
+                                else
                                 {
-                                    <button class="text-gray-400 hover:text-green-600 transition-colors" @onclick="() => ConfirmUserEmail(user)" title="Confirm Email">
+                                    <span class="badge-red text-xsm">Pending</span>
+                                }
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <div class="flex items-center justify-end gap-3">
+                                    <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEdit(user)" title="Edit">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                }
-                                <button class="text-gray-400 hover:text-amber-600 transition-colors" @onclick="() => OpenResetPassword(user)" title="Reset Password">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                    </svg>
-                                </button>
-                                <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="() => ConfirmDelete(user)" title="Delete">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                                    @if (!user.EmailConfirmed)
+                                    {
+                                        <button class="text-gray-400 hover:text-green-600 transition-colors" @onclick="ConfirmUserEmail(user)" title="Confirm Email">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </button>
+                                    }
+                                    <button class="text-gray-400 hover:text-amber-600 transition-colors" @onclick="OpenResetPassword(user)" title="Reset Password">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                        </svg>
+                                    </button>
+                                    <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDelete(user)" title="Delete">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 
     <Pagination CurrentPage="_page" TotalItems="_data.Total" PageSize="_pageSize" OnPageChanged="ChangePage" />
 }
 
-<UserModal IsVisible="_showUserModal"
-           User="_userModalUser"
-           AllRoles="_allRoles"
-           OnClose="@(() => { _showUserModal = false; _userModalUser = null; })"
-           OnSaved="OnUserSavedAsync" />
+<UserModal IsVisible="_showUserModal" User="_userModalUser" AllRoles="_allRoles" OnClose="CloseUserModal" OnSaved="OnUserSavedAsync" />
 
-<ConfirmDialog IsVisible="_showDelete" Title="Delete user"
-               Message="@($"Are you sure you want to delete '{_deletingUser?.UserName}'? This action cannot be undone.")"
-               OnConfirm="DeleteAsync" OnCancel="() => { _showDelete = false; _deletingUser = null; }" />
+<ConfirmDialog IsVisible="_showDelete" Title="Delete user" Message="@($"Are you sure you want to delete '{_deletingUser?.UserName}'? This action cannot be undone.")" OnConfirm="DeleteAsync" OnCancel="CancelDelete" />
 
-<ResetPasswordModal IsVisible="_showResetPassword"
-                   User="_resetPasswordUser"
-                   OnClose="@(() => { _showResetPassword = false; _resetPasswordUser = null; })"
-                   OnSaved="@(() => { _showResetPassword = false; _resetPasswordUser = null; })" />
+<ResetPasswordModal IsVisible="_showResetPassword" User="_resetPasswordUser" OnClose="CloseResetPassword" OnSaved="CloseResetPassword" />
 
-<ConfirmDialog IsVisible="_showConfirmEmail" Title="Confirm email"
-               Message="@($"Mark '{_confirmEmailUser?.UserName}' email as confirmed?")"
-               ConfirmLabel="Confirm"
-               OnConfirm="SubmitConfirmEmailAsync" OnCancel="() => { _showConfirmEmail = false; _confirmEmailUser = null; }" />
+<ConfirmDialog IsVisible="_showConfirmEmail" Title="Confirm email" Message="@($"Mark '{_confirmEmailUser?.UserName}' email as confirmed?")" ConfirmLabel="Confirm" OnConfirm="SubmitConfirmEmailAsync" OnCancel="CancelConfirmEmail" />
 
 @code {
     private PagingResponse<UserResponse>? _data;
@@ -153,26 +144,26 @@ else if (_data is not null)
 
     private async Task LoadUsersAsync()
     {
-       _loading = true;
-       _error = null;
-       var (data, error) = await Api.GetUsersAsync(_page, _pageSize);
-       _data = data;
-       if (error is not null)
-           _error = "Failed to load users.";
-       _loading = false;
+        _loading = true;
+        _error = null;
+        var (data, error) = await Api.GetUsersAsync(_page, _pageSize);
+        _data = data;
+        if (error is not null)
+            _error = "Failed to load users.";
+        _loading = false;
     }
 
     private async Task LoadRolesAsync()
     {
-       var (result, _) = await Api.GetRolesAsync(1, 100);
-            _allRoles = result?.Items ?? [];
+        var (result, _) = await Api.GetRolesAsync(1, 100);
+        _allRoles = result?.Items ?? [];
     }
 
     private async Task ChangePage(int page)
     {
         _page = page;
-         await LoadUsersAsync();
-    }   
+        await LoadUsersAsync();
+    }
 
     private void OpenCreate()
     {
@@ -180,10 +171,17 @@ else if (_data is not null)
         _showUserModal = true;
     }
 
-    private void OpenEdit(UserResponse user)
+    private Action OpenEdit(UserResponse user) => () =>
     {
-        _userModalUser = new UserInfoResponse(user.Id, user.UserName, user.Email, user.FirstName, user.LastName, user.PhoneNumber, user.Roles.ToArray());
+        _userModalUser = new UserInfoResponse(user.Id, user.UserName, user.Email, user.FirstName, user.LastName,
+user.PhoneNumber, user.Roles.ToArray());
         _showUserModal = true;
+    };
+
+    private void CloseUserModal()
+    {
+        _showUserModal = false;
+        _userModalUser = null;
     }
 
     private async Task OnUserSavedAsync()
@@ -193,10 +191,16 @@ else if (_data is not null)
         await LoadUsersAsync();
     }
 
-    private void ConfirmDelete(UserResponse user)
+    private Action ConfirmDelete(UserResponse user) => () =>
     {
         _deletingUser = user;
         _showDelete = true;
+    };
+
+    private void CancelDelete()
+    {
+        _showDelete = false;
+        _deletingUser = null;
     }
 
     private async Task DeleteAsync()
@@ -211,16 +215,28 @@ else if (_data is not null)
         _deletingUser = null;
     }
 
-    private void OpenResetPassword(UserResponse user)
+    private Action OpenResetPassword(UserResponse user) => () =>
     {
         _resetPasswordUser = user;
         _showResetPassword = true;
+    };
+
+    private void CloseResetPassword()
+    {
+        _showResetPassword = false;
+        _resetPasswordUser = null;
     }
 
-    private void ConfirmUserEmail(UserResponse user)
+    private Action ConfirmUserEmail(UserResponse user) => () =>
     {
         _confirmEmailUser = user;
         _showConfirmEmail = true;
+    };
+
+    private void CancelConfirmEmail()
+    {
+        _showConfirmEmail = false;
+        _confirmEmailUser = null;
     }
 
     private async Task SubmitConfirmEmailAsync()

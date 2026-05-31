@@ -6,13 +6,13 @@
 @implements IDisposable
 
 <div class="flex h-screen bg-gray-50">
-    <NavMenu MobileOpen="_mobileMenuOpen" OnMobileClose="() => _mobileMenuOpen = false" />
+    <NavMenu MobileOpen="_mobileMenuOpen" OnMobileClose="CloseMobileMenu" />
 
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <!-- Top bar -->
         <div class="flex items-center h-16 px-4 md:px-6 bg-white border-b border-gray-200 shrink-0 gap-3">
             <!-- Hamburger (mobile only) -->
-            <button class="md:hidden p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100" @onclick="() => _mobileMenuOpen = true" aria-label="Open menu">
+            <button class="md:hidden p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100" @onclick="OpenMobileMenu" aria-label="Open menu">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
@@ -67,13 +67,17 @@
     </div>
 </div>
 
-<UserModal IsVisible="@_showEditCurrentUser" User="@AuthStateProvider.UserInfo" AllRoles="@_allRoles" OnClose="@(() => _showEditCurrentUser = false)" OnSaved="OnCurrentUserSavedAsync" />
+<UserModal IsVisible="@_showEditCurrentUser" User="@AuthStateProvider.UserInfo" AllRoles="@_allRoles" OnClose="CloseEditCurrentUser" OnSaved="OnCurrentUserSavedAsync" />
 
 @code {
     private bool _mobileMenuOpen;
     private bool _showEditCurrentUser;
     private string _displayName = string.Empty;
     private List<RoleResponse> _allRoles = [];
+
+    private void OpenMobileMenu() => _mobileMenuOpen = true;
+    private void CloseMobileMenu() => _mobileMenuOpen = false;
+    private void CloseEditCurrentUser() => _showEditCurrentUser = false;
 
 
     protected override void OnInitialized()

@@ -35,15 +35,15 @@
                 @foreach (var list in _lists)
                 {
                     <div class="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors @(list.Id == _selectedListId ? "bg-indigo-50 text-indigo-700 font-medium" : "hover:bg-gray-100 text-gray-700")"
-                         @onclick="() => SelectList(list.Id)">
+                         @onclick="SelectList(list.Id)">
                         <span class="flex-1 text-sm truncate">@list.Name</span>
                         <span class="text-xs text-gray-400">@list.ItemCount</span>
-                        <button class="text-gray-400 hover:text-indigo-600 shrink-0" @onclick:stopPropagation @onclick="() => OpenEditList(list)" title="Rename">
+                        <button class="text-gray-400 hover:text-indigo-600 shrink-0" @onclick:stopPropagation @onclick="OpenEditList(list)" title="Rename">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                         </button>
-                        <button class="text-gray-400 hover:text-red-600 shrink-0" @onclick:stopPropagation @onclick="() => ConfirmDeleteList(list)" title="Delete">
+                        <button class="text-gray-400 hover:text-red-600 shrink-0" @onclick:stopPropagation @onclick="ConfirmDeleteList(list)" title="Delete">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
@@ -100,12 +100,12 @@
                             </div>
                             <div class="flex items-center gap-2 flex-wrap justify-end">
                                 <span class="@StatusBadgeClass(todo.Status) shrink-0">@todo.Status</span>
-                                <button class="text-gray-400 hover:text-indigo-600 shrink-0 transition-colors" @onclick="() => OpenEditTodo(todo)" title="Edit">
+                                <button class="text-gray-400 hover:text-indigo-600 shrink-0 transition-colors" @onclick="OpenEditTodo(todo)" title="Edit">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </button>
-                                <button class="text-gray-400 hover:text-red-600 shrink-0 transition-colors" @onclick="() => ConfirmDeleteTodo(todo)" title="Delete">
+                                <button class="text-gray-400 hover:text-red-600 shrink-0 transition-colors" @onclick="ConfirmDeleteTodo(todo)" title="Delete">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
@@ -204,12 +204,12 @@
 <!-- Confirm delete list -->
 <ConfirmDialog IsVisible="_showDeleteList" Title="Delete list"
                Message="@($"Delete '{_deletingList?.Name}'? All todos in this list will also be deleted.")"
-               OnConfirm="DeleteListAsync" OnCancel="() => { _showDeleteList = false; _deletingList = null; }" />
+               OnConfirm="DeleteListAsync" OnCancel="CancelDeleteList" />
 
 <!-- Confirm delete todo -->
 <ConfirmDialog IsVisible="_showDeleteTodo" Title="Delete todo"
                Message="@($"Delete '{_deletingTodo?.Title}'?")"
-               OnConfirm="DeleteTodoAsync" OnCancel="() => { _showDeleteTodo = false; _deletingTodo = null; }" />
+               OnConfirm="DeleteTodoAsync" OnCancel="CancelDeleteTodo" />
 
 @code {
     // Lists state
@@ -263,12 +263,12 @@
         _loadingLists = false;
     }
 
-    private async Task SelectList(Guid id)
+    private Func<Task> SelectList(Guid id) => async () =>
     {
         _selectedListId = id;
         _todosPage = 1;
         await LoadTodosAsync();
-    }
+    };
 
     private void GoBackToLists() => _selectedListId = Guid.Empty;
 
@@ -297,13 +297,13 @@
         _showListForm = true;
     }
 
-    private void OpenEditList(TodoListResponse list)
+    private Action OpenEditList(TodoListResponse list) => () =>
     {
         _editingList = list;
         _listName = list.Name;
         _listFormError = null;
         _showListForm = true;
-    }
+    };
 
     private void CloseListForm() => _showListForm = false;
 
@@ -326,10 +326,16 @@
         await LoadListsAsync();
     }
 
-    private void ConfirmDeleteList(TodoListResponse list)
+    private Action ConfirmDeleteList(TodoListResponse list) => () =>
     {
         _deletingList = list;
         _showDeleteList = true;
+    };
+
+    private void CancelDeleteList()
+    {
+        _showDeleteList = false;
+        _deletingList = null;
     }
 
     private async Task DeleteListAsync()
@@ -363,7 +369,7 @@
         _showTodoForm = true;
     }
 
-    private void OpenEditTodo(TodoItemResponse todo)
+    private Action OpenEditTodo(TodoItemResponse todo) => () =>
     {
         _editingTodo = todo;
         _todoTitle = todo.Title;
@@ -371,7 +377,7 @@
         _todoStatus = todo.Status;
         _todoFormError = null;
         _showTodoForm = true;
-    }
+    };
 
     private void CloseTodoForm() => _showTodoForm = false;
 
@@ -396,10 +402,16 @@
         await LoadListsAsync();
     }
 
-    private void ConfirmDeleteTodo(TodoItemResponse todo)
+    private Action ConfirmDeleteTodo(TodoItemResponse todo) => () =>
     {
         _deletingTodo = todo;
         _showDeleteTodo = true;
+    };
+
+    private void CancelDeleteTodo()
+    {
+        _showDeleteTodo = false;
+        _deletingTodo = null;
     }
 
     private async Task DeleteTodoAsync()

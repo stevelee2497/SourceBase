@@ -6,7 +6,7 @@
         </div>
         <div class="flex items-center justify-center gap-1 flex-wrap">
             <button class="btn-secondary btn-sm" disabled="@(CurrentPage <= 1)"
-                    @onclick="() => OnPageChanged.InvokeAsync(CurrentPage - 1)">
+                    @onclick="PreviousPage">
                 &larr; Prev
             </button>
 
@@ -14,13 +14,13 @@
             {
                 var pageNum = p;
                 <button class="@(pageNum == CurrentPage ? "btn-primary btn-sm" : "btn-secondary btn-sm")"
-                        @onclick="() => OnPageChanged.InvokeAsync(pageNum)">
+                        @onclick="GoToPage(pageNum)">
                     @pageNum
                 </button>
             }
 
             <button class="btn-secondary btn-sm" disabled="@(CurrentPage >= TotalPages)"
-                    @onclick="() => OnPageChanged.InvokeAsync(CurrentPage + 1)">
+                    @onclick="NextPage">
                 Next &rarr;
             </button>
         </div>
@@ -36,4 +36,8 @@
     private int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalItems / PageSize) : 1;
     private int StartPage => Math.Max(1, CurrentPage - 2);
     private int EndPage => Math.Min(TotalPages, CurrentPage + 2);
+
+    private Task PreviousPage() => OnPageChanged.InvokeAsync(CurrentPage - 1);
+    private Task NextPage() => OnPageChanged.InvokeAsync(CurrentPage + 1);
+    private Func<Task> GoToPage(int page) => () => OnPageChanged.InvokeAsync(page);
 }
