@@ -1,0 +1,633 @@
+@page "/wallets/{Id:guid}"
+@attribute [Authorize]
+@inject ApiHttpClient Api
+@inject NavigationManager Navigation
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+}
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+    <button class="btn-secondary btn-sm self-start" @onclick="GoBack">
+        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to Wallets
+    </button>
+    <div class="flex flex-wrap gap-3">
+        <button class="btn-primary btn-sm" @onclick="OpenCreateTransaction">
+            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Transaction
+        </button>
+        <button class="btn-secondary btn-sm" @onclick="OpenCreateTransfer">
+            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l-4-4m4 4l4-4" />
+            </svg>
+            Transfer
+        </button>
+    </div>
+</div>
+
+@if (_loading && _wallet is null)
+{
+    <div class="text-sm text-gray-400 py-8 text-center">Loading wallet…</div>
+}
+else if (_wallet is null)
+{
+    <div class="card text-center py-8 text-sm text-gray-500">Wallet not found.</div>
+}
+else
+{
+    <div class="card mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <div class="text-sm text-gray-500 mb-1">Wallet</div>
+                <div class="text-2xl font-bold text-gray-900">@_wallet.Name</div>
+                <div class="text-sm text-gray-500 mt-1">Current balance</div>
+            </div>
+            <div class="text-left md:text-right">
+                <div class="text-3xl font-bold text-gray-900">@FormatAmount(_wallet.Balance)</div>
+                <div class="text-sm text-gray-500 mt-1">@_wallet.Currency</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div class="card">
+            <div class="text-sm text-gray-500 mb-1">Monthly Income</div>
+            <div class="text-2xl font-bold text-green-600">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
+        </div>
+        <div class="card">
+            <div class="text-sm text-gray-500 mb-1">Monthly Expense</div>
+            <div class="text-2xl font-bold text-red-600">@FormatAmount(_summary?.TotalExpense ?? 0)</div>
+        </div>
+    </div>
+
+    <div class="card mb-6">
+        <div class="flex flex-col gap-4">
+            <div>
+                <div class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-2">Type</div>
+                <div class="flex flex-wrap gap-2">
+                    <button class="@TypeFilterClass(string.Empty)" @onclick="SelectAllTypes">All</button>
+                    <button class="@TypeFilterClass(IncomeType)" @onclick="SelectIncomeType">Income</button>
+                    <button class="@TypeFilterClass(ExpenseType)" @onclick="SelectExpenseType">Expense</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="form-label">Date From</label>
+                    <InputDate @bind-Value="_dateFrom" class="form-input" />
+                </div>
+                <div>
+                    <label class="form-label">Date To</label>
+                    <InputDate @bind-Value="_dateTo" class="form-input" />
+                </div>
+                <div>
+                    <label class="form-label">Category</label>
+                    <select @bind="_categoryFilterId" class="form-input">
+                        <option value="">All categories</option>
+                        @foreach (var category in _categories)
+                        {
+                            <option value="@category.Id">@($"{CategoryIcon(category.Icon)} {category.Name} ({category.Type})")</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:justify-end gap-3">
+                <button class="btn-secondary" @onclick="ResetFiltersAsync">Clear</button>
+                <button class="btn-primary" @onclick="ApplyFiltersAsync">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="flex items-center justify-between gap-3 mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">Transactions</h2>
+            <div class="text-sm text-gray-500">@_transactionsTotal item(s)</div>
+        </div>
+
+        @if (_loadingTransactions)
+        {
+            <div class="text-sm text-gray-400 py-8 text-center">Loading transactions…</div>
+        }
+        else if (_transactions.Count == 0)
+        {
+            <div class="text-sm text-gray-400 py-8 text-center">No transactions found for this wallet.</div>
+        }
+        else
+        {
+            <div class="flex flex-col divide-y divide-gray-100">
+                @foreach (var transaction in _transactions)
+                {
+                    <div class="py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div class="flex items-start gap-3 flex-1 min-w-0">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">@TransactionIcon(transaction)</div>
+                            <div class="min-w-0 flex-1">
+                                <div class="font-medium text-gray-900 truncate">@TransactionTitle(transaction)</div>
+                                <div class="text-sm text-gray-500 truncate">@TransactionCategoryLabel(transaction)</div>
+                                <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                                    <span>@FormatDisplayDate(transaction.Date)</span>
+                                    <span>•</span>
+                                    <span>@transaction.WalletName</span>
+                                    @if (transaction.IsTransfer)
+                                    {
+                                        <span class="badge-blue">Transfer</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                            <div class="font-semibold @TransactionAmountClass(transaction.Type)">@SignedAmount(transaction.Amount, transaction.Type)</div>
+                            @if (!transaction.IsTransfer)
+                            {
+                                <div class="flex items-center gap-2">
+                                    <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEditTransaction(transaction)" title="Edit transaction">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDeleteTransaction(transaction)" title="Delete transaction">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <Pagination CurrentPage="_transactionsPage" TotalItems="_transactionsTotal" PageSize="_transactionsPageSize" OnPageChanged="ChangeTransactionsPage" />
+        }
+    </div>
+}
+
+@if (_showTransactionForm)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseTransactionForm"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingTransaction is null ? "Add Transaction" : "Edit Transaction")</h2>
+            @if (!string.IsNullOrEmpty(_transactionFormError))
+            {
+                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_transactionFormError</div>
+            }
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Amount *</label>
+                    <input @bind="_transactionAmount" class="form-input" type="number" step="0.01" />
+                </div>
+                <div>
+                    <label class="form-label">Type</label>
+                    <select class="form-input" value="@_transactionType" @onchange="OnTransactionTypeChanged">
+                        <option value="Income">Income</option>
+                        <option value="Expense">Expense</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Date *</label>
+                    <input @bind="_transactionDate" class="form-input" type="date" />
+                </div>
+                <div>
+                    <label class="form-label">Note</label>
+                    <input @bind="_transactionNote" class="form-input" placeholder="Optional description" />
+                </div>
+                <div>
+                    <label class="form-label">Category</label>
+                    <select @bind="_transactionCategoryId" class="form-input">
+                        <option value="">No category</option>
+                        @foreach (var category in FilteredTransactionCategories)
+                        {
+                            <option value="@category.Id">@($"{CategoryIcon(category.Icon)} {category.Name}")</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-5">
+                <button class="btn-secondary" @onclick="CloseTransactionForm">Cancel</button>
+                <button class="btn-primary" @onclick="SaveTransactionAsync" disabled="@_savingTransaction">@(_savingTransaction ? "Saving…" : "Save")</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showTransferForm)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseTransferForm"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Transfer Funds</h2>
+            @if (!string.IsNullOrEmpty(_transferFormError))
+            {
+                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_transferFormError</div>
+            }
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">From Wallet</label>
+                    <input class="form-input" value="@(_wallet?.Name ?? string.Empty)" disabled />
+                </div>
+                <div>
+                    <label class="form-label">To Wallet *</label>
+                    <select @bind="_transferToWalletId" class="form-input">
+                        <option value="">Select wallet</option>
+                        @foreach (var wallet in TransferTargets)
+                        {
+                            <option value="@wallet.Id">@($"{WalletIcon(wallet.Icon)} {wallet.Name} ({wallet.Currency})")</option>
+                        }
+                    </select>
+                    @if (TransferTargets.Count == 0)
+                    {
+                        <div class="text-xs text-gray-400 mt-1">Create another wallet to transfer funds.</div>
+                    }
+                </div>
+                <div>
+                    <label class="form-label">Amount *</label>
+                    <input @bind="_transferAmount" class="form-input" type="number" step="0.01" />
+                </div>
+                <div>
+                    <label class="form-label">Date *</label>
+                    <input @bind="_transferDate" class="form-input" type="date" />
+                </div>
+                <div>
+                    <label class="form-label">Note</label>
+                    <input @bind="_transferNote" class="form-input" placeholder="Optional description" />
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-5">
+                <button class="btn-secondary" @onclick="CloseTransferForm">Cancel</button>
+                <button class="btn-primary" @onclick="SaveTransferAsync" disabled="@(_savingTransfer || TransferTargets.Count == 0)">@(_savingTransfer ? "Saving…" : "Save")</button>
+            </div>
+        </div>
+    </div>
+}
+
+<ConfirmDialog IsVisible="_showDeleteTransaction"
+               Title="Delete transaction"
+               Message="@($"Delete '{_deletingTransaction?.Note ?? _deletingTransaction?.CategoryName ?? "this transaction"}'?")"
+               OnConfirm="DeleteTransactionAsync"
+               OnCancel="CancelDeleteTransaction" />
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private WalletResponse? _wallet;
+    private List<WalletResponse> _wallets = [];
+    private List<CategoryResponse> _categories = [];
+    private List<TransactionResponse> _transactions = [];
+    private GetTransactionSummaryResponse? _summary;
+
+    private bool _loading = true;
+    private bool _loadingTransactions;
+    private string? _error;
+    private Guid _loadedId;
+
+    private const string IncomeType = "Income";
+    private const string ExpenseType = "Expense";
+
+    private int _transactionsPage = 1;
+    private int _transactionsTotal;
+    private const int _transactionsPageSize = 10;
+
+    private string _typeFilter = string.Empty;
+    private DateOnly? _dateFrom;
+    private DateOnly? _dateTo;
+    private string _categoryFilterId = string.Empty;
+
+    private bool _showTransactionForm;
+    private TransactionResponse? _editingTransaction;
+    private decimal _transactionAmount;
+    private string _transactionType = "Expense";
+    private DateOnly _transactionDate = DateOnly.FromDateTime(DateTime.Today);
+    private string _transactionNote = string.Empty;
+    private string _transactionCategoryId = string.Empty;
+    private string? _transactionFormError;
+    private bool _savingTransaction;
+
+    private bool _showTransferForm;
+    private string _transferToWalletId = string.Empty;
+    private decimal _transferAmount;
+    private DateOnly _transferDate = DateOnly.FromDateTime(DateTime.Today);
+    private string _transferNote = string.Empty;
+    private string? _transferFormError;
+    private bool _savingTransfer;
+
+    private bool _showDeleteTransaction;
+    private TransactionResponse? _deletingTransaction;
+
+    private List<CategoryResponse> FilteredTransactionCategories => _categories.Where(c => string.Equals(c.Type, _transactionType, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != Id).ToList();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedId == Id && _wallet is not null)
+            return;
+
+        _loadedId = Id;
+        _transactionsPage = 1;
+        await LoadWalletPageAsync();
+    }
+
+    private async Task LoadWalletPageAsync()
+    {
+        _loading = true;
+        _error = null;
+        await Task.WhenAll(LoadWalletAsync(), LoadWalletsAsync(), LoadCategoriesAsync(), LoadSummaryAsync(), LoadTransactionsAsync());
+        _loading = false;
+    }
+
+    private async Task LoadWalletAsync()
+    {
+        var (data, error) = await Api.GetWalletAsync(Id);
+        if (error is not null)
+        {
+            _wallet = null;
+            SetError(error.Message ?? "Failed to load wallet.");
+            return;
+        }
+
+        _wallet = data;
+    }
+
+    private async Task LoadWalletsAsync()
+    {
+        var (data, error) = await Api.GetWalletsAsync();
+        if (error is not null)
+        {
+            _wallets = [];
+            SetError(error.Message ?? "Failed to load wallets.");
+            return;
+        }
+
+        _wallets = data?.Wallets ?? [];
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        var (data, error) = await Api.GetCategoriesAsync();
+        if (error is not null)
+        {
+            _categories = [];
+            SetError(error.Message ?? "Failed to load categories.");
+            return;
+        }
+
+        _categories = data ?? [];
+    }
+
+    private async Task LoadSummaryAsync()
+    {
+        var (start, end) = CurrentMonthRange();
+        var (data, error) = await Api.GetTransactionSummaryAsync(Id, start, end);
+        if (error is not null)
+        {
+            _summary = null;
+            SetError(error.Message ?? "Failed to load summary.");
+            return;
+        }
+
+        _summary = data;
+    }
+
+    private async Task LoadTransactionsAsync()
+    {
+        _loadingTransactions = true;
+        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, Id, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId));
+        if (error is not null)
+        {
+            _transactions = [];
+            _transactionsTotal = 0;
+            SetError(error.Message ?? "Failed to load transactions.");
+            _loadingTransactions = false;
+            return;
+        }
+
+        _transactions = data?.Items ?? [];
+        _transactionsTotal = data?.Total ?? 0;
+        _loadingTransactions = false;
+    }
+
+    private async Task ChangeTransactionsPage(int page)
+    {
+        _error = null;
+        _transactionsPage = page;
+        await LoadTransactionsAsync();
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/wallets");
+
+    private Action SelectTypeFilter(string type) => () => _typeFilter = type;
+    private Action SelectAllTypes => SelectTypeFilter(string.Empty);
+    private Action SelectIncomeType => SelectTypeFilter(IncomeType);
+    private Action SelectExpenseType => SelectTypeFilter(ExpenseType);
+
+    private async Task ApplyFiltersAsync()
+    {
+        _error = null;
+        _transactionsPage = 1;
+        await LoadTransactionsAsync();
+    }
+
+    private async Task ResetFiltersAsync()
+    {
+        _error = null;
+        _typeFilter = string.Empty;
+        _dateFrom = null;
+        _dateTo = null;
+        _categoryFilterId = string.Empty;
+        _transactionsPage = 1;
+        await LoadTransactionsAsync();
+    }
+
+    private void OpenCreateTransaction()
+    {
+        _editingTransaction = null;
+        _transactionAmount = 0;
+        _transactionType = "Expense";
+        _transactionDate = DateOnly.FromDateTime(DateTime.Today);
+        _transactionNote = string.Empty;
+        _transactionCategoryId = string.Empty;
+        _transactionFormError = null;
+        _showTransactionForm = true;
+    }
+
+    private Action OpenEditTransaction(TransactionResponse transaction) => () =>
+    {
+        _editingTransaction = transaction;
+        _transactionAmount = transaction.Amount;
+        _transactionType = transaction.Type;
+        _transactionDate = ParseDate(transaction.Date);
+        _transactionNote = transaction.Note ?? string.Empty;
+        _transactionCategoryId = transaction.CategoryId?.ToString() ?? string.Empty;
+        _transactionFormError = null;
+        _showTransactionForm = true;
+    };
+
+    private void CloseTransactionForm() => _showTransactionForm = false;
+
+    private Task OnTransactionTypeChanged(ChangeEventArgs args)
+    {
+        _transactionType = args.Value?.ToString() ?? "Expense";
+        var selectedCategory = FilteredTransactionCategories.FirstOrDefault(c => c.Id == ParseGuid(_transactionCategoryId));
+        if (selectedCategory is null)
+            _transactionCategoryId = string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveTransactionAsync()
+    {
+        _transactionFormError = null;
+        if (_transactionAmount <= 0)
+        {
+            _transactionFormError = "Amount must be greater than zero.";
+            return;
+        }
+
+        _savingTransaction = true;
+        var error = _editingTransaction is null
+            ? await Api.CreateTransactionAsync(Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), ParseGuid(_transactionCategoryId))
+            : await Api.UpdateTransactionAsync(_editingTransaction.Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), ParseGuid(_transactionCategoryId));
+
+        if (error is not null)
+        {
+            _transactionFormError = error.Message ?? "Failed to save transaction.";
+            _savingTransaction = false;
+            return;
+        }
+
+        _transactionsPage = 1;
+        _showTransactionForm = false;
+        _savingTransaction = false;
+        await RefreshWalletDataAsync();
+    }
+
+    private void OpenCreateTransfer()
+    {
+        _transferToWalletId = string.Empty;
+        _transferAmount = 0;
+        _transferDate = DateOnly.FromDateTime(DateTime.Today);
+        _transferNote = string.Empty;
+        _transferFormError = null;
+        _showTransferForm = true;
+    }
+
+    private void CloseTransferForm() => _showTransferForm = false;
+
+    private async Task SaveTransferAsync()
+    {
+        _transferFormError = null;
+
+        if (ParseGuid(_transferToWalletId) is not Guid toWalletId)
+        {
+            _transferFormError = "Select a destination wallet.";
+            return;
+        }
+
+        if (_transferAmount <= 0)
+        {
+            _transferFormError = "Amount must be greater than zero.";
+            return;
+        }
+
+        _savingTransfer = true;
+        var error = await Api.CreateTransferAsync(Id, toWalletId, _transferAmount, _transferDate.ToString("yyyy-MM-dd"), CleanOptional(_transferNote));
+        if (error is not null)
+        {
+            _transferFormError = error.Message ?? "Failed to create transfer.";
+            _savingTransfer = false;
+            return;
+        }
+
+        _transactionsPage = 1;
+        _showTransferForm = false;
+        _savingTransfer = false;
+        await RefreshWalletDataAsync();
+    }
+
+    private Action ConfirmDeleteTransaction(TransactionResponse transaction) => () =>
+    {
+        _deletingTransaction = transaction;
+        _showDeleteTransaction = true;
+    };
+
+    private void CancelDeleteTransaction()
+    {
+        _showDeleteTransaction = false;
+        _deletingTransaction = null;
+    }
+
+    private async Task DeleteTransactionAsync()
+    {
+        if (_deletingTransaction is null)
+            return;
+
+        _showDeleteTransaction = false;
+        var error = await Api.DeleteTransactionAsync(_deletingTransaction.Id);
+        if (error is not null)
+            SetError(error.Message ?? "Failed to delete transaction.");
+        else
+            await RefreshWalletDataAsync();
+
+        _deletingTransaction = null;
+    }
+
+    private async Task RefreshWalletDataAsync()
+    {
+        _error = null;
+        await Task.WhenAll(LoadWalletAsync(), LoadWalletsAsync(), LoadSummaryAsync(), LoadTransactionsAsync());
+    }
+
+    private void SetError(string message) => _error ??= message;
+
+    private static string? EmptyToNull(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
+
+    private static string? FormatDateFilter(DateOnly? value) => value?.ToString("yyyy-MM-dd");
+
+    private static Guid? ParseGuid(string value) => Guid.TryParse(value, out var parsed) ? parsed : null;
+
+    private static string? CleanOptional(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static DateOnly ParseDate(string value) => DateOnly.TryParse(value, out var date) ? date : DateOnly.FromDateTime(DateTime.Today);
+
+    private static string FormatAmount(decimal amount) => amount.ToString("N2");
+
+    private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N2}" : $"-{amount:N2}";
+
+    private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600" : "text-red-600";
+
+    private string TransactionIcon(TransactionResponse transaction)
+    {
+        var category = _categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
+        if (!string.IsNullOrWhiteSpace(category?.Icon))
+            return category.Icon!;
+        if (transaction.IsTransfer)
+            return "🔁";
+        return string.Equals(transaction.Type, "Income", StringComparison.OrdinalIgnoreCase) ? "💰" : "💸";
+    }
+
+    private static string TransactionTitle(TransactionResponse transaction) => string.IsNullOrWhiteSpace(transaction.Note) ? "No description" : transaction.Note;
+
+    private static string TransactionCategoryLabel(TransactionResponse transaction) => transaction.IsTransfer
+        ? "Transfer"
+        : string.IsNullOrWhiteSpace(transaction.CategoryName) ? "Uncategorized" : transaction.CategoryName!;
+
+    private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MMM yyyy") : value;
+
+    private static string WalletIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "👛" : icon;
+
+    private static string CategoryIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "🏷️" : icon;
+
+    private string TypeFilterClass(string type) => _typeFilter == type ? "btn-primary btn-sm" : "btn-secondary btn-sm";
+
+    private static (string start, string end) CurrentMonthRange()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var start = new DateOnly(today.Year, today.Month, 1);
+        var end = start.AddMonths(1).AddDays(-1);
+        return (start.ToString("yyyy-MM-dd"), end.ToString("yyyy-MM-dd"));
+    }
+}

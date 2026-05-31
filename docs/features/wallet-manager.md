@@ -40,13 +40,13 @@ As an authenticated user, I want to create a named wallet with an initial balanc
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| WALLETS-CREATE-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| WALLETS-CREATE-002 | Valid data creates wallet and returns 200 with Id | ❌ Not Yet |
-| WALLETS-CREATE-003 | Missing name returns 400 Bad Request | ❌ Not Yet |
-| WALLETS-CREATE-004 | Missing currency returns 400 Bad Request | ❌ Not Yet |
-| WALLETS-CREATE-005 | Negative initial balance is allowed (e.g. overdraft accounts) | ❌ Not Yet |
-| WALLETS-CREATE-006 | Created wallet's balance equals the provided initialBalance when no transactions exist | ❌ Not Yet |
-| WALLETS-CREATE-007 | Created wallet is owned by the authenticated user | ❌ Not Yet |
+| WALLETS-CREATE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| WALLETS-CREATE-002 | Valid data creates wallet and returns 200 with Id | ✅ Pass |
+| WALLETS-CREATE-003 | Missing name returns 400 Bad Request | ✅ Pass |
+| WALLETS-CREATE-004 | Missing currency returns 400 Bad Request | ✅ Pass |
+| WALLETS-CREATE-005 | Negative initial balance is allowed (e.g. overdraft accounts) | ✅ Pass |
+| WALLETS-CREATE-006 | Created wallet's balance equals the provided initialBalance when no transactions exist | ✅ Pass |
+| WALLETS-CREATE-007 | Created wallet is owned by the authenticated user | ✅ Pass |
 
 ---
 
@@ -69,11 +69,11 @@ As an authenticated user, I want to retrieve all my wallets with their current b
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| WALLETS-GET-ALL-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| WALLETS-GET-ALL-002 | Authenticated user receives their wallets and returns 200 | ❌ Not Yet |
-| WALLETS-GET-ALL-003 | Only the current user's wallets are returned | ❌ Not Yet |
-| WALLETS-GET-ALL-004 | Response includes correct `totalBalance` across all wallets | ❌ Not Yet |
-| WALLETS-GET-ALL-005 | User with no wallets receives an empty list | ❌ Not Yet |
+| WALLETS-GET-ALL-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| WALLETS-GET-ALL-002 | Authenticated user receives their wallets and returns 200 | ✅ Pass |
+| WALLETS-GET-ALL-003 | Only the current user's wallets are returned | ✅ Pass |
+| WALLETS-GET-ALL-004 | Response includes correct `totalBalance` across all wallets | ✅ Pass |
+| WALLETS-GET-ALL-005 | User with no wallets receives an empty list | ✅ Pass |
 
 ---
 
@@ -96,10 +96,10 @@ As an authenticated user, I want to retrieve the details of a specific wallet, s
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| WALLETS-GET-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| WALLETS-GET-002 | Valid owned wallet id returns 200 with wallet data | ❌ Not Yet |
-| WALLETS-GET-003 | Non-existent wallet id returns 404 Not Found | ❌ Not Yet |
-| WALLETS-GET-004 | Requesting another user's wallet returns 404 Not Found | ❌ Not Yet |
+| WALLETS-GET-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| WALLETS-GET-002 | Valid owned wallet id returns 200 with wallet data | ✅ Pass |
+| WALLETS-GET-003 | Non-existent wallet id returns 404 Not Found | ✅ Pass |
+| WALLETS-GET-004 | Requesting another user's wallet returns 404 Not Found | ✅ Pass |
 
 ---
 
@@ -123,12 +123,12 @@ As an authenticated user, I want to rename or change the icon of one of my walle
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| WALLETS-UPDATE-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| WALLETS-UPDATE-002 | Valid update returns 200 | ❌ Not Yet |
-| WALLETS-UPDATE-003 | Missing name returns 400 Bad Request | ❌ Not Yet |
-| WALLETS-UPDATE-004 | Updating another user's wallet returns 404 Not Found | ❌ Not Yet |
-| WALLETS-UPDATE-005 | Non-existent wallet id returns 404 Not Found | ❌ Not Yet |
-| WALLETS-UPDATE-006 | Update does not affect the computed wallet balance | ❌ Not Yet |
+| WALLETS-UPDATE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| WALLETS-UPDATE-002 | Valid update returns 200 | ✅ Pass |
+| WALLETS-UPDATE-003 | Missing name returns 400 Bad Request | ✅ Pass |
+| WALLETS-UPDATE-004 | Updating another user's wallet returns 404 Not Found | ✅ Pass |
+| WALLETS-UPDATE-005 | Non-existent wallet id returns 404 Not Found | ✅ Pass |
+| WALLETS-UPDATE-006 | Update does not affect the computed wallet balance | ✅ Pass |
 
 ---
 
@@ -151,11 +151,11 @@ As an authenticated user, I want to delete one of my wallets, so that I can remo
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| WALLETS-DELETE-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| WALLETS-DELETE-002 | Existing owned wallet is deleted and returns 200 | ❌ Not Yet |
-| WALLETS-DELETE-003 | Deleting another user's wallet returns 404 Not Found | ❌ Not Yet |
-| WALLETS-DELETE-004 | Non-existent wallet id returns 404 Not Found | ❌ Not Yet |
-| WALLETS-DELETE-005 | Deleting wallet also removes all its transactions | ❌ Not Yet |
+| WALLETS-DELETE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| WALLETS-DELETE-002 | Existing owned wallet is deleted and returns 200 | ✅ Pass |
+| WALLETS-DELETE-003 | Deleting another user's wallet returns 404 Not Found | ✅ Pass |
+| WALLETS-DELETE-004 | Non-existent wallet id returns 404 Not Found | ✅ Pass |
+| WALLETS-DELETE-005 | Deleting wallet also removes all its transactions | ✅ Pass |
 
 ---
 
@@ -177,11 +177,11 @@ As an authenticated user, I want a quick financial overview — total balance, t
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| WALLETS-SUMMARY-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| WALLETS-SUMMARY-002 | Returns correct totalBalance reflecting all wallet balances | ❌ Not Yet |
-| WALLETS-SUMMARY-003 | Monthly income and expense reflect current month's transactions only | ❌ Not Yet |
-| WALLETS-SUMMARY-004 | Recent transactions contains at most 5 entries | ❌ Not Yet |
-| WALLETS-SUMMARY-005 | User with no wallets returns all zeros and empty recent transactions | ❌ Not Yet |
+| WALLETS-SUMMARY-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| WALLETS-SUMMARY-002 | Returns correct totalBalance reflecting all wallet balances | ✅ Pass |
+| WALLETS-SUMMARY-003 | Monthly income and expense reflect current month's transactions only | ✅ Pass |
+| WALLETS-SUMMARY-004 | Recent transactions contains at most 5 entries | ✅ Pass |
+| WALLETS-SUMMARY-005 | User with no wallets returns all zeros and empty recent transactions | ✅ Pass |
 
 ---
 
@@ -204,11 +204,11 @@ As an authenticated user, I want to retrieve the list of transaction categories,
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| CATS-GET-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| CATS-GET-002 | Returns system categories and user's own custom categories | ❌ Not Yet |
-| CATS-GET-003 | Does not return another user's custom categories | ❌ Not Yet |
-| CATS-GET-004 | Filter by type=Income returns only Income categories | ❌ Not Yet |
-| CATS-GET-005 | Filter by type=Expense returns only Expense categories | ❌ Not Yet |
+| CATS-GET-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| CATS-GET-002 | Returns system categories and user's own custom categories | ✅ Pass |
+| CATS-GET-003 | Does not return another user's custom categories | ✅ Pass |
+| CATS-GET-004 | Filter by type=Income returns only Income categories | ✅ Pass |
+| CATS-GET-005 | Filter by type=Expense returns only Expense categories | ✅ Pass |
 
 ---
 
@@ -231,12 +231,12 @@ As an authenticated user, I want to create a custom transaction category, so tha
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| CATS-CREATE-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| CATS-CREATE-002 | Valid data creates category and returns 200 with Id | ❌ Not Yet |
-| CATS-CREATE-003 | Missing name returns 400 Bad Request | ❌ Not Yet |
-| CATS-CREATE-004 | Missing type returns 400 Bad Request | ❌ Not Yet |
-| CATS-CREATE-005 | Invalid type value returns 400 Bad Request | ❌ Not Yet |
-| CATS-CREATE-006 | Created category is owned by the authenticated user and IsSystem is false | ❌ Not Yet |
+| CATS-CREATE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| CATS-CREATE-002 | Valid data creates category and returns 200 with Id | ✅ Pass |
+| CATS-CREATE-003 | Missing name returns 400 Bad Request | ✅ Pass |
+| CATS-CREATE-004 | Missing type returns 400 Bad Request | ✅ Pass |
+| CATS-CREATE-005 | Invalid type value returns 400 Bad Request | ✅ Pass |
+| CATS-CREATE-006 | Created category is owned by the authenticated user and IsSystem is false | ✅ Pass |
 
 ---
 
@@ -260,12 +260,12 @@ As an authenticated user, I want to rename or change the icon of one of my custo
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| CATS-UPDATE-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| CATS-UPDATE-002 | Valid update returns 200 | ❌ Not Yet |
-| CATS-UPDATE-003 | Missing name returns 400 Bad Request | ❌ Not Yet |
-| CATS-UPDATE-004 | Updating a system category returns 403 Forbidden | ❌ Not Yet |
-| CATS-UPDATE-005 | Updating another user's category returns 404 Not Found | ❌ Not Yet |
-| CATS-UPDATE-006 | Non-existent category id returns 404 Not Found | ❌ Not Yet |
+| CATS-UPDATE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| CATS-UPDATE-002 | Valid update returns 200 | ✅ Pass |
+| CATS-UPDATE-003 | Missing name returns 400 Bad Request | ✅ Pass |
+| CATS-UPDATE-004 | Updating a system category returns 403 Forbidden | ✅ Pass |
+| CATS-UPDATE-005 | Updating another user's category returns 404 Not Found | ✅ Pass |
+| CATS-UPDATE-006 | Non-existent category id returns 404 Not Found | ✅ Pass |
 
 ---
 
@@ -290,12 +290,12 @@ As an authenticated user, I want to delete one of my custom categories, so that 
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| CATS-DELETE-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| CATS-DELETE-002 | Existing owned category (with no transactions) is deleted and returns 200 | ❌ Not Yet |
-| CATS-DELETE-003 | Deleting a system category returns 403 Forbidden | ❌ Not Yet |
-| CATS-DELETE-004 | Deleting another user's category returns 404 Not Found | ❌ Not Yet |
-| CATS-DELETE-005 | Non-existent category id returns 404 Not Found | ❌ Not Yet |
-| CATS-DELETE-006 | Category referenced by one or more transactions returns 400 with "Category is in use by transactions" | ❌ Not Yet |
+| CATS-DELETE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| CATS-DELETE-002 | Existing owned category (with no transactions) is deleted and returns 200 | ✅ Pass |
+| CATS-DELETE-003 | Deleting a system category returns 403 Forbidden | ✅ Pass |
+| CATS-DELETE-004 | Deleting another user's category returns 404 Not Found | ✅ Pass |
+| CATS-DELETE-005 | Non-existent category id returns 404 Not Found | ✅ Pass |
+| CATS-DELETE-006 | Category referenced by one or more transactions returns 400 with "Category is in use by transactions" | ✅ Pass |
 
 ---
 
@@ -320,17 +320,17 @@ As an authenticated user, I want to record an income or expense transaction on o
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| TXN-CREATE-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| TXN-CREATE-002 | Valid income transaction created; wallet computed balance reflects the new income | ❌ Not Yet |
-| TXN-CREATE-003 | Valid expense transaction created; wallet computed balance reflects the new expense | ❌ Not Yet |
-| TXN-CREATE-004 | Missing walletId returns 400 Bad Request | ❌ Not Yet |
-| TXN-CREATE-005 | Missing amount returns 400 Bad Request | ❌ Not Yet |
-| TXN-CREATE-006 | Zero or negative amount returns 400 Bad Request | ❌ Not Yet |
-| TXN-CREATE-007 | Missing date returns 400 Bad Request | ❌ Not Yet |
-| TXN-CREATE-008 | Missing type returns 400 Bad Request | ❌ Not Yet |
-| TXN-CREATE-009 | Non-existent or another user's walletId returns 404 Not Found | ❌ Not Yet |
-| TXN-CREATE-010 | Non-existent or another user's categoryId returns 404 Not Found | ❌ Not Yet |
-| TXN-CREATE-011 | Transaction without a category is allowed (categoryId optional) | ❌ Not Yet |
+| TXN-CREATE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| TXN-CREATE-002 | Valid income transaction created; wallet computed balance reflects the new income | ✅ Pass |
+| TXN-CREATE-003 | Valid expense transaction created; wallet computed balance reflects the new expense | ✅ Pass |
+| TXN-CREATE-004 | Missing walletId returns 400 Bad Request | ✅ Pass |
+| TXN-CREATE-005 | Missing amount returns 400 Bad Request | ✅ Pass |
+| TXN-CREATE-006 | Zero or negative amount returns 400 Bad Request | ✅ Pass |
+| TXN-CREATE-007 | Missing date returns 400 Bad Request | ✅ Pass |
+| TXN-CREATE-008 | Missing type returns 400 Bad Request | ✅ Pass |
+| TXN-CREATE-009 | Non-existent or another user's walletId returns 404 Not Found | ✅ Pass |
+| TXN-CREATE-010 | Non-existent or another user's categoryId returns 404 Not Found | ✅ Pass |
+| TXN-CREATE-011 | Transaction without a category is allowed (categoryId optional) | ✅ Pass |
 
 ---
 
@@ -354,15 +354,15 @@ As an authenticated user, I want to list my transactions with filtering and pagi
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| TXN-GET-ALL-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| TXN-GET-ALL-002 | Authenticated user receives their transactions and returns 200 | ❌ Not Yet |
-| TXN-GET-ALL-003 | Only the current user's transactions are returned | ❌ Not Yet |
-| TXN-GET-ALL-004 | Filter by walletId returns only transactions for that wallet | ❌ Not Yet |
-| TXN-GET-ALL-005 | Filter by type=Income returns only income transactions | ❌ Not Yet |
-| TXN-GET-ALL-006 | Filter by type=Expense returns only expense transactions | ❌ Not Yet |
-| TXN-GET-ALL-007 | Filter by dateFrom and dateTo returns only transactions within that range | ❌ Not Yet |
-| TXN-GET-ALL-008 | Filter by categoryId returns only transactions in that category | ❌ Not Yet |
-| TXN-GET-ALL-009 | Pagination parameters return the correct subset | ❌ Not Yet |
+| TXN-GET-ALL-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| TXN-GET-ALL-002 | Authenticated user receives their transactions and returns 200 | ✅ Pass |
+| TXN-GET-ALL-003 | Only the current user's transactions are returned | ✅ Pass |
+| TXN-GET-ALL-004 | Filter by walletId returns only transactions for that wallet | ✅ Pass |
+| TXN-GET-ALL-005 | Filter by type=Income returns only income transactions | ✅ Pass |
+| TXN-GET-ALL-006 | Filter by type=Expense returns only expense transactions | ✅ Pass |
+| TXN-GET-ALL-007 | Filter by dateFrom and dateTo returns only transactions within that range | ✅ Pass |
+| TXN-GET-ALL-008 | Filter by categoryId returns only transactions in that category | ✅ Pass |
+| TXN-GET-ALL-009 | Pagination parameters return the correct subset | ✅ Pass |
 
 ---
 
@@ -385,10 +385,10 @@ As an authenticated user, I want to retrieve the details of a specific transacti
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| TXN-GET-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| TXN-GET-002 | Valid id returns 200 with correct data | ❌ Not Yet |
-| TXN-GET-003 | Non-existent id returns 404 Not Found | ❌ Not Yet |
-| TXN-GET-004 | Requesting another user's transaction returns 404 Not Found | ❌ Not Yet |
+| TXN-GET-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| TXN-GET-002 | Valid id returns 200 with correct data | ✅ Pass |
+| TXN-GET-003 | Non-existent id returns 404 Not Found | ✅ Pass |
+| TXN-GET-004 | Requesting another user's transaction returns 404 Not Found | ✅ Pass |
 
 ---
 
@@ -413,14 +413,14 @@ As an authenticated user, I want to edit a transaction's amount, type, date, not
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| TXN-UPDATE-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| TXN-UPDATE-002 | Valid update returns 200 | ❌ Not Yet |
-| TXN-UPDATE-003 | After changing amount, computed wallet balance reflects the updated transaction | ❌ Not Yet |
-| TXN-UPDATE-004 | After changing type from Income to Expense, computed wallet balance reflects the change | ❌ Not Yet |
-| TXN-UPDATE-005 | Zero or negative amount returns 400 Bad Request | ❌ Not Yet |
-| TXN-UPDATE-006 | Non-existent transaction id returns 404 Not Found | ❌ Not Yet |
-| TXN-UPDATE-007 | Updating another user's transaction returns 404 Not Found | ❌ Not Yet |
-| TXN-UPDATE-008 | Updating a transfer transaction returns 400 Bad Request | ❌ Not Yet |
+| TXN-UPDATE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| TXN-UPDATE-002 | Valid update returns 200 | ✅ Pass |
+| TXN-UPDATE-003 | After changing amount, computed wallet balance reflects the updated transaction | ✅ Pass |
+| TXN-UPDATE-004 | After changing type from Income to Expense, computed wallet balance reflects the change | ✅ Pass |
+| TXN-UPDATE-005 | Zero or negative amount returns 400 Bad Request | ✅ Pass |
+| TXN-UPDATE-006 | Non-existent transaction id returns 404 Not Found | ✅ Pass |
+| TXN-UPDATE-007 | Updating another user's transaction returns 404 Not Found | ✅ Pass |
+| TXN-UPDATE-008 | Updating a transfer transaction returns 400 Bad Request | ✅ Pass |
 
 ---
 
@@ -444,12 +444,12 @@ As an authenticated user, I want to delete an incorrect transaction, so that it 
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| TXN-DELETE-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| TXN-DELETE-002 | Deleting an income transaction reduces the computed wallet balance | ❌ Not Yet |
-| TXN-DELETE-003 | Deleting an expense transaction increases the computed wallet balance | ❌ Not Yet |
-| TXN-DELETE-004 | Deleting a transfer transaction returns 400 Bad Request | ❌ Not Yet |
-| TXN-DELETE-005 | Non-existent transaction id returns 404 Not Found | ❌ Not Yet |
-| TXN-DELETE-006 | Deleting another user's transaction returns 404 Not Found | ❌ Not Yet |
+| TXN-DELETE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| TXN-DELETE-002 | Deleting an income transaction reduces the computed wallet balance | ✅ Pass |
+| TXN-DELETE-003 | Deleting an expense transaction increases the computed wallet balance | ✅ Pass |
+| TXN-DELETE-004 | Deleting a transfer transaction returns 400 Bad Request | ✅ Pass |
+| TXN-DELETE-005 | Non-existent transaction id returns 404 Not Found | ✅ Pass |
+| TXN-DELETE-006 | Deleting another user's transaction returns 404 Not Found | ✅ Pass |
 
 ---
 
@@ -472,13 +472,13 @@ As an authenticated user, I want to see an income vs expense summary for a given
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| TXN-SUMMARY-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| TXN-SUMMARY-002 | Returns correct totalIncome and totalExpense for the period | ❌ Not Yet |
-| TXN-SUMMARY-003 | netBalance equals totalIncome minus totalExpense | ❌ Not Yet |
-| TXN-SUMMARY-004 | Filter by walletId limits totals to that wallet | ❌ Not Yet |
-| TXN-SUMMARY-005 | Filter by dateFrom and dateTo limits totals to that range | ❌ Not Yet |
-| TXN-SUMMARY-006 | byCategory list correctly groups and totals transactions per category | ❌ Not Yet |
-| TXN-SUMMARY-007 | Only the current user's transactions are included | ❌ Not Yet |
+| TXN-SUMMARY-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| TXN-SUMMARY-002 | Returns correct totalIncome and totalExpense for the period | ✅ Pass |
+| TXN-SUMMARY-003 | netBalance equals totalIncome minus totalExpense | ✅ Pass |
+| TXN-SUMMARY-004 | Filter by walletId limits totals to that wallet | ✅ Pass |
+| TXN-SUMMARY-005 | Filter by dateFrom and dateTo limits totals to that range | ✅ Pass |
+| TXN-SUMMARY-006 | byCategory list correctly groups and totals transactions per category | ✅ Pass |
+| TXN-SUMMARY-007 | Only the current user's transactions are included | ✅ Pass |
 
 ---
 
@@ -504,14 +504,14 @@ As an authenticated user, I want to record a transfer of money between two of my
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| TRANSFER-CREATE-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| TRANSFER-CREATE-002 | Valid transfer created; fromWallet computed balance decreases and toWallet computed balance increases | ❌ Not Yet |
-| TRANSFER-CREATE-003 | fromWalletId same as toWalletId returns 400 Bad Request | ❌ Not Yet |
-| TRANSFER-CREATE-004 | Non-existent or another user's fromWalletId returns 404 Not Found | ❌ Not Yet |
-| TRANSFER-CREATE-005 | Non-existent or another user's toWalletId returns 404 Not Found | ❌ Not Yet |
-| TRANSFER-CREATE-006 | Zero or negative amount returns 400 Bad Request | ❌ Not Yet |
-| TRANSFER-CREATE-007 | Missing date returns 400 Bad Request | ❌ Not Yet |
-| TRANSFER-CREATE-008 | Two linked transactions are created (one Income, one Expense), both flagged IsTransfer | ❌ Not Yet |
+| TRANSFER-CREATE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| TRANSFER-CREATE-002 | Valid transfer created; fromWallet computed balance decreases and toWallet computed balance increases | ✅ Pass |
+| TRANSFER-CREATE-003 | fromWalletId same as toWalletId returns 400 Bad Request | ✅ Pass |
+| TRANSFER-CREATE-004 | Non-existent or another user's fromWalletId returns 404 Not Found | ✅ Pass |
+| TRANSFER-CREATE-005 | Non-existent or another user's toWalletId returns 404 Not Found | ✅ Pass |
+| TRANSFER-CREATE-006 | Zero or negative amount returns 400 Bad Request | ✅ Pass |
+| TRANSFER-CREATE-007 | Missing date returns 400 Bad Request | ✅ Pass |
+| TRANSFER-CREATE-008 | Two linked transactions are created (one Income, one Expense), both flagged IsTransfer | ✅ Pass |
 
 ---
 
@@ -535,12 +535,12 @@ As an authenticated user, I want to view my transfer history, so that I can trac
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| TRANSFER-GET-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| TRANSFER-GET-002 | Authenticated user receives their transfers and returns 200 | ❌ Not Yet |
-| TRANSFER-GET-003 | Only the current user's transfers are returned | ❌ Not Yet |
-| TRANSFER-GET-004 | Filter by walletId returns transfers involving that wallet (as source or destination) | ❌ Not Yet |
-| TRANSFER-GET-005 | Filter by date range returns only transfers within that range | ❌ Not Yet |
-| TRANSFER-GET-006 | Pagination parameters return the correct subset | ❌ Not Yet |
+| TRANSFER-GET-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| TRANSFER-GET-002 | Authenticated user receives their transfers and returns 200 | ✅ Pass |
+| TRANSFER-GET-003 | Only the current user's transfers are returned | ✅ Pass |
+| TRANSFER-GET-004 | Filter by walletId returns transfers involving that wallet (as source or destination) | ✅ Pass |
+| TRANSFER-GET-005 | Filter by date range returns only transfers within that range | ✅ Pass |
+| TRANSFER-GET-006 | Pagination parameters return the correct subset | ✅ Pass |
 
 ---
 
@@ -563,8 +563,8 @@ As an authenticated user, I want to delete an incorrect transfer, so that the li
 
 | Test Case ID | Description | Status |
 |---|---|---|
-| TRANSFER-DELETE-001 | Missing token returns 401 Unauthorized | ❌ Not Yet |
-| TRANSFER-DELETE-002 | Valid delete removes both linked transactions; wallet computed balances reflect the removal | ❌ Not Yet |
-| TRANSFER-DELETE-003 | Non-existent transfer id returns 404 Not Found | ❌ Not Yet |
-| TRANSFER-DELETE-004 | Deleting another user's transfer returns 404 Not Found | ❌ Not Yet |
-| TRANSFER-DELETE-005 | Both linked transactions are removed after deletion | ❌ Not Yet |
+| TRANSFER-DELETE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| TRANSFER-DELETE-002 | Valid delete removes both linked transactions; wallet computed balances reflect the removal | ✅ Pass |
+| TRANSFER-DELETE-003 | Non-existent transfer id returns 404 Not Found | ✅ Pass |
+| TRANSFER-DELETE-004 | Deleting another user's transfer returns 404 Not Found | ✅ Pass |
+| TRANSFER-DELETE-005 | Both linked transactions are removed after deletion | ✅ Pass |
