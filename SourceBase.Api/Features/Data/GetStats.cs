@@ -6,7 +6,7 @@ namespace SourceBase.Api.Features.Data;
 
 public record GetStatsRequest;
 
-public record GetStatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems);
+public record GetStatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems, int TotalWallets, int TotalTransactions);
 
 public class GetStatsEndpoint : IEndpoint
 {
@@ -17,7 +17,7 @@ public class GetStatsEndpoint : IEndpoint
         .WithTags("Data");
 }
 
-public class GetStatsHandler(IDbContext dbContext) : IRequestHandler<GetStatsRequest, GetStatsResponse>
+public class GetStatsHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetStatsRequest, GetStatsResponse>
 {
     public async Task<GetStatsResponse> Handle(GetStatsRequest request, CancellationToken ct)
     {
@@ -25,7 +25,9 @@ public class GetStatsHandler(IDbContext dbContext) : IRequestHandler<GetStatsReq
         var totalTodoLists = await dbContext.TodoLists.CountAsync(ct);
         var totalTodoItems = await dbContext.TodoItems.CountAsync(ct);
         var completedTodoItems = await dbContext.TodoItems.CountAsync(x => x.Status == TodoItemStatus.Completed, ct);
+        var totalWallets = await dbContext.Wallets.CountAsync(x => x.UserId == currentUser.UserId, ct);
+        var totalTransactions = await dbContext.Transactions.CountAsync(x => x.UserId == currentUser.UserId, ct);
 
-        return new GetStatsResponse(userCount, totalTodoLists, totalTodoItems, completedTodoItems);
+        return new GetStatsResponse(userCount, totalTodoLists, totalTodoItems, completedTodoItems, totalWallets, totalTransactions);
     }
 }

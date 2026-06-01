@@ -1,0 +1,129 @@
+@page "/wallets/settings"
+@attribute [Authorize]
+@inject ApiHttpClient Api
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+}
+
+@if (!string.IsNullOrEmpty(_success))
+{
+    <div class="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">@_success</div>
+}
+
+<div class="mb-6">
+    <h1 class="text-xl font-bold text-gray-900">Wallet Settings</h1>
+    <p class="text-sm text-gray-500 mt-1">Configure your wallets, including currency and other properties.</p>
+</div>
+
+@if (_loading)
+{
+    <LoadingSpinner />
+}
+else if (_wallets.Count == 0)
+{
+    <div class="card text-center py-10">
+        <div class="text-4xl mb-3">👛</div>
+        <div class="text-sm text-gray-500">No wallets yet. <a href="/wallets" class="text-indigo-600 hover:underline">Create one first.</a></div>
+    </div>
+}
+else
+{
+    <div class="flex flex-col gap-4">
+        @foreach (var wallet in _wallets)
+        {
+            <div class="card">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-2xl">@WalletIcon(wallet.Icon)</span>
+                    <div>
+                        <div class="font-semibold text-gray-900">@wallet.Name</div>
+                        <div class="text-sm text-gray-500">Balance: @wallet.Balance.ToString("N0") @wallet.Currency</div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Currency</label>
+                        <div class="flex gap-2">
+                            <input value="@GetEditCurrency(wallet.Id)" @oninput="e => SetEditCurrency(wallet.Id, e.Value?.ToString() ?? string.Empty)" class="form-input" placeholder="e.g. USD, VND" maxlength="10" />
+                            <button class="btn-primary shrink-0" @onclick="SaveCurrency(wallet)" disabled="@IsSaving(wallet.Id)">
+                                @if (IsSaving(wallet.Id))
+                                {
+                                    <span>Saving…</span>
+                                }
+                                else
+                                {
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                }
+                            </button>
+                        </div>
+                        @if (_walletErrors.TryGetValue(wallet.Id, out var err))
+                        {
+                            <div class="text-xs text-red-600 mt-1">@err</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<WalletResponse> _wallets = [];
+    private bool _loading = true;
+    private string? _error;
+    private string? _success;
+
+    private Dictionary<Guid, string> _editCurrencies = [];
+    private HashSet<Guid> _savingIds = [];
+    private Dictionary<Guid, string> _walletErrors = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        var (data, error) = await Api.GetWalletsAsync();
+        if (error is not null)
+            _error = error.Message ?? "Failed to load wallets.";
+        else
+        {
+            _wallets = data?.Wallets ?? [];
+            _editCurrencies = _wallets.ToDictionary(w => w.Id, w => w.Currency);
+        }
+        _loading = false;
+    }
+
+    private string GetEditCurrency(Guid id) => _editCurrencies.TryGetValue(id, out var val) ? val : string.Empty;
+    private void SetEditCurrency(Guid id, string value) => _editCurrencies[id] = value;
+    private bool IsSaving(Guid id) => _savingIds.Contains(id);
+
+    private Func<Task> SaveCurrency(WalletResponse wallet) => async () =>
+    {
+        _walletErrors.Remove(wallet.Id);
+        _success = null;
+
+        var currency = GetEditCurrency(wallet.Id).Trim();
+        if (string.IsNullOrWhiteSpace(currency))
+        {
+            _walletErrors[wallet.Id] = "Currency is required.";
+            return;
+        }
+
+        _savingIds.Add(wallet.Id);
+        var error = await Api.ConfigureWalletAsync(wallet.Id, currency);
+        _savingIds.Remove(wallet.Id);
+
+        if (error is not null)
+            _walletErrors[wallet.Id] = error.Message ?? "Failed to update currency.";
+        else
+        {
+            _success = $"Currency for '{wallet.Name}' updated to {currency.ToUpperInvariant()}.";
+            var (data, _) = await Api.GetWalletsAsync();
+            _wallets = data?.Wallets ?? [];
+            _editCurrencies = _wallets.ToDictionary(w => w.Id, w => w.Currency);
+        }
+    };
+
+    private static string WalletIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "👛" : icon;
+}
