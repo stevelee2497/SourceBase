@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Serilog;
+using SourceBase.Web;
 using SourceBase.Web.Auth;
 using SourceBase.Web.Services;
 
@@ -20,6 +21,9 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredServ
 builder.Services.AddHttpClient("api", client => client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]!));
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("api"));
 builder.Services.AddScoped<ApiHttpClient>();
+
+var appSettings = builder.Configuration.Get<AppSettings>() ?? new AppSettings();
+builder.Services.AddSingleton(appSettings);
 
 var app = builder.Build();
 

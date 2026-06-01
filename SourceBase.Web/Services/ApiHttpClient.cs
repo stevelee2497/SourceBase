@@ -179,6 +179,105 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
 
     public Task<ErrorResponse?> ConfirmUserEmailAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, $"/api/users/{id}/confirm-email"));
+
+    // ── Wallets ──────────────────────────────────────────────────────────────
+
+    public Task<(GetWalletsResponse? data, ErrorResponse? error)> GetWalletsAsync() =>
+        ExecuteAsync<GetWalletsResponse>(() => AuthorizedRequest(HttpMethod.Get, "/api/wallets"));
+
+    public Task<(WalletResponse? data, ErrorResponse? error)> GetWalletAsync(Guid id) =>
+        ExecuteAsync<WalletResponse>(() => AuthorizedRequest(HttpMethod.Get, $"/api/wallets/{id}"));
+
+    public Task<ErrorResponse?> CreateWalletAsync(string name, decimal initialBalance, string currency, string? icon) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/wallets", new { name, initialBalance, currency, icon }));
+
+    public Task<ErrorResponse?> UpdateWalletAsync(Guid id, string name, string? icon) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/wallets/{id}", new { name, icon }));
+
+    public Task<ErrorResponse?> DeleteWalletAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/wallets/{id}"));
+
+    public Task<(GetWalletSummaryResponse? data, ErrorResponse? error)> GetWalletSummaryAsync() =>
+        ExecuteAsync<GetWalletSummaryResponse>(() => AuthorizedRequest(HttpMethod.Get, "/api/wallets/summary"));
+
+    // ── Categories ───────────────────────────────────────────────────────────
+
+    public Task<(List<CategoryResponse>? data, ErrorResponse? error)> GetCategoriesAsync(string? type = null) =>
+        ExecuteAsync<List<CategoryResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/categories{(string.IsNullOrWhiteSpace(type) ? string.Empty : $"?type={Uri.EscapeDataString(type)}")}"));
+
+    public Task<ErrorResponse?> CreateCategoryAsync(string name, string type, string? icon) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/categories", new { name, type, icon }));
+
+    public Task<ErrorResponse?> UpdateCategoryAsync(Guid id, string name, string? icon) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/categories/{id}", new { name, icon }));
+
+    public Task<ErrorResponse?> DeleteCategoryAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/categories/{id}"));
+
+    // ── Transactions ─────────────────────────────────────────────────────────
+
+    public Task<(PagingResponse<TransactionResponse>? data, ErrorResponse? error)> GetTransactionsAsync(int page, int limit, Guid? walletId = null, string? type = null, string? dateFrom = null, string? dateTo = null, Guid? categoryId = null)
+    {
+        var url = $"/api/transactions?page={page}&limit={limit}";
+        if (walletId.HasValue)
+            url += $"&walletId={walletId}";
+        if (!string.IsNullOrWhiteSpace(type))
+            url += $"&type={Uri.EscapeDataString(type)}";
+        if (!string.IsNullOrWhiteSpace(dateFrom))
+            url += $"&dateFrom={Uri.EscapeDataString(dateFrom)}";
+        if (!string.IsNullOrWhiteSpace(dateTo))
+            url += $"&dateTo={Uri.EscapeDataString(dateTo)}";
+        if (categoryId.HasValue)
+            url += $"&categoryId={categoryId}";
+        return ExecuteAsync<PagingResponse<TransactionResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
+    }
+
+    public Task<ErrorResponse?> CreateTransactionAsync(Guid walletId, decimal amount, string type, string date, string? note, Guid categoryId) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/transactions", new { walletId, amount, type, date, note, categoryId }));
+
+    public Task<ErrorResponse?> UpdateTransactionAsync(Guid id, decimal amount, string type, string date, string? note, Guid categoryId) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/transactions/{id}", new { amount, type, date, note, categoryId }));
+
+    public Task<ErrorResponse?> DeleteTransactionAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/transactions/{id}"));
+
+    public Task<(GetTransactionSummaryResponse? data, ErrorResponse? error)> GetTransactionSummaryAsync(Guid? walletId = null, string? dateFrom = null, string? dateTo = null)
+    {
+        var url = "/api/transactions/summary";
+        var hasQuery = false;
+
+        void Append(string key, string value)
+        {
+            url += hasQuery ? "&" : "?";
+            url += $"{key}={Uri.EscapeDataString(value)}";
+            hasQuery = true;
+        }
+
+        if (walletId.HasValue)
+            Append("walletId", walletId.Value.ToString());
+        if (!string.IsNullOrWhiteSpace(dateFrom))
+            Append("dateFrom", dateFrom);
+        if (!string.IsNullOrWhiteSpace(dateTo))
+            Append("dateTo", dateTo);
+
+        return ExecuteAsync<GetTransactionSummaryResponse>(() => AuthorizedRequest(HttpMethod.Get, url));
+    }
+
+    // ── Transfers ────────────────────────────────────────────────────────────
+
+    public Task<(PagingResponse<TransferResponse>? data, ErrorResponse? error)> GetTransfersAsync(int page, int limit, Guid? walletId = null)
+    {
+        var url = $"/api/transfers?page={page}&limit={limit}";
+        if (walletId.HasValue)
+            url += $"&walletId={walletId}";
+        return ExecuteAsync<PagingResponse<TransferResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
+    }
+
+    public Task<ErrorResponse?> CreateTransferAsync(Guid fromWalletId, Guid toWalletId, decimal amount, string date, string? note) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/transfers", new { fromWalletId, toWalletId, amount, date, note }));
+
+    public Task<ErrorResponse?> DeleteTransferAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/transfers/{id}"));
 }
 
 public sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
@@ -190,3 +289,12 @@ public sealed record TodoItemResponse(Guid Id, string Title, string Date, string
 public sealed record TodoListResponse(Guid Id, string Name, int ItemCount, DateTime? CreatedOn, string? CreatedBy);
 public sealed record StatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems);
 public sealed record ErrorResponse(string Code, string Message, Dictionary<string, string[]>? Errors = null);
+public sealed record WalletResponse(Guid Id, string Name, decimal Balance, decimal InitialBalance, string Currency, string? Icon);
+public sealed record GetWalletsResponse(List<WalletResponse> Wallets, decimal TotalBalance);
+public sealed record GetWalletSummaryResponse(decimal TotalBalance, decimal MonthlyIncome, decimal MonthlyExpense, List<RecentTransactionResponse> RecentTransactions);
+public sealed record RecentTransactionResponse(Guid Id, decimal Amount, string Type, string Date, string? Note, Guid WalletId, string WalletName, Guid? CategoryId, string? CategoryName);
+public sealed record CategoryResponse(Guid Id, string Name, string Type, string? Icon, bool IsSystem);
+public sealed record TransactionResponse(Guid Id, decimal Amount, string Type, string Date, string? Note, Guid WalletId, string WalletName, Guid? CategoryId, string? CategoryName, bool IsTransfer);
+public sealed record GetTransactionSummaryResponse(decimal TotalIncome, decimal TotalExpense, decimal NetBalance, List<CategoryBreakdownResponse> ByCategory);
+public sealed record CategoryBreakdownResponse(Guid? CategoryId, string? CategoryName, string Type, decimal Total);
+public sealed record TransferResponse(Guid Id, Guid FromWalletId, string FromWalletName, Guid ToWalletId, string ToWalletName, decimal Amount, string Date, string? Note);

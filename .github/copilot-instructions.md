@@ -85,26 +85,38 @@ Integration tests live in `SourceBase.Tests/` using `xUnit` + `FluentAssertions`
 **Test structure** — every test follows the AAA pattern:
 
 ```csharp
-[Fact]
-public async Task DoSomething_WithCondition_ReturnsExpected()
+[Fact(DisplayName = "TODOS-CREATE-006: CreateTodo_WithValidTodoListId_ReturnsOk")]
+public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
 {
     // Arrange
-    var client = factory.CreateClient();
-    // ... setup
+    var client = await factory.CreateAuthorizedClient();
+    var listResponse = await client.PostAsJsonAsync("todo-lists", new { name = $"List_{Guid.NewGuid():N}" });
+    var list = await listResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
 
     // Act
-    var response = await client.PostAsJsonAsync("/api/...", new { ... });
+    var response = await client.PostAsJsonAsync(CreateTodoEndpoint.Route, new
+    {
+        date = "2025-06-01",
+        title = "Todo in list",
+        status = "Open",
+        todoListId = list!.Id,
+    });
 
     // Assert
     response.StatusCode.Should().Be(HttpStatusCode.OK);
-    var body = await response.Content.ReadFromJsonAsync<MyResponse>();
-    body!.Field.Should().Be(expected);
+    var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
+    var todo = await factory.WithDbContextAsync(db => db.TodoItems.SingleAsync(x => x.Id == body!.Id));
+    todo!.TodoListId.Should().Be(list.Id);
 }
 ```
 
+**Test case id convention** - `{FEATURE}-{ACTION}-{NNN}` (e.g. `TODOS-CREATE-001`), included in the `DisplayName` of the test for easy identification and traceability to requirements.
+
+**Test isolation and transparency** - All payload data defined in the test body for clarity; no external helper methods that abstract away the intent of the test.
+
 **Test naming** — `MethodName_WithCondition_ReturnsExpected` (e.g. `Login_WithWrongPassword_ReturnsUnauthorized`).
 
-**Test isolation** — use `Guid.NewGuid()` to generate unique emails per test (e.g. `$"user_{Guid.NewGuid():N}@test.com"`) to avoid state conflicts between tests sharing the same `WebAppFactory` instance.
+**Feature isolation** — tests for different features (Auth, Todos, etc.) organized into separate test classes and files. Each test class should only focus on one endpoint.
 
 ## Blazor
 

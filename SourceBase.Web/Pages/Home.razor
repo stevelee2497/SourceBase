@@ -19,7 +19,11 @@
     </div>
 </div>
 
-@if (_stats is not null)
+@if (_statsLoading)
+{
+    <LoadingSpinner />
+}
+else if (_stats is not null)
 {
     <div class="mb-8">
         <h2 class="text-lg font-medium text-gray-900 mb-4">Overview</h2>
@@ -46,6 +50,73 @@
     </div>
 }
 
+<div class="mb-8">
+    <div class="flex items-center justify-between gap-3 mb-4">
+        <h2 class="text-lg font-medium text-gray-900">Wallet Summary</h2>
+        <a href="/wallets" class="text-sm text-indigo-600 hover:text-indigo-700">View Wallets</a>
+    </div>
+    <div class="card">
+        @if (!_walletsLoaded)
+        {
+            <LoadingSpinner />
+        }
+        else if (!_hasWallets)
+        {
+            <div class="py-8 text-center">
+                <div class="text-sm text-gray-500 mb-3">No wallets yet.</div>
+                <a href="/wallets" class="btn-primary">Create Wallet</a>
+            </div>
+        }
+        else if (_walletSummary is not null)
+        {
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="rounded-lg bg-indigo-50 px-4 py-5">
+                        <div class="text-sm text-indigo-600 font-medium mb-1">Total Balance</div>
+                        <div class="text-3xl font-bold text-indigo-700">@FormatAmount(_walletSummary.TotalBalance)</div>
+                    </div>
+                    <div class="rounded-lg bg-green-50 px-4 py-5">
+                        <div class="text-sm text-green-600 font-medium mb-1">Monthly Income</div>
+                        <div class="text-2xl font-bold text-green-700">@FormatAmount(_walletSummary.MonthlyIncome)</div>
+                    </div>
+                    <div class="rounded-lg bg-red-50 px-4 py-5">
+                        <div class="text-sm text-red-600 font-medium mb-1">Monthly Expense</div>
+                        <div class="text-2xl font-bold text-red-700">@FormatAmount(_walletSummary.MonthlyExpense)</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="text-sm font-medium text-gray-700 mb-3">Recent Transactions</div>
+                    @if (_walletSummary.RecentTransactions.Count == 0)
+                    {
+                        <div class="text-sm text-gray-400">No recent transactions yet.</div>
+                    }
+                    else
+                    {
+                        <div class="flex flex-col divide-y divide-gray-100">
+                            @foreach (var transaction in _walletSummary.RecentTransactions.Take(5))
+                            {
+                                <div class="py-3 flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">@RecentTransactionIcon(transaction)</div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="font-medium text-gray-900 truncate">@RecentTransactionTitle(transaction)</div>
+                                        <div class="text-sm text-gray-500 truncate">@transaction.WalletName • @FormatDisplayDate(transaction.Date)</div>
+                                    </div>
+                                    <div class="font-semibold @TransactionAmountClass(transaction.Type)">@SignedAmount(transaction.Amount, transaction.Type)</div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-sm text-gray-400 py-8 text-center">Unable to load wallet summary right now.</div>
+        }
+    </div>
+</div>
+
 <AuthorizeView Roles="Admin">
     <div class="mt-4">
         <h2 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
@@ -58,10 +129,46 @@
 
 @code {
     private StatsResponse? _stats;
+    private bool _statsLoading = true;
+    private GetWalletSummaryResponse? _walletSummary;
+    private bool _walletsLoaded;
+    private bool _hasWallets;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() => await Task.WhenAll(LoadStatsAsync(), LoadWalletSummaryAsync());
+
+    private async Task LoadStatsAsync()
     {
+        _statsLoading = true;
         var (data, _) = await Api.GetStatsAsync();
         _stats = data;
+        _statsLoading = false;
     }
+
+    private async Task LoadWalletSummaryAsync()
+    {
+        var summaryTask = Api.GetWalletSummaryAsync();
+        var walletsTask = Api.GetWalletsAsync();
+        await Task.WhenAll(summaryTask, walletsTask);
+
+        var (summary, _) = await summaryTask;
+        var (wallets, walletError) = await walletsTask;
+
+        _walletSummary = summary;
+        _hasWallets = walletError is null && (wallets?.Wallets.Count ?? 0) > 0;
+        _walletsLoaded = true;
+    }
+
+    private static string FormatAmount(decimal amount) => amount.ToString("N0");
+
+    private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N0}" : $"-{amount:N0}";
+
+    private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600" : "text-red-600";
+
+    private static string RecentTransactionTitle(RecentTransactionResponse transaction) => !string.IsNullOrWhiteSpace(transaction.Note)
+        ? transaction.Note
+        : !string.IsNullOrWhiteSpace(transaction.CategoryName) ? transaction.CategoryName : "Recent transaction";
+
+    private static string RecentTransactionIcon(RecentTransactionResponse transaction) => string.Equals(transaction.Type, "Income", StringComparison.OrdinalIgnoreCase) ? "💰" : "💸";
+
+    private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MMM yyyy") : value;
 }

@@ -17,5 +17,13 @@ public interface IDbContext
 
     DbSet<EmailEntity> Emails { get; set; }
 
+    DbSet<WalletEntity> Wallets { get; set; }
+
+    DbSet<CategoryEntity> Categories { get; set; }
+
+    DbSet<TransactionEntity> Transactions { get; set; }
+
+    DbSet<TransferEntity> Transfers { get; set; }
+
     Task<int> SaveChangesAsync(CancellationToken ct);
 }

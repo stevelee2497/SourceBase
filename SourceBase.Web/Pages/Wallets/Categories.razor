@@ -1,0 +1,309 @@
+@page "/wallets/categories"
+@attribute [Authorize]
+@inject ApiHttpClient Api
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+}
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Categories</h1>
+        <div class="text-sm text-gray-500 mt-1">Manage your custom income and expense categories.</div>
+    </div>
+    <button class="btn-primary self-start sm:self-auto" @onclick="OpenCreateCategory">
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Category
+    </button>
+</div>
+
+@if (_loading)
+{
+    <LoadingSpinner />
+}
+else
+{
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <section class="card">
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Income Categories</h2>
+                <span class="badge-green">@IncomeCategories.Count</span>
+            </div>
+            @if (IncomeCategories.Count == 0)
+            {
+                <div class="text-sm text-gray-400 py-6 text-center">No income categories yet.</div>
+            }
+            else
+            {
+                <div class="flex flex-col gap-3">
+                    @foreach (var category in IncomeCategories)
+                    {
+                        <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 px-4 py-3">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-lg shrink-0">@CategoryIcon(category.Icon)</div>
+                                <div class="min-w-0">
+                                    <div class="font-medium text-gray-900 truncate">@category.Name</div>
+                                    <div class="flex flex-wrap items-center gap-2 mt-1">
+                                        <span class="badge-green">Income</span>
+                                        @if (category.IsSystem)
+                                        {
+                                            <span class="badge-blue">System</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                @if (category.IsSystem)
+                                {
+                                    <span class="text-gray-400" title="System category">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 10-8 0v4h8z" />
+                                        </svg>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEditCategory(category)" title="Edit category">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDeleteCategory(category)" title="Delete category">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="card">
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Expense Categories</h2>
+                <span class="badge-red">@ExpenseCategories.Count</span>
+            </div>
+            @if (ExpenseCategories.Count == 0)
+            {
+                <div class="text-sm text-gray-400 py-6 text-center">No expense categories yet.</div>
+            }
+            else
+            {
+                <div class="flex flex-col gap-3">
+                    @foreach (var category in ExpenseCategories)
+                    {
+                        <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 px-4 py-3">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center text-lg shrink-0">@CategoryIcon(category.Icon)</div>
+                                <div class="min-w-0">
+                                    <div class="font-medium text-gray-900 truncate">@category.Name</div>
+                                    <div class="flex flex-wrap items-center gap-2 mt-1">
+                                        <span class="badge-red">Expense</span>
+                                        @if (category.IsSystem)
+                                        {
+                                            <span class="badge-blue">System</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                @if (category.IsSystem)
+                                {
+                                    <span class="text-gray-400" title="System category">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 10-8 0v4h8z" />
+                                        </svg>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEditCategory(category)" title="Edit category">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDeleteCategory(category)" title="Delete category">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+}
+
+@if (_showForm)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseCategoryForm"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingCategory is null ? "Add Category" : "Edit Category")</h2>
+            @if (!string.IsNullOrEmpty(_formError))
+            {
+                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_formError</div>
+            }
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Name *</label>
+                    <input @bind="_categoryName" class="form-input" placeholder="Category name" />
+                </div>
+                <div>
+                    <label class="form-label">Type</label>
+                    <select @bind="_categoryType" class="form-input" disabled="@(_editingCategory is not null)">
+                        <option value="Income">Income</option>
+                        <option value="Expense">Expense</option>
+                    </select>
+                    @if (_editingCategory is not null)
+                    {
+                        <div class="text-xs text-gray-400 mt-1">Category type can only be chosen when the category is created.</div>
+                    }
+                </div>
+                <div>
+                    <label class="form-label">Icon</label>
+                    <input @bind="_categoryIcon" class="form-input" placeholder="🏷️" />
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-5">
+                <button class="btn-secondary" @onclick="CloseCategoryForm">Cancel</button>
+                <button class="btn-primary" @onclick="SaveCategoryAsync" disabled="@_savingCategory">@(_savingCategory ? "Saving…" : "Save")</button>
+            </div>
+        </div>
+    </div>
+}
+
+<ConfirmDialog IsVisible="_showDeleteCategory"
+               Title="Delete category"
+               Message="@($"Delete '{_deletingCategory?.Name}'?")"
+               OnConfirm="DeleteCategoryAsync"
+               OnCancel="CancelDeleteCategory" />
+
+@code {
+    private List<CategoryResponse> _categories = [];
+    private bool _loading = true;
+    private string? _error;
+
+    private bool _showForm;
+    private CategoryResponse? _editingCategory;
+    private string _categoryName = string.Empty;
+    private string _categoryType = "Expense";
+    private string _categoryIcon = string.Empty;
+    private string? _formError;
+    private bool _savingCategory;
+
+    private bool _showDeleteCategory;
+    private CategoryResponse? _deletingCategory;
+
+    private List<CategoryResponse> IncomeCategories => _categories.Where(c => string.Equals(c.Type, "Income", StringComparison.OrdinalIgnoreCase)).ToList();
+    private List<CategoryResponse> ExpenseCategories => _categories.Where(c => string.Equals(c.Type, "Expense", StringComparison.OrdinalIgnoreCase)).ToList();
+
+    protected override async Task OnInitializedAsync() => await LoadCategoriesAsync();
+
+    private async Task LoadCategoriesAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        var (data, error) = await Api.GetCategoriesAsync();
+        if (error is not null)
+        {
+            _categories = [];
+            _error = error.Message ?? "Failed to load categories.";
+        }
+        else
+        {
+            _categories = data ?? [];
+        }
+
+        _loading = false;
+    }
+
+    private void OpenCreateCategory()
+    {
+        _editingCategory = null;
+        _categoryName = string.Empty;
+        _categoryType = "Expense";
+        _categoryIcon = string.Empty;
+        _formError = null;
+        _showForm = true;
+    }
+
+    private Action OpenEditCategory(CategoryResponse category) => () =>
+    {
+        _editingCategory = category;
+        _categoryName = category.Name;
+        _categoryType = category.Type;
+        _categoryIcon = category.Icon ?? string.Empty;
+        _formError = null;
+        _showForm = true;
+    };
+
+    private void CloseCategoryForm() => _showForm = false;
+
+    private async Task SaveCategoryAsync()
+    {
+        _formError = null;
+        if (string.IsNullOrWhiteSpace(_categoryName))
+        {
+            _formError = "Name is required.";
+            return;
+        }
+
+        _savingCategory = true;
+        var error = _editingCategory is null
+            ? await Api.CreateCategoryAsync(_categoryName.Trim(), _categoryType, CleanOptional(_categoryIcon))
+            : await Api.UpdateCategoryAsync(_editingCategory.Id, _categoryName.Trim(), CleanOptional(_categoryIcon));
+
+        if (error is not null)
+        {
+            _formError = error.Message ?? "Failed to save category.";
+            _savingCategory = false;
+            return;
+        }
+
+        _showForm = false;
+        _savingCategory = false;
+        await LoadCategoriesAsync();
+    }
+
+    private Action ConfirmDeleteCategory(CategoryResponse category) => () =>
+    {
+        _deletingCategory = category;
+        _showDeleteCategory = true;
+    };
+
+    private void CancelDeleteCategory()
+    {
+        _showDeleteCategory = false;
+        _deletingCategory = null;
+    }
+
+    private async Task DeleteCategoryAsync()
+    {
+        if (_deletingCategory is null)
+            return;
+
+        _showDeleteCategory = false;
+        var error = await Api.DeleteCategoryAsync(_deletingCategory.Id);
+        if (error is not null)
+            _error = error.Message ?? "Failed to delete category.";
+        else
+            await LoadCategoriesAsync();
+
+        _deletingCategory = null;
+    }
+
+    private static string CategoryIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "🏷️" : icon;
+
+    private static string? CleanOptional(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
