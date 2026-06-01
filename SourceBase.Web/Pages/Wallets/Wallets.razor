@@ -9,7 +9,7 @@
 }
 
 <div class="flex flex-col lg:flex-row gap-4 mb-6">
-    <div class="card flex-1 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white">
+    <div class="card flex-1 bg-linear-to-r from-indigo-600 to-indigo-500 text-white">
         <div class="text-sm font-medium text-indigo-100 mb-2">Total Balance</div>
         <div class="text-3xl sm:text-4xl font-bold">@FormatAmount(_totalBalance)</div>
         <div class="text-sm text-indigo-100 mt-2">Across all wallets</div>
@@ -117,11 +117,7 @@ else
     </div>
 }
 
-<ConfirmDialog IsVisible="_showDeleteWallet"
-               Title="Delete wallet"
-               Message="@($"Delete '{_deletingWallet?.Name}'?")"
-               OnConfirm="DeleteWalletAsync"
-               OnCancel="CancelDeleteWallet" />
+<ConfirmDialog IsVisible="_showDeleteWallet" Title="Delete wallet" Message="@($"Delete '{_deletingWallet?.Name}'?")" OnConfirm="DeleteWalletAsync" OnCancel="CancelDeleteWallet" />
 
 @code {
     private List<WalletResponse> _wallets = [];
@@ -133,7 +129,7 @@ else
     private WalletResponse? _editingWallet;
     private string _walletName = string.Empty;
     private decimal _walletInitialBalance;
-    private string _walletCurrency = "USD";
+    private string _walletCurrency = "VND";
     private string _walletIcon = string.Empty;
     private string? _formError;
     private bool _savingWallet;
@@ -169,7 +165,7 @@ else
         _editingWallet = null;
         _walletName = string.Empty;
         _walletInitialBalance = 0;
-        _walletCurrency = "USD";
+        _walletCurrency = "VND";
         _walletIcon = string.Empty;
         _formError = null;
         _showForm = true;

@@ -110,12 +110,13 @@ public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
 }
 ```
 
-- Test case id format: `{FEATURE}-{ACTION}-{NNN}` (e.g. `TODOS-CREATE-001`), included in the `DisplayName` of the test for easy identification and traceability to requirements.
-- All payload data defined in the test body for clarity; no external helper methods that abstract away the intent of the test.
+**Test case id convention** - `{FEATURE}-{ACTION}-{NNN}` (e.g. `TODOS-CREATE-001`), included in the `DisplayName` of the test for easy identification and traceability to requirements.
+
+**Test isolation and transparency** - All payload data defined in the test body for clarity; no external helper methods that abstract away the intent of the test.
 
 **Test naming** — `MethodName_WithCondition_ReturnsExpected` (e.g. `Login_WithWrongPassword_ReturnsUnauthorized`).
 
-**Test isolation** — use `Guid.NewGuid()` to generate unique emails per test (e.g. `$"user_{Guid.NewGuid():N}@test.com"`) to avoid state conflicts between tests sharing the same `WebAppFactory` instance.
+**Feature isolation** — tests for different features (Auth, Todos, etc.) organized into separate test classes and files. Each test class should only focus on one endpoint.
 
 ## Blazor
 
