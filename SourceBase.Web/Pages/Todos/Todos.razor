@@ -34,9 +34,8 @@
             <div class="flex flex-col gap-1 overflow-y-auto">
                 @foreach (var list in _lists)
                 {
-                    <div class="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors @(list.Id == _selectedListId ? "bg-indigo-50 text-indigo-700 font-medium" : "hover:bg-gray-100 text-gray-700")"
-                         @onclick="SelectList(list.Id)">
-                        <span class="flex-1 text-sm truncate">@list.Name</span>
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors @(list.Id == _selectedListId ? "bg-indigo-50 text-indigo-700 font-medium" : "hover:bg-gray-100 text-gray-700")" @onclick="SelectList(list.Id)">
+                        <span class="flex-1 text-sm font-medium truncate">@list.Name</span>
                         <span class="text-xs text-gray-400">@list.ItemCount</span>
                         <button class="text-gray-400 hover:text-indigo-600 shrink-0" @onclick:stopPropagation @onclick="OpenEditList(list)" title="Rename">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,14 +201,10 @@
 }
 
 <!-- Confirm delete list -->
-<ConfirmDialog IsVisible="_showDeleteList" Title="Delete list"
-               Message="@($"Delete '{_deletingList?.Name}'? All todos in this list will also be deleted.")"
-               OnConfirm="DeleteListAsync" OnCancel="CancelDeleteList" />
+<ConfirmDialog IsVisible="_showDeleteList" Title="Delete list" Message="@($"Delete '{_deletingList?.Name}'? All todos in this list will also be deleted.")" OnConfirm="DeleteListAsync" OnCancel="CancelDeleteList" />
 
 <!-- Confirm delete todo -->
-<ConfirmDialog IsVisible="_showDeleteTodo" Title="Delete todo"
-               Message="@($"Delete '{_deletingTodo?.Title}'?")"
-               OnConfirm="DeleteTodoAsync" OnCancel="CancelDeleteTodo" />
+<ConfirmDialog IsVisible="_showDeleteTodo" Title="Delete todo" Message="@($"Delete '{_deletingTodo?.Title}'?")" OnConfirm="DeleteTodoAsync" OnCancel="CancelDeleteTodo" />
 
 @code {
     // Lists state
