@@ -179,7 +179,7 @@ else
             <div class="space-y-4">
                 <div>
                     <label class="form-label">Amount *</label>
-                    <input @bind="_transactionAmount" class="form-input" type="number" step="0.01" />
+                    <input @bind="TransactionAmountText" class="form-input" placeholder="0" inputmode="numeric" />
                 </div>
                 <div>
                     <label class="form-label">Type</label>
@@ -246,7 +246,7 @@ else
                 </div>
                 <div>
                     <label class="form-label">Amount *</label>
-                    <input @bind="_transferAmount" class="form-input" type="number" step="0.01" />
+                    <input @bind="TransferAmountText" class="form-input" placeholder="0" inputmode="numeric" />
                 </div>
                 <div>
                     <label class="form-label">Date *</label>
@@ -317,6 +317,26 @@ else
 
     private bool _showDeleteTransaction;
     private TransactionResponse? _deletingTransaction;
+
+    private string TransactionAmountText
+    {
+        get => _transactionAmount > 0 ? _transactionAmount.ToString("N0") : string.Empty;
+        set
+        {
+            var clean = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+            _transactionAmount = decimal.TryParse(clean, out var parsed) ? parsed : 0;
+        }
+    }
+
+    private string TransferAmountText
+    {
+        get => _transferAmount > 0 ? _transferAmount.ToString("N0") : string.Empty;
+        set
+        {
+            var clean = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+            _transferAmount = decimal.TryParse(clean, out var parsed) ? parsed : 0;
+        }
+    }
 
     private List<CategoryResponse> FilteredTransactionCategories => _categories.Where(c => string.Equals(c.Type, _transactionType, StringComparison.OrdinalIgnoreCase)).ToList();
 

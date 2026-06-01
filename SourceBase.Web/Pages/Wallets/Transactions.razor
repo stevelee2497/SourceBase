@@ -129,7 +129,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="form-label">Amount *</label>
-                    <input @bind="_amount" class="form-input" type="number" step="0.01" />
+                    <input @bind="AmountText" class="form-input" placeholder="0" inputmode="numeric" />
                 </div>
                 <div>
                     <label class="form-label">Type</label>
@@ -204,6 +204,16 @@
 
     private bool _showDelete;
     private TransactionResponse? _deleting;
+
+    private string AmountText
+    {
+        get => _amount > 0 ? _amount.ToString("N0") : string.Empty;
+        set
+        {
+            var clean = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+            _amount = decimal.TryParse(clean, out var parsed) ? parsed : 0;
+        }
+    }
 
     private List<CategoryResponse> FilteredCategories => _categories.Where(c => string.Equals(c.Type, _type, StringComparison.OrdinalIgnoreCase)).ToList();
 
