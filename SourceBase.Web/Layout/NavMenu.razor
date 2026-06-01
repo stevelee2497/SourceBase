@@ -1,4 +1,5 @@
-@inject NavigationManager Navigation
+@inject AppSettings AppSettings
+@inject BlazorAuthStateProvider Auth
 
 <!-- Mobile overlay backdrop -->
 @if (MobileOpen)
@@ -17,55 +18,27 @@
     </div>
 
     <nav class="flex-1 px-4 py-4 space-y-1">
-        <NavLink href="/" Match="NavLinkMatch.All" class="@NavClass" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
-            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            Dashboard
-        </NavLink>
-
-        <NavLink href="/todos" class="@NavClass" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
-            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-            Todos
-        </NavLink>
-
-        <NavLink href="/wallets" class="@NavClass" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
-            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M17 9V7a4 4 0 00-8 0v2M5 9h14a1 1 0 011 1v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a1 1 0 011-1zm11 4h.01" />
-            </svg>
-            Wallets
-        </NavLink>
-
-        <NavLink href="/wallets/categories" class="@SubNavClass" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
-            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M7 7h.01M7 3h5c.53 0 1.039.211 1.414.586l6 6a2 2 0 010 2.828l-4.172 4.172a2 2 0 01-2.828 0l-6-6A2 2 0 016 9V4a1 1 0 011-1z" />
-            </svg>
-            Categories
-        </NavLink>
-
-        <AuthorizeView Roles="Admin">
-            <NavLink href="/users" class="@NavClass" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                Users
-            </NavLink>
-
-            <NavLink href="/roles" class="@NavClass" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                Roles
-            </NavLink>
-        </AuthorizeView>
+        @foreach (var navPage in AppSettings.Pages)
+        {
+            if (navPage.Roles.Count() == 0 || navPage.Roles.Any(role => Auth.UserInfo?.Roles.Contains(role) == true))
+            {
+                <NavLink href="@navPage.Url" Match="@GetNavLinkMatch(navPage.Url)" class="flex items-center px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors w-full" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        @((MarkupString)navPage.Icon)
+                    </svg>
+                    @navPage.Title
+                </NavLink>
+                @foreach (var sub in navPage.SubPages)
+                {
+                    <NavLink href="@sub.Url" class="flex items-center pr-3 py-1.5 rounded-md text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors w-full" style="padding-left: 25px;" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
+                        <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            @((MarkupString)sub.Icon)
+                        </svg>
+                        @sub.Title
+                    </NavLink>
+                }
+            }
+        }
     </nav>
 </aside>
 
@@ -73,12 +46,9 @@
     [Parameter] public bool MobileOpen { get; set; }
     [Parameter] public EventCallback OnMobileClose { get; set; }
 
-    private const string NavClass = "flex items-center px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors w-full";
-    private const string SubNavClass = "flex items-center pl-9 pr-3 py-1.5 rounded-md text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors w-full";
+    private string AsideClass => MobileOpen ? "fixed inset-y-0 left-0 z-50 flex" : "hidden md:flex";
 
-    private string AsideClass => MobileOpen
-        ? "fixed inset-y-0 left-0 z-50 flex"
-        : "hidden md:flex";
+    private static NavLinkMatch GetNavLinkMatch(string url) => url == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix;
 
     private Task CloseMenu() => OnMobileClose.InvokeAsync();
 }
