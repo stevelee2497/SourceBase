@@ -76,11 +76,9 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var expenseCategories = await expenseCatResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
         var expenseCategoryId = expenseCategories!.First(x => x.IsSystem).Id;
 
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var previousMonth = today.AddMonths(-1);
-        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 100m, type = "Income", date = today.ToString("yyyy-MM-dd"), note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
-        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet.Id, amount = 40m, type = "Expense", date = today.AddDays(-1).ToString("yyyy-MM-dd"), note = $"Txn_{Guid.NewGuid():N}", categoryId = expenseCategoryId });
-        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet.Id, amount = 70m, type = "Income", date = previousMonth.ToString("yyyy-MM-dd"), note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 100m, type = "Income", date = "2026-06-04", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet.Id, amount = 40m, type = "Expense", date = "2026-06-03", note = $"Txn_{Guid.NewGuid():N}", categoryId = expenseCategoryId });
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet.Id, amount = 70m, type = "Income", date = "2026-05-04", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
 
         // Act
         var response = await client.GetAsync(GetWalletSummaryEndpoint.Route);
