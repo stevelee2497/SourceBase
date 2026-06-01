@@ -179,7 +179,7 @@ else
             <div class="space-y-4">
                 <div>
                     <label class="form-label">Amount *</label>
-                    <input @bind="_transactionAmount" class="form-input" type="number" step="0.01" />
+                    <CurrencyInput @bind-Value="_transactionAmount" Class="form-input" />
                 </div>
                 <div>
                     <label class="form-label">Type</label>
@@ -246,7 +246,7 @@ else
                 </div>
                 <div>
                     <label class="form-label">Amount *</label>
-                    <input @bind="_transferAmount" class="form-input" type="number" step="0.01" />
+                    <CurrencyInput @bind-Value="_transferAmount" Class="form-input" />
                 </div>
                 <div>
                     <label class="form-label">Date *</label>

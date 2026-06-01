@@ -129,7 +129,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="form-label">Amount *</label>
-                    <input @bind="_amount" class="form-input" type="number" step="0.01" />
+                    <CurrencyInput @bind-Value="_amount" Class="form-input" />
                 </div>
                 <div>
                     <label class="form-label">Type</label>
@@ -165,11 +165,7 @@
     </div>
 }
 
-<ConfirmDialog IsVisible="_showDelete"
-               Title="Delete transaction"
-               Message="@($"Delete '{_deleting?.Note ?? _deleting?.CategoryName ?? "this transaction"}'?")"
-               OnConfirm="DeleteAsync"
-               OnCancel="CancelDelete" />
+<ConfirmDialog IsVisible="_showDelete" Title="Delete transaction" Message="@($"Delete '{_deleting?.Note ?? _deleting?.CategoryName ?? "this transaction"}'?")" OnConfirm="DeleteAsync" OnCancel="CancelDelete" />
 
 @code {
     private List<WalletResponse> _wallets = [];
