@@ -26,7 +26,7 @@
 
 @if (_loading)
 {
-    <div class="text-sm text-gray-400 py-8 text-center">Loading wallets…</div>
+    <LoadingSpinner />
 }
 else if (_wallets.Count == 0)
 {
@@ -52,7 +52,7 @@ else
                     </div>
                     <div>
                         <div class="font-semibold text-gray-900 truncate">@wallet.Name</div>
-                        <div class="text-2xl font-bold text-gray-900 mt-2">@FormatAmount(wallet.Balance)</div>
+                        <div class="text-2xl font-bold text-gray-900 mt-2">@FormatAmount(wallet.Balance) <span class="text-base font-medium text-gray-400">@wallet.Currency</span></div>
                         <div class="text-sm text-gray-500 mt-1">Opening: @FormatAmount(wallet.InitialBalance) @wallet.Currency</div>
                     </div>
                 </div>
@@ -248,7 +248,7 @@ else
 
     private static string WalletIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "👛" : icon;
 
-    private static string FormatAmount(decimal amount) => amount.ToString("N2");
+    private static string FormatAmount(decimal amount) => amount.ToString("N0");
 
     private static string? CleanOptional(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

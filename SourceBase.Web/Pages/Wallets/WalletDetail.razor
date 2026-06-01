@@ -33,7 +33,7 @@
 
 @if (_loading && _wallet is null)
 {
-    <div class="text-sm text-gray-400 py-8 text-center">Loading wallet…</div>
+    <LoadingSpinner />
 }
 else if (_wallet is null)
 {
@@ -49,7 +49,7 @@ else
                 <div class="text-sm text-gray-500 mt-1">Current balance</div>
             </div>
             <div class="text-left md:text-right">
-                <div class="text-3xl font-bold text-gray-900">@FormatAmount(_wallet.Balance)</div>
+                <div class="text-3xl font-bold text-gray-900">@FormatAmount(_wallet.Balance) <span class="text-lg font-medium text-gray-400">@_wallet.Currency</span></div>
                 <div class="text-sm text-gray-500 mt-1">@_wallet.Currency</div>
             </div>
         </div>
@@ -58,11 +58,11 @@ else
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div class="card">
             <div class="text-sm text-gray-500 mb-1">Monthly Income</div>
-            <div class="text-2xl font-bold text-green-600">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
+            <div class="text-2xl font-bold text-green-600">@FormatAmount(_summary?.TotalIncome ?? 0) <span class="text-base font-medium text-gray-400">@_wallet.Currency</span></div>
         </div>
         <div class="card">
             <div class="text-sm text-gray-500 mb-1">Monthly Expense</div>
-            <div class="text-2xl font-bold text-red-600">@FormatAmount(_summary?.TotalExpense ?? 0)</div>
+            <div class="text-2xl font-bold text-red-600">@FormatAmount(_summary?.TotalExpense ?? 0) <span class="text-base font-medium text-gray-400">@_wallet.Currency</span></div>
         </div>
     </div>
 
@@ -111,7 +111,7 @@ else
 
         @if (_loadingTransactions)
         {
-            <div class="text-sm text-gray-400 py-8 text-center">Loading transactions…</div>
+            <LoadingSpinner />
         }
         else if (_transactions.Count == 0)
         {
@@ -599,9 +599,9 @@ else
 
     private static DateOnly ParseDate(string value) => DateOnly.TryParse(value, out var date) ? date : DateOnly.FromDateTime(DateTime.Today);
 
-    private static string FormatAmount(decimal amount) => amount.ToString("N2");
+    private static string FormatAmount(decimal amount) => amount.ToString("N0");
 
-    private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N2}" : $"-{amount:N2}";
+    private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N0}" : $"-{amount:N0}";
 
     private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600" : "text-red-600";
 

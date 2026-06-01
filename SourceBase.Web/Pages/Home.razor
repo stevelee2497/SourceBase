@@ -21,7 +21,7 @@
 
 @if (_statsLoading)
 {
-    <div class="text-sm text-gray-400 py-4 text-center mb-8">Loading overview…</div>
+    <LoadingSpinner />
 }
 else if (_stats is not null)
 {
@@ -58,7 +58,7 @@ else if (_stats is not null)
     <div class="card">
         @if (!_walletsLoaded)
         {
-            <div class="text-sm text-gray-400 py-8 text-center">Loading wallet summary…</div>
+            <LoadingSpinner />
         }
         else if (!_hasWallets)
         {
@@ -158,9 +158,9 @@ else if (_stats is not null)
         _walletsLoaded = true;
     }
 
-    private static string FormatAmount(decimal amount) => amount.ToString("N2");
+    private static string FormatAmount(decimal amount) => amount.ToString("N0");
 
-    private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N2}" : $"-{amount:N2}";
+    private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N0}" : $"-{amount:N0}";
 
     private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600" : "text-red-600";
 
