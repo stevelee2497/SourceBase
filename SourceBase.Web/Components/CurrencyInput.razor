@@ -1,0 +1,40 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<input @ref="_inputRef"
+       value="@_display"
+       @oninput="OnInputAsync"
+       class="@Class"
+       placeholder="@Placeholder"
+       inputmode="numeric" />
+
+@code {
+    [Parameter] public decimal Value { get; set; }
+    [Parameter] public EventCallback<decimal> ValueChanged { get; set; }
+    [Parameter] public string Class { get; set; } = string.Empty;
+    [Parameter] public string Placeholder { get; set; } = "0";
+
+    private ElementReference _inputRef;
+    private string _display = string.Empty;
+    private decimal _lastKnownValue;
+
+    protected override void OnParametersSet()
+    {
+        if (Value != _lastKnownValue)
+        {
+            _lastKnownValue = Value;
+            _display = Value > 0 ? Value.ToString("N0") : string.Empty;
+        }
+    }
+
+    private async Task OnInputAsync(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString() ?? string.Empty;
+        var clean = new string(raw.Where(char.IsDigit).ToArray());
+        var parsed = decimal.TryParse(clean, out var v) ? v : 0;
+        _display = parsed > 0 ? parsed.ToString("N0") : string.Empty;
+        _lastKnownValue = parsed;
+        await ValueChanged.InvokeAsync(parsed);
+        await JS.InvokeVoidAsync("setCursorToEnd", _inputRef);
+    }
+}

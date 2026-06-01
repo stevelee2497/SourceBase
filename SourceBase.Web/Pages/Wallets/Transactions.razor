@@ -129,7 +129,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="form-label">Amount *</label>
-                    <input @bind="AmountText" class="form-input" placeholder="0" inputmode="numeric" />
+                    <CurrencyInput @bind-Value="_amount" Class="form-input" />
                 </div>
                 <div>
                     <label class="form-label">Type</label>
@@ -165,11 +165,7 @@
     </div>
 }
 
-<ConfirmDialog IsVisible="_showDelete"
-               Title="Delete transaction"
-               Message="@($"Delete '{_deleting?.Note ?? _deleting?.CategoryName ?? "this transaction"}'?")"
-               OnConfirm="DeleteAsync"
-               OnCancel="CancelDelete" />
+<ConfirmDialog IsVisible="_showDelete" Title="Delete transaction" Message="@($"Delete '{_deleting?.Note ?? _deleting?.CategoryName ?? "this transaction"}'?")" OnConfirm="DeleteAsync" OnCancel="CancelDelete" />
 
 @code {
     private List<WalletResponse> _wallets = [];
@@ -204,16 +200,6 @@
 
     private bool _showDelete;
     private TransactionResponse? _deleting;
-
-    private string AmountText
-    {
-        get => _amount > 0 ? _amount.ToString("N0") : string.Empty;
-        set
-        {
-            var clean = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
-            _amount = decimal.TryParse(clean, out var parsed) ? parsed : 0;
-        }
-    }
 
     private List<CategoryResponse> FilteredCategories => _categories.Where(c => string.Equals(c.Type, _type, StringComparison.OrdinalIgnoreCase)).ToList();
 
