@@ -1,22 +1,16 @@
 @page "/confirm-email"
 @layout AuthLayout
 @attribute [AllowAnonymous]
+@implements IDisposable
 @inject ApiHttpClient Api
+@inject IJSRuntime JS
 
-<h2 class="text-xl font-semibold text-gray-900 mb-4">Email Confirmation</h2>
+<h2 class="text-xl font-semibold text-gray-900 mb-2">Check your email</h2>
+<p class="text-sm text-gray-500 mb-6">
+    Enter the 6-digit code sent to <strong>@Email</strong>
+</p>
 
-@if (_loading)
-{
-    <div class="flex items-center justify-center py-8">
-        <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-            </path>
-        </svg>
-        <span class="ml-3 text-gray-600">Confirming your email…</span>
-    </div>
-}
-else if (_success)
+@if (_success)
 {
     <div class="rounded-md bg-green-50 border border-green-200 px-4 py-4 text-sm text-green-700">
         <p class="font-medium">Email confirmed successfully!</p>
@@ -28,36 +22,96 @@ else if (_success)
 }
 else
 {
-    <div class="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-        <p class="font-medium">Confirmation failed</p>
-        <p class="mt-1">@_error</p>
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+    }
+
+    <div class="flex justify-center gap-2 mb-6" @ref="_container">
+        @for (var i = 0; i < 6; i++)
+        {
+            var idx = i;
+            <input
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="1"
+                value="@_digits[idx]"
+                @oninput="HandleInput(idx)"
+                @onkeydown="HandleKeyDown(idx)"
+                @ref="_inputs[idx]"
+                class="w-11 h-14 text-center text-xl font-semibold border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+        }
     </div>
-    <div class="mt-4">
-        <a href="/login" class="text-indigo-600 hover:text-indigo-500 text-sm">← Back to sign in</a>
+
+    <button @onclick="SubmitAsync" disabled="@(!_allFilled || _loading)" class="btn-primary w-full">
+        @(_loading ? "Verifying…" : "Verify code")
+    </button>
+
+    <div class="mt-4 text-center">
+        <a href="/login" class="text-sm text-indigo-600 hover:text-indigo-500">← Back to sign in</a>
     </div>
 }
 
 @code {
     [SupplyParameterFromQuery] public string? Email { get; set; }
-    [SupplyParameterFromQuery] public string? Code { get; set; }
 
-    private bool _loading = true;
+    private readonly string[] _digits = new string[6];
+    private readonly ElementReference[] _inputs = new ElementReference[6];
+    private ElementReference _container;
+    private DotNetObjectReference<ConfirmEmail>? _dotNetRef;
+    private bool _loading;
     private bool _success;
     private string? _error;
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Code))
-        {
-            _error = "Invalid confirmation link. Email and code are required.";
-            _loading = false;
-            return;
-        }
+    private bool _allFilled => _digits.All(d => !string.IsNullOrEmpty(d));
 
-        var error = await Api.ConfirmEmailAsync(Email, Code);
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("initOtpPaste", _container, _dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnPaste(string digits)
+    {
+        for (var i = 0; i < 6; i++)
+            _digits[i] = i < digits.Length ? digits[i].ToString() : string.Empty;
+        StateHasChanged();
+        await JS.InvokeVoidAsync("focusElement", _inputs[Math.Min(digits.Length, 5)]);
+    }
+
+    private Func<ChangeEventArgs, Task> HandleInput(int index) => async e =>
+    {
+        var val = e.Value?.ToString() ?? string.Empty;
+        _digits[index] = val.Length > 0 ? val[^1].ToString() : string.Empty;
+
+        if (!string.IsNullOrEmpty(_digits[index]) && index < 5)
+            await JS.InvokeVoidAsync("focusElement", _inputs[index + 1]);
+    };
+
+    private Func<KeyboardEventArgs, Task> HandleKeyDown(int index) => async e =>
+    {
+        if (e.Key == "Backspace" && string.IsNullOrEmpty(_digits[index]) && index > 0)
+            await JS.InvokeVoidAsync("focusElement", _inputs[index - 1]);
+    };
+
+    private async Task SubmitAsync()
+    {
+        if (!_allFilled) return;
+
+        _error = null;
+        _loading = true;
+        var code = string.Concat(_digits);
+        var error = await Api.ConfirmEmailAsync(Email!, code);
         _success = error is null;
         if (error is not null)
-            _error = "The confirmation code is invalid or has expired. Please request a new one.";
+            _error = "The code is invalid or has expired. Please check and try again.";
         _loading = false;
     }
+
+    public void Dispose() => _dotNetRef?.Dispose();
 }

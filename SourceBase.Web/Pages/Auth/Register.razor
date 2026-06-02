@@ -2,78 +2,65 @@
 @layout AuthLayout
 @attribute [AllowAnonymous]
 @inject ApiHttpClient Api
+@inject NavigationManager Navigation
 
 <h2 class="text-xl font-semibold text-gray-900 mb-6">Create an account</h2>
 
-@if (_success)
+@if (!string.IsNullOrEmpty(_error))
 {
-    <div class="rounded-md bg-green-50 border border-green-200 px-4 py-4 text-sm text-green-700">
-        <p class="font-medium">Registration successful!</p>
-        <p class="mt-1">Please check your email to confirm your account before signing in.</p>
-        <div class="mt-3">
-            <a href="/login" class="text-indigo-600 hover:text-indigo-500 font-medium">Back to sign in →</a>
+    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+}
+
+<EditForm Model="_model" OnValidSubmit="SubmitAsync">
+    <DataAnnotationsValidator />
+
+    <div class="space-y-4">
+        <div>
+            <label class="form-label">Username <span class="text-red-500">*</span></label>
+            <InputText @bind-Value="_model.UserName" class="form-input" placeholder="johndoe" autocomplete="username" />
+        </div>
+        <div>
+            <label class="form-label">Email <span class="text-red-500">*</span></label>
+            <InputText @bind-Value="_model.Email" class="form-input" type="email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div>
+            <label class="form-label">Password <span class="text-red-500">*</span></label>
+            <InputText @bind-Value="_model.Password" class="form-input" type="password" placeholder="••••••••" autocomplete="new-password" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="form-label">First name</label>
+                <InputText @bind-Value="_model.FirstName" class="form-input" placeholder="John" />
+            </div>
+            <div>
+                <label class="form-label">Last name</label>
+                <InputText @bind-Value="_model.LastName" class="form-input" placeholder="Doe" />
+            </div>
+        </div>
+        <div>
+            <label class="form-label">Phone number</label>
+            <InputText @bind-Value="_model.PhoneNumber" class="form-input" type="tel" placeholder="+1 555 000 0000" />
         </div>
     </div>
-}
-else
-{
-    @if (!string.IsNullOrEmpty(_error))
-    {
-        <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
-    }
 
-    <EditForm Model="_model" OnValidSubmit="SubmitAsync">
-        <DataAnnotationsValidator />
+    <div class="mt-6">
+        <button type="submit" class="btn-primary w-full" disabled="@_loading">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            @(_loading ? "Creating account…" : "Create account")
+        </button>
+    </div>
+</EditForm>
 
-        <div class="space-y-4">
-            <div>
-                <label class="form-label">Username <span class="text-red-500">*</span></label>
-                <InputText @bind-Value="_model.UserName" class="form-input" placeholder="johndoe" autocomplete="username" />
-            </div>
-            <div>
-                <label class="form-label">Email <span class="text-red-500">*</span></label>
-                <InputText @bind-Value="_model.Email" class="form-input" type="email" placeholder="you@example.com" autocomplete="email" />
-            </div>
-            <div>
-                <label class="form-label">Password <span class="text-red-500">*</span></label>
-                <InputText @bind-Value="_model.Password" class="form-input" type="password" placeholder="••••••••" autocomplete="new-password" />
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="form-label">First name</label>
-                    <InputText @bind-Value="_model.FirstName" class="form-input" placeholder="John" />
-                </div>
-                <div>
-                    <label class="form-label">Last name</label>
-                    <InputText @bind-Value="_model.LastName" class="form-input" placeholder="Doe" />
-                </div>
-            </div>
-            <div>
-                <label class="form-label">Phone number</label>
-                <InputText @bind-Value="_model.PhoneNumber" class="form-input" type="tel" placeholder="+1 555 000 0000" />
-            </div>
-        </div>
-
-        <div class="mt-6">
-            <button type="submit" class="btn-primary w-full" disabled="@_loading">
-                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
-                @(_loading ? "Creating account…" : "Create account")
-            </button>
-        </div>
-    </EditForm>
-
-    <p class="mt-4 text-center text-sm text-gray-500">
-        Already have an account? <a href="/login" class="text-indigo-600 hover:text-indigo-500">Sign in</a>
-    </p>
-}
+<p class="mt-4 text-center text-sm text-gray-500">
+    Already have an account? <a href="/login" class="text-indigo-600 hover:text-indigo-500">Sign in</a>
+</p>
 
 @code {
     private readonly RegisterFormModel _model = new();
     private string? _error;
     private bool _loading;
-    private bool _success;
 
     private async Task SubmitAsync()
     {
@@ -86,8 +73,7 @@ else
             _loading = false;
             return;
         }
-        _success = true;
-        _loading = false;
+        Navigation.NavigateTo($"/confirm-email?email={Uri.EscapeDataString(_model.Email)}");
     }
 
     private sealed class RegisterFormModel

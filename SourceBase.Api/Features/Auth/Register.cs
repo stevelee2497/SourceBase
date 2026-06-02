@@ -7,7 +7,7 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public record RegisterRequest(string UserName, string Email, string Password);
+public record RegisterRequest(string UserName, string Email, string Password, string FirstName, string LastName);
 
 public record RegisterResponse(Guid Id);
 
@@ -33,6 +33,8 @@ public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityPro
         {
             Email = request.Email,
             UserName = request.UserName,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
             OtpCode = confirmationCode,
             OtpCodeExpiresOn = expiresOn,
             PasswordHash = securityProvider.HashPassword(null!, request.Password),
