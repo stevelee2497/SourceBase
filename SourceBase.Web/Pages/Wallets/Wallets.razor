@@ -1,78 +1,287 @@
 @page "/wallets"
 @attribute [Authorize]
 @inject ApiHttpClient Api
-@inject NavigationManager Navigation
 
 @if (!string.IsNullOrEmpty(_error))
 {
     <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
 }
 
-<div class="flex flex-col lg:flex-row gap-4 mb-6">
-    <div class="card flex-1 bg-linear-to-r from-indigo-600 to-indigo-500 text-white">
-        <div class="text-sm font-medium text-indigo-100 mb-2">Total Balance</div>
-        <div class="text-3xl sm:text-4xl font-bold">@FormatAmount(_totalBalance)</div>
-        <div class="text-sm text-indigo-100 mt-2">Across all wallets</div>
-    </div>
-    <div class="flex items-start lg:items-end">
-        <button class="btn-primary" @onclick="OpenCreateWallet">
-            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Wallet
-        </button>
-    </div>
-</div>
-
 @if (_loading)
 {
     <LoadingSpinner />
 }
-else if (_wallets.Count == 0)
-{
-    <div class="card text-center py-10">
-        <div class="text-4xl mb-3">👛</div>
-        <div class="text-lg font-semibold text-gray-900 mb-2">No wallets yet</div>
-        <div class="text-sm text-gray-500 mb-5">Create your first wallet to start tracking balances and transactions.</div>
-        <div class="flex justify-center">
-            <button class="btn-primary" @onclick="OpenCreateWallet">Create Wallet</button>
-        </div>
-    </div>
-}
 else
 {
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        @foreach (var wallet in _wallets)
+    <!-- Top summary row: Total Balance + Pie Chart + Add Wallet -->
+    <div class="flex flex-col lg:flex-row gap-4 mb-6">
+        <!-- Total Balance card (clickable to show all wallets) -->
+        <div class="card flex-shrink-0 lg:w-72 bg-linear-to-r from-indigo-600 to-indigo-500 text-white cursor-pointer transition-all @(_selectedWalletId == Guid.Empty ? "ring-4 ring-white/40" : "hover:opacity-90")" @onclick="SelectAllWallets">
+            <div class="text-sm font-medium text-indigo-100 mb-2">Total Balance</div>
+            <div class="text-3xl sm:text-4xl font-bold">@FormatAmount(_totalBalance)</div>
+            <div class="text-sm text-indigo-100 mt-2">Across all wallets</div>
+        </div>
+
+        <!-- Pie chart -->
+        @if (_wallets.Count > 0)
         {
-            <div class="card p-0 overflow-hidden">
-                <div class="p-4 flex flex-col gap-3 cursor-pointer h-full" @onclick="OpenWallet(wallet.Id)">
-                    <div class="flex items-start justify-between gap-3">
-                        <div class="text-3xl leading-none">@WalletIcon(wallet.Icon)</div>
-                        <span class="badge-blue shrink-0">@wallet.Currency</span>
-                    </div>
-                    <div>
-                        <div class="font-semibold text-gray-900 truncate">@wallet.Name</div>
-                        <div class="text-2xl font-bold text-gray-900 mt-2">@FormatAmount(wallet.Balance) <span class="text-base font-medium text-gray-400">@wallet.Currency</span></div>
-                        <div class="text-sm text-gray-500 mt-1">Opening: @FormatAmount(wallet.InitialBalance) @wallet.Currency</div>
-                    </div>
+            <div class="card flex-1 flex flex-col sm:flex-row items-center gap-4">
+                <div class="shrink-0">
+                    @{
+                        var pieData = BuildPieData();
+                    }
+                    <svg width="140" height="140" viewBox="-1 -1 2 2" style="transform: rotate(-90deg)">
+                        @{
+                            double cumulative = 0;
+                            foreach (var slice in pieData)
+                            {
+                                var startAngle = cumulative * 2 * Math.PI;
+                                cumulative += slice.Fraction;
+                                var endAngle = cumulative * 2 * Math.PI;
+                                var x1 = Math.Cos(startAngle);
+                                var y1 = Math.Sin(startAngle);
+                                var x2 = Math.Cos(endAngle);
+                                var y2 = Math.Sin(endAngle);
+                                var largeArc = slice.Fraction > 0.5 ? 1 : 0;
+                                var pathD = $"M 0 0 L {x1:F4} {y1:F4} A 1 1 0 {largeArc} 1 {x2:F4} {y2:F4} Z";
+                                <path d="@pathD" fill="@slice.Color" stroke="white" stroke-width="0.02" />
+                            }
+                        }
+                    </svg>
                 </div>
-                <div class="border-t border-gray-100 px-4 py-3 flex items-center justify-end gap-2">
-                    <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEditWallet(wallet)" title="Edit wallet">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </button>
-                    <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDeleteWallet(wallet)" title="Delete wallet">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
+                <div class="flex flex-wrap gap-x-4 gap-y-1">
+                    @{ var legendData = BuildPieData(); }
+                    @foreach (var slice in legendData)
+                    {
+                        <div class="flex items-center gap-1.5 text-xs">
+                            <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: @slice.Color"></div>
+                            <span class="text-gray-700 font-medium">@slice.Name</span>
+                            <span class="text-gray-400">@((slice.Fraction * 100).ToString("F1"))%</span>
+                        </div>
+                    }
                 </div>
             </div>
         }
+
+        <div class="flex items-start">
+            <button class="btn-primary" @onclick="OpenCreateWallet">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Wallet
+            </button>
+        </div>
     </div>
+
+    <!-- Bar chart: transactions by date -->
+    @if (_barChartData.Count > 0)
+    {
+        <div class="card mb-6">
+            <div class="text-sm font-semibold text-gray-700 mb-3">Transactions (Last 30 days)</div>
+            <div class="flex items-end gap-0.5 h-24 overflow-x-auto">
+                @{
+                    var maxVal = _barChartData.Values.DefaultIfEmpty(1m).Max();
+                }
+                @foreach (var (date, amount) in _barChartData.OrderBy(x => x.Key))
+                {
+                    var heightPct = maxVal > 0 ? (double)(amount / maxVal) * 100 : 0;
+                    <div class="flex flex-col items-center gap-0.5 flex-1 min-w-3" title="@date: @FormatAmount(amount)">
+                        <div class="w-full bg-indigo-400 rounded-t transition-all" style="height: @(heightPct.ToString("F0"))%; min-height: 2px; max-height: 100%;"></div>
+                    </div>
+                }
+            </div>
+            <div class="flex justify-between text-xs text-gray-400 mt-1">
+                <span>@(_barChartData.Keys.OrderBy(x => x).FirstOrDefault())</span>
+                <span>@(_barChartData.Keys.OrderBy(x => x).LastOrDefault())</span>
+            </div>
+        </div>
+    }
+
+    <!-- Wallets grid (6 per row) -->
+    @if (_wallets.Count == 0)
+    {
+        <div class="card text-center py-10 mb-6">
+            <div class="text-4xl mb-3">👛</div>
+            <div class="text-lg font-semibold text-gray-900 mb-2">No wallets yet</div>
+            <div class="text-sm text-gray-500 mb-5">Create your first wallet to start tracking balances and transactions.</div>
+            <div class="flex justify-center">
+                <button class="btn-primary" @onclick="OpenCreateWallet">Create Wallet</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-6">
+            @foreach (var wallet in _wallets)
+            {
+                var isSelected = wallet.Id == _selectedWalletId;
+                <div class="rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50") cursor-pointer transition-all p-3 flex flex-col gap-1.5" @onclick="SelectWallet(wallet.Id)">
+                    <div class="flex items-center justify-between gap-1">
+                        <span class="text-xl leading-none">@WalletIcon(wallet.Icon)</span>
+                        <span class="text-xs @(isSelected ? "text-indigo-600 font-semibold" : "text-gray-400")">@wallet.Currency</span>
+                    </div>
+                    <div class="text-xs font-semibold @(isSelected ? "text-indigo-700" : "text-gray-700") truncate">@wallet.Name</div>
+                    <div class="text-sm font-bold @(isSelected ? "text-indigo-700" : "text-gray-900")">@FormatAmount(wallet.Balance)</div>
+                    <div class="flex gap-1 mt-0.5">
+                        <button class="text-gray-400 hover:text-indigo-600" @onclick:stopPropagation @onclick="OpenEditWallet(wallet)" title="Edit">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                        <button class="text-gray-400 hover:text-red-600" @onclick:stopPropagation @onclick="ConfirmDeleteWallet(wallet)" title="Delete">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Inline detail panel -->
+    @if (_selectedWalletId == Guid.Empty || _selectedWallet is not null || _wallets.Count > 0)
+    {
+        <div class="card">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <div>
+                    @if (_selectedWalletId == Guid.Empty)
+                    {
+                        <h2 class="text-lg font-semibold text-gray-900">All Transactions</h2>
+                        <div class="text-sm text-gray-500">Showing transactions across all wallets</div>
+                    }
+                    else if (_selectedWallet is not null)
+                    {
+                        <h2 class="text-lg font-semibold text-gray-900">@_selectedWallet.Name</h2>
+                        <div class="text-sm text-gray-500">Balance: <span class="font-semibold text-gray-900">@FormatAmount(_selectedWallet.Balance) @_selectedWallet.Currency</span></div>
+                    }
+                </div>
+                @if (_selectedWallet is not null)
+                {
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="btn-primary btn-sm" @onclick="OpenCreateTransaction">
+                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Transaction
+                        </button>
+                        <button class="btn-secondary btn-sm" @onclick="OpenCreateTransfer">
+                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l-4-4m4 4l4-4" />
+                            </svg>
+                            Transfer
+                        </button>
+                    </div>
+                }
+            </div>
+
+            @if (_selectedWallet is not null)
+            {
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="rounded-lg bg-green-50 px-4 py-3">
+                        <div class="text-xs text-green-600 font-medium mb-0.5">Monthly Income</div>
+                        <div class="text-xl font-bold text-green-700">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
+                    </div>
+                    <div class="rounded-lg bg-red-50 px-4 py-3">
+                        <div class="text-xs text-red-600 font-medium mb-0.5">Monthly Expense</div>
+                        <div class="text-xl font-bold text-red-700">@FormatAmount(_summary?.TotalExpense ?? 0)</div>
+                    </div>
+                </div>
+            }
+
+            <!-- Filters -->
+            <div class="card mb-4 bg-gray-50 border-gray-100">
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-wrap gap-2">
+                        <button class="@TypeFilterClass(string.Empty)" @onclick="SelectAllTypes">All</button>
+                        <button class="@TypeFilterClass(IncomeType)" @onclick="SelectIncomeType">Income</button>
+                        <button class="@TypeFilterClass(ExpenseType)" @onclick="SelectExpenseType">Expense</button>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="form-label">Date From</label>
+                            <InputDate @bind-Value="_dateFrom" class="form-input" />
+                        </div>
+                        <div>
+                            <label class="form-label">Date To</label>
+                            <InputDate @bind-Value="_dateTo" class="form-input" />
+                        </div>
+                        <div>
+                            <label class="form-label">Category</label>
+                            <select @bind="_categoryFilterId" class="form-input">
+                                <option value="">All categories</option>
+                                @foreach (var category in _categories)
+                                {
+                                    <option value="@category.Id">@($"{CategoryIcon(category.Icon)} {category.Name}")</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <button class="btn-secondary w-full" @onclick="ResetFiltersAsync">Clear</button>
+                            <button class="btn-primary w-full" @onclick="ApplyFiltersAsync">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (_loadingTransactions)
+            {
+                <LoadingSpinner />
+            }
+            else if (_transactions.Count == 0)
+            {
+                <div class="text-sm text-gray-400 py-8 text-center">No transactions found.</div>
+            }
+            else
+            {
+                <div class="flex flex-col divide-y divide-gray-100">
+                    @foreach (var transaction in _transactions)
+                    {
+                        <div class="py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                            <div class="flex items-start gap-3 flex-1 min-w-0">
+                                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">@TransactionIcon(transaction)</div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="font-medium text-gray-900 truncate">@TransactionTitle(transaction)</div>
+                                    <div class="text-sm text-gray-500 truncate">@TransactionCategoryLabel(transaction)</div>
+                                    <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                                        <span>@FormatDisplayDate(transaction.Date)</span>
+                                        <span>•</span>
+                                        <span>@transaction.WalletName</span>
+                                        @if (transaction.IsTransfer)
+                                        {
+                                            <span class="badge-blue">Transfer</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                                <div class="font-semibold @TransactionAmountClass(transaction.Type)">@SignedAmount(transaction.Amount, transaction.Type)</div>
+                                @if (!transaction.IsTransfer)
+                                {
+                                    <div class="flex items-center gap-2">
+                                        <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEditTransaction(transaction)" title="Edit">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </button>
+                                        <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDeleteTransaction(transaction)" title="Delete">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                <Pagination CurrentPage="_transactionsPage" TotalItems="_transactionsTotal" PageSize="_transactionsPageSize" OnPageChanged="ChangeTransactionsPage" />
+            }
+        </div>
+    }
 }
 
+<!-- Wallet Form Modal -->
 @if (_showForm)
 {
     <div class="fixed inset-0 z-40 flex items-center justify-center">
@@ -101,7 +310,7 @@ else
                     <input @bind="_walletCurrency" class="form-input" placeholder="USD" disabled="@(_editingWallet is not null)" />
                     @if (_editingWallet is not null)
                     {
-                        <div class="text-xs text-gray-400 mt-1">Currency can only be set when the wallet is created.</div>
+                        <div class="text-xs text-gray-400 mt-1">Currency can be changed in wallet settings.</div>
                     }
                 </div>
                 <div>
@@ -117,14 +326,119 @@ else
     </div>
 }
 
+<!-- Transaction Form Modal -->
+@if (_showTransactionForm)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseTransactionForm"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingTransaction is null ? "Add Transaction" : "Edit Transaction")</h2>
+            @if (!string.IsNullOrEmpty(_transactionFormError))
+            {
+                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_transactionFormError</div>
+            }
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Amount *</label>
+                    <CurrencyInput @bind-Value="_transactionAmount" Class="form-input" />
+                </div>
+                <div>
+                    <label class="form-label">Type</label>
+                    <select class="form-input" value="@_transactionType" @onchange="OnTransactionTypeChanged">
+                        <option value="Income">Income</option>
+                        <option value="Expense">Expense</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Date *</label>
+                    <input @bind="_transactionDate" class="form-input" type="date" />
+                </div>
+                <div>
+                    <label class="form-label">Note</label>
+                    <input @bind="_transactionNote" class="form-input" placeholder="Optional description" />
+                </div>
+                <div>
+                    <label class="form-label">Category *</label>
+                    <select @bind="_transactionCategoryId" class="form-input">
+                        <option value="">Select category</option>
+                        @foreach (var category in FilteredTransactionCategories)
+                        {
+                            <option value="@category.Id">@($"{CategoryIcon(category.Icon)} {category.Name}")</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-5">
+                <button class="btn-secondary" @onclick="CloseTransactionForm">Cancel</button>
+                <button class="btn-primary" @onclick="SaveTransactionAsync" disabled="@_savingTransaction">@(_savingTransaction ? "Saving…" : "Save")</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Transfer Form Modal -->
+@if (_showTransferForm)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseTransferForm"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Transfer Funds</h2>
+            @if (!string.IsNullOrEmpty(_transferFormError))
+            {
+                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_transferFormError</div>
+            }
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">From Wallet</label>
+                    <input class="form-input" value="@(_selectedWallet?.Name ?? string.Empty)" disabled />
+                </div>
+                <div>
+                    <label class="form-label">To Wallet *</label>
+                    <select @bind="_transferToWalletId" class="form-input">
+                        <option value="">Select wallet</option>
+                        @foreach (var wallet in TransferTargets)
+                        {
+                            <option value="@wallet.Id">@($"{WalletIcon(wallet.Icon)} {wallet.Name} ({wallet.Currency})")</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Amount *</label>
+                    <CurrencyInput @bind-Value="_transferAmount" Class="form-input" />
+                </div>
+                <div>
+                    <label class="form-label">Date *</label>
+                    <input @bind="_transferDate" class="form-input" type="date" />
+                </div>
+                <div>
+                    <label class="form-label">Note</label>
+                    <input @bind="_transferNote" class="form-input" placeholder="Optional description" />
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-5">
+                <button class="btn-secondary" @onclick="CloseTransferForm">Cancel</button>
+                <button class="btn-primary" @onclick="SaveTransferAsync" disabled="@(_savingTransfer || TransferTargets.Count == 0)">@(_savingTransfer ? "Saving…" : "Save")</button>
+            </div>
+        </div>
+    </div>
+}
+
 <ConfirmDialog IsVisible="_showDeleteWallet" Title="Delete wallet" Message="@($"Delete '{_deletingWallet?.Name}'?")" OnConfirm="DeleteWalletAsync" OnCancel="CancelDeleteWallet" />
+<ConfirmDialog IsVisible="_showDeleteTransaction" Title="Delete transaction" Message="@($"Delete '{_deletingTransaction?.Note ?? _deletingTransaction?.CategoryName ?? "this transaction"}'?")" OnConfirm="DeleteTransactionAsync" OnCancel="CancelDeleteTransaction" />
 
 @code {
+    private static readonly string[] PieColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#a855f7"];
+
     private List<WalletResponse> _wallets = [];
     private decimal _totalBalance;
     private bool _loading = true;
     private string? _error;
 
+    // Selected wallet (null = all wallets)
+    private Guid _selectedWalletId = Guid.Empty;
+    private WalletResponse? _selectedWallet => _wallets.FirstOrDefault(w => w.Id == _selectedWalletId);
+
+    // Wallet form
     private bool _showForm;
     private WalletResponse? _editingWallet;
     private string _walletName = string.Empty;
@@ -134,16 +448,67 @@ else
     private string? _formError;
     private bool _savingWallet;
 
+    // Delete wallet
     private bool _showDeleteWallet;
     private WalletResponse? _deletingWallet;
 
-    protected override async Task OnInitializedAsync() => await LoadWalletsAsync();
+    // Transaction list
+    private List<CategoryResponse> _categories = [];
+    private List<TransactionResponse> _transactions = [];
+    private bool _loadingTransactions;
+    private int _transactionsPage = 1;
+    private int _transactionsTotal;
+    private const int _transactionsPageSize = 20;
+    private const string IncomeType = "Income";
+    private const string ExpenseType = "Expense";
+    private string _typeFilter = string.Empty;
+    private DateOnly? _dateFrom;
+    private DateOnly? _dateTo;
+    private string _categoryFilterId = string.Empty;
+
+    // Transaction monthly summary (for selected wallet only)
+    private GetTransactionSummaryResponse? _summary;
+
+    // Transaction form
+    private bool _showTransactionForm;
+    private TransactionResponse? _editingTransaction;
+    private decimal _transactionAmount;
+    private string _transactionType = "Expense";
+    private DateOnly _transactionDate = DateOnly.FromDateTime(DateTime.Today);
+    private string _transactionNote = string.Empty;
+    private string _transactionCategoryId = string.Empty;
+    private string? _transactionFormError;
+    private bool _savingTransaction;
+
+    // Transfer form
+    private bool _showTransferForm;
+    private string _transferToWalletId = string.Empty;
+    private decimal _transferAmount;
+    private DateOnly _transferDate = DateOnly.FromDateTime(DateTime.Today);
+    private string _transferNote = string.Empty;
+    private string? _transferFormError;
+    private bool _savingTransfer;
+
+    // Delete transaction
+    private bool _showDeleteTransaction;
+    private TransactionResponse? _deletingTransaction;
+
+    // Bar chart data: date -> total expense amount
+    private Dictionary<string, decimal> _barChartData = [];
+
+    private List<CategoryResponse> FilteredTransactionCategories => _categories.Where(c => string.Equals(c.Type, _transactionType, StringComparison.OrdinalIgnoreCase)).ToList();
+    private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != _selectedWalletId).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadWalletsAsync(), LoadCategoriesAsync());
+        await Task.WhenAll(LoadTransactionsAsync(), LoadBarChartAsync());
+    }
 
     private async Task LoadWalletsAsync()
     {
         _loading = true;
         _error = null;
-
         var (data, error) = await Api.GetWalletsAsync();
         if (error is not null)
         {
@@ -156,9 +521,109 @@ else
             _wallets = data?.Wallets ?? [];
             _totalBalance = data?.TotalBalance ?? 0;
         }
-
         _loading = false;
     }
+
+    private async Task LoadCategoriesAsync()
+    {
+        var (data, _) = await Api.GetCategoriesAsync();
+        _categories = data ?? [];
+    }
+
+    private async Task LoadTransactionsAsync()
+    {
+        _loadingTransactions = true;
+        var walletId = _selectedWalletId == Guid.Empty ? (Guid?)null : _selectedWalletId;
+        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, walletId, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId));
+        if (error is not null)
+        {
+            _transactions = [];
+            _transactionsTotal = 0;
+            _error = error.Message ?? "Failed to load transactions.";
+        }
+        else
+        {
+            _transactions = data?.Items ?? [];
+            _transactionsTotal = data?.Total ?? 0;
+        }
+        _loadingTransactions = false;
+    }
+
+    private async Task LoadSummaryAsync()
+    {
+        if (_selectedWalletId == Guid.Empty)
+        {
+            _summary = null;
+            return;
+        }
+        var (start, end) = CurrentMonthRange();
+        var (data, _) = await Api.GetTransactionSummaryAsync(_selectedWalletId, start, end);
+        _summary = data;
+    }
+
+    private async Task LoadBarChartAsync()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var from = today.AddDays(-29).ToString("yyyy-MM-dd");
+        var to = today.ToString("yyyy-MM-dd");
+        var (data, _) = await Api.GetTransactionsAsync(1, 500, null, ExpenseType, from, to);
+        var items = data?.Items ?? [];
+        _barChartData = items
+            .GroupBy(t => t.Date)
+            .ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
+    }
+
+    private async Task ChangeTransactionsPage(int page)
+    {
+        _transactionsPage = page;
+        await LoadTransactionsAsync();
+    }
+
+    private Action SelectWallet(Guid id) => () =>
+    {
+        _selectedWalletId = id;
+        _transactionsPage = 1;
+        _typeFilter = string.Empty;
+        _dateFrom = null;
+        _dateTo = null;
+        _categoryFilterId = string.Empty;
+        _ = Task.WhenAll(LoadTransactionsAsync(), LoadSummaryAsync());
+    };
+
+    private void SelectAllWallets()
+    {
+        _selectedWalletId = Guid.Empty;
+        _transactionsPage = 1;
+        _typeFilter = string.Empty;
+        _dateFrom = null;
+        _dateTo = null;
+        _categoryFilterId = string.Empty;
+        _summary = null;
+        _ = LoadTransactionsAsync();
+    }
+
+    private Action SelectTypeFilter(string type) => () => _typeFilter = type;
+    private Action SelectAllTypes => SelectTypeFilter(string.Empty);
+    private Action SelectIncomeType => SelectTypeFilter(IncomeType);
+    private Action SelectExpenseType => SelectTypeFilter(ExpenseType);
+
+    private async Task ApplyFiltersAsync()
+    {
+        _transactionsPage = 1;
+        await LoadTransactionsAsync();
+    }
+
+    private async Task ResetFiltersAsync()
+    {
+        _typeFilter = string.Empty;
+        _dateFrom = null;
+        _dateTo = null;
+        _categoryFilterId = string.Empty;
+        _transactionsPage = 1;
+        await LoadTransactionsAsync();
+    }
+
+    // ── Wallet CRUD ──
 
     private void OpenCreateWallet()
     {
@@ -182,37 +647,20 @@ else
         _showForm = true;
     };
 
-    private Action OpenWallet(Guid id) => () => Navigation.NavigateTo($"/wallets/{id}");
-
     private void CloseWalletForm() => _showForm = false;
 
     private async Task SaveWalletAsync()
     {
         _formError = null;
-
-        if (string.IsNullOrWhiteSpace(_walletName))
-        {
-            _formError = "Name is required.";
-            return;
-        }
-
-        if (_editingWallet is null && string.IsNullOrWhiteSpace(_walletCurrency))
-        {
-            _formError = "Currency is required.";
-            return;
-        }
+        if (string.IsNullOrWhiteSpace(_walletName)) { _formError = "Name is required."; return; }
+        if (_editingWallet is null && string.IsNullOrWhiteSpace(_walletCurrency)) { _formError = "Currency is required."; return; }
 
         _savingWallet = true;
         var error = _editingWallet is null
             ? await Api.CreateWalletAsync(_walletName.Trim(), _walletInitialBalance, _walletCurrency.Trim(), CleanOptional(_walletIcon))
             : await Api.UpdateWalletAsync(_editingWallet.Id, _walletName.Trim(), CleanOptional(_walletIcon));
 
-        if (error is not null)
-        {
-            _formError = error.Message ?? "Failed to save wallet.";
-            _savingWallet = false;
-            return;
-        }
+        if (error is not null) { _formError = error.Message ?? "Failed to save wallet."; _savingWallet = false; return; }
 
         _showForm = false;
         _savingWallet = false;
@@ -225,30 +673,169 @@ else
         _showDeleteWallet = true;
     };
 
-    private void CancelDeleteWallet()
-    {
-        _showDeleteWallet = false;
-        _deletingWallet = null;
-    }
+    private void CancelDeleteWallet() { _showDeleteWallet = false; _deletingWallet = null; }
 
     private async Task DeleteWalletAsync()
     {
-        if (_deletingWallet is null)
-            return;
-
+        if (_deletingWallet is null) return;
         _showDeleteWallet = false;
         var error = await Api.DeleteWalletAsync(_deletingWallet.Id);
         if (error is not null)
             _error = error.Message ?? "Failed to delete wallet.";
         else
+        {
+            if (_selectedWalletId == _deletingWallet.Id) _selectedWalletId = Guid.Empty;
             await LoadWalletsAsync();
-
+            await LoadTransactionsAsync();
+        }
         _deletingWallet = null;
     }
 
+    // ── Transaction CRUD ──
+
+    private void OpenCreateTransaction()
+    {
+        _editingTransaction = null;
+        _transactionAmount = 0;
+        _transactionType = "Expense";
+        _transactionDate = DateOnly.FromDateTime(DateTime.Today);
+        _transactionNote = string.Empty;
+        _transactionCategoryId = string.Empty;
+        _transactionFormError = null;
+        _showTransactionForm = true;
+    }
+
+    private Action OpenEditTransaction(TransactionResponse transaction) => () =>
+    {
+        _editingTransaction = transaction;
+        _transactionAmount = transaction.Amount;
+        _transactionType = transaction.Type;
+        _transactionDate = ParseDate(transaction.Date);
+        _transactionNote = transaction.Note ?? string.Empty;
+        _transactionCategoryId = transaction.CategoryId?.ToString() ?? string.Empty;
+        _transactionFormError = null;
+        _showTransactionForm = true;
+    };
+
+    private void CloseTransactionForm() => _showTransactionForm = false;
+
+    private Task OnTransactionTypeChanged(ChangeEventArgs args)
+    {
+        _transactionType = args.Value?.ToString() ?? "Expense";
+        var selected = FilteredTransactionCategories.FirstOrDefault(c => c.Id == ParseGuid(_transactionCategoryId));
+        if (selected is null) _transactionCategoryId = string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveTransactionAsync()
+    {
+        _transactionFormError = null;
+        if (_transactionAmount <= 0) { _transactionFormError = "Amount must be greater than zero."; return; }
+        if (ParseGuid(_transactionCategoryId) is not Guid categoryId) { _transactionFormError = "Category is required."; return; }
+
+        _savingTransaction = true;
+        var error = _editingTransaction is null
+            ? await Api.CreateTransactionAsync(_selectedWalletId, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId)
+            : await Api.UpdateTransactionAsync(_editingTransaction.Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId);
+
+        if (error is not null) { _transactionFormError = error.Message ?? "Failed to save transaction."; _savingTransaction = false; return; }
+
+        _transactionsPage = 1;
+        _showTransactionForm = false;
+        _savingTransaction = false;
+        await Task.WhenAll(LoadWalletsAsync(), LoadTransactionsAsync(), LoadSummaryAsync(), LoadBarChartAsync());
+    }
+
+    private void OpenCreateTransfer()
+    {
+        _transferToWalletId = string.Empty;
+        _transferAmount = 0;
+        _transferDate = DateOnly.FromDateTime(DateTime.Today);
+        _transferNote = string.Empty;
+        _transferFormError = null;
+        _showTransferForm = true;
+    }
+
+    private void CloseTransferForm() => _showTransferForm = false;
+
+    private async Task SaveTransferAsync()
+    {
+        _transferFormError = null;
+        if (ParseGuid(_transferToWalletId) is not Guid toWalletId) { _transferFormError = "Select a destination wallet."; return; }
+        if (_transferAmount <= 0) { _transferFormError = "Amount must be greater than zero."; return; }
+
+        _savingTransfer = true;
+        var error = await Api.CreateTransferAsync(_selectedWalletId, toWalletId, _transferAmount, _transferDate.ToString("yyyy-MM-dd"), CleanOptional(_transferNote));
+        if (error is not null) { _transferFormError = error.Message ?? "Failed to create transfer."; _savingTransfer = false; return; }
+
+        _transactionsPage = 1;
+        _showTransferForm = false;
+        _savingTransfer = false;
+        await Task.WhenAll(LoadWalletsAsync(), LoadTransactionsAsync(), LoadSummaryAsync());
+    }
+
+    private Action ConfirmDeleteTransaction(TransactionResponse transaction) => () =>
+    {
+        _deletingTransaction = transaction;
+        _showDeleteTransaction = true;
+    };
+
+    private void CancelDeleteTransaction() { _showDeleteTransaction = false; _deletingTransaction = null; }
+
+    private async Task DeleteTransactionAsync()
+    {
+        if (_deletingTransaction is null) return;
+        _showDeleteTransaction = false;
+        var error = await Api.DeleteTransactionAsync(_deletingTransaction.Id);
+        if (error is not null)
+            _error = error.Message ?? "Failed to delete transaction.";
+        else
+            await Task.WhenAll(LoadWalletsAsync(), LoadTransactionsAsync(), LoadSummaryAsync(), LoadBarChartAsync());
+        _deletingTransaction = null;
+    }
+
+    // ── Chart helpers ──
+
+    private record PieSlice(string Name, double Fraction, string Color);
+
+    private List<PieSlice> BuildPieData()
+    {
+        if (_totalBalance <= 0) return _wallets.Select((w, i) => new PieSlice(w.Name, 1.0 / _wallets.Count, PieColors[i % PieColors.Length])).ToList();
+        return _wallets.Select((w, i) => new PieSlice(w.Name, (double)(w.Balance / _totalBalance), PieColors[i % PieColors.Length])).ToList();
+    }
+
+    // ── Formatting helpers ──
+
     private static string WalletIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "👛" : icon;
-
+    private static string CategoryIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "🏷️" : icon;
     private static string FormatAmount(decimal amount) => amount.ToString("N0");
-
+    private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N0}" : $"-{amount:N0}";
+    private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600" : "text-red-600";
+    private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MMM yyyy") : value;
+    private static string? EmptyToNull(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
+    private static string? FormatDateFilter(DateOnly? value) => value?.ToString("yyyy-MM-dd");
+    private static Guid? ParseGuid(string value) => Guid.TryParse(value, out var parsed) ? parsed : null;
     private static string? CleanOptional(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    private static DateOnly ParseDate(string value) => DateOnly.TryParse(value, out var date) ? date : DateOnly.FromDateTime(DateTime.Today);
+    private string TypeFilterClass(string type) => _typeFilter == type ? "btn-primary btn-sm" : "btn-secondary btn-sm";
+
+    private string TransactionIcon(TransactionResponse transaction)
+    {
+        var category = _categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
+        if (!string.IsNullOrWhiteSpace(category?.Icon)) return category.Icon!;
+        if (transaction.IsTransfer) return "🔁";
+        return string.Equals(transaction.Type, "Income", StringComparison.OrdinalIgnoreCase) ? "💰" : "💸";
+    }
+
+    private static string TransactionTitle(TransactionResponse transaction) => string.IsNullOrWhiteSpace(transaction.Note) ? "No description" : transaction.Note;
+    private static string TransactionCategoryLabel(TransactionResponse transaction) => transaction.IsTransfer ? "Transfer" : string.IsNullOrWhiteSpace(transaction.CategoryName) ? "Uncategorized" : transaction.CategoryName!;
+
+    private static (string start, string end) CurrentMonthRange()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var start = new DateOnly(today.Year, today.Month, 1);
+        var end = start.AddMonths(1).AddDays(-1);
+        return (start.ToString("yyyy-MM-dd"), end.ToString("yyyy-MM-dd"));
+    }
 }
+

@@ -34,9 +34,8 @@
             <div class="flex flex-col gap-1 overflow-y-auto">
                 @foreach (var list in _lists)
                 {
-                    <div class="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors @(list.Id == _selectedListId ? "bg-indigo-50 text-indigo-700 font-medium" : "hover:bg-gray-100 text-gray-700")"
-                         @onclick="SelectList(list.Id)">
-                        <span class="flex-1 text-sm truncate">@list.Name</span>
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors @(list.Id == _selectedListId ? "bg-indigo-50 text-indigo-700 font-medium" : "hover:bg-gray-100 text-gray-700")" @onclick="SelectList(list.Id)">
+                        <span class="flex-1 text-sm font-medium truncate">@list.Name</span>
                         <span class="text-xs text-gray-400">@list.ItemCount</span>
                         <button class="text-gray-400 hover:text-indigo-600 shrink-0" @onclick:stopPropagation @onclick="OpenEditList(list)" title="Rename">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,14 +69,38 @@
                 Back to Lists
             </button>
 
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
                 <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">@(_lists.FirstOrDefault(l => l.Id == _selectedListId)?.Name ?? "Todos")</h2>
-                <button class="btn-primary btn-sm" @onclick="OpenCreateTodo">
-                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add Todo
-                </button>
+                <div class="flex flex-row-reverse items-center justify-end gap-2 flex-wrap">
+                    <select @bind="_sortBy" @bind:after="LoadTodosAsync" class="form-input w-auto height-auto text-sm">
+                        <option value="">Default</option>
+                        <option value="Date">By Date</option>
+                        <option value="Title">By Name</option>
+                    </select>
+                    @if (!string.IsNullOrEmpty(_sortBy))
+                    {
+                        <button class="btn-secondary btn-sm" @onclick="ToggleSortOrder">
+                            @if (_sortOrder == "Asc")
+                            {
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                                </svg>
+                            }
+                            else
+                            {
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
+                                </svg>
+                            }
+                        </button>
+                    }
+                    <button class="btn-primary btn-sm" @onclick="OpenCreateTodo">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Todo
+                    </button>
+                </div>
             </div>
 
             @if (_loadingTodos)
@@ -90,16 +113,24 @@
             }
             else
             {
-                <div class="md:flex-1 md:overflow-y-auto flex flex-col gap-2">
-                    @foreach (var todo in _todos)
+                <div class="md:flex-1 md:overflow-y-auto flex flex-col gap-0">
+                    @{
+                        var openTodos = _todos.Where(t => t.Status != "Completed").ToList();
+                    }
+                    @{
+                        var completedTodos = _todos.Where(t => t.Status == "Completed").ToList();
+                    }
+
+                    @foreach (var todo in openTodos)
                     {
-                        <div class="card flex items-start sm:items-center gap-3 py-3">
+                        <div class="card flex items-center gap-3 py-3 mb-2">
+                            <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 hover:border-indigo-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoComplete(todo)" title="Mark complete">
+                            </button>
                             <div class="flex-1 min-w-0">
                                 <div class="font-medium text-sm text-gray-900 truncate">@todo.Title</div>
                                 <div class="text-xs text-gray-400">@todo.Date</div>
                             </div>
                             <div class="flex items-center gap-2 flex-wrap justify-end">
-                                <span class="@StatusBadgeClass(todo.Status) shrink-0">@todo.Status</span>
                                 <button class="text-gray-400 hover:text-indigo-600 shrink-0 transition-colors" @onclick="OpenEditTodo(todo)" title="Edit">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -112,6 +143,41 @@
                                 </button>
                             </div>
                         </div>
+                    }
+
+                    @if (completedTodos.Count > 0)
+                    {
+                        <div class="mt-2 mb-1 flex items-center gap-2">
+                            <div class="flex-1 h-px bg-gray-200"></div>
+                            <span class="text-xs text-gray-400 font-medium">Completed (@completedTodos.Count)</span>
+                            <div class="flex-1 h-px bg-gray-200"></div>
+                        </div>
+                        @foreach (var todo in completedTodos)
+                        {
+                            <div class="card flex items-center gap-3 py-3 mb-2 opacity-70">
+                                <button class="shrink-0 w-5 h-5 rounded-full border-2 border-green-500 bg-green-500 hover:bg-green-400 transition-colors flex items-center justify-center" @onclick="ToggleTodoComplete(todo)" title="Mark incomplete">
+                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-sm text-gray-500 truncate line-through">@todo.Title</div>
+                                    <div class="text-xs text-gray-400">@todo.Date</div>
+                                </div>
+                                <div class="flex items-center gap-2 flex-wrap justify-end">
+                                    <button class="text-gray-400 hover:text-indigo-600 shrink-0 transition-colors" @onclick="OpenEditTodo(todo)" title="Edit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button class="text-gray-400 hover:text-red-600 shrink-0 transition-colors" @onclick="ConfirmDeleteTodo(todo)" title="Delete">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        }
                     }
                 </div>
 
@@ -202,14 +268,10 @@
 }
 
 <!-- Confirm delete list -->
-<ConfirmDialog IsVisible="_showDeleteList" Title="Delete list"
-               Message="@($"Delete '{_deletingList?.Name}'? All todos in this list will also be deleted.")"
-               OnConfirm="DeleteListAsync" OnCancel="CancelDeleteList" />
+<ConfirmDialog IsVisible="_showDeleteList" Title="Delete list" Message="@($"Delete '{_deletingList?.Name}'? All todos in this list will also be deleted.")" OnConfirm="DeleteListAsync" OnCancel="CancelDeleteList" />
 
 <!-- Confirm delete todo -->
-<ConfirmDialog IsVisible="_showDeleteTodo" Title="Delete todo"
-               Message="@($"Delete '{_deletingTodo?.Title}'?")"
-               OnConfirm="DeleteTodoAsync" OnCancel="CancelDeleteTodo" />
+<ConfirmDialog IsVisible="_showDeleteTodo" Title="Delete todo" Message="@($"Delete '{_deletingTodo?.Title}'?")" OnConfirm="DeleteTodoAsync" OnCancel="CancelDeleteTodo" />
 
 @code {
     // Lists state
@@ -222,7 +284,9 @@
     private bool _loadingTodos;
     private int _todosPage = 1;
     private int _todosTotal;
-    private const int _todosPageSize = 20;
+    private const int _todosPageSize = 100;
+    private string _sortBy = string.Empty;
+    private string _sortOrder = "Asc";
 
     // Shared error
     private string? _error;
@@ -261,6 +325,12 @@
         _lists = data?.Items ?? [];
         if (error is not null) _error = "Failed to load lists.";
         _loadingLists = false;
+
+        if (_selectedListId == Guid.Empty && _lists.Count > 0)
+        {
+            _selectedListId = _lists[0].Id;
+            await LoadTodosAsync();
+        }
     }
 
     private Func<Task> SelectList(Guid id) => async () =>
@@ -275,7 +345,7 @@
     private async Task LoadTodosAsync()
     {
         _loadingTodos = true;
-        var (data, _) = await Api.GetTodosAsync(_todosPage, _todosPageSize, _selectedListId);
+        var (data, _) = await Api.GetTodosAsync(_todosPage, _todosPageSize, _selectedListId, string.IsNullOrEmpty(_sortBy) ? null : _sortBy, string.IsNullOrEmpty(_sortBy) ? null : _sortOrder);
         _todos = data?.Items ?? [];
         _todosTotal = data?.Total ?? 0;
         _loadingTodos = false;
@@ -286,6 +356,23 @@
         _todosPage = page;
         await LoadTodosAsync();
     }
+
+    private async Task ToggleSortOrder()
+    {
+        _sortOrder = _sortOrder == "Asc" ? "Desc" : "Asc";
+        await LoadTodosAsync();
+    }
+
+    private Func<Task> ToggleTodoComplete(TodoItemResponse todo) => async () =>
+    {
+        var newStatus = todo.Status == "Completed" ? "Open" : "Completed";
+        var dateStr = DateOnly.TryParse(todo.Date, out var d) ? d.ToString("yyyy-MM-dd") : todo.Date;
+        var error = await Api.UpdateTodoAsync(todo.Id, todo.Title, dateStr, newStatus);
+        if (error is not null)
+            _error = error.Message ?? "Failed to update todo.";
+        else
+            await LoadTodosAsync();
+    };
 
     // ── List CRUD ──
 
@@ -428,11 +515,5 @@
         }
         _deletingTodo = null;
     }
-
-    private static string StatusBadgeClass(string status) => status switch
-    {
-        "Completed" => "badge-green",
-        "Archived" => "badge-red",
-        _ => "badge-blue"
-    };
 }
+

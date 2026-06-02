@@ -141,8 +141,17 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
 
     // ── Todos ────────────────────────────────────────────────────────────────
 
-    public Task<(PagingResponse<TodoItemResponse>? data, ErrorResponse? error)> GetTodosAsync(int page, int limit, Guid? todoListId = null) =>
-        ExecuteAsync<PagingResponse<TodoItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/todos?page={page}&limit={limit}{(todoListId.HasValue ? $"&todoListId={todoListId}" : "")}"));
+    public Task<(PagingResponse<TodoItemResponse>? data, ErrorResponse? error)> GetTodosAsync(int page, int limit, Guid? todoListId = null, string? orderBy = null, string? order = null)
+    {
+        var url = $"/api/todos?page={page}&limit={limit}";
+        if (todoListId.HasValue)
+            url += $"&todoListId={todoListId}";
+        if (!string.IsNullOrWhiteSpace(orderBy))
+            url += $"&orderBy={Uri.EscapeDataString(orderBy)}";
+        if (!string.IsNullOrWhiteSpace(order))
+            url += $"&order={Uri.EscapeDataString(order)}";
+        return ExecuteAsync<PagingResponse<TodoItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
+    }
 
     public Task<ErrorResponse?> CreateTodoAsync(string title, string date, string status, Guid? todoListId = null) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/todos", new { title, date, status, todoListId }));
@@ -199,6 +208,9 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
 
     public Task<(GetWalletSummaryResponse? data, ErrorResponse? error)> GetWalletSummaryAsync() =>
         ExecuteAsync<GetWalletSummaryResponse>(() => AuthorizedRequest(HttpMethod.Get, "/api/wallets/summary"));
+
+    public Task<ErrorResponse?> ConfigureWalletAsync(Guid id, string currency) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/wallets/{id}/config", new { currency }));
 
     // ── Categories ───────────────────────────────────────────────────────────
 
@@ -287,7 +299,7 @@ public sealed record RoleResponse(Guid Id, string Name, string? Description);
 public sealed record UserResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, bool EmailConfirmed, IEnumerable<string> Roles);
 public sealed record TodoItemResponse(Guid Id, string Title, string Date, string Status, Guid? TodoListId);
 public sealed record TodoListResponse(Guid Id, string Name, int ItemCount, DateTime? CreatedOn, string? CreatedBy);
-public sealed record StatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems);
+public sealed record StatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems, int TotalWallets, int TotalTransactions);
 public sealed record ErrorResponse(string Code, string Message, Dictionary<string, string[]>? Errors = null);
 public sealed record WalletResponse(Guid Id, string Name, decimal Balance, decimal InitialBalance, string Currency, string? Icon);
 public sealed record GetWalletsResponse(List<WalletResponse> Wallets, decimal TotalBalance);
