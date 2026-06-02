@@ -9,7 +9,6 @@
 
 <div class="flex flex-col gap-6">
 
-    <!-- Calendar header -->
     <div class="flex items-center justify-between">
         <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Time Sheets</h2>
         <div class="flex items-center gap-2">
@@ -25,7 +24,6 @@
     }
     else
     {
-        <!-- Calendar grid -->
         <div class="card p-4">
             <div class="grid grid-cols-7 gap-1 mb-1">
                 @foreach (var dayName in new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" })
@@ -44,8 +42,7 @@
                     {
                         var date = cell.Value;
                         var summary = _summaryByDate.GetValueOrDefault(date);
-                        var isSelected = _selectedDate == date;
-                        <button class="@GetCellClass(date, summary, isSelected)" @onclick="SelectDay(date)">
+                        <button class="@GetCellClass(date, summary)" @onclick="OpenDayModal(date)">
                             <span class="text-xs font-bold leading-none">@date.Day</span>
                             @if (summary is not null)
                             {
@@ -63,86 +60,97 @@
         </div>
     }
 
-    <!-- Detail section -->
-    @if (_selectedDate is not null)
-    {
-        <div class="card p-4">
-            <h3 class="text-sm font-semibold text-gray-700 mb-3">@_selectedDate.Value.ToString("dddd, MMMM d, yyyy")</h3>
+</div>
 
-            @if (_loadingDetail)
-            {
-                <LoadingSpinner />
-            }
-            else
-            {
-                @foreach (var entry in _dayEntries)
+<!-- Day Modal -->
+@if (_showDayModal && _selectedDate is not null)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseDayModal"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 flex flex-col max-h-[80vh]">
+
+            <!-- Modal header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div>
+                    <h2 class="text-base font-semibold text-gray-900">@_selectedDate.Value.ToString("dddd, MMMM d")</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">@_selectedDate.Value.Year</p>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600 transition-colors" @onclick="CloseDayModal">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Entry list -->
+            <div class="overflow-y-auto px-6 py-3 flex-1">
+                @if (_loadingDetail)
                 {
-                    @if (_editingId == entry.Id)
-                    {
-                        <div class="flex items-center gap-2 mb-2">
-                            <input class="form-input flex-1" @bind="_editProject" placeholder="Project" />
-                            <input class="form-input w-28" type="number" step="0.5" min="0.5" max="24" @bind="_editHours" />
-                            <button class="btn-primary btn-sm" @onclick="SaveEdit">Save</button>
-                            <button class="btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
-                            <span class="flex-1 text-sm text-gray-800">@entry.Project</span>
-                            <span class="text-sm font-medium text-gray-600">@entry.Hours h</span>
-                            <button class="text-xs text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEdit(entry)">Edit</button>
-                            <button class="text-xs text-gray-400 hover:text-red-600 transition-colors" @onclick="DeleteEntry(entry.Id)">Delete</button>
-                        </div>
-                    }
+                    <LoadingSpinner />
                 }
-
-                @if (_dayEntries.Count == 0 && !_showAddForm)
+                else if (_dayEntries.Count == 0)
                 {
-                    <p class="text-sm text-gray-400 py-2">No entries for this day.</p>
-                }
-
-                @if (!_showAddForm)
-                {
-                    <button class="btn-primary btn-sm mt-3" @onclick="OpenAddForm">
-                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Entry
-                    </button>
+                    <p class="text-sm text-gray-400 py-2 text-center">No entries yet. Add one below.</p>
                 }
                 else
                 {
-                    <div class="flex items-center gap-2 mt-3">
-                        <input class="form-input flex-1" @bind="_newProject" placeholder="Project name" />
-                        <input class="form-input w-28" type="number" step="0.5" min="0.5" max="24" @bind="_newHours" />
-                        <button class="btn-primary btn-sm" @onclick="SaveNewEntry">Save</button>
-                        <button class="btn-secondary btn-sm" @onclick="CloseAddForm">Cancel</button>
-                    </div>
+                    @foreach (var entry in _dayEntries)
+                    {
+                        <div class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
+                            <span class="flex-1 text-sm text-gray-800">@entry.Project</span>
+                            <span class="text-sm font-medium text-gray-500 shrink-0">@entry.Hours h</span>
+                            <button class="text-xs text-gray-400 hover:text-indigo-600 transition-colors shrink-0" @onclick="StartEdit(entry)">Edit</button>
+                            <button class="text-xs text-gray-400 hover:text-red-600 transition-colors shrink-0" @onclick="DeleteEntry(entry.Id)">Delete</button>
+                        </div>
+                    }
                 }
-            }
-        </div>
-    }
+            </div>
 
-</div>
+            <!-- Add / Edit form -->
+            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-lg">
+                <p class="text-xs font-medium text-gray-500 mb-3">
+                    @(_editingEntry is null ? "New entry" : $"Editing: {_editingEntry.Project}")
+                </p>
+                @if (!string.IsNullOrEmpty(_formError))
+                {
+                    <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_formError</div>
+                }
+                <div class="flex gap-2">
+                    <input @bind="_formProject" class="form-input flex-1" placeholder="Project name" />
+                    <input @bind="_formHours" class="form-input w-24" type="number" step="0.5" min="0.5" max="24" placeholder="Hours" />
+                </div>
+                <div class="flex justify-end gap-2 mt-3">
+                    @if (_editingEntry is not null)
+                    {
+                        <button class="btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
+                    }
+                    <button class="btn-primary btn-sm" @onclick="SaveFormAsync" disabled="@_savingForm">
+                        @(_savingForm ? "Saving…" : (_editingEntry is null ? "Add" : "Save"))
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
 
 @code {
     private DateOnly _currentDate = DateOnly.FromDateTime(DateTime.Today).AddDays(1 - DateTime.Today.Day);
     private Dictionary<DateOnly, TimeSheetSummaryDayResponse> _summaryByDate = [];
     private List<DateOnly?> _calendarCells = [];
-    private DateOnly? _selectedDate;
-    private List<TimeSheetItemResponse> _dayEntries = [];
     private bool _loadingSummary;
-    private bool _loadingDetail;
     private string? _error;
 
-    private Guid? _editingId;
-    private string _editProject = string.Empty;
-    private decimal _editHours;
+    private bool _showDayModal;
+    private DateOnly? _selectedDate;
+    private List<TimeSheetItemResponse> _dayEntries = [];
+    private bool _loadingDetail;
 
-    private bool _showAddForm;
-    private string _newProject = string.Empty;
-    private decimal _newHours = 8;
+    private TimeSheetItemResponse? _editingEntry;
+    private string _formProject = string.Empty;
+    private decimal _formHours = 8;
+    private string? _formError;
+    private bool _savingForm;
 
     protected override async Task OnInitializedAsync() => await LoadSummaryAsync();
 
@@ -162,24 +170,33 @@
     private void BuildCalendarCells()
     {
         _calendarCells = [];
-        var firstDay = _currentDate;
         var daysInMonth = DateTime.DaysInMonth(_currentDate.Year, _currentDate.Month);
-
-        // DayOfWeek: Sunday=0, Monday=1..Saturday=6 → convert to Mon=0..Sun=6
-        var startOffset = ((int)firstDay.DayOfWeek + 6) % 7;
+        var startOffset = ((int)_currentDate.DayOfWeek + 6) % 7;
         for (var i = 0; i < startOffset; i++)
             _calendarCells.Add(null);
         for (var d = 1; d <= daysInMonth; d++)
             _calendarCells.Add(new DateOnly(_currentDate.Year, _currentDate.Month, d));
     }
 
-    private Func<Task> SelectDay(DateOnly date) => async () =>
+    private Func<Task> OpenDayModal(DateOnly date) => async () =>
     {
         _selectedDate = date;
-        _showAddForm = false;
-        _editingId = null;
+        _editingEntry = null;
+        _formProject = string.Empty;
+        _formHours = 8;
+        _formError = null;
+        _showDayModal = true;
         await LoadDayDetailAsync();
     };
+
+    private void CloseDayModal()
+    {
+        _showDayModal = false;
+        _selectedDate = null;
+        _dayEntries = [];
+        _editingEntry = null;
+        _formError = null;
+    }
 
     private async Task LoadDayDetailAsync()
     {
@@ -196,77 +213,56 @@
     private async Task PrevMonth()
     {
         _currentDate = _currentDate.AddMonths(-1);
-        _selectedDate = null;
-        _dayEntries = [];
         await LoadSummaryAsync();
     }
 
     private async Task NextMonth()
     {
         _currentDate = _currentDate.AddMonths(1);
-        _selectedDate = null;
-        _dayEntries = [];
         await LoadSummaryAsync();
     }
 
-    private Action OpenEdit(TimeSheetItemResponse entry) => () =>
+    private Action StartEdit(TimeSheetItemResponse entry) => () =>
     {
-        _editingId = entry.Id;
-        _editProject = entry.Project;
-        _editHours = entry.Hours;
-        _showAddForm = false;
+        _editingEntry = entry;
+        _formProject = entry.Project;
+        _formHours = entry.Hours;
+        _formError = null;
     };
 
     private void CancelEdit()
     {
-        _editingId = null;
-        _editProject = string.Empty;
-        _editHours = 0;
+        _editingEntry = null;
+        _formProject = string.Empty;
+        _formHours = 8;
+        _formError = null;
     }
 
-    private async Task SaveEdit()
+    private async Task SaveFormAsync()
     {
-        if (_editingId is null || _selectedDate is null) return;
-        var (_, error) = await Api.UpsertTimeSheetsAsync([new TimeSheetUpsertItem(_selectedDate.Value.ToString("yyyy-MM-dd"), _editProject, _editHours)]);
-        if (error is not null) { _error = error.Message; return; }
-        _editingId = null;
-        await RefreshAsync();
+        if (_selectedDate is null || string.IsNullOrWhiteSpace(_formProject)) return;
+        _savingForm = true;
+        _formError = null;
+        var (_, error) = await Api.UpsertTimeSheetsAsync([new TimeSheetUpsertItem(_selectedDate.Value.ToString("yyyy-MM-dd"), _formProject, _formHours)]);
+        _savingForm = false;
+        if (error is not null) { _formError = error.Message; return; }
+        _editingEntry = null;
+        _formProject = string.Empty;
+        _formHours = 8;
+        await LoadDayDetailAsync();
+        await RefreshSummaryAsync();
     }
 
     private Func<Task> DeleteEntry(Guid id) => async () =>
     {
         var error = await Api.DeleteTimeSheetAsync(id);
         if (error is not null) { _error = error.Message; return; }
-        await RefreshAsync();
+        await LoadDayDetailAsync();
+        await RefreshSummaryAsync();
     };
 
-    private void OpenAddForm()
+    private async Task RefreshSummaryAsync()
     {
-        _showAddForm = true;
-        _newProject = string.Empty;
-        _newHours = 8;
-        _editingId = null;
-    }
-
-    private void CloseAddForm()
-    {
-        _showAddForm = false;
-        _newProject = string.Empty;
-        _newHours = 8;
-    }
-
-    private async Task SaveNewEntry()
-    {
-        if (_selectedDate is null || string.IsNullOrWhiteSpace(_newProject)) return;
-        var (_, error) = await Api.UpsertTimeSheetsAsync([new TimeSheetUpsertItem(_selectedDate.Value.ToString("yyyy-MM-dd"), _newProject, _newHours)]);
-        if (error is not null) { _error = error.Message; return; }
-        CloseAddForm();
-        await RefreshAsync();
-    }
-
-    private async Task RefreshAsync()
-    {
-        await LoadDayDetailAsync();
         var (data, _) = await Api.GetTimeSheetSummaryAsync(_currentDate.Year, _currentDate.Month);
         _summaryByDate = (data?.Days ?? []).ToDictionary(x => x.Date);
         StateHasChanged();
@@ -279,13 +275,12 @@
         return summary is null && isWeekday && date <= today;
     }
 
-    private string GetCellClass(DateOnly date, TimeSheetSummaryDayResponse? summary, bool isSelected)
+    private string GetCellClass(DateOnly date, TimeSheetSummaryDayResponse? summary)
     {
-        var ring = isSelected ? " ring-2 ring-indigo-500 ring-offset-1" : string.Empty;
         if (summary is not null)
-            return $"h-16 rounded border flex flex-col items-center justify-center p-1 overflow-hidden transition-all cursor-pointer bg-green-50 border-green-200 text-green-800 hover:bg-green-100{ring}";
+            return "h-16 rounded border flex flex-col items-center justify-center p-1 overflow-hidden transition-all cursor-pointer bg-green-50 border-green-200 text-green-800 hover:bg-green-100 hover:shadow-sm";
         if (IsSos(date, summary))
-            return $"h-16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-red-50 border-red-200 text-red-700 hover:bg-red-100{ring}";
-        return $"h-16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100{ring}";
+            return "h-16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:shadow-sm";
+        return "h-16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:shadow-sm";
     }
 }
