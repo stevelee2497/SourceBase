@@ -1,7 +1,34 @@
+# Reusable security snippet — imported by each site block
+(security) {
+    # ── Bad paths: block common bot-scanner targets ──────────────────────────
+    @badpaths {
+        path /.env*
+        path *.yaml
+        path *.yml
+        path *.tfstate*
+        path /.git*
+        path /.aws*
+        path /.htaccess
+        path /.htpasswd
+        path /.DS_Store
+        path /wp-admin*
+        path /wp-login.php
+        path /phpMyAdmin*
+        path /phpmyadmin*
+        path /xmlrpc.php
+        path /config*
+        path /actuator*
+    }
+    
+    respond @badpaths 404
+}
+
 quoctran.qzz.io {
+    import security
     reverse_proxy sourcebase-web:8080
 }
 
 api.quoctran.qzz.io {
+    import security
     reverse_proxy sourcebase-api:8080
 }
