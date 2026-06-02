@@ -290,6 +290,20 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
 
     public Task<ErrorResponse?> DeleteTransferAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/transfers/{id}"));
+
+    // ── TimeSheets ────────────────────────────────────────────────────────────
+
+    public Task<(TimeSheetSummaryResponse? data, ErrorResponse? error)> GetTimeSheetSummaryAsync(int year, int month) =>
+        ExecuteAsync<TimeSheetSummaryResponse>(() => AuthorizedRequest(HttpMethod.Get, $"/api/time-sheets/summary?year={year}&month={month}"));
+
+    public Task<(PagingResponse<TimeSheetItemResponse>? data, ErrorResponse? error)> GetTimeSheetsAsync(DateOnly date) =>
+        ExecuteAsync<PagingResponse<TimeSheetItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/time-sheets?date={date:yyyy-MM-dd}&limit=100"));
+
+    public Task<(TimeSheetBulkResponse? data, ErrorResponse? error)> UpsertTimeSheetsAsync(List<TimeSheetUpsertItem> items) =>
+        ExecuteAsync<TimeSheetBulkResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/time-sheets", new { items }));
+
+    public Task<ErrorResponse?> DeleteTimeSheetAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/time-sheets/{id}"));
 }
 
 public sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
@@ -310,3 +324,8 @@ public sealed record TransactionResponse(Guid Id, decimal Amount, string Type, s
 public sealed record GetTransactionSummaryResponse(decimal TotalIncome, decimal TotalExpense, decimal NetBalance, List<CategoryBreakdownResponse> ByCategory);
 public sealed record CategoryBreakdownResponse(Guid? CategoryId, string? CategoryName, string Type, decimal Total);
 public sealed record TransferResponse(Guid Id, Guid FromWalletId, string FromWalletName, Guid ToWalletId, string ToWalletName, decimal Amount, string Date, string? Note);
+public sealed record TimeSheetItemResponse(Guid Id, string Date, string Project, decimal Hours);
+public sealed record TimeSheetSummaryDayResponse(DateOnly Date, decimal TotalHours, List<string> Projects);
+public sealed record TimeSheetSummaryResponse(List<TimeSheetSummaryDayResponse> Days);
+public sealed record TimeSheetUpsertItem(string Date, string Project, decimal Hours);
+public sealed record TimeSheetBulkResponse(List<Guid> Ids);
