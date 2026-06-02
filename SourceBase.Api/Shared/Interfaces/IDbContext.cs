@@ -25,5 +25,7 @@ public interface IDbContext
 
     DbSet<TransferEntity> Transfers { get; set; }
 
+    DbSet<TimeSheetEntity> TimeSheets { get; set; }
+
     Task<int> SaveChangesAsync(CancellationToken ct);
 }
