@@ -24,17 +24,17 @@ As an authenticated user, I want to log one or more time entries for specific da
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| TIMESHEET-CREATE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
-| TIMESHEET-CREATE-002 | Valid list of items creates entries and returns IDs | ✅ Pass |
+| Test Case ID         | Description                                            | Status  |
+| -------------------- | ------------------------------------------------------ | ------- |
+| TIMESHEET-CREATE-001 | Missing token returns 401 Unauthorized                 | ✅ Pass |
+| TIMESHEET-CREATE-002 | Valid list of items creates entries and returns IDs    | ✅ Pass |
 | TIMESHEET-CREATE-003 | Re-submitting same date+project updates hours (upsert) | ✅ Pass |
-| TIMESHEET-CREATE-004 | Empty items list returns 400 Bad Request | ✅ Pass |
-| TIMESHEET-CREATE-005 | Missing project returns 400 Bad Request | ✅ Pass |
-| TIMESHEET-CREATE-006 | Hours = 0 returns 400 Bad Request | ✅ Pass |
-| TIMESHEET-CREATE-007 | Hours > 24 returns 400 Bad Request | ✅ Pass |
-| TIMESHEET-CREATE-008 | Multiple items in one request all upsert correctly | ✅ Pass |
-| TIMESHEET-CREATE-009 | Entry created by user A is not visible to user B | ✅ Pass |
+| TIMESHEET-CREATE-004 | Empty items list returns 400 Bad Request               | ✅ Pass |
+| TIMESHEET-CREATE-005 | Missing project returns 400 Bad Request                | ✅ Pass |
+| TIMESHEET-CREATE-006 | Hours = 0 returns 400 Bad Request                      | ✅ Pass |
+| TIMESHEET-CREATE-007 | Hours > 8 returns 400 Bad Request                      | ✅ Pass |
+| TIMESHEET-CREATE-008 | Multiple items in one request all upsert correctly     | ✅ Pass |
+| TIMESHEET-CREATE-009 | Entry created by user A is not visible to user B       | ✅ Pass |
 
 ---
 
@@ -55,12 +55,12 @@ As an authenticated user, I want to retrieve my time entries for a given date or
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| TIMESHEET-GET-ALL-001 | Missing token returns 401 Unauthorized | ✅ Pass |
-| TIMESHEET-GET-ALL-002 | Returns entries filtered by year and month | ✅ Pass |
-| TIMESHEET-GET-ALL-003 | Returns entries filtered by specific date | ✅ Pass |
-| TIMESHEET-GET-ALL-004 | Only the current user's entries are returned | ✅ Pass |
+| Test Case ID          | Description                                       | Status  |
+| --------------------- | ------------------------------------------------- | ------- |
+| TIMESHEET-GET-ALL-001 | Missing token returns 401 Unauthorized            | ✅ Pass |
+| TIMESHEET-GET-ALL-002 | Returns entries filtered by year and month        | ✅ Pass |
+| TIMESHEET-GET-ALL-003 | Returns entries filtered by specific date         | ✅ Pass |
+| TIMESHEET-GET-ALL-004 | Only the current user's entries are returned      | ✅ Pass |
 | TIMESHEET-GET-ALL-005 | Empty result when no entries exist for the filter | ✅ Pass |
 
 ---
@@ -82,11 +82,11 @@ As an authenticated user, I want to retrieve the details of a specific time entr
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| TIMESHEET-GET-001 | Missing token returns 401 Unauthorized | ✅ Pass |
-| TIMESHEET-GET-002 | Valid ID returns the entry with correct data | ✅ Pass |
-| TIMESHEET-GET-003 | Non-existent ID returns 404 Not Found | ✅ Pass |
+| Test Case ID      | Description                                   | Status  |
+| ----------------- | --------------------------------------------- | ------- |
+| TIMESHEET-GET-001 | Missing token returns 401 Unauthorized        | ✅ Pass |
+| TIMESHEET-GET-002 | Valid ID returns the entry with correct data  | ✅ Pass |
+| TIMESHEET-GET-003 | Non-existent ID returns 404 Not Found         | ✅ Pass |
 | TIMESHEET-GET-004 | Another user's entry ID returns 404 Not Found | ✅ Pass |
 
 ---
@@ -108,11 +108,11 @@ As an authenticated user, I want to delete a time entry I no longer need, so tha
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| TIMESHEET-DELETE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
-| TIMESHEET-DELETE-002 | Valid ID deletes the entry and returns 200 | ✅ Pass |
-| TIMESHEET-DELETE-003 | Non-existent ID returns 404 Not Found | ✅ Pass |
+| Test Case ID         | Description                                   | Status  |
+| -------------------- | --------------------------------------------- | ------- |
+| TIMESHEET-DELETE-001 | Missing token returns 401 Unauthorized        | ✅ Pass |
+| TIMESHEET-DELETE-002 | Valid ID deletes the entry and returns 200    | ✅ Pass |
+| TIMESHEET-DELETE-003 | Non-existent ID returns 404 Not Found         | ✅ Pass |
 | TIMESHEET-DELETE-004 | Another user's entry ID returns 404 Not Found | ✅ Pass |
 
 ---
@@ -135,10 +135,10 @@ As an authenticated user, I want a lightweight per-day aggregate of my time entr
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| TIMESHEET-SUMMARY-001 | Missing token returns 401 Unauthorized | ✅ Pass |
+| Test Case ID          | Description                                             | Status  |
+| --------------------- | ------------------------------------------------------- | ------- |
+| TIMESHEET-SUMMARY-001 | Missing token returns 401 Unauthorized                  | ✅ Pass |
 | TIMESHEET-SUMMARY-002 | Returns correct day aggregates for a month with entries | ✅ Pass |
-| TIMESHEET-SUMMARY-003 | Empty month returns empty days list | ✅ Pass |
-| TIMESHEET-SUMMARY-004 | Only includes entries for the authenticated user | ✅ Pass |
-| TIMESHEET-SUMMARY-005 | Missing required year/month returns 400 Bad Request | ✅ Pass |
+| TIMESHEET-SUMMARY-003 | Empty month returns empty days list                     | ✅ Pass |
+| TIMESHEET-SUMMARY-004 | Only includes entries for the authenticated user        | ✅ Pass |
+| TIMESHEET-SUMMARY-005 | Missing required year/month returns 400 Bad Request     | ✅ Pass |

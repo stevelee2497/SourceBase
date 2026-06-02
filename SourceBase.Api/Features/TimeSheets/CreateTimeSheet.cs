@@ -64,7 +64,7 @@ public class CreateTimeSheetRequestValidator : AbstractValidator<CreateTimeSheet
         RuleForEach(x => x.Items).ChildRules(item =>
         {
             item.RuleFor(x => x.Project).NotEmpty();
-            item.RuleFor(x => x.Hours).GreaterThan(0).LessThanOrEqualTo(24);
+            item.RuleFor(x => x.Hours).GreaterThan(0).LessThanOrEqualTo(8);
             item.RuleFor(x => x.Date).NotEmpty();
         });
     }

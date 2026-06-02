@@ -126,8 +126,8 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TIMESHEET-CREATE-007: CreateTimeSheet_WithHoursExceeding24_ReturnsBadRequest")]
-    public async Task CreateTimeSheet_WithHoursExceeding24_ReturnsBadRequest()
+    [Fact(DisplayName = "TIMESHEET-CREATE-007: CreateTimeSheet_WithHoursExceeding8_ReturnsBadRequest")]
+    public async Task CreateTimeSheet_WithHoursExceeding8_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -135,7 +135,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         // Act
         var response = await client.PostAsJsonAsync(CreateTimeSheetEndpoint.Route, new
         {
-            items = new[] { new { date = "2025-06-01", project = "ProjectA", hours = 25 } }
+            items = new[] { new { date = "2025-06-01", project = "ProjectA", hours = 9 } }
         });
 
         // Assert
