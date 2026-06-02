@@ -15,11 +15,11 @@
 	  <PackageReference Include="Serilog.Sinks.File" />
 	</ItemGroup>
 
-	<Target Name="NpmInstall" BeforeTargets="BuildTailwind" Condition="'$(Configuration)' == 'Release' And !Exists('$(MSBuildProjectDirectory)\node_modules')">
+	<Target Name="NpmInstall" BeforeTargets="BuildTailwind" Condition="!Exists('$(MSBuildProjectDirectory)\node_modules')">
 		<Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)" />
 	</Target>
 
-	<Target Name="BuildTailwind" BeforeTargets="Build" Condition="'$(Configuration)' == 'Release'">
+	<Target Name="BuildTailwind" BeforeTargets="Build">
 		<Exec Command="npx @tailwindcss/cli -i ./wwwroot/app.css -o ./wwwroot/app.min.css --minify" WorkingDirectory="$(MSBuildProjectDirectory)" />
 	</Target>
 
