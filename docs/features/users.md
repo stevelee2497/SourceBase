@@ -22,6 +22,7 @@ As an admin, I want to create user accounts on behalf of others, so that I can o
 5. A new user is created with a hashed password, an OTP confirmation code, and the requested roles.
 6. A confirmation email is sent to the new user.
 7. Returns the new user's `Id`.
+8. A notification is created for every admin user with title "New User Registered" and message containing the new user's email.
 
 ### Test Cases
 
@@ -34,6 +35,7 @@ As an admin, I want to create user accounts on behalf of others, so that I can o
 | USERS-CREATE-005 | Mix of valid and invalid roles returns 400 Bad Request | ✅ Pass |
 | USERS-CREATE-006 | Duplicate email (case-insensitive) returns 400 Bad Request | ✅ Pass |
 | USERS-CREATE-007 | Roles with surrounding whitespace are normalised and de-duplicated | ✅ Pass |
+| USERS-CREATE-008 | Successful creation sends a notification to all admin users | ✅ Pass |
 
 ---
 

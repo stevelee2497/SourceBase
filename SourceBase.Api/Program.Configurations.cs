@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -165,12 +166,26 @@ public static class ProgramConfigurations
                 options.DefaultChallengeScheme = Constants.BearerScheme;
                 options.DefaultForbidScheme = Constants.BearerScheme;
             })
-            .AddBearerToken(Constants.BearerScheme);
+            .AddBearerToken(Constants.BearerScheme, options =>
+            {
+                options.Events = new BearerTokenEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        if (!string.IsNullOrEmpty(accessToken) && context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                            context.Token = accessToken;
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
+        services.AddSignalR();
         services.AddScoped<ISecurityProvider, SecurityProvider>();
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<IEmailHelper, SendGridEmailHelper>();
+        services.AddScoped<INotificationService, NotificationService>();
     }
 
     public static void AddFluentValidation(this IServiceCollection services, Assembly assembly)

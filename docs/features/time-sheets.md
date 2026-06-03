@@ -21,6 +21,7 @@ As an authenticated user, I want to log one or more time entries for specific da
 2. For each item, if an entry for the same `(user, date, project)` combination already exists, its `hours` value is updated (upsert).
 3. If no matching entry exists, a new record is created.
 4. Returns a list of affected entry IDs (either newly created or updated).
+5. After saving, a notification is created for the submitting user with title "Time Sheets Submitted".
 
 ### Test Cases
 
@@ -35,6 +36,7 @@ As an authenticated user, I want to log one or more time entries for specific da
 | TIMESHEET-CREATE-007 | Hours > 8 returns 400 Bad Request                      | ✅ Pass |
 | TIMESHEET-CREATE-008 | Multiple items in one request all upsert correctly     | ✅ Pass |
 | TIMESHEET-CREATE-009 | Entry created by user A is not visible to user B       | ✅ Pass |
+| TIMESHEET-CREATE-010 | Successful submission creates a notification for the submitting user | ✅ Pass |
 
 ---
 

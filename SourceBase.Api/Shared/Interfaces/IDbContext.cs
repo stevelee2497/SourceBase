@@ -27,5 +27,7 @@ public interface IDbContext
 
     DbSet<TimeSheetEntity> TimeSheets { get; set; }
 
+    DbSet<NotificationEntity> Notifications { get; set; }
+
     Task<int> SaveChangesAsync(CancellationToken ct);
 }

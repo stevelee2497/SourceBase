@@ -21,6 +21,7 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredServ
 builder.Services.AddHttpClient("api", client => client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]!));
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("api"));
 builder.Services.AddScoped<ApiHttpClient>();
+builder.Services.AddScoped<NotificationService>();
 
 var appSettings = builder.Configuration.Get<AppSettings>() ?? new AppSettings();
 builder.Services.AddSingleton(appSettings);

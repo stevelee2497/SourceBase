@@ -304,6 +304,20 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
 
     public Task<ErrorResponse?> DeleteTimeSheetAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/time-sheets/{id}"));
+
+    // ── Notifications ─────────────────────────────────────────────────────────
+
+    public Task<(GetNotificationsResponse? data, ErrorResponse? error)> GetNotificationsAsync(int page = 1, int limit = 50, bool unreadOnly = false) =>
+        ExecuteAsync<GetNotificationsResponse>(() => AuthorizedRequest(HttpMethod.Get, $"/api/notifications?page={page}&limit={limit}&unreadOnly={unreadOnly}"));
+
+    public Task<ErrorResponse?> MarkNotificationAsReadAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/notifications/{id}/read"));
+
+    public Task<ErrorResponse?> MarkAllNotificationsAsReadAsync() =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, "/api/notifications/read-all"));
+
+    public Task<ErrorResponse?> ClearAllNotificationsAsync() =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, "/api/notifications"));
 }
 
 public sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
@@ -329,3 +343,5 @@ public sealed record TimeSheetSummaryDayResponse(DateOnly Date, decimal TotalHou
 public sealed record TimeSheetSummaryResponse(List<TimeSheetSummaryDayResponse> Days);
 public sealed record TimeSheetUpsertItem(string Date, string Project, decimal Hours);
 public sealed record TimeSheetBulkResponse(List<Guid> Ids);
+public sealed record NotificationResponse(Guid Id, string Title, string Message, bool IsRead, DateTime? CreatedOn);
+public sealed record GetNotificationsResponse(List<NotificationResponse> Items, int Page, int Limit, int Total);

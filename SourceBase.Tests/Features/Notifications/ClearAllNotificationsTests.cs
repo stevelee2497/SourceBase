@@ -1,0 +1,94 @@
+using System.Net;
+using System.Net.Http.Json;
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using SourceBase.Api.Entities;
+using SourceBase.Api.Features.Notifications;
+using SourceBase.Tests.Infrastructure;
+using Xunit;
+
+namespace SourceBase.Tests.Features.Notifications;
+
+public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
+{
+    [Fact(DisplayName = "NOTIF-CLEAR-001: ClearAllNotifications_WithExistingNotifications_DeletesAll")]
+    public async Task ClearAllNotifications_WithExistingNotifications_DeletesAll()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+        var adminUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(u => u.Email == WebAppFactory.AdminEmail));
+
+        await factory.WithDbContextAsync(async db =>
+        {
+            db.Notifications.AddRange(
+                new NotificationEntity { UserId = adminUser.Id, Title = "C1", Message = "msg" },
+                new NotificationEntity { UserId = adminUser.Id, Title = "C2", Message = "msg" }
+            );
+            await db.SaveChangesAsync();
+            return true;
+        });
+
+        // Act
+        var response = await client.DeleteAsync(ClearAllNotificationsEndpoint.Route);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<ClearAllNotificationsResponse>();
+        body!.Success.Should().BeTrue();
+
+        var remaining = await factory.WithDbContextAsync(db =>
+            db.Notifications.CountAsync(n => n.UserId == adminUser.Id));
+        remaining.Should().Be(0);
+    }
+
+    [Fact(DisplayName = "NOTIF-CLEAR-002: ClearAllNotifications_WithNoNotifications_ReturnsOk")]
+    public async Task ClearAllNotifications_WithNoNotifications_ReturnsOk()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.DeleteAsync(ClearAllNotificationsEndpoint.Route);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<ClearAllNotificationsResponse>();
+        body!.Success.Should().BeTrue();
+    }
+
+    [Fact(DisplayName = "NOTIF-CLEAR-003: ClearAllNotifications_DoesNotAffectOtherUsersNotifications")]
+    public async Task ClearAllNotifications_DoesNotAffectOtherUsersNotifications()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+        var otherUserId = Guid.NewGuid();
+
+        await factory.WithDbContextAsync(async db =>
+        {
+            db.Notifications.Add(new NotificationEntity { UserId = otherUserId, Title = "Other", Message = "msg" });
+            await db.SaveChangesAsync();
+            return true;
+        });
+
+        // Act
+        await client.DeleteAsync(ClearAllNotificationsEndpoint.Route);
+
+        // Assert
+        var otherUserCount = await factory.WithDbContextAsync(db =>
+            db.Notifications.CountAsync(n => n.UserId == otherUserId));
+        otherUserCount.Should().Be(1);
+    }
+
+    [Fact(DisplayName = "NOTIF-CLEAR-004: ClearAllNotifications_WithoutAuth_ReturnsUnauthorized")]
+    public async Task ClearAllNotifications_WithoutAuth_ReturnsUnauthorized()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+
+        // Act
+        var response = await client.DeleteAsync(ClearAllNotificationsEndpoint.Route);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+}
