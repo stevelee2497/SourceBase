@@ -1,5 +1,5 @@
 @inject ApiHttpClient Api
-@inject NotificationService NotifService
+@inject NotificationService NotificationService
 @implements IAsyncDisposable
 
 <div class="relative">
@@ -7,7 +7,7 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
-        @if (NotifService.UnreadCount > 0)
+        @if (NotificationService.UnreadCount > 0)
         {
             <span class="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full"></span>
         }
@@ -19,11 +19,11 @@
             <div class="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
                 <span class="text-sm font-semibold text-gray-800">Notifications</span>
                 <div class="flex gap-2">
-                    @if (NotifService.UnreadCount > 0)
+                    @if (NotificationService.UnreadCount > 0)
                     {
                         <button class="text-xs text-indigo-600 hover:text-indigo-800 transition-colors" @onclick="MarkAllReadAsync">Mark all read</button>
                     }
-                    @if (NotifService.Notifications.Count > 0)
+                    @if (NotificationService.Notifications.Count > 0)
                     {
                         <button class="text-xs text-red-500 hover:text-red-700 transition-colors" @onclick="ClearAllAsync">Clear all</button>
                     }
@@ -31,13 +31,13 @@
             </div>
 
             <div class="max-h-80 overflow-y-auto">
-                @if (NotifService.Notifications.Count == 0)
+                @if (NotificationService.Notifications.Count == 0)
                 {
                     <div class="px-4 py-6 text-center text-sm text-gray-400">No notifications</div>
                 }
                 else
                 {
-                    @foreach (var notification in NotifService.Notifications)
+                    @foreach (var notification in NotificationService.Notifications)
                     {
                         <button class="@NotificationClass(notification) w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0" @onclick="MarkReadAsync(notification)">
                             <div class="flex items-start gap-2">
@@ -68,11 +68,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        NotifService.OnChange += OnNotifChanged;
+        NotificationService.OnChange += OnNotifChanged;
         var (result, _) = await Api.GetNotificationsAsync();
         if (result is not null)
-            NotifService.SetNotifications(result.Items);
-        await NotifService.StartAsync();
+            NotificationService.SetNotifications(result.Items);
+        await NotificationService.StartAsync();
     }
 
     private void ToggleDropdown() => _open = !_open;
@@ -80,19 +80,19 @@
     private Func<Task> MarkReadAsync(NotificationResponse notification) => async () =>
     {
         if (notification.IsRead) return;
-        NotifService.MarkReadLocally(notification.Id);
+        NotificationService.MarkReadLocally(notification.Id);
         await Api.MarkNotificationAsReadAsync(notification.Id);
     };
 
     private async Task MarkAllReadAsync()
     {
-        NotifService.MarkAllReadLocally();
+        NotificationService.MarkAllReadLocally();
         await Api.MarkAllNotificationsAsReadAsync();
     }
 
     private async Task ClearAllAsync()
     {
-        NotifService.ClearLocally();
+        NotificationService.ClearLocally();
         await Api.ClearAllNotificationsAsync();
         _open = false;
     }
@@ -107,7 +107,7 @@
 
     public async ValueTask DisposeAsync()
     {
-        NotifService.OnChange -= OnNotifChanged;
-        await NotifService.StopAsync();
+        NotificationService.OnChange -= OnNotifChanged;
+        await NotificationService.StopAsync();
     }
 }
