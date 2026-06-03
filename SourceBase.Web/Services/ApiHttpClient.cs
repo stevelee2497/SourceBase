@@ -111,6 +111,12 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
     public Task<ErrorResponse?> LogoutAsync() =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/auth/logout"));
 
+    public Task<(AvatarUploadUrlResponse? data, ErrorResponse? error)> GetAvatarUploadUrlAsync(string fileName) =>
+        ExecuteAsync<AvatarUploadUrlResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/auth/avatar/upload-url", new { fileName }));
+
+    public Task<ErrorResponse?> UpdateUserInfoAsync(string? firstName, string? lastName, string? phoneNumber, string? avatarUrl) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, "/api/auth/info", new { firstName, lastName, phoneNumber, avatarUrl }));
+
     // ── Roles ────────────────────────────────────────────────────────────────
 
     public Task<(PagingResponse<RoleResponse>? data, ErrorResponse? error)> GetRolesAsync(int page, int limit) =>
@@ -133,8 +139,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
     public Task<ErrorResponse?> CreateUserAsync(string userName, string email, string password, string? firstName, string? lastName, string? phoneNumber, string[] roles) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/users", new { userName, email, password, firstName, lastName, phoneNumber, roles }));
 
-    public Task<ErrorResponse?> UpdateUserAsync(Guid id, string email, string? firstName, string? lastName, string? phoneNumber, string[] roles) =>
-        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/users/{id}", new { email, firstName, lastName, phoneNumber, roles }));
+    public Task<ErrorResponse?> UpdateUserAsync(Guid id, string email, string? firstName, string? lastName, string? phoneNumber, string? avatarUrl, string[] roles) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/users/{id}", new { email, firstName, lastName, phoneNumber, avatarUrl, roles }));
 
     public Task<ErrorResponse?> DeleteUserAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/users/{id}"));
@@ -321,10 +327,11 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
 }
 
 public sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
-public sealed record UserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);
+public sealed record AvatarUploadUrlResponse(string UploadUrl, string AvatarUrl, string ContentType);
+public sealed record UserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, string[] Roles);
 public sealed record LoginResponse(string AccessToken, string RefreshToken, int ExpiresIn, string TokenType);
 public sealed record RoleResponse(Guid Id, string Name, string? Description);
-public sealed record UserResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, bool EmailConfirmed, IEnumerable<string> Roles);
+public sealed record UserResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, bool EmailConfirmed, string? AvatarUrl, IEnumerable<string> Roles);
 public sealed record TodoItemResponse(Guid Id, string Title, string Date, string Status, Guid? TodoListId);
 public sealed record TodoListResponse(Guid Id, string Name, int ItemCount, DateTime? CreatedOn, string? CreatedBy);
 public sealed record StatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems, int TotalWallets, int TotalTransactions);

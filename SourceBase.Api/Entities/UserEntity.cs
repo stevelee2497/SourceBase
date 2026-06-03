@@ -18,6 +18,8 @@ public class UserEntity : BaseAuditableEntity
 
     public string? LastName { get; set; }
 
+    public string? AvatarUrl { get; set; }
+
     public string? OtpCode { get; set; }
 
     public DateTime? OtpCodeExpiresOn { get; set; }

@@ -4,7 +4,7 @@ namespace SourceBase.Api.Features.Auth;
 
 public record GetUserInfoRequest;
 
-public record GetUserInfoResponse(Guid Id, string? UserName, string? Email, bool EmailConfirmed, string? FirstName, string? LastName, string? PhoneNumber, string[] Roles);
+public record GetUserInfoResponse(Guid Id, string? UserName, string? Email, bool EmailConfirmed, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, string[] Roles);
 
 public class GetUserInfoEndpoint : IEndpoint
 {
@@ -28,6 +28,7 @@ public class GetUserInfoHandler(ICurrentUser currentUser, IDbContext dbContext) 
             FirstName: user.FirstName,
             LastName: user.LastName,
             PhoneNumber: user.PhoneNumber,
+            AvatarUrl: user.AvatarUrl,
             Roles: currentUser.Roles
         );
     }

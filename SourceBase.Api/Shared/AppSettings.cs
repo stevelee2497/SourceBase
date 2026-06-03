@@ -9,4 +9,14 @@ public class AppSettings
     public string WebUrl { get; set; } = null!;
     public string SendGridApiKey { get; set; } = null!;
     public string SendGridAccountOwner { get; set; } = null!;
+    public R2Settings R2 { get; set; } = new();
+}
+
+public class R2Settings
+{
+    public string AccountId { get; set; } = string.Empty;
+    public string AccessKeyId { get; set; } = string.Empty;
+    public string SecretAccessKey { get; set; } = string.Empty;
+    public string BucketName { get; set; } = string.Empty;
+    public string PublicUrl { get; set; } = string.Empty;
 }
