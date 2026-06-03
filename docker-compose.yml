@@ -51,6 +51,8 @@ services:
       - AllowedSpecificOrigins__0=https://quoctran.qzz.io
     volumes:
       - ./logs/api:/app/Logs
+    ports:
+      - "3000:8080"
     depends_on:
       postgres:
         condition: service_healthy
