@@ -1,5 +1,4 @@
 @inject ApiHttpClient Api
-@inject HttpClient Http
 
 @if (IsVisible)
 {
@@ -159,7 +158,7 @@
             return;
         }
 
-        var error = await PerformAvatarUploadAsync(file, uploadInfo);
+        var error = await Api.PerformAvatarUploadAsync(file, uploadInfo);
         if (error is not null)
         {
             _error = error;
@@ -168,25 +167,7 @@
         _uploadingAvatar = false;
     }
 
-    private async Task<string?> PerformAvatarUploadAsync(IBrowserFile file, AvatarUploadUrlResponse uploadInfo)
-    {
-        try
-        {
-            using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
-            using var content = new StreamContent(stream);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(uploadInfo.ContentType);
-            var putResponse = await Http.PutAsync(uploadInfo.UploadUrl, content);
-            if (!putResponse.IsSuccessStatusCode)
-            {
-                return "Failed to upload avatar. Please try again.";
-            }
-            return null;
-        }
-        catch
-        {
-            return "Failed to upload avatar. Please try again.";
-        }
-    }
+  
 
     private async Task SaveAsync()
     {

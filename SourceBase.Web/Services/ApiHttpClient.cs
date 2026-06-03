@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Components.Forms;
 using SourceBase.Web.Auth;
 
 namespace SourceBase.Web.Services;
@@ -113,6 +114,26 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
 
     public Task<(AvatarUploadUrlResponse? data, ErrorResponse? error)> GetAvatarUploadUrlAsync(string fileName) =>
         ExecuteAsync<AvatarUploadUrlResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/auth/avatar/upload-url", new { fileName }));
+
+    public async Task<string?> PerformAvatarUploadAsync(IBrowserFile file, AvatarUploadUrlResponse uploadInfo)
+    {
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            using var content = new StreamContent(stream);
+            content.Headers.ContentType = new MediaTypeHeaderValue(uploadInfo.ContentType);
+            var putResponse = await http.PutAsync(uploadInfo.UploadUrl, content);
+            if (!putResponse.IsSuccessStatusCode)
+            {
+                return "Failed to upload avatar. Please try again.";
+            }
+            return null;
+        }
+        catch
+        {
+            return "Failed to upload avatar. Please try again.";
+        }
+    }
 
     public Task<ErrorResponse?> UpdateUserInfoAsync(string? firstName, string? lastName, string? phoneNumber, string? avatarUrl) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, "/api/auth/info", new { firstName, lastName, phoneNumber, avatarUrl }));
