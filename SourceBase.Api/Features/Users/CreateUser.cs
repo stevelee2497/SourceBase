@@ -22,7 +22,7 @@ public class CreateUserEndpoint : IEndpoint
         .WithTags("Users");
 }
 
-public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityProvider, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<CreateUserRequest, CreateUserResponse>
+public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityProvider, IEmailHelper emailHelper, AppSettings appSettings, INotificationService notificationService) : IRequestHandler<CreateUserRequest, CreateUserResponse>
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken ct)
     {
@@ -60,6 +60,14 @@ public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityP
         await dbContext.SaveChangesAsync(ct);
 
         await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{confirmationCode}</b>");
+
+        var adminUsers = await dbContext.Users
+            .Where(u => u.Roles.Any(r => r.Name == AppRoles.Admin))
+            .Select(u => u.Id)
+            .ToListAsync(ct);
+
+        foreach (var adminId in adminUsers)
+            await notificationService.CreateAsync(adminId, "New User Registered", $"A new user {user.Email} has been registered.", ct);
 
         return new CreateUserResponse(user.Id);
     }

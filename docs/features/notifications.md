@@ -24,11 +24,11 @@ As an authenticated user, I want to retrieve my notifications, so that I can sta
 
 | Test Case ID    | Description                                                   | Status      |
 | --------------- | ------------------------------------------------------------- | ----------- |
-| NOTIF-GET-001   | Missing token returns 401 Unauthorized                        | 🔲 Pending  |
-| NOTIF-GET-002   | Authenticated user receives their own notifications           | 🔲 Pending  |
-| NOTIF-GET-003   | `unreadOnly=true` returns only unread notifications           | 🔲 Pending  |
-| NOTIF-GET-004   | Returns empty list when user has no notifications             | 🔲 Pending  |
-| NOTIF-GET-005   | Another user's notifications are not included in the response | 🔲 Pending  |
+| NOTIF-GET-001   | Missing token returns 401 Unauthorized                        | ✅ Pass     |
+| NOTIF-GET-002   | Authenticated user receives their own notifications           | ✅ Pass     |
+| NOTIF-GET-003   | `unreadOnly=true` returns only unread notifications           | ✅ Pass     |
+| NOTIF-GET-004   | Returns empty list when user has no notifications             | ✅ Pass     |
+| NOTIF-GET-005   | Another user's notifications are not included in the response | ✅ Pass     |
 
 ---
 
@@ -52,11 +52,11 @@ As an authenticated user, I want to mark a specific notification as read by clic
 
 | Test Case ID         | Description                                                 | Status      |
 | -------------------- | ----------------------------------------------------------- | ----------- |
-| NOTIF-MARK-READ-001  | Missing token returns 401 Unauthorized                      | 🔲 Pending  |
-| NOTIF-MARK-READ-002  | Valid ID marks the notification as read and returns 200     | 🔲 Pending  |
-| NOTIF-MARK-READ-003  | Non-existent notification ID returns 404 Not Found          | 🔲 Pending  |
-| NOTIF-MARK-READ-004  | Another user's notification ID returns 404 Not Found        | 🔲 Pending  |
-| NOTIF-MARK-READ-005  | Already-read notification can be marked read again (no-op)  | 🔲 Pending  |
+| NOTIF-MARK-READ-001  | Missing token returns 401 Unauthorized                      | ✅ Pass     |
+| NOTIF-MARK-READ-002  | Valid ID marks the notification as read and returns 200     | ✅ Pass     |
+| NOTIF-MARK-READ-003  | Non-existent notification ID returns 404 Not Found          | ✅ Pass     |
+| NOTIF-MARK-READ-004  | Another user's notification ID returns 404 Not Found        | ✅ Pass     |
+| NOTIF-MARK-READ-005  | Already-read notification can be marked read again (no-op)  | ✅ Pass     |
 
 ---
 
@@ -79,10 +79,10 @@ As an authenticated user, I want to mark all my notifications as read at once, s
 
 | Test Case ID              | Description                                                 | Status      |
 | ------------------------- | ----------------------------------------------------------- | ----------- |
-| NOTIF-MARK-ALL-READ-001   | Missing token returns 401 Unauthorized                      | 🔲 Pending  |
-| NOTIF-MARK-ALL-READ-002   | Marks all unread notifications as read and returns 200      | 🔲 Pending  |
-| NOTIF-MARK-ALL-READ-003   | After the call, unreadOnly query returns an empty list      | 🔲 Pending  |
-| NOTIF-MARK-ALL-READ-004   | Only the current user's notifications are affected          | 🔲 Pending  |
+| NOTIF-MARK-ALL-READ-001   | Missing token returns 401 Unauthorized                      | ✅ Pass     |
+| NOTIF-MARK-ALL-READ-002   | Marks all unread notifications as read and returns 200      | ✅ Pass     |
+| NOTIF-MARK-ALL-READ-003   | After the call, unreadOnly query returns an empty list      | ✅ Pass     |
+| NOTIF-MARK-ALL-READ-004   | Only the current user's notifications are affected          | ✅ Pass     |
 
 ---
 
@@ -104,10 +104,10 @@ As an authenticated user, I want to clear all my notifications, so that I can ke
 
 | Test Case ID      | Description                                                       | Status      |
 | ----------------- | ----------------------------------------------------------------- | ----------- |
-| NOTIF-CLEAR-001   | Missing token returns 401 Unauthorized                            | 🔲 Pending  |
-| NOTIF-CLEAR-002   | Clears all notifications for the current user and returns 200     | 🔲 Pending  |
-| NOTIF-CLEAR-003   | After the call, Get Notifications returns an empty list           | 🔲 Pending  |
-| NOTIF-CLEAR-004   | Only the current user's notifications are deleted                 | 🔲 Pending  |
+| NOTIF-CLEAR-001   | Missing token returns 401 Unauthorized                            | ✅ Pass     |
+| NOTIF-CLEAR-002   | Clears all notifications for the current user and returns 200     | ✅ Pass     |
+| NOTIF-CLEAR-003   | After the call, Get Notifications returns an empty list           | ✅ Pass     |
+| NOTIF-CLEAR-004   | Only the current user's notifications are deleted                 | ✅ Pass     |
 
 ---
 

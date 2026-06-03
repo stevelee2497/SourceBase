@@ -21,7 +21,7 @@ public class CreateTimeSheetEndpoint : IEndpoint
         .WithTags("TimeSheets");
 }
 
-public class CreateTimeSheetHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTimeSheetRequest, CreateTimeSheetResponse>
+public class CreateTimeSheetHandler(IDbContext dbContext, ICurrentUser currentUser, INotificationService notificationService) : IRequestHandler<CreateTimeSheetRequest, CreateTimeSheetResponse>
 {
     public async Task<CreateTimeSheetResponse> Handle(CreateTimeSheetRequest request, CancellationToken ct)
     {
@@ -52,6 +52,7 @@ public class CreateTimeSheetHandler(IDbContext dbContext, ICurrentUser currentUs
         }
 
         await dbContext.SaveChangesAsync(ct);
+        await notificationService.CreateAsync(currentUser.UserId, "Time Sheets Submitted", "Your time sheets have been submitted successfully.", ct);
         return new CreateTimeSheetResponse(ids);
     }
 }

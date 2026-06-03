@@ -1,4 +1,5 @@
 using SourceBase.Api;
+using SourceBase.Api.Infrastructure.Hubs;
 using SourceBase.Api.Middlewares;
 using SourceBase.Api.Shared;
 
@@ -35,6 +36,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCustomAuthorization();
 app.UseMinimalApi();
+app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapDefaultEndpoints();
 
 app.Run();
