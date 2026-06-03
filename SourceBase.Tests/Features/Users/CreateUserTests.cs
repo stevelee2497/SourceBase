@@ -182,4 +182,38 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var createdUser = users!.Items.Single(x => x.Id == body!.Id);
         createdUser.Roles.Should().Equal("User");
     }
+
+    [Fact(DisplayName = "USERS-CREATE-008: CreateUser_WithValidData_CreatesNotificationForAllAdmins")]
+    public async Task CreateUser_WithValidData_CreatesNotificationForAllAdmins()
+    {
+        // Arrange
+        var adminClient = await factory.CreateAuthorizedClient();
+        var newEmail = $"notif_user_{Guid.NewGuid():N}@test.com";
+
+        var adminIds = await factory.WithDbContextAsync(db => db.Users
+            .Where(u => u.Roles.Any(r => r.Name == AppRoles.Admin))
+            .Select(u => u.Id)
+            .ToListAsync());
+
+        // Act
+        await adminClient.PostAsJsonAsync(CreateUserEndpoint.Route, new
+        {
+            userName = $"notif_user_{Guid.NewGuid():N}",
+            email = newEmail,
+            password = "Test@1234!",
+            roles = new[] { "User" },
+        });
+
+        // Assert
+        foreach (var adminId in adminIds)
+        {
+            var notification = await factory.WithDbContextAsync(db => db.Notifications
+                .Where(n => n.UserId == adminId)
+                .OrderByDescending(n => n.CreatedOn)
+                .FirstOrDefaultAsync());
+            notification.Should().NotBeNull();
+            notification!.Title.Should().Be("New User Registered");
+            notification.Message.Should().Contain(newEmail);
+        }
+    }
 }

@@ -182,4 +182,31 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
             db.TimeSheets.Where(x => x.Date == new DateOnly(2025, 9, 1) && x.Project == "SharedName").ToListAsync());
         entriesForDate.Should().HaveCount(2);
     }
+
+    [Fact(DisplayName = "TIMESHEET-CREATE-010: CreateTimeSheet_WithValidData_CreatesNotificationForUser")]
+    public async Task CreateTimeSheet_WithValidData_CreatesNotificationForUser()
+    {
+        // Arrange
+        var email = $"notif_{Guid.NewGuid():N}@test.com";
+        var client = await factory.CreateAuthorizedClient(email, "Test@1234!");
+        var userId = await factory.WithDbContextAsync(db => db.Users
+            .Where(u => u.Email == email)
+            .Select(u => u.Id)
+            .FirstAsync());
+
+        // Act
+        await client.PostAsJsonAsync(CreateTimeSheetEndpoint.Route, new
+        {
+            items = new[] { new { date = "2025-10-01", project = "NotifProject", hours = 6 } }
+        });
+
+        // Assert
+        var notification = await factory.WithDbContextAsync(db => db.Notifications
+            .Where(n => n.UserId == userId)
+            .OrderByDescending(n => n.CreatedOn)
+            .FirstOrDefaultAsync());
+        notification.Should().NotBeNull();
+        notification!.Title.Should().Be("Time Sheets Submitted");
+        notification.Message.Should().Be("Your time sheets have been submitted successfully.");
+    }
 }
