@@ -39,8 +39,7 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, A
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.PhoneNumber = request.PhoneNumber;
-        if (request.AvatarUrl is not null)
-            user.AvatarUrl = request.AvatarUrl;
+        user.AvatarUrl = request.AvatarUrl;
 
         if (emailChanged)
         {

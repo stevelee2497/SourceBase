@@ -79,9 +79,7 @@
                             {
                                 var roleName = role.Name;
                                 <label class="flex items-center gap-1.5 text-sm text-gray-700">
-                                    <input type="checkbox" class="rounded border-gray-300 text-indigo-600"
-                                           checked="@_form.SelectedRoles.Contains(roleName)"
-                                           @onchange="e => ToggleRole(roleName, (bool)e.Value!)" />
+                                    <input type="checkbox" class="rounded border-gray-300 text-indigo-600" checked="@_form.SelectedRoles.Contains(roleName)" @onchange="e => ToggleRole(roleName, (bool)e.Value!)" />
                                     @roleName
                                 </label>
                             }
@@ -161,6 +159,17 @@
             return;
         }
 
+        var error = await PerformAvatarUploadAsync(file, uploadInfo);
+        if (error is not null)
+        {
+            _error = error;
+        }
+        _form.AvatarUrl = uploadInfo.AvatarUrl;
+        _uploadingAvatar = false;
+    }
+
+    private async Task<string?> PerformAvatarUploadAsync(IBrowserFile file, AvatarUploadUrlResponse uploadInfo)
+    {
         try
         {
             using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
@@ -169,19 +178,13 @@
             var putResponse = await Http.PutAsync(uploadInfo.UploadUrl, content);
             if (!putResponse.IsSuccessStatusCode)
             {
-                _error = "Failed to upload avatar. Please try again.";
-                _uploadingAvatar = false;
-                return;
+                return "Failed to upload avatar. Please try again.";
             }
-            _form.AvatarUrl = uploadInfo.AvatarUrl;
+            return null;
         }
         catch
         {
-            _error = "Failed to upload avatar. Please try again.";
-        }
-        finally
-        {
-            _uploadingAvatar = false;
+            return "Failed to upload avatar. Please try again.";
         }
     }
 

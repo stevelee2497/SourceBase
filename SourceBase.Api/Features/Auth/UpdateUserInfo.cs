@@ -27,8 +27,7 @@ public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUse
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.PhoneNumber = request.PhoneNumber;
-        if (request.AvatarUrl is not null)
-            user.AvatarUrl = request.AvatarUrl;
+        user.AvatarUrl = request.AvatarUrl;
         await dbContext.SaveChangesAsync(ct);
         return new UpdateUserInfoResponse(user.Id);
     }
