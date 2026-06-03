@@ -20,7 +20,7 @@ public class NotificationService(IDbContext dbContext, IHubContext<NotificationH
         dbContext.Notifications.Add(notification);
         await dbContext.SaveChangesAsync(ct);
 
-        await hubContext.Clients.Group(userId.ToString()).SendAsync("ReceiveNotification", new
+        await hubContext.Clients.Group(userId.ToString()).SendAsync("GlobalNotificationEvent", new
         {
             notification.Id,
             notification.Title,

@@ -29,7 +29,7 @@ public class NotificationService(BlazorAuthStateProvider auth, IConfiguration co
             .WithAutomaticReconnect()
             .Build();
 
-        _connection.On<NotificationResponse>("ReceiveNotification", notification =>
+        _connection.On<NotificationResponse>("GlobalNotificationEvent", notification =>
         {
             Notifications.Insert(0, notification);
             OnChange?.Invoke();
