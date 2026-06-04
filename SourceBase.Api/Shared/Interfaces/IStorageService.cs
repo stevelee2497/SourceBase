@@ -2,5 +2,5 @@ namespace SourceBase.Api.Shared.Interfaces;
 
 public interface IStorageService
 {
-    Task<string> GeneratePresignedUploadUrlAsync(string objectKey, string contentType, int expiryMinutes = 15);
+    Task<string> GeneratePresignedUploadUrlAsync(string objectKey, string contentType);
 }
