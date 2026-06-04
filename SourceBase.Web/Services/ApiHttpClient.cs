@@ -122,6 +122,7 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
             using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
             using var content = new StreamContent(stream);
             content.Headers.ContentType = new MediaTypeHeaderValue(uploadInfo.ContentType);
+            content.Headers.ContentLength = file.Size;
             var putResponse = await http.PutAsync(uploadInfo.UploadUrl, content);
             if (!putResponse.IsSuccessStatusCode)
             {
