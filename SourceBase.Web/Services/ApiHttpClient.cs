@@ -113,7 +113,7 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/auth/logout"));
 
     public Task<(AvatarUploadUrlResponse? data, ErrorResponse? error)> GetAvatarUploadUrlAsync(string fileName) =>
-        ExecuteAsync<AvatarUploadUrlResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/auth/avatar/upload-url", new { fileName }));
+        ExecuteAsync<AvatarUploadUrlResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/files/avatar/upload-url", new { fileName }));
 
     public async Task<string?> PerformAvatarUploadAsync(IBrowserFile file, AvatarUploadUrlResponse uploadInfo)
     {
