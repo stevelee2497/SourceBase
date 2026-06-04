@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Api.Features.Users;
 
-public record UpdateUserRequest([property: SwaggerIgnore] Guid Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string[]? Roles);
+public record UpdateUserRequest([property: SwaggerIgnore] Guid Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, string[]? Roles);
 
 public record UpdateUserResponse(Guid Id);
 
@@ -39,6 +39,7 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, A
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.PhoneNumber = request.PhoneNumber;
+        user.AvatarUrl = request.AvatarUrl;
 
         if (emailChanged)
         {

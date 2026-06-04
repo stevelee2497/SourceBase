@@ -79,6 +79,7 @@ Integration tests live in `SourceBase.Tests/` using `xUnit` + `FluentAssertions`
 - `CreateAuthorizedClient()` — creates an `HttpClient` pre-authorized as the seeded admin.
 - `GetLatestEmailCodeAsync(email)` — queries `db.Emails` for the most recent email sent to that address and extracts the `code` query param from the link in the body. Use this after any endpoint that sends an email (register, forgotPassword).
 - `ConfirmEmailAsync(client, email)` — convenience wrapper: reads the code from the DB and POSTs to `/api/auth/confirmEmail`.
+- Avoid calling WithDbContextAsync directly in tests if possible; instead call appropriate apis to get the response data you need. Only use WithDbContextAsync for assertions that require checking the DB entity field that are not exposed via the API response.
 
 **Email testing** — `SendGridEmailHelper` always persists every outbound email to `db.Emails` (`EmailEntity`: `To`, `Subject`, `Body`, `SentOn`) before dispatching via SendGrid. In tests (no API key configured) the email is only saved to the DB. Retrieve codes via `GetLatestEmailCodeAsync` instead of generating tokens directly from `UserManager`.
 

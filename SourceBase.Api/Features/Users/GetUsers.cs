@@ -7,7 +7,7 @@ namespace SourceBase.Api.Features.Users;
 
 public record GetUsersRequest(int? Page = 1, int? Limit = 10, PagingOrder? Order = PagingOrder.Asc, UsersOrder? OrderBy = UsersOrder.CreatedOn) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
 
-public record UserResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, bool EmailConfirmed, IEnumerable<string> Roles);
+public record UserResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, bool EmailConfirmed, string? AvatarUrl, IEnumerable<string> Roles);
 
 public class GetUsersEndpoint : IEndpoint
 {
@@ -32,6 +32,7 @@ public class GetUsersHandler(IDbContext dbContext) : IRequestHandler<GetUsersReq
                 LastName: user.LastName,
                 PhoneNumber: user.PhoneNumber,
                 EmailConfirmed: user.EmailConfirmed,
+                AvatarUrl: user.AvatarUrl,
                 Roles: user.Roles.Select(r => r.Name!)
             ),
             paging: request,

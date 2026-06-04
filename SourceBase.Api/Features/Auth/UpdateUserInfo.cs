@@ -6,7 +6,7 @@ using SourceBase.Api.Shared.Interfaces;
 
 namespace SourceBase.Api.Features.Auth;
 
-public record UpdateUserInfoRequest(string? FirstName, string? LastName, string? PhoneNumber);
+public record UpdateUserInfoRequest(string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl);
 
 public record UpdateUserInfoResponse(Guid Id);
 
@@ -27,6 +27,7 @@ public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUse
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.PhoneNumber = request.PhoneNumber;
+        user.AvatarUrl = request.AvatarUrl;
         await dbContext.SaveChangesAsync(ct);
         return new UpdateUserInfoResponse(user.Id);
     }

@@ -13,6 +13,33 @@
             }
 
             <div class="space-y-4">
+                @if (!_isCreate)
+                {
+                    <div>
+                        <label class="form-label">Avatar</label>
+                        <div class="flex items-center gap-4 mt-1">
+                            <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center shrink-0">
+                                @if (!string.IsNullOrEmpty(_form.AvatarUrl))
+                                {
+                                    <img src="@_form.AvatarUrl" alt="Avatar" class="w-full h-full object-cover" />
+                                }
+                                else
+                                {
+                                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                }
+                            </div>
+                            <div class="flex-1">
+                                <InputFile OnChange="UploadAvatarAsync" accept="image/jpeg,image/png,image/gif,image/webp" class="block w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" disabled="@_uploadingAvatar" />
+                                @if (_uploadingAvatar)
+                                {
+                                    <p class="text-xs text-indigo-600 mt-1">Uploading…</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
                 @if (_isCreate)
                 {
                     <div>
@@ -51,9 +78,7 @@
                             {
                                 var roleName = role.Name;
                                 <label class="flex items-center gap-1.5 text-sm text-gray-700">
-                                    <input type="checkbox" class="rounded border-gray-300 text-indigo-600"
-                                           checked="@_form.SelectedRoles.Contains(roleName)"
-                                           @onchange="e => ToggleRole(roleName, (bool)e.Value!)" />
+                                    <input type="checkbox" class="rounded border-gray-300 text-indigo-600" checked="@_form.SelectedRoles.Contains(roleName)" @onchange="e => ToggleRole(roleName, (bool)e.Value!)" />
                                     @roleName
                                 </label>
                             }
@@ -69,7 +94,7 @@
                     </svg>
                     Cancel
                 </button>
-                <button class="btn-primary" @onclick="SaveAsync" disabled="@_saving">
+                <button class="btn-primary" @onclick="SaveAsync" disabled="@(_saving || _uploadingAvatar)">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
@@ -92,6 +117,7 @@
     private readonly FormModel _form = new();
     private string? _error;
     private bool _saving;
+    private bool _uploadingAvatar;
 
     protected override void OnParametersSet()
     {
@@ -103,6 +129,7 @@
             _form.FirstName = User?.FirstName;
             _form.LastName = User?.LastName;
             _form.PhoneNumber = User?.PhoneNumber;
+            _form.AvatarUrl = User?.AvatarUrl;
             _form.SelectedRoles = [.. User?.Roles ?? []];
             _error = null;
         }
@@ -115,6 +142,33 @@
         else _form.SelectedRoles.Remove(role);
     }
 
+    private async Task UploadAvatarAsync(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file is null) return;
+
+        _uploadingAvatar = true;
+        _error = null;
+
+        var (uploadInfo, urlError) = await Api.GetAvatarUploadUrlAsync(file.Name);
+        if (urlError is not null || uploadInfo is null)
+        {
+            _error = urlError?.Message ?? "Failed to get upload URL.";
+            _uploadingAvatar = false;
+            return;
+        }
+
+        var error = await Api.PerformAvatarUploadAsync(file, uploadInfo);
+        if (error is not null)
+        {
+            _error = error;
+        }
+        _form.AvatarUrl = uploadInfo.AvatarUrl;
+        _uploadingAvatar = false;
+    }
+
+  
+
     private async Task SaveAsync()
     {
         _error = null;
@@ -124,7 +178,7 @@
         if (_isCreate)
             error = await Api.CreateUserAsync(_form.UserName, _form.Email, _form.Password, _form.FirstName, _form.LastName, _form.PhoneNumber, [.. _form.SelectedRoles]);
         else
-            error = await Api.UpdateUserAsync(User!.Id, _form.Email, _form.FirstName, _form.LastName, _form.PhoneNumber, [.. _form.SelectedRoles]);
+            error = await Api.UpdateUserAsync(User!.Id, _form.Email, _form.FirstName, _form.LastName, _form.PhoneNumber, _form.AvatarUrl, [.. _form.SelectedRoles]);
 
         if (error is not null)
         {
@@ -146,6 +200,7 @@
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? AvatarUrl { get; set; }
         public HashSet<string> SelectedRoles { get; set; } = [];
     }
 }
