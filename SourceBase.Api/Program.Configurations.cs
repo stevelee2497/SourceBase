@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Sinks.OpenTelemetry;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Infrastructure.DbContexts;
@@ -92,7 +93,9 @@ public static class ProgramConfigurations
 
     public static void AddSeriLog(this WebApplicationBuilder builder)
     {
-        var logConfig = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration);
+        var logConfig = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)
+            .Enrich.WithSpan();
 
         var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
         if (!string.IsNullOrWhiteSpace(otlpEndpoint))
@@ -111,6 +114,20 @@ public static class ProgramConfigurations
 
         Log.Logger = logConfig.CreateLogger();
         builder.Host.UseSerilog();
+    }
+
+    public static void UseSeriLog(this WebApplication app)
+    {
+        app.UseSerilogRequestLogging(options =>
+        {
+            options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+            {
+                diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+                diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+                diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
+                diagnosticContext.Set("ClientIp", httpContext.Connection.RemoteIpAddress?.ToString());
+            };
+        });
     }
 
     public static void UseMinimalApi(this WebApplication app)

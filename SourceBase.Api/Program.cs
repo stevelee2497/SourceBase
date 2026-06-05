@@ -29,6 +29,7 @@ if (app.Environment.IsProduction())
 }
 
 app.UseGlobalException();
+app.UseSeriLog();
 app.UseCors(Constants.CorsCustomPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
