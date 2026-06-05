@@ -271,12 +271,8 @@ echo YOUR_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 ### 4. Deploy (first time)
 
 ```sh
-# Clone the repo on the VPS (needed for nginx.conf and .env)
+# Clone the repo on the VPS
 git clone https://github.com/stevelee2497/SourceBase.git && cd SourceBase
-
-# Fill in secrets
-cp .env.example .env
-nano .env   # set ADMIN_EMAIL, ADMIN_PASSWORD, SENDGRID_API_KEY
 
 # Pull pre-built images and start
 docker compose pull
@@ -298,14 +294,3 @@ docker compose pull && docker compose up -d --remove-orphans
 ```
 
 No manual action needed. To force a redeploy, push any commit to `main` or re-run the workflow from the GitHub Actions tab.
-
-### Environment variables (`.env`)
-
-| Variable                 | Description                           |
-| ------------------------ | ------------------------------------- |
-| `ADMIN_EMAIL`            | Seed admin email                      |
-| `ADMIN_PASSWORD`         | Seed admin password                   |
-| `SENDGRID_API_KEY`       | Leave blank to disable outbound email |
-| `SENDGRID_ACCOUNT_OWNER` | Sender email address                  |
-
-The SQLite database is persisted in a Docker named volume (`sqlite_data`) and survives container restarts and image updates.
