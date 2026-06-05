@@ -93,17 +93,28 @@ Integration tests in `SourceBase.Tests/` with xUnit + FluentAssertions + `WebApp
 **Test structure:**
 
 ```csharp
-[Fact(DisplayName = "TODOS-CREATE-001: CreateTodo_WithValidRequest_ReturnsOk")]
-public async Task CreateTodo_WithValidRequest_ReturnsOk()
+[Fact(DisplayName = "TODOS-CREATE-006: CreateTodo_WithValidTodoListId_ReturnsOk")]
+public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
 {
     // Arrange
     var client = await factory.CreateAuthorizedClient();
+    var listResponse = await client.PostAsJsonAsync("todo-lists", new { name = $"List_{Guid.NewGuid():N}" });
+    var list = await listResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
 
     // Act
-    var response = await client.PostAsJsonAsync(CreateTodoEndpoint.Route, new { title = "Buy milk", date = "2025-06-01", status = "Open" });
+    var response = await client.PostAsJsonAsync(CreateTodoEndpoint.Route, new
+    {
+        date = "2025-06-01",
+        title = "Todo in list",
+        status = "Open",
+        todoListId = list!.Id,
+    });
 
     // Assert
-    response.StatusCode.Should().Be(HttpStatusCode.OK);
+    var todoResponse = await client.GetAsync(GetTodoEndpoint.Route.WithId(body.Id));
+    var todo = await todoResponse.Content.ReadFromJsonAsync<GetTodoResponse>();
+    todo!.CreatedBy.Should().Be(userInfo!.UserName);
+    todo.UserId.Should().Be(userInfo.Id);
 }
 ```
 

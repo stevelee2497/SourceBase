@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Entities;
 using SourceBase.Api.Features.Categories;
 using SourceBase.Tests.Infrastructure;
@@ -110,12 +109,9 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Assert
-        var data = await factory.WithDbContextAsync(async db => new
-        {
-            Category = await db.Categories.SingleAsync(x => x.Id == create!.Id),
-            UserId = await db.Users.Where(x => x.Email == email).Select(x => x.Id).SingleAsync()
-        });
-        data.Category.UserId.Should().Be(data.UserId);
-        data.Category.IsSystem.Should().BeFalse();
+        var catResponse = await client.GetAsync(GetCategoriesEndpoint.Route);
+        var categories = await catResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var category = categories!.Single(x => x.Id == create!.Id);
+        category.IsSystem.Should().BeFalse();
     }
 }

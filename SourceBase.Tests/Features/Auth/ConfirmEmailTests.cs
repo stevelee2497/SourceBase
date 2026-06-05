@@ -38,9 +38,12 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var body = await response.Content.ReadFromJsonAsync<ConfirmEmailResponse>();
         body!.Success.Should().BeTrue();
 
-        var dbUser = await factory.WithDbContextAsync(db => db.Users.Include(x => x.Roles).SingleAsync(x => x.Email == email));
-        dbUser.EmailConfirmed.Should().BeTrue();
-        dbUser.Roles.Should().Contain(x => x.Name == "User");
+        var token = await factory.GetAccessTokenAsync(client, email, "Test@1234!");
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var infoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
+        var info = await infoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
+        info!.EmailConfirmed.Should().BeTrue();
+        info.Roles.Should().Contain("User");
     }
 
 

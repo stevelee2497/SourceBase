@@ -193,11 +193,14 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var user = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Id == createBody.Id));
+        var usersResponse = await adminClient.GetAsync($"{GetUsersEndpoint.Route}?limit=100");
+        var users = await usersResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
+        var user = users!.Items.Single(x => x.Id == createBody.Id);
         user.Email.Should().Be(updatedEmail);
         user.EmailConfirmed.Should().BeFalse();
-        user.OtpCode.Should().NotBeNullOrEmpty();
-        user.OtpCodeExpiresOn.Should().NotBeNull();
+        var userEntity = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Id == createBody.Id));
+        userEntity.OtpCode.Should().NotBeNullOrEmpty();
+        userEntity.OtpCodeExpiresOn.Should().NotBeNull();
 
         var latestEmail = await factory.WithDbContextAsync(db => db.Emails
             .Where(x => x.To == updatedEmail)

@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Features.TodoLists;
+using SourceBase.Api.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -64,7 +64,9 @@ public class CreateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var list = await factory.WithDbContextAsync(db => db.TodoLists.SingleAsync(x => x.Id == body!.Id));
+        var listsResponse = await client.GetAsync($"{GetTodoListsEndpoint.Route}?limit=100");
+        var lists = await listsResponse.Content.ReadFromJsonAsync<PagingResponse<TodoListResponse>>();
+        var list = lists!.Items.Single(x => x.Id == body!.Id);
         list.CreatedBy.Should().NotBeNullOrEmpty();
     }
 }

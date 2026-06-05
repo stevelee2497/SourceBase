@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Entities;
+using SourceBase.Api.Features.Auth;
 using SourceBase.Api.Features.Notifications;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -16,13 +17,14 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
-        var adminUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(u => u.Email == WebAppFactory.AdminEmail));
+        var userInfoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
+        var userInfo = await userInfoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
 
         await factory.WithDbContextAsync(async db =>
         {
             db.Notifications.AddRange(
-                new NotificationEntity { UserId = adminUser.Id, Title = "C1", Message = "msg" },
-                new NotificationEntity { UserId = adminUser.Id, Title = "C2", Message = "msg" }
+                new NotificationEntity { UserId = userInfo!.Id, Title = "C1", Message = "msg" },
+                new NotificationEntity { UserId = userInfo.Id, Title = "C2", Message = "msg" }
             );
             await db.SaveChangesAsync();
             return true;
@@ -36,9 +38,9 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
         var body = await response.Content.ReadFromJsonAsync<ClearAllNotificationsResponse>();
         body!.Success.Should().BeTrue();
 
-        var remaining = await factory.WithDbContextAsync(db =>
-            db.Notifications.CountAsync(n => n.UserId == adminUser.Id));
-        remaining.Should().Be(0);
+        var notificationsResponse = await client.GetAsync(GetNotificationsEndpoint.Route);
+        var notifications = await notificationsResponse.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        notifications!.Total.Should().Be(0);
     }
 
     [Fact(DisplayName = "NOTIF-CLEAR-002: ClearAllNotifications_WithNoNotifications_ReturnsOk")]

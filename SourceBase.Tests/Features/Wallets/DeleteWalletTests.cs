@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Features.Categories;
 using SourceBase.Api.Features.Transactions;
 using SourceBase.Api.Features.Wallets;
@@ -105,13 +104,12 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var counts = await factory.WithDbContextAsync(async db => new
-        {
-            WalletExists = await db.Wallets.AnyAsync(x => x.Id == create.Id),
-            TransactionCount = await db.Transactions.CountAsync(x => x.WalletId == create.Id)
-        });
-        counts.WalletExists.Should().BeFalse();
-        counts.TransactionCount.Should().Be(0);
+        var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create!.Id));
+        walletResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var txnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={create.Id}&limit=100");
+        var txns = await txnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
+        txns!.Total.Should().Be(0);
     }
 
     [Fact(DisplayName = "WALLETS-DELETE-006: DeleteWallet_DeletedWalletExcludedFromList")]

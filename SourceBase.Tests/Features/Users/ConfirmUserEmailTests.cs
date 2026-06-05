@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Features.Users;
+using SourceBase.Api.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -88,16 +89,19 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         });
         var created = await createResponse.Content.ReadFromJsonAsync<CreateUserResponse>();
 
-        var before = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Id == created!.Id));
-        before.EmailConfirmed.Should().BeFalse();
+        var usersBeforeResponse = await adminClient.GetAsync($"{GetUsersEndpoint.Route}?limit=100");
+        var usersBefore = await usersBeforeResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
+        usersBefore!.Items.Single(x => x.Id == created!.Id).EmailConfirmed.Should().BeFalse();
 
         // Act
         await adminClient.PostAsJsonAsync($"users/{created!.Id}/confirm-email", new { });
 
         // Assert
-        var after = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Id == created.Id));
-        after.EmailConfirmed.Should().BeTrue();
-        after.OtpCode.Should().BeNull();
-        after.OtpCodeExpiresOn.Should().BeNull();
+        var usersAfterResponse = await adminClient.GetAsync($"{GetUsersEndpoint.Route}?limit=100");
+        var usersAfter = await usersAfterResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
+        usersAfter!.Items.Single(x => x.Id == created.Id).EmailConfirmed.Should().BeTrue();
+        var afterEntity = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Id == created.Id));
+        afterEntity.OtpCode.Should().BeNull();
+        afterEntity.OtpCodeExpiresOn.Should().BeNull();
     }
 }

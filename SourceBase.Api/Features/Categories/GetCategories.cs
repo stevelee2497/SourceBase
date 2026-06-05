@@ -7,7 +7,7 @@ namespace SourceBase.Api.Features.Categories;
 
 public record GetCategoriesRequest(CategoryType? Type = null);
 
-public record CategoryResponse(Guid Id, string Name, CategoryType Type, string? Icon, bool IsSystem);
+public record CategoryResponse(Guid Id, Guid? UserId, string Name, CategoryType Type, string? Icon, bool IsSystem);
 
 public class GetCategoriesEndpoint : IEndpoint
 {
@@ -25,7 +25,7 @@ public class GetCategoriesHandler(IDbContext dbContext, ICurrentUser currentUser
         return await dbContext.Categories
             .Where(c => (c.IsSystem || c.UserId == currentUser.UserId) && (request.Type == null || c.Type == request.Type))
             .OrderBy(c => c.Name)
-            .Select(c => new CategoryResponse(c.Id, c.Name, c.Type, c.Icon, c.IsSystem))
+            .Select(c => new CategoryResponse(c.Id, c.UserId, c.Name, c.Type, c.Icon, c.IsSystem))
             .ToListAsync(ct);
     }
 }

@@ -1,8 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
+using SourceBase.Api.Features.Notifications;
 using SourceBase.Api.Features.TimeSheets;
+using SourceBase.Api.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -68,8 +69,9 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         secondResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         secondBody!.Ids[0].Should().Be(firstBody!.Ids[0]);
 
-        var entity = await factory.WithDbContextAsync(db => db.TimeSheets.SingleAsync(x => x.Id == firstBody.Ids[0]));
-        entity.Hours.Should().Be(8);
+        var tsResponse = await client.GetAsync($"time-sheets/{firstBody.Ids[0]}");
+        var ts = await tsResponse.Content.ReadFromJsonAsync<GetTimeSheetResponse>();
+        ts!.Hours.Should().Be(8);
     }
 
     [Fact(DisplayName = "TIMESHEET-CREATE-004: CreateTimeSheet_WithMultipleItems_CreatesAll")]
@@ -178,9 +180,11 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var entriesForDate = await factory.WithDbContextAsync(db =>
-            db.TimeSheets.Where(x => x.Date == new DateOnly(2025, 9, 1) && x.Project == "SharedName").ToListAsync());
-        entriesForDate.Should().HaveCount(2);
+        var ownerTimesheets = await ownerClient.GetAsync($"{GetTimeSheetsEndpoint.Route}?date=2025-09-01&limit=100");
+        var ownerBody = await ownerTimesheets.Content.ReadFromJsonAsync<PagingResponse<GetTimeSheetResponse>>();
+        var strangerTimesheets = await strangerClient.GetAsync($"{GetTimeSheetsEndpoint.Route}?date=2025-09-01&limit=100");
+        var strangerBody = await strangerTimesheets.Content.ReadFromJsonAsync<PagingResponse<GetTimeSheetResponse>>();
+        (ownerBody!.Items.Count(x => x.Project == "SharedName") + strangerBody!.Items.Count(x => x.Project == "SharedName")).Should().Be(2);
     }
 
     [Fact(DisplayName = "TIMESHEET-CREATE-010: CreateTimeSheet_WithValidData_CreatesNotificationForUser")]
@@ -189,10 +193,6 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         // Arrange
         var email = $"notif_{Guid.NewGuid():N}@test.com";
         var client = await factory.CreateAuthorizedClient(email, "Test@1234!");
-        var userId = await factory.WithDbContextAsync(db => db.Users
-            .Where(u => u.Email == email)
-            .Select(u => u.Id)
-            .FirstAsync());
 
         // Act
         await client.PostAsJsonAsync(CreateTimeSheetEndpoint.Route, new
@@ -201,10 +201,9 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        var notification = await factory.WithDbContextAsync(db => db.Notifications
-            .Where(n => n.UserId == userId)
-            .OrderByDescending(n => n.CreatedOn)
-            .FirstOrDefaultAsync());
+        var notificationsResponse = await client.GetAsync($"{GetNotificationsEndpoint.Route}?limit=1");
+        var notifications = await notificationsResponse.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        var notification = notifications!.Items.FirstOrDefault();
         notification.Should().NotBeNull();
         notification!.Title.Should().Be("Time Sheets Submitted");
         notification.Message.Should().Be("Your time sheets have been submitted successfully.");

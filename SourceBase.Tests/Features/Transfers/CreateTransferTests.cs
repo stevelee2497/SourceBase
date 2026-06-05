@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Entities;
+using SourceBase.Api.Features.Transactions;
 using SourceBase.Api.Features.Transfers;
 using SourceBase.Api.Features.Wallets;
 using SourceBase.Api.Shared;
@@ -216,17 +216,13 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var transfer = await transferResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
 
         // Assert
-        var data = await factory.WithDbContextAsync(async db =>
-        {
-            var transferEntity = await db.Transfers.SingleAsync(x => x.Id == transfer!.Id);
-            var transactions = await db.Transactions
-                .Where(x => x.Id == transferEntity.FromTransactionId || x.Id == transferEntity.ToTransactionId)
-                .ToListAsync();
-            return new { Transfer = transferEntity, Transactions = transactions };
-        });
-        data.Transactions.Should().HaveCount(2);
-        data.Transactions.Should().Contain(x => x.Id == data.Transfer.FromTransactionId && x.Type == TransactionType.Expense && x.IsTransfer);
-        data.Transactions.Should().Contain(x => x.Id == data.Transfer.ToTransactionId && x.Type == TransactionType.Income && x.IsTransfer);
+        var fromTxnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={fromWallet!.Id}&limit=100");
+        var fromTxns = await fromTxnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
+        fromTxns!.Items.Should().ContainSingle(x => x.Type == TransactionType.Expense && x.IsTransfer);
+
+        var toTxnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={toWallet!.Id}&limit=100");
+        var toTxns = await toTxnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
+        toTxns!.Items.Should().ContainSingle(x => x.Type == TransactionType.Income && x.IsTransfer);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-009: CreateTransfer_WithMissingFromWallet_ReturnsBadRequest")]

@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Features.Auth;
 using SourceBase.Api.Features.TodoLists;
 using SourceBase.Api.Features.Todos;
+using SourceBase.Api.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -74,8 +74,9 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
         body!.Id.Should().NotBeEmpty();
 
-        var todo = await factory.WithDbContextAsync(db => db.TodoItems.SingleAsync(x => x.Id == body.Id));
-        todo.CreatedBy.Should().Be(userInfo!.UserName);
+        var todoResponse = await client.GetAsync(GetTodoEndpoint.Route.WithId(body.Id));
+        var todo = await todoResponse.Content.ReadFromJsonAsync<GetTodoResponse>();
+        todo!.CreatedBy.Should().Be(userInfo!.UserName);
         todo.UserId.Should().Be(userInfo.Id);
     }
 
@@ -133,7 +134,8 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
-        var todo = await factory.WithDbContextAsync(db => db.TodoItems.SingleAsync(x => x.Id == body!.Id));
+        var todoResponse = await client.GetAsync($"todos/{body!.Id}");
+        var todo = await todoResponse.Content.ReadFromJsonAsync<GetTodoResponse>();
         todo!.TodoListId.Should().Be(list.Id);
     }
 

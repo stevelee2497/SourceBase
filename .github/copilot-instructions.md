@@ -104,10 +104,10 @@ public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
     });
 
     // Assert
-    response.StatusCode.Should().Be(HttpStatusCode.OK);
-    var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
-    var todo = await factory.WithDbContextAsync(db => db.TodoItems.SingleAsync(x => x.Id == body!.Id));
-    todo!.TodoListId.Should().Be(list.Id);
+    var todoResponse = await client.GetAsync(GetTodoEndpoint.Route.WithId(body.Id));
+    var todo = await todoResponse.Content.ReadFromJsonAsync<GetTodoResponse>();
+    todo!.CreatedBy.Should().Be(userInfo!.UserName);
+    todo.UserId.Should().Be(userInfo.Id);
 }
 ```
 

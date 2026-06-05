@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
+using SourceBase.Api.Features.Transactions;
 using SourceBase.Api.Features.Transfers;
 using SourceBase.Api.Features.Wallets;
 using SourceBase.Api.Shared;
@@ -110,22 +110,23 @@ public class DeleteTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var transferResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet!.Id, toWalletId = toWallet!.Id, amount = 25m, date = "2025-04-18", note = $"Transfer_{Guid.NewGuid():N}" });
         transferResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var transfer = await transferResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
-        var transferData = await factory.WithDbContextAsync(async db => await db.Transfers.SingleAsync(x => x.Id == transfer!.Id));
 
         // Act
         var response = await client.DeleteAsync(DeleteTransferEndpoint.Route.WithId(transfer!.Id));
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var counts = await factory.WithDbContextAsync(async db => new
-        {
-            TransferExists = await db.Transfers.AnyAsync(x => x.Id == transfer.Id),
-            FromTransactionExists = await db.Transactions.AnyAsync(x => x.Id == transferData.FromTransactionId),
-            ToTransactionExists = await db.Transactions.AnyAsync(x => x.Id == transferData.ToTransactionId),
-        });
-        counts.TransferExists.Should().BeFalse();
-        counts.FromTransactionExists.Should().BeFalse();
-        counts.ToTransactionExists.Should().BeFalse();
+        var transfersListResponse = await client.GetAsync($"{GetTransfersEndpoint.Route}?limit=100");
+        var transfersList = await transfersListResponse.Content.ReadFromJsonAsync<PagingResponse<TransferResponse>>();
+        transfersList!.Items.Should().NotContain(x => x.Id == transfer.Id);
+
+        var fromTxnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={fromWallet!.Id}&limit=100");
+        var fromTxns = await fromTxnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
+        fromTxns!.Items.Should().NotContain(x => x.IsTransfer);
+
+        var toTxnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={toWallet!.Id}&limit=100");
+        var toTxns = await toTxnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
+        toTxns!.Items.Should().NotContain(x => x.IsTransfer);
     }
 
     [Fact(DisplayName = "TRANSFER-DELETE-006: DeleteTransfer_DoesNotAffectOtherTransfers")]

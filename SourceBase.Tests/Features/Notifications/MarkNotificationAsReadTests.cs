@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Entities;
+using SourceBase.Api.Features.Auth;
 using SourceBase.Api.Features.Notifications;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -16,11 +16,12 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
-        var adminUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(u => u.Email == WebAppFactory.AdminEmail));
+        var userInfoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
+        var userInfo = await userInfoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
 
         var notifId = await factory.WithDbContextAsync(async db =>
         {
-            var n = new NotificationEntity { UserId = adminUser.Id, Title = "Unread", Message = "msg", IsRead = false };
+            var n = new NotificationEntity { UserId = userInfo!.Id, Title = "Unread", Message = "msg", IsRead = false };
             db.Notifications.Add(n);
             await db.SaveChangesAsync();
             return n.Id;
@@ -34,7 +35,9 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
         var body = await response.Content.ReadFromJsonAsync<MarkNotificationAsReadResponse>();
         body!.Success.Should().BeTrue();
 
-        var notif = await factory.WithDbContextAsync(db => db.Notifications.SingleAsync(n => n.Id == notifId));
+        var notificationsResponse = await client.GetAsync($"{GetNotificationsEndpoint.Route}?limit=100");
+        var notifications = await notificationsResponse.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        var notif = notifications!.Items.Single(n => n.Id == notifId);
         notif.IsRead.Should().BeTrue();
     }
 
@@ -78,11 +81,12 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
-        var adminUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(u => u.Email == WebAppFactory.AdminEmail));
+        var userInfoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
+        var userInfo = await userInfoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
 
         var notifId = await factory.WithDbContextAsync(async db =>
         {
-            var n = new NotificationEntity { UserId = adminUser.Id, Title = "AlreadyRead", Message = "msg", IsRead = true };
+            var n = new NotificationEntity { UserId = userInfo!.Id, Title = "AlreadyRead", Message = "msg", IsRead = true };
             db.Notifications.Add(n);
             await db.SaveChangesAsync();
             return n.Id;

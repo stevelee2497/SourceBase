@@ -8,9 +8,9 @@ namespace SourceBase.Api.Features.Todos;
 public record GetTodoRequest(Guid Id);
 
 [method: JsonConstructor]
-public record GetTodoResponse(Guid Id, DateOnly Date, string Title, TodoItemStatus Status, Guid? TodoListId, DateTime? CreatedOn, string? CreatedBy, DateTime? UpdatedOn, string? UpdatedBy)
+public record GetTodoResponse(Guid Id, Guid UserId, DateOnly Date, string Title, TodoItemStatus Status, Guid? TodoListId, DateTime? CreatedOn, string? CreatedBy, DateTime? UpdatedOn, string? UpdatedBy)
 {
-    public GetTodoResponse(TodoItemEntity todo) : this(todo.Id, todo.Date, todo.Title, todo.Status, todo.TodoListId, todo.CreatedOn, todo.CreatedBy, todo.UpdatedOn, todo.UpdatedBy)
+    public GetTodoResponse(TodoItemEntity todo) : this(todo.Id, todo.UserId, todo.Date, todo.Title, todo.Status, todo.TodoListId, todo.CreatedOn, todo.CreatedBy, todo.UpdatedOn, todo.UpdatedBy)
     {
     }
 }

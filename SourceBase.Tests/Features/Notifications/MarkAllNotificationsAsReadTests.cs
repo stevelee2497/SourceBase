@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Entities;
+using SourceBase.Api.Features.Auth;
 using SourceBase.Api.Features.Notifications;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -16,13 +17,14 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
-        var adminUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(u => u.Email == WebAppFactory.AdminEmail));
+        var userInfoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
+        var userInfo = await userInfoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
 
         await factory.WithDbContextAsync(async db =>
         {
             db.Notifications.AddRange(
-                new NotificationEntity { UserId = adminUser.Id, Title = "N1", Message = "msg", IsRead = false },
-                new NotificationEntity { UserId = adminUser.Id, Title = "N2", Message = "msg", IsRead = false }
+                new NotificationEntity { UserId = userInfo!.Id, Title = "N1", Message = "msg", IsRead = false },
+                new NotificationEntity { UserId = userInfo.Id, Title = "N2", Message = "msg", IsRead = false }
             );
             await db.SaveChangesAsync();
             return true;
@@ -36,9 +38,9 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
         var body = await response.Content.ReadFromJsonAsync<MarkAllNotificationsAsReadResponse>();
         body!.Success.Should().BeTrue();
 
-        var unreadCount = await factory.WithDbContextAsync(db =>
-            db.Notifications.CountAsync(n => n.UserId == adminUser.Id && !n.IsRead));
-        unreadCount.Should().Be(0);
+        var unreadResponse = await client.GetAsync($"{GetNotificationsEndpoint.Route}?unreadOnly=true");
+        var unreadNotifications = await unreadResponse.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        unreadNotifications!.Total.Should().Be(0);
     }
 
     [Fact(DisplayName = "NOTIF-MARK-ALL-READ-002: MarkAllNotificationsAsRead_WithNoNotifications_ReturnsOk")]

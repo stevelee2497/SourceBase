@@ -78,8 +78,9 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var users = await usersResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
         users!.Items.Should().ContainSingle(x => x.Id == body.Id && x.UserName == userName && x.Email == email && x.Roles.Contains("User"));
 
+        var createdUserFromApi = users.Items.Single(x => x.Id == body.Id);
+        createdUserFromApi.EmailConfirmed.Should().BeFalse();
         var createdUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Id == body.Id));
-        createdUser.EmailConfirmed.Should().BeFalse();
         createdUser.OtpCode.Should().NotBeNullOrEmpty();
         createdUser.OtpCodeExpiresOn.Should().NotBeNull();
 

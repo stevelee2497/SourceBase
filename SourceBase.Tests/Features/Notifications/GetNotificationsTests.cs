@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Api.Entities;
+using SourceBase.Api.Features.Auth;
 using SourceBase.Api.Features.Notifications;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -32,11 +32,12 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
-        var adminUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(u => u.Email == WebAppFactory.AdminEmail));
+        var userInfoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
+        var userInfo = await userInfoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
 
         await factory.WithDbContextAsync(async db =>
         {
-            db.Notifications.Add(new NotificationEntity { UserId = adminUser.Id, Title = "Test Title", Message = "Test Message" });
+            db.Notifications.Add(new NotificationEntity { UserId = userInfo!.Id, Title = "Test Title", Message = "Test Message" });
             await db.SaveChangesAsync();
             return true;
         });
@@ -55,13 +56,14 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
-        var adminUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(u => u.Email == WebAppFactory.AdminEmail));
+        var userInfoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
+        var userInfo = await userInfoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
 
         await factory.WithDbContextAsync(async db =>
         {
             db.Notifications.AddRange(
-                new NotificationEntity { UserId = adminUser.Id, Title = "Unread", Message = "msg", IsRead = false },
-                new NotificationEntity { UserId = adminUser.Id, Title = "Read", Message = "msg", IsRead = true }
+                new NotificationEntity { UserId = userInfo!.Id, Title = "Unread", Message = "msg", IsRead = false },
+                new NotificationEntity { UserId = userInfo.Id, Title = "Read", Message = "msg", IsRead = true }
             );
             await db.SaveChangesAsync();
             return true;
@@ -81,12 +83,13 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
-        var adminUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(u => u.Email == WebAppFactory.AdminEmail));
+        var userInfoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
+        var userInfo = await userInfoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
 
         await factory.WithDbContextAsync(async db =>
         {
             for (var i = 0; i < 5; i++)
-                db.Notifications.Add(new NotificationEntity { UserId = adminUser.Id, Title = $"Paged_{i}", Message = "msg" });
+                db.Notifications.Add(new NotificationEntity { UserId = userInfo!.Id, Title = $"Paged_{i}", Message = "msg" });
             await db.SaveChangesAsync();
             return true;
         });
