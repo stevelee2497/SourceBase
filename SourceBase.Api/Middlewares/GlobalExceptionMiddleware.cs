@@ -80,6 +80,7 @@ public static class GlobalExceptionMiddlewareUtilities
 
         await context.Response.WriteAsJsonAsync(new
         {
+            TraceId = context.TraceIdentifier,
             error.Code,
             error.Message,
             error.Errors
