@@ -23,7 +23,7 @@ public class ValidationEndpointFilter : IEndpointFilter
                 .GroupBy(e => e.PropertyName)
                 .ToDictionary(g => JsonNamingPolicy.CamelCase.ConvertName(g.Key), g => g.Select(e => e.ErrorMessage).ToArray());
 
-            throw new SourceBase.Domain.ValidationException(errors: errors);
+            throw new Domain.ValidationException(errors: errors);
         }
 
         return await next(context);

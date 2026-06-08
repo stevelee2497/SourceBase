@@ -1,8 +1,7 @@
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -136,31 +135,5 @@ public static class ProgramConfigurations
         {
             endpoint.MapEndpoint(builder);
         }
-    }
-
-    public static void AddEndpoints(this IServiceCollection services, Assembly assembly)
-    {
-        var serviceDescriptors = assembly
-            .DefinedTypes
-            .Where(type => type is { IsAbstract: false, IsInterface: false } && type.IsAssignableTo(typeof(IEndpoint)))
-            .Select(type => ServiceDescriptor.Transient(typeof(IEndpoint), type))
-            .ToArray();
-
-        services.TryAddEnumerable(serviceDescriptors);
-    }
-
-    public static void AddHandlers(this IServiceCollection services, Assembly assembly)
-    {
-        var handlerTypes = assembly
-            .DefinedTypes
-            .Where(type => type is { IsAbstract: false, IsInterface: false } && type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)));
-
-        foreach (var type in handlerTypes)
-            services.AddTransient(type, type);
-    }
-
-    public static void AddFluentValidation(this IServiceCollection services, Assembly assembly)
-    {
-        services.AddValidatorsFromAssembly(assembly);
     }
 }

@@ -16,11 +16,9 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMvcConfigs();
 builder.Services.AddAppSettings(builder.Configuration);
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCorsPolicies(builder.Configuration);
-builder.Services.AddFluentValidation(typeof(AssemblyMarker).Assembly);
-builder.Services.AddEndpoints(typeof(AssemblyMarker).Assembly);
-builder.Services.AddHandlers(typeof(AssemblyMarker).Assembly);
 
 var app = builder.Build();
 

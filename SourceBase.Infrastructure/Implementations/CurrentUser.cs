@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
+using SourceBase.Domain;
 
 namespace SourceBase.Infrastructure.Implementations;
 

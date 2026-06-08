@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
+using SourceBase.Domain;
 
 namespace SourceBase.Application.Features.Transfers;
 
@@ -23,7 +24,7 @@ public class CreateTransferHandler(IDbContext dbContext, ICurrentUser currentUse
     public async Task<CreateTransferResponse> Handle(CreateTransferRequest request, CancellationToken ct)
     {
         if (request.FromWalletId == request.ToWalletId)
-            throw new ValidationException("Source and destination wallets must be different.");
+            throw new Domain.ValidationException("Source and destination wallets must be different.");
 
         var walletIds = await dbContext.Wallets
             .Where(w => w.UserId == currentUser.UserId && (w.Id == request.FromWalletId || w.Id == request.ToWalletId))

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
+using SourceBase.Domain;
 
 namespace SourceBase.Application.Features.Transactions;
 

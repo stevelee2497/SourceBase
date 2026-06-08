@@ -7,7 +7,5 @@
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);CS1591</NoWarn>
-		<EnableGitRepositoryInformation>false</EnableGitRepositoryInformation>
-		<SuppressImplicitGitSourceLink>true</SuppressImplicitGitSourceLink>
 	</PropertyGroup>
 </Project>

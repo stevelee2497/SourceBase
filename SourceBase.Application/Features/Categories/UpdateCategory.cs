@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Application.Shared.Interfaces;
+using SourceBase.Domain;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Categories;
