@@ -3,25 +3,36 @@
 ## Commands
 
 ```sh
-dotnet run --project SourceBase.Api
+dotnet run --project SourceBase.AppHost   # Recommended: Aspire dashboard at :15017
+sh run.sh                                  # API + Web without Aspire
 dotnet build
+dotnet test
 sh cmd-migration-add.sh <Name> && sh cmd-migration-update-db.sh
 docker compose up
 ```
 
 ## Architecture
 
-Single project VSA. `SourceBase.Api/Features/` — one file per use case (endpoint + handler + request/response records). No MediatR, no controllers.
+Clean Architecture with Vertical Slice features. Four projects with strict dependency direction: `Api` → `Application` ← `Infrastructure`, all referencing `Domain`.
+
+```
+SourceBase.Domain/         # Pure POCO entities (BaseAuditableEntity, ...)
+SourceBase.Application/    # Features (use cases), interfaces, shared logic
+SourceBase.Infrastructure/ # EF Core, implementations, migrations (PostgreSQL)
+SourceBase.Api/            # HTTP entry point — wires AddApplication() + AddInfrastructure()
+```
+
+Features live in `SourceBase.Application/Features/` — one file per use case. No MediatR, no controllers.
 
 ```csharp
 public record CreateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
-
-public record CreateTodoResponse(bool Success);
+public record CreateTodoResponse(Guid Id);
 
 public class CreateTodoEndpoint : IEndpoint
 {
+    public const string Route = "todos";
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/todos", ([FromBody] CreateTodoRequest request, CreateTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] CreateTodoRequest request, CreateTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Todos");
 }
 
@@ -29,9 +40,10 @@ public class CreateTodoHandler(IDbContext dbContext) : IRequestHandler<CreateTod
 {
     public async Task<CreateTodoResponse> Handle(CreateTodoRequest request, CancellationToken ct)
     {
-        dbContext.TodoItems.Add(new TodoItemEntity { ... });
+        var entity = new TodoItemEntity { Title = request.Title };
+        dbContext.TodoItems.Add(entity);
         await dbContext.SaveChangesAsync(ct);
-        return new CreateTodoResponse(true);
+        return new CreateTodoResponse(entity.Id);
     }
 }
 
@@ -39,31 +51,31 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 {
     public CreateTodoRequestValidator()
     {
-        RuleFor(x => x.Date).NotNull();
-        RuleFor(x => x.Title).NotEmpty();
+        RuleFor(x => x.Title).NotEmpty().MaximumLength(256);
     }
 }
-
 ```
 
-- All DI wiring in `Program.cs` and defined in Program.Configuration.cs via thin extension methods
-- `IEndpoint` implementations auto-discovered via assembly scanning
-- Endpoints mounted under `/api` with `RequireAuthorization()`
-- Keep `MapEndpoint` chains aligned on separate lines: `.MapXxx(...)`, `.AllowAnonymous()` / `.RequireAuthorization()`, then `.WithTags(...)`.
-- All Record/Handler/Constructors parameters should be in 1 lines, avoid multiple lines of parameters
-- For update operations, the `Id` is passed as a route parameter and marked with `[property: SwaggerIgnore]` in the request record to exclude it from the OpenAPI schema
+- `IEndpoint` and `IRequestHandler<TRequest, TResponse>` auto-discovered via `AddApplication()` — no manual registration
+- DI: `AddApplication()` in `SourceBase.Application/DependencyInjection.cs`; `AddInfrastructure()` in `SourceBase.Infrastructure/DependencyInjection.cs`
+- Interfaces in `SourceBase.Application/Shared/Interfaces/`; implementations in `SourceBase.Infrastructure/Implementations/`
+- Endpoints mounted under `/api` with `RequireAuthorization()`; use `.AllowAnonymous()` to opt out
+- Keep `MapEndpoint` chains on separate lines: `.MapXxx(...)`, `.AllowAnonymous()` / `.RequireAuthorization()`, `.WithTags(...)`
+- Record/handler/constructor parameters on one line; avoid multi-line parameter lists
+- For update operations, `Id` is a route parameter marked `[property: SwaggerIgnore]` in the request record
 
 ## Conventions
 
-**Errors** — throw typed exceptions; `GlobalExceptionMiddleware` maps to `ProblemDetails`:
+**Errors** — throw typed exceptions; `GlobalExceptionMiddleware` maps them to `{ TraceId, Code, Message, Errors }` JSON:
 
-- `NotFoundException` → 404 · `UnAuthorizedException` → 401 · `ForbiddenException` → 403 · `ValidationException` → 400 · `ApiInternalException` → 500
+- `NotFoundException` → 404 · `UnAuthorizedException` → 401 · `ForbiddenException` → 403
+- `BadRequestException` → 400 · `ValidationException` → 400 · `ApiInternalException` → 500
 
-**Entities** — inherit `BaseEntity` (`Id`, `CreatedOn/By`, `UpdatedOn/By`). Audit fields set by interceptor — never set manually. Enums stored as strings.
+**Entities** — inherit `BaseAuditableEntity` (`Id`, `CreatedOn/By`, `UpdatedOn/By`). Audit fields set automatically by `ApplicationDbContextAuditInterceptor` — never set manually. Enums stored as strings via `EnumToStringConverter`.
 
-**Config** — add to `AppSettings.cs` + `appsettings.json`. Available as `IOptions<AppSettings>` and singleton.
+**Config** — add to `AppSettings.cs` (in `SourceBase.Application/Shared/`) + `appsettings.json`. Available as `IOptions<AppSettings>` and singleton.
 
-**DB** — SQLite `app.db`, auto-created and seeded on startup.
+**DB** — PostgreSQL via EF Core; migrations live in `SourceBase.Infrastructure/Migrations/`. Auto-migrated on startup in Production.
 
 ## Testing
 

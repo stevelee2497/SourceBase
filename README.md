@@ -16,44 +16,52 @@ Feature documentation — user stories, detailed flows, and test case traceabili
 
 ## Architecture
 
-One project. One folder per concern.
+Clean Architecture with Vertical Slice features. Four separate projects with strict dependency direction: `Api` → `Application` ← `Infrastructure`, all referencing `Domain`.
 
 ```
-SourceBase.Api/
-├── Features/          # One file per use case (endpoint + handler + request/response records)
+SourceBase.Domain/
+└── Entities/          # Pure POCO domain entities (BaseAuditableEntity, TodoItemEntity, ...)
+
+SourceBase.Application/
+├── Features/          # One file per use case (endpoint + handler + request/response + validator)
 │   ├── Auth/          # Login, Register, ForgotPassword, ...
 │   ├── Todo/          # CreateTodo, GetTodos, UpdateTodo, ...
-│   └── Data/          # GetAudits, GetRoles
-├── Entities/          # Pure POCO domain entities (BaseEntity, TodoItemEntity, ...)
-├── Infrastructure/    # DbContext, Identity, migrations, email helper
-├── Shared/            # Exceptions, AppSettings, interfaces, constants
-├── Middlewares/       # Error response middleware
-└── Program.cs         # Composition root — all DI wiring lives here
+│   └── ...
+└── Shared/            # Interfaces, exceptions, AppSettings, constants
+
+SourceBase.Infrastructure/
+├── DbContexts/        # EF Core DbContext + audit/logging interceptors
+├── Implementations/   # IEmailHelper, ICurrentUser, ISecurityProvider, IStorageService, ...
+├── Hubs/              # SignalR hubs
+└── Migrations/        # EF Core migrations (PostgreSQL)
+
+SourceBase.Api/
+├── Middlewares/       # GlobalExceptionMiddleware, ValidationEndpointFilter
+└── Program.cs         # Entry point — wires AddApplication() + AddInfrastructure()
 ```
 
 ### Key Design Decisions
 
-- **Minimal API slices via `IEndpoint`**: Every feature implements `IEndpoint` and registers its own route in `MapEndpoint`. No controllers.
-- **Single-file features**: Endpoint, request/response records, and handler are colocated in one `.cs` file per use case.
-- **Direct DI injection**: Route handlers receive `IRequestHandler<TRequest, TResponse>` plus normal dependencies (`IDbContext`, `ICurrentUser`, etc.) — no service locator, no ISender.
-- **Middleware-based error handling**: `ErrorResponseMiddleware` catches `ApiException` subclasses and maps them to `ProblemDetails` responses.
-- **Identity on `UserEntity`**: ASP.NET Core Identity functionality is wired to `UserEntity` directly — no separate `ApplicationUser` projection.
-- **Startup is flat**: All service registration is in `Program.cs` via thin extension methods. No per-layer DI modules.
+- **Minimal API slices via `IEndpoint`**: Every feature implements `IEndpoint` and registers its own route. No controllers. Features live in `SourceBase.Application`.
+- **Single-file features**: Endpoint, request/response records, handler, and validator are colocated in one `.cs` file per use case.
+- **Direct DI injection**: Route handlers receive concrete handler types plus dependencies (`IDbContext`, `ICurrentUser`, etc.) — no service locator, no ISender.
+- **Layered DI**: `AddApplication()` auto-discovers endpoints, handlers, and validators. `AddInfrastructure()` registers EF Core, auth, and service implementations.
+- **Middleware-based error handling**: `GlobalExceptionMiddleware` catches typed exceptions and maps them to `{ TraceId, Code, Message, Errors }` JSON responses.
+- **Identity on `UserEntity`**: ASP.NET Core BearerToken auth wired directly to `UserEntity` — no separate `ApplicationUser`.
 
 ### Feature Structure
 
-Each slice is a self-contained file follow the REPR Pattern:
+Each slice is a self-contained file following the REPR Pattern (in `SourceBase.Application/Features/`):
 
 ```csharp
-
 public record CreateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
-
-public record CreateTodoResponse(bool Success);
+public record CreateTodoResponse(Guid Id);
 
 public class CreateTodoEndpoint : IEndpoint
 {
+    public const string Route = "todos";
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost("/todos", ([FromBody] CreateTodoRequest request, CreateTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] CreateTodoRequest request, CreateTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Todos");
 }
 
@@ -61,9 +69,10 @@ public class CreateTodoHandler(IDbContext dbContext) : IRequestHandler<CreateTod
 {
     public async Task<CreateTodoResponse> Handle(CreateTodoRequest request, CancellationToken ct)
     {
-        dbContext.TodoItems.Add(new TodoItemEntity { ... });
+        var entity = new TodoItemEntity { Title = request.Title };
+        dbContext.TodoItems.Add(entity);
         await dbContext.SaveChangesAsync(ct);
-        return new CreateTodoResponse(true);
+        return new CreateTodoResponse(entity.Id);
     }
 }
 
@@ -71,11 +80,9 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 {
     public CreateTodoRequestValidator()
     {
-        RuleFor(x => x.Date).NotNull();
-        RuleFor(x => x.Title).NotEmpty();
+        RuleFor(x => x.Title).NotEmpty().MaximumLength(256);
     }
 }
-
 ```
 
 ### Update Requests Convention
@@ -86,15 +93,13 @@ For update operations, the `Id` is passed as a route parameter and marked with `
 public record UpdateTodoRequest([property: SwaggerIgnore] Guid Id, DateOnly Date, string Title, TodoItemStatus Status);
 ```
 
-So that the Id is required but not duplicated and being shown in the request body.
-
 ### Endpoint Formatting
 
 Keep `MapEndpoint` chains aligned like this:
 
 ```csharp
 public void MapEndpoint(IEndpointRouteBuilder app) => app
-    .MapGet("/roles", ([AsParameters] GetRolesRequest request, GetRolesHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+    .MapGet(Route, ([AsParameters] GetRolesRequest request, GetRolesHandler handler, CancellationToken ct) => handler.Handle(request, ct))
     .AllowAnonymous()
     .WithTags("Data");
 ```
@@ -114,15 +119,15 @@ Throw a typed exception; the middleware handles the rest:
 
 ### Entities
 
-All entities inherit `BaseEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`). Audit fields are filled automatically by `ApplicationDbContextAuditInterceptor` — do not set them manually. Enums are stored as strings via `EnumToStringConverter<T>`.
+All entities inherit `BaseAuditableEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`). Audit fields are filled automatically by `ApplicationDbContextAuditInterceptor` — do not set them manually. Enums are stored as strings via `EnumToStringConverter<T>`.
 
 ## Features
 
 | Capability                         | Notes                                                               |
 | ---------------------------------- | ------------------------------------------------------------------- |
-| Vertical Slice Architecture        | One file per use case, zero shared layers                           |
+| Clean Architecture + VSA           | Domain / Application / Infrastructure / Api — one file per use case |
 | Minimal API + `IEndpoint`          | Auto-discovered by assembly scanning — no controllers               |
-| .NET 10 + EF Core (SQLite)         | Lightweight, zero-config database                                   |
+| .NET 10 + EF Core (PostgreSQL)     | Managed via `SourceBase.Infrastructure` migrations                  |
 | Role-based authorization           | JWT-based with per-endpoint `RequireAuthorization`                  |
 | `GlobalExceptionMiddleware`        | Typed exceptions → `ProblemDetails` responses                       |
 | FluentValidation                   | Auto-wired — invalid requests return `400` before reaching handlers |
