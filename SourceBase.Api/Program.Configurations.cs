@@ -10,6 +10,7 @@ using SourceBase.Api.Middlewares;
 using SourceBase.Api.Shared;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
+using SourceBase.Infrastructure.Hubs;
 
 namespace SourceBase.Api;
 
@@ -122,7 +123,7 @@ public static class ProgramConfigurations
         });
     }
 
-    public static void UseMinimalApi(this WebApplication app)
+    public static void MapMinimalApi(this WebApplication app)
     {
         app.MapGroup("/api").RequireAuthorization().AddEndpointFilter<ValidationEndpointFilter>().MapEndpoints(app);
     }
@@ -135,5 +136,10 @@ public static class ProgramConfigurations
         {
             endpoint.MapEndpoint(builder);
         }
+    }
+
+    public static void MapSignalR(this WebApplication app)
+    {
+        app.MapHub<NotificationHub>("/hubs/notifications");
     }
 }

@@ -8,13 +8,12 @@ namespace SourceBase.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
+    public static void AddApplication(this IServiceCollection services)
     {
 
         services.AddFluentValidation(typeof(DependencyInjection).Assembly);
         services.AddEndpoints(typeof(DependencyInjection).Assembly);
         services.AddHandlers(typeof(DependencyInjection).Assembly);
-        return services;
     }
 
     public static void AddEndpoints(this IServiceCollection services, Assembly assembly)
