@@ -414,3 +414,12 @@ run.sh
 user-plan-*.md
 
 app.min.css
+.bash_profile
+.bashrc
+.gitconfig
+.gitmodules
+.mcp.json
+.profile
+.zshrc
+.zprofile
+.claude

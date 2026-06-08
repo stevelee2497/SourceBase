@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using SourceBase.Api.Entities;
-using SourceBase.Api.Features.Data;
-using SourceBase.Api.Features.Roles;
+using SourceBase.Domain.Entities;
+using SourceBase.Application.Features.Data;
+using SourceBase.Application.Features.Roles;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 

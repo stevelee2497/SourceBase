@@ -2,8 +2,8 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Api.Features.Wallets;
-using SourceBase.Api.Shared;
+using SourceBase.Application.Features.Wallets;
+using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 

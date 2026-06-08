@@ -1,6 +1,6 @@
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
-using SourceBase.Api.Shared;
+using SourceBase.Domain;
 
 namespace SourceBase.Api.Middlewares;
 

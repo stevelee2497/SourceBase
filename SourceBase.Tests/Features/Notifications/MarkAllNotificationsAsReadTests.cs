@@ -2,9 +2,9 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Api.Entities;
-using SourceBase.Api.Features.Auth;
-using SourceBase.Api.Features.Notifications;
+using SourceBase.Domain.Entities;
+using SourceBase.Application.Features.Auth;
+using SourceBase.Application.Features.Notifications;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SourceBase.Api.Features.Auth;
-using SourceBase.Api.Infrastructure.DbContexts;
+using SourceBase.Application.Features.Auth;
+using SourceBase.Infrastructure.DbContexts;
 using Xunit;
 
 namespace SourceBase.Tests.Infrastructure;

@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using SourceBase.Api.Features.TodoLists;
-using SourceBase.Api.Shared;
+using SourceBase.Application.Features.TodoLists;
+using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 

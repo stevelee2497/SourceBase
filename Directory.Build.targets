@@ -1,0 +1,4 @@
+<Project>
+  <!-- Suppress git source info task that fails in sandbox environments where .gitmodules is inaccessible -->
+  <Target Name="InitializeSourceControlInformationFromSourceControlManager" />
+</Project>
