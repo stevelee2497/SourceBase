@@ -4,7 +4,6 @@ using SendGrid.Helpers.Mail;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
-using SendGrid.Helpers.Errors.Model;
 
 namespace SourceBase.Infrastructure.Implementations;
 

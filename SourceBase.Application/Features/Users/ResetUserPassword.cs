@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Domain;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Users;

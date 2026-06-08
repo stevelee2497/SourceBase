@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Domain;
+using SourceBase.Application.Shared;
 
 namespace SourceBase.Application.Features.Wallets;
 

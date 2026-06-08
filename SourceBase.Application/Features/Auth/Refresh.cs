@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Domain;
 
 namespace SourceBase.Application.Features.Auth;
 

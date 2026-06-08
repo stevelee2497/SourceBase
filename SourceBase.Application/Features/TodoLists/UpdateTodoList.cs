@@ -2,7 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Domain;
+using SourceBase.Application.Shared;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.TodoLists;

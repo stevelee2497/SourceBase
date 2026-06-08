@@ -1,5 +1,5 @@
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Domain;
 
 namespace SourceBase.Application.Features.Transactions;
 

@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace SourceBase.Domain;
+namespace SourceBase.Application.Shared;
 
 public abstract class ApiException(string message, string code, int statusCode, IDictionary<string, string[]>? errors = null) : Exception(message)
 {

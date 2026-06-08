@@ -2,7 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Domain;
+using SourceBase.Application.Shared;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Transactions;
@@ -28,7 +28,7 @@ public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser current
         if (transaction is null || transaction.UserId != currentUser.UserId)
             throw new NotFoundException();
         if (transaction.IsTransfer)
-            throw new Domain.ValidationException("Transfer transactions cannot be edited directly. Delete the transfer instead.");
+            throw new Shared.ValidationException("Transfer transactions cannot be edited directly. Delete the transfer instead.");
 
         var categoryExists = await dbContext.Categories.AnyAsync(c => c.Id == request.CategoryId && (c.IsSystem || c.UserId == currentUser.UserId), ct);
         if (!categoryExists)

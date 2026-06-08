@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Domain;
 
 namespace SourceBase.Infrastructure.Implementations;
 
