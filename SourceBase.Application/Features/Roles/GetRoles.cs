@@ -1,0 +1,39 @@
+using System.Text.Json.Serialization;
+using SourceBase.Application.Shared;
+using SourceBase.Application.Shared.Interfaces;
+
+namespace SourceBase.Application.Features.Roles;
+
+public record GetRolesRequest(int? Page = 1, int? Limit = 10, PagingOrder? Order = PagingOrder.Asc, RolesOrder? OrderBy = RolesOrder.CreatedOn) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
+
+public record RoleResponse(Guid Id, string Name, string? Description);
+
+public class GetRolesEndpoint : IEndpoint
+{
+    public const string Route = "roles";
+
+    public void MapEndpoint(IEndpointRouteBuilder app) => app
+        .MapGet(Route, ([AsParameters] GetRolesRequest request, GetRolesHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .AllowAnonymous()
+        .WithTags("Roles");
+}
+
+public class GetRolesHandler(IDbContext dbContext) : IRequestHandler<GetRolesRequest, PagingResponse<RoleResponse>>
+{
+    public async Task<PagingResponse<RoleResponse>> Handle(GetRolesRequest request, CancellationToken ct)
+    {
+        var response = await dbContext.Roles.PaginateAsync(role => new RoleResponse(role.Id, role.Name!, role.Description), request, ct);
+        return response;
+    }
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum RolesOrder
+{
+    Name,
+    Description,
+    CreatedOn,
+    CreatedBy,
+    UpdatedOn,
+    UpdatedBy
+}

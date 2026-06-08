@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using SourceBase.Api.Features.Data;
+using SourceBase.Application.Features.Data;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 

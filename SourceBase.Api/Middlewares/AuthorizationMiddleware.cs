@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
-using SourceBase.Api.Shared;
-using SourceBase.Api.Shared.Interfaces;
+using SourceBase.Application.Shared;
+using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Api.Middlewares;
 

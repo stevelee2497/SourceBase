@@ -22,7 +22,16 @@ sh cmd-migration-update-db.sh
 
 ## Architecture
 
-Vertical Slice Architecture. `SourceBase.Api/Features/` — one file per use case containing request record, response record, endpoint, handler, and validator. No MediatR, no controllers.
+Clean Architecture with Vertical Slice features. Four projects with strict dependency direction: `Api` → `Application` ← `Infrastructure`, all referencing `Domain`.
+
+```
+SourceBase.Domain/        # Pure POCO entities (BaseAuditableEntity, ...)
+SourceBase.Application/   # Features (use cases), interfaces, shared logic
+SourceBase.Infrastructure/ # EF Core, implementations, migrations (PostgreSQL)
+SourceBase.Api/           # HTTP entry point — wires AddApplication() + AddInfrastructure()
+```
+
+Features live in `SourceBase.Application/Features/` — one file per use case containing request record, response record, endpoint, handler, and validator. No MediatR, no controllers.
 
 ```csharp
 public record CreateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
@@ -58,12 +67,13 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 
 **Key rules:**
 
-- `IEndpoint` and `IRequestHandler<TRequest, TResponse>` implementations are auto-discovered via assembly scanning — no manual registration needed.
+- `IEndpoint` and `IRequestHandler<TRequest, TResponse>` implementations are auto-discovered via `AddApplication()` — no manual registration needed.
 - All endpoints are mounted under `/api` with `RequireAuthorization()` by default; use `.AllowAnonymous()` to opt out.
 - Keep `MapEndpoint` chains on separate lines: `.MapXxx(...)`, then `.AllowAnonymous()` / `.RequireAuthorization(...)`, then `.WithTags(...)`.
 - Record/handler/constructor parameters on one line; avoid multi-line parameter lists.
 - For update endpoints the `Id` is a route parameter, marked `[property: SwaggerIgnore]` in the request record to hide it from the OpenAPI schema.
-- All DI wiring lives in `Program.cs`; implementations live in `Program.Configurations.cs` as thin extension methods.
+- DI wiring: `AddApplication()` in `SourceBase.Application/DependencyInjection.cs`; `AddInfrastructure()` in `SourceBase.Infrastructure/DependencyInjection.cs`; thin `Program.Configurations.cs` for HTTP-layer config.
+- Interfaces belong in `SourceBase.Application/Shared/Interfaces/`; implementations belong in `SourceBase.Infrastructure/Implementations/`.
 
 ## Conventions
 

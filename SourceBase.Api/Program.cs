@@ -1,7 +1,8 @@
 using SourceBase.Api;
-using SourceBase.Api.Infrastructure.Hubs;
 using SourceBase.Api.Middlewares;
-using SourceBase.Api.Shared;
+using SourceBase.Application;
+using SourceBase.Application.Shared;
+using SourceBase.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,11 +15,9 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMvcConfigs();
 builder.Services.AddAppSettings(builder.Configuration);
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCorsPolicies(builder.Configuration);
-builder.Services.AddFluentValidation(typeof(Program).Assembly);
-builder.Services.AddEndpoints(typeof(Program).Assembly);
-builder.Services.AddHandlers(typeof(Program).Assembly);
 
 var app = builder.Build();
 
@@ -36,8 +35,8 @@ app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCustomAuthorization();
-app.UseMinimalApi();
-app.MapHub<NotificationHub>("/hubs/notifications");
+app.MapMinimalApi();
+app.MapSignalR();
 app.MapDefaultEndpoints();
 
 app.Run();

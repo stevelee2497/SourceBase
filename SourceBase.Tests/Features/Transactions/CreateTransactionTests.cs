@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using SourceBase.Api.Features.Categories;
-using SourceBase.Api.Features.Transactions;
-using SourceBase.Api.Features.Wallets;
-using SourceBase.Api.Shared;
+using SourceBase.Application.Features.Categories;
+using SourceBase.Application.Features.Transactions;
+using SourceBase.Application.Features.Wallets;
+using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 

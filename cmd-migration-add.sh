@@ -10,4 +10,4 @@ fi
 migration_name="$1"
 shift
 
-dotnet ef migrations add "$migration_name" --project SourceBase.Api --startup-project SourceBase.Api --output-dir Infrastructure/Migrations "$@"
+dotnet ef migrations add "$migration_name" --project SourceBase.Infrastructure --startup-project SourceBase.Api --output-dir Migrations "$@"

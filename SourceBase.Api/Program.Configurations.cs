@@ -1,23 +1,16 @@
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using FluentValidation;
-using Microsoft.AspNetCore.Authentication.BearerToken;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Sinks.OpenTelemetry;
-using SourceBase.Api.Entities;
-using SourceBase.Api.Infrastructure.DbContexts;
-using SourceBase.Api.Infrastructure.Implementations;
 using SourceBase.Api.Middlewares;
 using SourceBase.Api.Shared;
-using SourceBase.Api.Shared.Interfaces;
+using SourceBase.Application.Shared;
+using SourceBase.Application.Shared.Interfaces;
+using SourceBase.Infrastructure.Hubs;
 
 namespace SourceBase.Api;
 
@@ -130,7 +123,7 @@ public static class ProgramConfigurations
         });
     }
 
-    public static void UseMinimalApi(this WebApplication app)
+    public static void MapMinimalApi(this WebApplication app)
     {
         app.MapGroup("/api").RequireAuthorization().AddEndpointFilter<ValidationEndpointFilter>().MapEndpoints(app);
     }
@@ -145,76 +138,8 @@ public static class ProgramConfigurations
         }
     }
 
-    public static void AddEndpoints(this IServiceCollection services, Assembly assembly)
+    public static void MapSignalR(this WebApplication app)
     {
-        var serviceDescriptors = assembly
-            .DefinedTypes
-            .Where(type => type is { IsAbstract: false, IsInterface: false } && type.IsAssignableTo(typeof(IEndpoint)))
-            .Select(type => ServiceDescriptor.Transient(typeof(IEndpoint), type))
-            .ToArray();
-
-        services.TryAddEnumerable(serviceDescriptors);
-    }
-
-    public static void AddHandlers(this IServiceCollection services, Assembly assembly)
-    {
-        var handlerTypes = assembly
-            .DefinedTypes
-            .Where(type => type is { IsAbstract: false, IsInterface: false } && type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)));
-
-        foreach (var type in handlerTypes)
-            services.AddTransient(type, type);
-    }
-
-    public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-        services.AddDbContext<ApplicationDbContext>((sp, options) =>
-        {
-            options.UseNpgsql(connectionString)
-                .UseSeeding((context, _) => ApplicationDbContext.SeedData(context, configuration))
-                .UseAsyncSeeding(async (context, _, _) => ApplicationDbContext.SeedData(context, configuration));
-        });
-        services.AddScoped<IPasswordHasher<UserEntity>, PasswordHasher<UserEntity>>();
-
-        services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = Constants.BearerScheme;
-                options.DefaultChallengeScheme = Constants.BearerScheme;
-                options.DefaultForbidScheme = Constants.BearerScheme;
-            })
-            .AddBearerToken(Constants.BearerScheme, options =>
-            {
-                options.Events = new BearerTokenEvents
-                {
-                    OnMessageReceived = context =>
-                    {
-                        var accessToken = context.Request.Query["access_token"];
-                        if (!string.IsNullOrEmpty(accessToken) && context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
-                            context.Token = accessToken;
-                        return Task.CompletedTask;
-                    }
-                };
-            });
-
-        services.AddSignalR();
-        services.AddScoped<ISecurityProvider, SecurityProvider>();
-        services.AddScoped<IDbContext, ApplicationDbContext>();
-        services.AddScoped<ICurrentUser, CurrentUser>();
-        services.AddScoped<IEmailHelper, SendGridEmailHelper>();
-        services.AddScoped<IStorageService, CloudflareR2StorageService>();
-        services.AddScoped<INotificationService, NotificationService>();
-    }
-
-    public static void AddFluentValidation(this IServiceCollection services, Assembly assembly)
-    {
-        services.AddValidatorsFromAssembly(assembly);
-    }
-
-    public static void EnsureDatabaseMigrated(this WebApplication app)
-    {
-        using var scope = app.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        dbContext.Database.Migrate();
+        app.MapHub<NotificationHub>("/hubs/notifications");
     }
 }
