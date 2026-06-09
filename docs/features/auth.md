@@ -19,6 +19,7 @@ As a registered user, I want to log in with my email and password, so that I can
 2. The server looks up the user by email.
 3. If the user doesn't exist, the email is not confirmed, or the password is wrong → `401 Unauthorized`.
 4. On success, the JWT middleware issues an access token (JWT) and a refresh token in the response.
+5. The response includes `expiresIn` (seconds), which reflects the configured `AccessTokenExpirationMinutes` in `AppSettings`.
 
 ### Test Cases
 
@@ -30,6 +31,7 @@ As a registered user, I want to log in with my email and password, so that I can
 | LOGIN-004 | Unconfirmed email returns 401 Unauthorized | ✅ Pass |
 | LOGIN-005 | Login succeeds after email is confirmed | ✅ Pass |
 | LOGIN-006 | Missing password field returns 400 Bad Request | ✅ Pass |
+| LOGIN-007 | `expiresIn` in the response matches the configured access token lifetime (60 min → 3600 s) | ✅ Pass |
 
 ---
 
@@ -228,6 +230,18 @@ As an authenticated user whose access token has expired, I want to exchange my r
 | REFRESH-002 | Invalid/tampered refresh token returns 401 Unauthorized | ✅ Pass |
 | REFRESH-003 | Refresh token used after logout returns 401 Unauthorized | ✅ Pass |
 | REFRESH-004 | Missing token field returns 400 Bad Request | ✅ Pass |
+
+---
+
+## Token Expiry
+
+Token lifetimes are configurable via `AppSettings.AccessTokenExpirationMinutes` (default: 60) and `AppSettings.RefreshTokenExpirationMinutes` (default: 20160 / 14 days). Tests use a `FakeDateTimeProvider` to advance the clock instantly — no real delays needed.
+
+### Test Cases
+
+| Test Case ID | Description | Status |
+|---|---|---|
+| TOKEN-EXPIRY-001 | Expired refresh token returns 401 Unauthorized (clock advanced 20161 min past issue time) | ✅ Pass |
 
 ---
 

@@ -5,7 +5,7 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Infrastructure.DbContexts;
 
-public class ApplicationDbContextAuditInterceptor(ICurrentUser currentUser) : ISaveChangesInterceptor
+public class ApplicationDbContextAuditInterceptor(ICurrentUser currentUser, IDateTime dateTime) : ISaveChangesInterceptor
 {
     public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken ct = default)
     {
@@ -19,12 +19,12 @@ public class ApplicationDbContextAuditInterceptor(ICurrentUser currentUser) : IS
                 switch (entry.State)
                 {
                     case EntityState.Added:
-                        entity.CreatedOn = entity.UpdatedOn = DateTime.UtcNow;
+                        entity.CreatedOn = entity.UpdatedOn = dateTime.UtcNow;
                         entity.CreatedBy = entity.UpdatedBy = currentUser.UserName;
                         break;
 
                     case EntityState.Modified:
-                        entity.UpdatedOn = DateTime.UtcNow;
+                        entity.UpdatedOn = dateTime.UtcNow;
                         entity.UpdatedBy = currentUser.UserName;
                         break;
                 }

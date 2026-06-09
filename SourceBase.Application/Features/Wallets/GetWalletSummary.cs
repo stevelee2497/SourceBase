@@ -18,11 +18,11 @@ public class GetWalletSummaryEndpoint : IEndpoint
         .WithTags("Wallets");
 }
 
-public class GetWalletSummaryHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetWalletSummaryRequest, GetWalletSummaryResponse>
+public class GetWalletSummaryHandler(IDbContext dbContext, ICurrentUser currentUser, IDateTime dateTime) : IRequestHandler<GetWalletSummaryRequest, GetWalletSummaryResponse>
 {
     public async Task<GetWalletSummaryResponse> Handle(GetWalletSummaryRequest request, CancellationToken ct)
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(dateTime.UtcNow);
         var monthStart = new DateOnly(today.Year, today.Month, 1);
         var nextMonth = monthStart.AddMonths(1);
 

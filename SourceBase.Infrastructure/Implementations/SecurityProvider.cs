@@ -8,7 +8,7 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Infrastructure.Implementations;
 
-public class SecurityProvider(IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, IPasswordHasher<UserEntity> passwordHasher) : ISecurityProvider
+public class SecurityProvider(IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, IPasswordHasher<UserEntity> passwordHasher, IDateTime dateTime) : ISecurityProvider
 {
     public ClaimsPrincipal CreateClaimsPrincipal(UserEntity user, IEnumerable<Claim>? additionalClaims = null)
     {
@@ -36,7 +36,7 @@ public class SecurityProvider(IOptionsMonitor<BearerTokenOptions> bearerTokenOpt
         var refreshTokenProtector = bearerTokenOptions.Get(Constants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(token);
 
-        if (refreshTicket?.Properties.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc)
+        if (refreshTicket?.Properties.ExpiresUtc is not { } expiresUtc || dateTime.UtcNowOffset >= expiresUtc)
             throw new UnAuthorizedException("Invalid token");
 
         return refreshTicket.Principal ?? throw new UnAuthorizedException("Invalid token");

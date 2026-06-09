@@ -8,7 +8,7 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Infrastructure.DbContexts;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser) : DbContext(options), IDbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUser currentUser, IDateTime dateTime) : DbContext(options), IDbContext
 {
     public DbSet<AuditHistoryEntity> AuditHistories { get; set; }
 
@@ -36,8 +36,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser)); // Audit history for all actions
-        optionsBuilder.AddInterceptors(new ApplicationDbContextAuditInterceptor(currentUser)); // Audit trailing for create/update/delete actions
+        optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser, dateTime));
+        optionsBuilder.AddInterceptors(new ApplicationDbContextAuditInterceptor(currentUser, dateTime));
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

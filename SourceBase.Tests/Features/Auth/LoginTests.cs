@@ -135,4 +135,23 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    [Fact(DisplayName = "LOGIN-007: Login_ExpiresIn_ReflectsConfiguredAccessTokenLifetime")]
+    public async Task Login_ExpiresIn_ReflectsConfiguredAccessTokenLifetime()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+
+        // Act
+        var response = await client.PostAsJsonAsync(LoginEndpoint.Route, new
+        {
+            email = WebAppFactory.AdminEmail,
+            password = WebAppFactory.AdminPassword,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        body!.ExpiresIn.Should().Be(60 * 60); // 60 minutes configured → 3600 seconds
+    }
 }

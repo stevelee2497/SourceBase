@@ -20,13 +20,13 @@ public class ConfirmEmailEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ConfirmEmailHandler(IDbContext dbContext) : IRequestHandler<ConfirmEmailRequest, ConfirmEmailResponse>
+public class ConfirmEmailHandler(IDbContext dbContext, IDateTime dateTime) : IRequestHandler<ConfirmEmailRequest, ConfirmEmailResponse>
 {
     public async Task<ConfirmEmailResponse> Handle(ConfirmEmailRequest request, CancellationToken ct)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email, ct) ?? throw new UnAuthorizedException("Invalid credentials");
 
-        if (user.OtpCode != request.Code || user.OtpCodeExpiresOn is null || user.OtpCodeExpiresOn <= DateTime.UtcNow)
+        if (user.OtpCode != request.Code || user.OtpCodeExpiresOn is null || user.OtpCodeExpiresOn <= dateTime.UtcNow)
             throw new UnAuthorizedException("Invalid or expired code");
 
         user.EmailConfirmed = true;

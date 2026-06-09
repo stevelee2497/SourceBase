@@ -20,12 +20,12 @@ public class ResetPasswordEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ResetPasswordHandler(IDbContext dbContext, ISecurityProvider securityProvider) : IRequestHandler<ResetPasswordRequest, ResetPasswordResponse>
+public class ResetPasswordHandler(IDbContext dbContext, ISecurityProvider securityProvider, IDateTime dateTime) : IRequestHandler<ResetPasswordRequest, ResetPasswordResponse>
 {
     public async Task<ResetPasswordResponse> Handle(ResetPasswordRequest request, CancellationToken ct)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email, ct) ?? throw new NotFoundException("User not found");
-        if (user.OtpCode != request.Code || user.OtpCodeExpiresOn is null || user.OtpCodeExpiresOn <= DateTime.UtcNow)
+        if (user.OtpCode != request.Code || user.OtpCodeExpiresOn is null || user.OtpCodeExpiresOn <= dateTime.UtcNow)
             throw new BadRequestException("Invalid or expired code");
 
         user.OtpCode = null;

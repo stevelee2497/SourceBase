@@ -38,7 +38,7 @@ public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture
 
         var updatedUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Email == email));
         updatedUser.OtpCode.Should().NotBe(originalCode);
-        updatedUser.OtpCodeExpiresOn.Should().BeAfter(DateTime.UtcNow);
+        updatedUser.OtpCodeExpiresOn.Should().BeAfter(factory.FakeDateTime.UtcNow);
 
         var latestEmail = await factory.WithDbContextAsync(db => db.Emails
             .Where(x => x.To == email)

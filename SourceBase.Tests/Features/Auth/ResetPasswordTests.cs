@@ -161,7 +161,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         await factory.WithDbContextAsync(async db =>
         {
             var user = await db.Users.SingleAsync(x => x.Email == email);
-            user.OtpCodeExpiresOn = DateTime.UtcNow.AddMinutes(-1);
+            user.OtpCodeExpiresOn = factory.FakeDateTime.UtcNow.AddMinutes(-1);
             return await db.SaveChangesAsync();
         });
 
