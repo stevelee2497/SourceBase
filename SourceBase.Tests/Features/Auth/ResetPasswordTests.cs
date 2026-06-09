@@ -194,4 +194,44 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact(DisplayName = "RESET-PWD-006: ResetPassword_AfterReset_EmailIsConfirmedAndLoginWithNewPassword")]
+    public async Task ResetPassword_AfterReset_EmailIsConfirmedAndLoginWithNewPassword()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var email = $"reset_unconfirmed_{Guid.NewGuid():N}@test.com";
+        const string newPassword = "NewTest@5678!";
+
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new
+        {
+            userName = $"reset_unconfirmed_{Guid.NewGuid():N}",
+            email,
+            password = "Test@1234!",
+        });
+        // Intentionally skip email confirmation — user goes straight to forgot password
+        await client.PostAsJsonAsync(ForgotPasswordEndpoint.Route, new { email });
+        var code = await factory.GetOtpCode(email);
+
+        // Act
+        var resetResponse = await client.PostAsJsonAsync(ResetPasswordEndpoint.Route, new
+        {
+            email,
+            code,
+            newPassword,
+        });
+
+        // Assert
+        resetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var dbUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Email == email));
+        dbUser.EmailConfirmed.Should().BeTrue();
+
+        var loginResponse = await client.PostAsJsonAsync(LoginEndpoint.Route, new
+        {
+            email,
+            password = newPassword,
+        });
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
 }

@@ -10,7 +10,6 @@ public static class DependencyInjection
 {
     public static void AddApplication(this IServiceCollection services)
     {
-
         services.AddFluentValidation(typeof(DependencyInjection).Assembly);
         services.AddEndpoints(typeof(DependencyInjection).Assembly);
         services.AddHandlers(typeof(DependencyInjection).Assembly);

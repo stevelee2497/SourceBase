@@ -134,7 +134,7 @@ As a user, I want to reset my password using the OTP code I received by email, s
 1. Client sends `email`, `code` (OTP), and `newPassword`.
 2. The server looks up the user by email — if not found → `404 Not Found`.
 3. The OTP code is validated against the stored code and its expiry timestamp — if invalid or expired → `400 Bad Request`.
-4. On success, the password is updated, the OTP fields are cleared, and the security stamp is rotated (invalidating all existing tokens).
+4. On success, the password is updated, the OTP fields are cleared, `EmailConfirmed` is set to `true` (so users who never confirmed their email regain access), and the security stamp is rotated (invalidating all existing tokens).
 
 ### Test Cases
 
@@ -145,6 +145,7 @@ As a user, I want to reset my password using the OTP code I received by email, s
 | RESET-PWD-003 | Invalid OTP code returns 400 Bad Request | ✅ Pass |
 | RESET-PWD-004 | Expired OTP code returns 400 Bad Request | ✅ Pass |
 | RESET-PWD-005 | Unknown email returns 404 Not Found | ✅ Pass |
+| RESET-PWD-006 | User who never confirmed email can reset password and log in — email is confirmed as a side-effect | ✅ Pass |
 
 ---
 

@@ -30,6 +30,7 @@ public class ResetPasswordHandler(IDbContext dbContext, ISecurityProvider securi
 
         user.OtpCode = null;
         user.OtpCodeExpiresOn = null;
+        user.EmailConfirmed = true; // Ensure email is confirmed after password reset
         user.PasswordHash = securityProvider.HashPassword(user, request.NewPassword);
         user.SecurityStamp = Guid.NewGuid().ToString(); // Invalidate existing tokens
         await dbContext.SaveChangesAsync(ct);
