@@ -95,6 +95,88 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    [Fact(DisplayName = "REFRESH-005: RefreshToken_AfterPasswordReset_ReturnsUnauthorized")]
+    public async Task RefreshToken_AfterPasswordReset_ReturnsUnauthorized()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var email = $"refresh_pwdreset_{Guid.NewGuid():N}@test.com";
+        const string password = "Test@1234!";
+
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new
+        {
+            userName = $"refresh_pwdreset_{Guid.NewGuid():N}",
+            email,
+            password,
+        });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new
+        {
+            email,
+            code = await factory.GetOtpCode(email),
+        });
+        var loginResponse = await client.PostAsJsonAsync(LoginEndpoint.Route, new { email, password });
+        var loginBody = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
+        var oldRefreshToken = loginBody!.RefreshToken;
+
+        await client.PostAsJsonAsync(ForgotPasswordEndpoint.Route, new { email });
+        await client.PostAsJsonAsync(ResetPasswordEndpoint.Route, new
+        {
+            email,
+            code = await factory.GetOtpCode(email),
+            newPassword = "NewTest@5678!",
+        });
+
+        // Act
+        var response = await client.PostAsJsonAsync(RefreshEndpoint.Route, new
+        {
+            token = oldRefreshToken,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact(DisplayName = "REFRESH-006: RefreshToken_NewTokenFromRefreshResponse_CanRefreshAgain")]
+    public async Task RefreshToken_NewTokenFromRefreshResponse_CanRefreshAgain()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var email = $"refresh_chain_{Guid.NewGuid():N}@test.com";
+        const string password = "Test@1234!";
+
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new
+        {
+            userName = $"refresh_chain_{Guid.NewGuid():N}",
+            email,
+            password,
+        });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new
+        {
+            email,
+            code = await factory.GetOtpCode(email),
+        });
+        var loginResponse = await client.PostAsJsonAsync(LoginEndpoint.Route, new { email, password });
+        var loginBody = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
+
+        var firstRefreshResponse = await client.PostAsJsonAsync(RefreshEndpoint.Route, new
+        {
+            token = loginBody!.RefreshToken,
+        });
+        var firstRefreshBody = await firstRefreshResponse.Content.ReadFromJsonAsync<LoginResponse>();
+
+        // Act
+        var secondRefreshResponse = await client.PostAsJsonAsync(RefreshEndpoint.Route, new
+        {
+            token = firstRefreshBody!.RefreshToken,
+        });
+
+        // Assert
+        secondRefreshResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var secondRefreshBody = await secondRefreshResponse.Content.ReadFromJsonAsync<LoginResponse>();
+        secondRefreshBody.Should().NotBeNull();
+        secondRefreshBody!.AccessToken.Should().NotBeNullOrEmpty();
+    }
+
     [Fact(DisplayName = "REFRESH-004: RefreshToken_WithMissingToken_ReturnsBadRequest")]
     public async Task RefreshToken_WithMissingToken_ReturnsBadRequest()
     {

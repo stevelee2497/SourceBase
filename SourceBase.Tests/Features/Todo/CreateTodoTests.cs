@@ -119,7 +119,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
-        var listResponse = await client.PostAsJsonAsync("todo-lists", new { name = $"List_{Guid.NewGuid():N}" });
+        var listResponse = await client.PostAsJsonAsync(CreateTodoListEndpoint.Route, new { name = $"List_{Guid.NewGuid():N}" });
         var list = await listResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
 
         // Act
@@ -134,7 +134,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
-        var todoResponse = await client.GetAsync($"todos/{body!.Id}");
+        var todoResponse = await client.GetAsync(GetTodoEndpoint.Route.WithId(body!.Id));
         var todo = await todoResponse.Content.ReadFromJsonAsync<GetTodoResponse>();
         todo!.TodoListId.Should().Be(list.Id);
     }

@@ -69,6 +69,39 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         body.Roles.Should().Contain("User");
     }
 
+    [Fact(DisplayName = "GET-INFO-004: GetUserInfo_ReturnsEmailConfirmedTrue_ForConfirmedUser")]
+    public async Task GetUserInfo_ReturnsEmailConfirmedTrue_ForConfirmedUser()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var email = $"confirmed_{Guid.NewGuid():N}@test.com";
+        const string password = "Test@1234!";
+
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new
+        {
+            userName = $"confirmed_{Guid.NewGuid():N}",
+            email,
+            password,
+        });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new
+        {
+            email,
+            code = await factory.GetOtpCode(email),
+        });
+        var loginResponse = await client.PostAsJsonAsync(LoginEndpoint.Route, new { email, password });
+        var loginBody = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginBody!.AccessToken);
+
+        // Act
+        var response = await client.GetAsync(GetUserInfoEndpoint.Route);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
+        body.Should().NotBeNull();
+        body!.EmailConfirmed.Should().BeTrue();
+    }
+
     [Fact(DisplayName = "GET-INFO-003: GetUserInfo_WithoutToken_ReturnsUnauthorized")]
     public async Task GetUserInfo_WithoutToken_ReturnsUnauthorized()
     {

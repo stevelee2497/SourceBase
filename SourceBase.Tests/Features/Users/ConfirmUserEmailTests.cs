@@ -18,7 +18,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PostAsJsonAsync($"users/{Guid.NewGuid()}/confirm-email", new { });
+        var response = await client.PostAsJsonAsync(ConfirmUserEmailEndpoint.Route.WithId(Guid.NewGuid()), new { });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -31,7 +31,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         var nonAdminClient = await factory.CreateAuthorizedClient($"non_admin_ce_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         // Act
-        var response = await nonAdminClient.PostAsJsonAsync($"users/{Guid.NewGuid()}/confirm-email", new { });
+        var response = await nonAdminClient.PostAsJsonAsync(ConfirmUserEmailEndpoint.Route.WithId(Guid.NewGuid()), new { });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -44,7 +44,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         var adminClient = await factory.CreateAuthorizedClient();
 
         // Act
-        var response = await adminClient.PostAsJsonAsync($"users/{Guid.NewGuid()}/confirm-email", new { });
+        var response = await adminClient.PostAsJsonAsync(ConfirmUserEmailEndpoint.Route.WithId(Guid.NewGuid()), new { });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -66,7 +66,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         var created = await createResponse.Content.ReadFromJsonAsync<CreateUserResponse>();
 
         // Act
-        var response = await adminClient.PostAsJsonAsync($"users/{created!.Id}/confirm-email", new { });
+        var response = await adminClient.PostAsJsonAsync(ConfirmUserEmailEndpoint.Route.WithId(created!.Id), new { });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);

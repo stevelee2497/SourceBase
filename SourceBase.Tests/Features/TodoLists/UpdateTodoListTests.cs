@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using SourceBase.Application.Features.TodoLists;
+using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -16,7 +17,7 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PutAsJsonAsync($"todo-lists/{Guid.NewGuid()}", new { name = "Updated" });
+        var response = await client.PutAsJsonAsync(UpdateTodoListEndpoint.Route.WithId(Guid.NewGuid()), new { name = "Updated" });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -31,7 +32,7 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var created = await createResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
 
         // Act
-        var response = await client.PutAsJsonAsync($"todo-lists/{created!.Id}", new { name = "Updated Name" });
+        var response = await client.PutAsJsonAsync(UpdateTodoListEndpoint.Route.WithId(created!.Id), new { name = "Updated Name" });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -50,7 +51,7 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var created = await createResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
 
         // Act
-        var response = await otherClient.PutAsJsonAsync($"todo-lists/{created!.Id}", new { name = "Hijacked" });
+        var response = await otherClient.PutAsJsonAsync(UpdateTodoListEndpoint.Route.WithId(created!.Id), new { name = "Hijacked" });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);

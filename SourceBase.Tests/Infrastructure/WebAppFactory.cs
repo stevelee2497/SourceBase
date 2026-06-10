@@ -41,6 +41,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["AppSettings:OtpTokenExpirationMinutes"] = "15",
                 ["AppSettings:AccessTokenExpirationMinutes"] = "60",
                 ["AppSettings:RefreshTokenExpirationMinutes"] = "20160",
+                ["AppSettings:SendGridApiKey"] = "",// Disable real email sending during tests
                 ["Serilog:MinimumLevel:Default"] = "Fatal"
             });
         });

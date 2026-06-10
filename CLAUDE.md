@@ -34,12 +34,15 @@ SourceBase.Api/           # HTTP entry point — wires AddApplication() + AddInf
 Features live in `SourceBase.Application/Features/` — one file per use case containing request record, response record, endpoint, handler, and validator. No MediatR, no controllers.
 
 ```csharp
+
 public record CreateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
+
 public record CreateTodoResponse(Guid Id);
 
 public class CreateTodoEndpoint : IEndpoint
 {
     public const string Route = "todos";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
         .MapPost(Route, ([FromBody] CreateTodoRequest request, CreateTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Todos");
@@ -63,6 +66,7 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
         RuleFor(x => x.Title).NotEmpty().MaximumLength(256);
     }
 }
+
 ```
 
 **Key rules:**

@@ -144,7 +144,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = await factory.CreateAuthorizedClient($"list_filter_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
-        var listResponse = await client.PostAsJsonAsync("todo-lists", new { name = $"Filter_List_{Guid.NewGuid():N}" });
+        var listResponse = await client.PostAsJsonAsync(CreateTodoListEndpoint.Route, new { name = $"Filter_List_{Guid.NewGuid():N}" });
         var list = await listResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
 
         var inListResponse = await client.PostAsJsonAsync(CreateTodoEndpoint.Route, new
