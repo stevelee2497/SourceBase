@@ -62,7 +62,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"refresh_logout_{Guid.NewGuid():N}@test.com";
-        const string password = "Test@1234!";
+        const string password = "Test@1234!_Aokfn1";
 
         await client.PostAsJsonAsync(RegisterEndpoint.Route, new
         {
@@ -101,7 +101,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"refresh_pwdreset_{Guid.NewGuid():N}@test.com";
-        const string password = "Test@1234!";
+        const string password = "Test@1234!_Aokfn1";
 
         await client.PostAsJsonAsync(RegisterEndpoint.Route, new
         {
@@ -123,7 +123,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         {
             email,
             code = await factory.GetOtpCode(email),
-            newPassword = "NewTest@5678!",
+            newPassword = "NewTest@5678!_Aokfn1",
         });
 
         // Act
@@ -142,7 +142,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         // Arrange
         var client = factory.CreateClient();
         var email = $"refresh_chain_{Guid.NewGuid():N}@test.com";
-        const string password = "Test@1234!";
+        const string password = "Test@1234!_Aokfn1";
 
         await client.PostAsJsonAsync(RegisterEndpoint.Route, new
         {

@@ -21,7 +21,7 @@ namespace SourceBase.Tests.Infrastructure;
 public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public const string AdminEmail = "admin@test.com";
-    public const string AdminPassword = "Test@1234!";
+    public const string AdminPassword = "Test@1234!_Aokfn1";
 
     public FakeDateTimeProvider FakeDateTime { get; } = new();
 
