@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Users;
+using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -90,7 +91,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         var newPassword = "Sent@5678!";
 
         // Act
-        await adminClient.PostAsJsonAsync($"users/{created!.Id}/reset-password", new { newPassword });
+        await adminClient.PostAsJsonAsync(ResetUserPasswordEndpoint.Route.WithId(created!.Id), new { newPassword });
 
         // Assert
         var latestEmail = await factory.WithDbContextAsync(db => db.Emails

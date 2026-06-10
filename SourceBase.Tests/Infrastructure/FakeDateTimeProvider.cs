@@ -4,8 +4,8 @@ namespace SourceBase.Tests.Infrastructure;
 
 public class FakeDateTimeProvider : IDateTime
 {
-    private DateTimeOffset _utcNow = DateTimeOffset.UtcNow;
-    public DateTime UtcNow => _utcNow.UtcDateTime;
-    public DateTimeOffset UtcNowOffset => _utcNow;
-    public void Advance(TimeSpan duration) => _utcNow += duration;
+    private TimeSpan _offset = TimeSpan.Zero;
+    public DateTime UtcNow => DateTimeOffset.UtcNow.Add(_offset).UtcDateTime;
+    public DateTimeOffset UtcNowOffset => DateTimeOffset.UtcNow.Add(_offset);
+    public void Advance(TimeSpan duration) => _offset += duration;
 }

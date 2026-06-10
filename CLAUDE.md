@@ -131,6 +131,7 @@ public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
 - **Naming:** `MethodName_WithCondition_ReturnsExpected`
 - **Test case IDs:** `{FEATURE}-{ACTION}-{NNN}` in `DisplayName` (e.g. `TODOS-CREATE-001`)
 - All payload data defined inline — no helper methods that hide intent.
+- All Api call must use strong typed Route constants (e.g. `CreateTodoEndpoint.Route`) — never hardcoded strings.
 
 ## Blazor (`SourceBase.Web`)
 
