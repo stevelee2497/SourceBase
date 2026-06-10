@@ -56,6 +56,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailHelper, SendGridEmailHelper>();
         services.AddScoped<IStorageService, CloudflareR2StorageService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IOtpHelper, OtpHelper>();
     }
 
     public static void EnsureDatabaseMigrated(this WebApplication app)
