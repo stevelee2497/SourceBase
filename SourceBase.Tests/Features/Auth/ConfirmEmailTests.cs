@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -87,12 +86,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
             password = "Test@1234!",
         });
         var code = await factory.GetOtpCode(email);
-        await factory.WithDbContextAsync(async db =>
-        {
-            var user = await db.Users.SingleAsync(x => x.Email == email);
-            user.OtpCodeExpiresOn = factory.FakeDateTime.UtcNow.AddMinutes(-1);
-            return await db.SaveChangesAsync();
-        });
+        factory.FakeDateTime.Advance(TimeSpan.FromMinutes(16)); // Assuming OTP expires in 15 minutes
 
         // Act
         var response = await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new

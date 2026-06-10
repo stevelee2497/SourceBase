@@ -20,12 +20,12 @@ public class ForgotPasswordEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ForgotPasswordHandler(IDbContext dbContext, IEmailHelper emailHelper, AppSettings appSettings, IDateTime dateTime) : IRequestHandler<ForgotPasswordRequest, ForgotPasswordResponse>
+public class ForgotPasswordHandler(IDbContext dbContext, IEmailHelper emailHelper, IOtpHelper otpHelper) : IRequestHandler<ForgotPasswordRequest, ForgotPasswordResponse>
 {
     public async Task<ForgotPasswordResponse> Handle(ForgotPasswordRequest request, CancellationToken ct)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email, ct) ?? throw new NotFoundException("User not found");
-        var (otp, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes, dateTime.UtcNow);
+        var (otp, expiresOn) = otpHelper.Generate();
         user.OtpCode = otp;
         user.OtpCodeExpiresOn = expiresOn;
         await dbContext.SaveChangesAsync(ct);

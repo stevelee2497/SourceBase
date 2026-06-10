@@ -158,12 +158,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
             email,
         });
         var code = await factory.GetOtpCode(email);
-        await factory.WithDbContextAsync(async db =>
-        {
-            var user = await db.Users.SingleAsync(x => x.Email == email);
-            user.OtpCodeExpiresOn = factory.FakeDateTime.UtcNow.AddMinutes(-1);
-            return await db.SaveChangesAsync();
-        });
+        factory.FakeDateTime.Advance(TimeSpan.FromMinutes(16)); // Assuming OTP expires in 15 minutes
 
         // Act
         var response = await client.PostAsJsonAsync(ResetPasswordEndpoint.Route, new
