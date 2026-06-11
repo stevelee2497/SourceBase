@@ -28,5 +28,7 @@ public interface IDbContext
 
     DbSet<NotificationEntity> Notifications { get; set; }
 
+    DbSet<IconEntity> Icons { get; set; }
+
     Task<int> SaveChangesAsync(CancellationToken ct);
 }

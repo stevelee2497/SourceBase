@@ -1,0 +1,121 @@
+<div class="relative @Class">
+    <button type="button" class="w-full flex items-center justify-between gap-2 rounded-md border bg-white px-3 py-2 text-left text-sm shadow-sm transition-colors focus:outline-none cursor-pointer @(_open ? "border-indigo-500 ring-1 ring-indigo-500" : "border-gray-300 hover:border-gray-400")" @onclick="ToggleOpen">
+        <span class="flex items-center gap-2">
+            @if (string.IsNullOrEmpty(Value))
+            {
+                <span class="text-gray-400">Choose icon…</span>
+            }
+            else
+            {
+                @RenderIcon(Value, "w-5 h-5")
+            }
+        </span>
+        <svg class="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150 @(_open ? "rotate-180" : "")" fill="none" stroke="currentColor" viewBox="0 0 20 20">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 8l4 4 4-4" />
+        </svg>
+    </button>
+    @if (_open)
+    {
+        <div class="fixed inset-0 z-200" @onclick="Close"></div>
+        <div class="absolute z-201 top-full left-0 mt-1 rounded-md border border-gray-200 bg-white shadow-lg" style="width:18rem;max-height:16rem;overflow-y:auto">
+            @if (_loading)
+            {
+                <div class="py-6 text-center text-sm text-gray-400">Loading icons…</div>
+            }
+            else
+            {
+                <div class="p-2">
+                    <button type="button" class="w-full text-left px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded mb-1" @onclick="ClearIcon" @onclick:stopPropagation>
+                        ✕ None
+                    </button>
+                    <div class="grid grid-cols-6 gap-1">
+                        @foreach (var icon in _icons)
+                        {
+                            var isSelected = icon.Value == Value;
+                            <button type="button"
+                                    class="flex items-center justify-center p-1.5 rounded transition-colors @(isSelected ? "bg-indigo-50 ring-1 ring-indigo-400" : "hover:bg-gray-100")"
+                                    title="@icon.Name"
+                                    @onclick="SelectIcon(icon.Value)"
+                                    @onclick:stopPropagation>
+                                @RenderIcon(icon.Value, "w-5 h-5")
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string Group { get; set; } = string.Empty;
+    [Parameter] public string? Class { get; set; }
+
+    [Inject] ApiHttpClient Api { get; set; } = default!;
+
+    private bool _open;
+    private bool _loading;
+    private List<IconResponse> _icons = [];
+
+    private void ToggleOpen()
+    {
+        _open = !_open;
+        if (_open && _icons.Count == 0)
+            _ = LoadAsync();
+    }
+
+    private void Close() => _open = false;
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        StateHasChanged();
+        var (data, _) = await Api.GetIconsAsync(string.IsNullOrWhiteSpace(Group) ? null : Group);
+        _icons = data ?? [];
+        _loading = false;
+        StateHasChanged();
+    }
+
+    private Func<Task> SelectIcon(string value) => async () =>
+    {
+        _open = false;
+        await ValueChanged.InvokeAsync(value);
+    };
+
+    private async Task ClearIcon()
+    {
+        _open = false;
+        await ValueChanged.InvokeAsync(string.Empty);
+    }
+
+    private RenderFragment RenderIcon(string value, string sizeClass) => builder =>
+    {
+        if (value.TrimStart().StartsWith("<"))
+        {
+            builder.OpenElement(0, "svg");
+            builder.AddAttribute(1, "class", sizeClass);
+            builder.AddAttribute(2, "viewBox", "0 0 24 24");
+            builder.AddAttribute(3, "fill", "none");
+            builder.AddAttribute(4, "stroke", "currentColor");
+            builder.AddMarkupContent(5, value);
+            builder.CloseElement();
+        }
+        else if (value.StartsWith("http"))
+        {
+            builder.OpenElement(0, "img");
+            builder.AddAttribute(1, "src", value);
+            builder.AddAttribute(2, "class", $"{sizeClass} object-contain rounded");
+            builder.AddAttribute(3, "alt", "");
+            builder.CloseElement();
+        }
+        else
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "class", "text-xl leading-none");
+            builder.AddContent(2, value);
+            builder.CloseElement();
+        }
+    };
+}
