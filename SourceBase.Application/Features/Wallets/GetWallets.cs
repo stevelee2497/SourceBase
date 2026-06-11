@@ -27,9 +27,7 @@ public class GetWalletsHandler(IDbContext dbContext, ICurrentUser currentUser) :
             .Select(w => new WalletResponse(
                 w.Id,
                 w.Name,
-                w.InitialBalance
-                    + (w.Transactions.Where(t => t.Type == TransactionType.Income).Sum(t => (decimal?)t.Amount) ?? 0)
-                    - (w.Transactions.Where(t => t.Type == TransactionType.Expense).Sum(t => (decimal?)t.Amount) ?? 0),
+                w.InitialBalance + w.Transactions.Sum(t => t.Amount * (t.Type == TransactionType.Income ? 1 : -1)),
                 w.InitialBalance,
                 w.Currency,
                 w.Icon

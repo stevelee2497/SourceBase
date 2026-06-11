@@ -28,9 +28,7 @@ public class GetWalletSummaryHandler(IDbContext dbContext, ICurrentUser currentU
 
         var walletBalances = await dbContext.Wallets
             .Where(w => w.UserId == currentUser.UserId)
-            .Select(w => w.InitialBalance
-                + (w.Transactions.Where(t => t.Type == TransactionType.Income).Sum(t => (decimal?)t.Amount) ?? 0)
-                - (w.Transactions.Where(t => t.Type == TransactionType.Expense).Sum(t => (decimal?)t.Amount) ?? 0))
+            .Select(w => w.InitialBalance + w.Transactions.Sum(t => t.Amount * (t.Type == TransactionType.Income ? 1 : -1)))
             .ToListAsync(ct);
 
         var monthlyIncome = await dbContext.Transactions
