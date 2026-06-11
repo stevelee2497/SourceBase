@@ -15,8 +15,8 @@ else
 {
     <!-- Top summary row: Total Balance + Pie Chart + Add Wallet -->
     <div class="flex flex-col lg:flex-row gap-4 mb-6">
-        <!-- Total Balance card (clickable to show all wallets) -->
-        <div class="card shrink-0 lg:w-72 bg-linear-to-r from-indigo-600 to-indigo-500 text-white cursor-pointer transition-all @(_selectedWalletId == Guid.Empty ? "ring-4 ring-white/40" : "hover:opacity-90")" @onclick="SelectAllWallets">
+        <!-- Total Balance card (clickable to deselect all wallets) -->
+        <div class="card shrink-0 lg:w-72 bg-linear-to-r from-indigo-600 to-indigo-500 text-white cursor-pointer transition-all @(_selectedWalletIds.Count == 0 ? "ring-4 ring-white/40" : "hover:opacity-90")" @onclick="SelectAllWallets">
             <div class="text-sm font-medium text-indigo-100 mb-2">Total Balance</div>
             <div class="text-3xl sm:text-4xl font-bold">@FormatAmount(_totalBalance)</div>
             <div class="text-sm text-indigo-100 mt-2">Across all wallets</div>
@@ -121,7 +121,7 @@ else
         <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-6">
             @foreach (var wallet in _wallets)
             {
-                var isSelected = wallet.Id == _selectedWalletId;
+                var isSelected = _selectedWalletIds.Contains(wallet.Id);
                 <div class="rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50") cursor-pointer transition-all p-3 flex flex-col gap-1.5" @onclick="SelectWallet(wallet.Id)">
                     <div class="flex items-center justify-between gap-1">
                         <span class="text-xl leading-none">@WalletIcon(wallet.Icon)</span>
@@ -147,12 +147,12 @@ else
     }
 
     <!-- Inline detail panel -->
-    @if (_selectedWalletId == Guid.Empty || _selectedWallet is not null || _wallets.Count > 0)
+    @if (_wallets.Count > 0 || _selectedWalletIds.Count == 0)
     {
         <div class="card">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div>
-                    @if (_selectedWalletId == Guid.Empty)
+                    @if (_selectedWalletIds.Count == 0)
                     {
                         <h2 class="text-lg font-semibold text-gray-900">All Transactions</h2>
                         <div class="text-sm text-gray-500">Showing transactions across all wallets</div>
@@ -161,6 +161,11 @@ else
                     {
                         <h2 class="text-lg font-semibold text-gray-900">@_selectedWallet.Name</h2>
                         <div class="text-sm text-gray-500">Balance: <span class="font-semibold text-gray-900">@FormatAmount(_selectedWallet.Balance) @_selectedWallet.Currency</span></div>
+                    }
+                    else
+                    {
+                        <h2 class="text-lg font-semibold text-gray-900">Selected Wallets</h2>
+                        <div class="text-sm text-gray-500">Showing transactions for @_selectedWalletIds.Count wallets</div>
                     }
                 </div>
                 @if (_selectedWallet is not null)
@@ -420,9 +425,9 @@ else
     private bool _loading = true;
     private string? _error;
 
-    // Selected wallet (null = all wallets)
-    private Guid _selectedWalletId = Guid.Empty;
-    private WalletResponse? _selectedWallet => _wallets.FirstOrDefault(w => w.Id == _selectedWalletId);
+    // Selected wallets (empty = all wallets)
+    private HashSet<Guid> _selectedWalletIds = [];
+    private WalletResponse? _selectedWallet => _selectedWalletIds.Count == 1 ? _wallets.FirstOrDefault(w => w.Id == _selectedWalletIds.First()) : null;
 
     // Wallet form
     private bool _showForm;
@@ -483,7 +488,7 @@ else
     private Dictionary<string, decimal> _barChartData = [];
 
     private List<CategoryResponse> FilteredTransactionCategories => _categories.Where(c => string.Equals(c.Type, _transactionType, StringComparison.OrdinalIgnoreCase)).ToList();
-    private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != _selectedWalletId).ToList();
+    private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != _selectedWalletIds.FirstOrDefault()).ToList();
 
     private static readonly IReadOnlyList<SelectOption> TransactionTypeOptions = [new("Income", "🪴 Income"), new("Expense", "💸 Expense")];
     private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name}")).Prepend(new SelectOption("", "All categories")).ToList();
@@ -524,8 +529,8 @@ else
     private async Task LoadTransactionsAsync()
     {
         _loadingTransactions = true;
-        var walletId = _selectedWalletId == Guid.Empty ? (Guid?)null : _selectedWalletId;
-        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, walletId, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId));
+        var walletIds = _selectedWalletIds.Count > 0 ? (IEnumerable<Guid>?)_selectedWalletIds : null;
+        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, walletIds, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId));
         if (error is not null)
         {
             _transactions = [];
@@ -542,13 +547,13 @@ else
 
     private async Task LoadSummaryAsync()
     {
-        if (_selectedWalletId == Guid.Empty)
+        if (_selectedWalletIds.Count != 1)
         {
             _summary = null;
             return;
         }
         var (start, end) = CurrentMonthRange();
-        var (data, _) = await Api.GetTransactionSummaryAsync(_selectedWalletId, start, end);
+        var (data, _) = await Api.GetTransactionSummaryAsync(_selectedWalletIds.First(), start, end);
         _summary = data;
     }
 
@@ -572,7 +577,8 @@ else
 
     private Func<Task> SelectWallet(Guid id) => async () =>
     {
-        _selectedWalletId = id;
+        if (!_selectedWalletIds.Remove(id))
+            _selectedWalletIds.Add(id);
         _transactionsPage = 1;
         _typeFilter = string.Empty;
         _dateFrom = null;
@@ -581,16 +587,16 @@ else
         await Task.WhenAll(LoadTransactionsAsync(), LoadSummaryAsync());
     };
 
-    private void SelectAllWallets()
+    private async Task SelectAllWallets()
     {
-        _selectedWalletId = Guid.Empty;
+        _selectedWalletIds.Clear();
         _transactionsPage = 1;
         _typeFilter = string.Empty;
         _dateFrom = null;
         _dateTo = null;
         _categoryFilterId = string.Empty;
         _summary = null;
-        _ = LoadTransactionsAsync();
+        await LoadTransactionsAsync();
     }
 
     private Action SelectTypeFilter(string type) => () => _typeFilter = type;
@@ -675,7 +681,7 @@ else
             _error = error.Message ?? "Failed to delete wallet.";
         else
         {
-            if (_selectedWalletId == _deletingWallet.Id) _selectedWalletId = Guid.Empty;
+            _selectedWalletIds.Remove(_deletingWallet.Id);
             await LoadWalletsAsync();
             await LoadTransactionsAsync();
         }
@@ -724,7 +730,7 @@ else
 
         _savingTransaction = true;
         var error = _editingTransaction is null
-            ? await Api.CreateTransactionAsync(_selectedWalletId, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId)
+            ? await Api.CreateTransactionAsync(_selectedWalletIds.First(), _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId)
             : await Api.UpdateTransactionAsync(_editingTransaction.Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId);
 
         if (error is not null) { _transactionFormError = error.Message ?? "Failed to save transaction."; _savingTransaction = false; return; }
@@ -754,7 +760,7 @@ else
         if (_transferAmount <= 0) { _transferFormError = "Amount must be greater than zero."; return; }
 
         _savingTransfer = true;
-        var error = await Api.CreateTransferAsync(_selectedWalletId, toWalletId, _transferAmount, _transferDate.ToString("yyyy-MM-dd"), CleanOptional(_transferNote));
+        var error = await Api.CreateTransferAsync(_selectedWalletIds.First(), toWalletId, _transferAmount, _transferDate.ToString("yyyy-MM-dd"), CleanOptional(_transferNote));
         if (error is not null) { _transferFormError = error.Message ?? "Failed to create transfer."; _savingTransfer = false; return; }
 
         _transactionsPage = 1;
@@ -789,10 +795,14 @@ else
 
     private List<PieSlice> BuildPieData()
     {
-        var positiveTotal = _wallets.Sum(w => Math.Max(0m, w.Balance));
+        var wallets = _selectedWalletIds.Count > 0
+            ? _wallets.Where(w => _selectedWalletIds.Contains(w.Id)).ToList()
+            : _wallets;
+        if (wallets.Count == 0) return [];
+        var positiveTotal = wallets.Sum(w => Math.Max(0m, w.Balance));
         if (positiveTotal <= 0)
-            return _wallets.Select((w, i) => new PieSlice(w.Name, 1.0 / _wallets.Count, PieColors[i % PieColors.Length])).ToList();
-        return _wallets
+            return wallets.Select((w, i) => new PieSlice(w.Name, 1.0 / wallets.Count, PieColors[i % PieColors.Length])).ToList();
+        return wallets
             .Select((w, i) => new PieSlice(w.Name, (double)(Math.Max(0m, w.Balance) / positiveTotal), PieColors[i % PieColors.Length]))
             .Where(s => s.Fraction > 0)
             .ToList();

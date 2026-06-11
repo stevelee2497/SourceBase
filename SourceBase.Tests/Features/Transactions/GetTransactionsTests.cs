@@ -234,6 +234,103 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Items.Should().ContainSingle(x => x.Id == matching!.Id && x.CategoryId == firstCategory.Id);
     }
 
+    [Fact(DisplayName = "TXN-GET-ALL-010: GetTransactions_WithSingleWalletIdsFilter_ReturnsMatchingTransactions")]
+    public async Task GetTransactions_WithSingleWalletIdsFilter_ReturnsMatchingTransactions()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var walletAResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
+        var walletA = await walletAResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+        var walletBResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
+        var walletB = await walletBResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var catResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
+        var categories = await catResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var incomeCategoryId = categories!.First(x => x.IsSystem).Id;
+
+        var txnAResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = walletA!.Id, amount = 10m, type = "Income", date = "2025-02-01", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+        var transactionA = await txnAResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = walletB!.Id, amount = 20m, type = "Income", date = "2025-02-01", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+
+        // Act
+        var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletIds={walletA.Id}&limit=20");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
+        body!.Items.Should().ContainSingle(x => x.Id == transactionA!.Id && x.WalletId == walletA.Id);
+    }
+
+    [Fact(DisplayName = "TXN-GET-ALL-011: GetTransactions_WithMultipleWalletIdsFilter_ReturnsTransactionsFromAllSpecifiedWallets")]
+    public async Task GetTransactions_WithMultipleWalletIdsFilter_ReturnsTransactionsFromAllSpecifiedWallets()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var walletAResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
+        var walletA = await walletAResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+        var walletBResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
+        var walletB = await walletBResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+        var walletCResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
+        var walletC = await walletCResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var catResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
+        var categories = await catResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var incomeCategoryId = categories!.First(x => x.IsSystem).Id;
+
+        var txnAResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = walletA!.Id, amount = 10m, type = "Income", date = "2025-02-02", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+        var transactionA = await txnAResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
+        var txnBResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = walletB!.Id, amount = 20m, type = "Income", date = "2025-02-02", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+        var transactionB = await txnBResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = walletC!.Id, amount = 30m, type = "Income", date = "2025-02-02", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+
+        // Act
+        var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletIds={walletA.Id}&walletIds={walletB.Id}&limit=20");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
+        body!.Total.Should().Be(2);
+        body.Items.Should().Contain(x => x.Id == transactionA!.Id && x.WalletId == walletA.Id);
+        body.Items.Should().Contain(x => x.Id == transactionB!.Id && x.WalletId == walletB.Id);
+        body.Items.Should().NotContain(x => x.WalletId == walletC!.Id);
+    }
+
+    [Fact(DisplayName = "TXN-GET-ALL-012: GetTransactions_WithWalletIdsFilterCombinedWithTypeFilter_ReturnsMatchingTransactions")]
+    public async Task GetTransactions_WithWalletIdsFilterCombinedWithTypeFilter_ReturnsMatchingTransactions()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var walletAResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
+        var walletA = await walletAResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+        var walletBResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
+        var walletB = await walletBResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var incomeCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
+        var incomeCategories = await incomeCatResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var incomeCategoryId = incomeCategories!.First(x => x.IsSystem).Id;
+
+        var expenseCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Expense");
+        var expenseCategories = await expenseCatResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var expenseCategoryId = expenseCategories!.First(x => x.IsSystem).Id;
+
+        var incomeTxnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = walletA!.Id, amount = 10m, type = "Income", date = "2025-02-03", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+        var incomeTxn = await incomeTxnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = walletA.Id, amount = 5m, type = "Expense", date = "2025-02-03", note = $"Txn_{Guid.NewGuid():N}", categoryId = expenseCategoryId });
+        await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = walletB!.Id, amount = 15m, type = "Income", date = "2025-02-03", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+
+        // Act — filter walletA only with Income type
+        var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletIds={walletA.Id}&type=Income&limit=20");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
+        body!.Items.Should().ContainSingle(x => x.Id == incomeTxn!.Id);
+        body.Items.Should().OnlyContain(x => x.WalletId == walletA.Id && x.Type == TransactionType.Income);
+    }
+
     [Fact(DisplayName = "TXN-GET-ALL-009: GetTransactions_WithPagination_ReturnsCorrectSubset")]
     public async Task GetTransactions_WithPagination_ReturnsCorrectSubset()
     {

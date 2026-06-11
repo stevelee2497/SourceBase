@@ -205,7 +205,8 @@
     {
         _loading = true;
         var walletId = ParseGuid(_walletFilterId);
-        var (data, error) = await Api.GetTransactionsAsync(_page, _pageSize, walletId, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId));
+        var walletIds = walletId.HasValue ? new[] { walletId.Value } : null;
+        var (data, error) = await Api.GetTransactionsAsync(_page, _pageSize, walletIds, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId));
         if (error is not null)
         {
             _transactions = [];

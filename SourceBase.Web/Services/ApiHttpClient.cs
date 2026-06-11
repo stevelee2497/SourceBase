@@ -256,11 +256,11 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
 
     // ── Transactions ─────────────────────────────────────────────────────────
 
-    public Task<(PagingResponse<TransactionResponse>? data, ErrorResponse? error)> GetTransactionsAsync(int page, int limit, Guid? walletId = null, string? type = null, string? dateFrom = null, string? dateTo = null, Guid? categoryId = null)
+    public Task<(PagingResponse<TransactionResponse>? data, ErrorResponse? error)> GetTransactionsAsync(int page, int limit, IEnumerable<Guid>? walletIds = null, string? type = null, string? dateFrom = null, string? dateTo = null, Guid? categoryId = null)
     {
         var url = $"/api/transactions?page={page}&limit={limit}";
-        if (walletId.HasValue)
-            url += $"&walletId={walletId}";
+        if (walletIds != null)
+            url += string.Join(string.Empty, walletIds.Select(id => $"&walletIds={id}"));
         if (!string.IsNullOrWhiteSpace(type))
             url += $"&type={Uri.EscapeDataString(type)}";
         if (!string.IsNullOrWhiteSpace(dateFrom))

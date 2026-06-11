@@ -78,6 +78,7 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 - For update endpoints the `Id` is a route parameter, marked `[property: SwaggerIgnore]` in the request record to hide it from the OpenAPI schema.
 - DI wiring: `AddApplication()` in `SourceBase.Application/DependencyInjection.cs`; `AddInfrastructure()` in `SourceBase.Infrastructure/DependencyInjection.cs`; thin `Program.Configurations.cs` for HTTP-layer config.
 - Interfaces belong in `SourceBase.Application/Shared/Interfaces/`; implementations belong in `SourceBase.Infrastructure/Implementations/`.
+- Pagination: Define OrderBy enums per feature (e.g. `TransactionOrderBy`) and use `PagingRequest` base class for common paging params (`Page`, `Limit`, `Order`, `OrderBy`). Using `.PaginateAsync()` extension method on IQueryable applies sorting and pagination based on those params.
 
 ## Conventions
 
