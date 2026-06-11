@@ -16,7 +16,7 @@ else
     <!-- Top summary row: Total Balance + Pie Chart + Add Wallet -->
     <div class="flex flex-col lg:flex-row gap-4 mb-6">
         <!-- Total Balance card (clickable to show all wallets) -->
-        <div class="card flex-shrink-0 lg:w-72 bg-linear-to-r from-indigo-600 to-indigo-500 text-white cursor-pointer transition-all @(_selectedWalletId == Guid.Empty ? "ring-4 ring-white/40" : "hover:opacity-90")" @onclick="SelectAllWallets">
+        <div class="card shrink-0 lg:w-72 bg-linear-to-r from-indigo-600 to-indigo-500 text-white cursor-pointer transition-all @(_selectedWalletId == Guid.Empty ? "ring-4 ring-white/40" : "hover:opacity-90")" @onclick="SelectAllWallets">
             <div class="text-sm font-medium text-indigo-100 mb-2">Total Balance</div>
             <div class="text-3xl sm:text-4xl font-bold">@FormatAmount(_totalBalance)</div>
             <div class="text-sm text-indigo-100 mt-2">Across all wallets</div>
@@ -50,7 +50,9 @@ else
                     </svg>
                 </div>
                 <div class="flex flex-wrap gap-x-4 gap-y-1">
-                    @{ var legendData = BuildPieData(); }
+                    @{
+                        var legendData = BuildPieData();
+                    }
                     @foreach (var slice in legendData)
                     {
                         <div class="flex items-center gap-1.5 text-xs">
@@ -579,7 +581,7 @@ else
         await LoadTransactionsAsync();
     }
 
-    private Action SelectWallet(Guid id) => () =>
+    private Func<Task> SelectWallet(Guid id) => async () =>
     {
         _selectedWalletId = id;
         _transactionsPage = 1;
@@ -587,7 +589,7 @@ else
         _dateFrom = null;
         _dateTo = null;
         _categoryFilterId = string.Empty;
-        _ = Task.WhenAll(LoadTransactionsAsync(), LoadSummaryAsync());
+        await Task.WhenAll(LoadTransactionsAsync(), LoadSummaryAsync());
     };
 
     private void SelectAllWallets()
