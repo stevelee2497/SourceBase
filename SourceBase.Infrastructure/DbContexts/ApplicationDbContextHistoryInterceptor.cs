@@ -6,7 +6,7 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Infrastructure.DbContexts;
 
-public class ApplicationDbContextHistoryInterceptor(ICurrentUser currentUser) : ISaveChangesInterceptor
+public class ApplicationDbContextHistoryInterceptor(ICurrentUser currentUser, IDateTime dateTime) : ISaveChangesInterceptor
 {
     public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken ct = default)
     {
@@ -21,7 +21,7 @@ public class ApplicationDbContextHistoryInterceptor(ICurrentUser currentUser) : 
                 auditHistories.Add(new AuditHistoryEntity
                 {
                     Action = entry.State.ToString(),
-                    ActionOn = DateTime.UtcNow,
+                    ActionOn = dateTime.UtcNow,
                     Author = currentUser.UserName,
                     EntityType = entity.GetType().ToString(),
                     EntityId = entity.Id.ToString(),

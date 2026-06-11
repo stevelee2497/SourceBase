@@ -22,7 +22,7 @@ public class UpdateUserEndpoint : IEndpoint
         .WithTags("Users");
 }
 
-public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<UpdateUserRequest, UpdateUserResponse>
+public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, IOtpHelper otpHelper) : IRequestHandler<UpdateUserRequest, UpdateUserResponse>
 {
     public async Task<UpdateUserResponse> Handle(UpdateUserRequest request, CancellationToken ct)
     {
@@ -43,7 +43,7 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, A
 
         if (emailChanged)
         {
-            var (confirmationCode, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
+            var (confirmationCode, expiresOn) = otpHelper.Generate();
             user.EmailConfirmed = false;
             user.OtpCode = confirmationCode;
             user.OtpCodeExpiresOn = expiresOn;

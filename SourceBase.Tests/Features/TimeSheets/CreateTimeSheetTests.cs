@@ -69,7 +69,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         secondResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         secondBody!.Ids[0].Should().Be(firstBody!.Ids[0]);
 
-        var tsResponse = await client.GetAsync($"time-sheets/{firstBody.Ids[0]}");
+        var tsResponse = await client.GetAsync(GetTimeSheetEndpoint.Route.WithId(firstBody.Ids[0]));
         var ts = await tsResponse.Content.ReadFromJsonAsync<GetTimeSheetResponse>();
         ts!.Hours.Should().Be(8);
     }

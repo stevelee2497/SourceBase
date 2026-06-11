@@ -7,13 +7,13 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Infrastructure.Implementations;
 
-public class SendGridEmailHelper(AppSettings appSettings, ILogger<SendGridEmailHelper> logger, IDbContext dbContext) : IEmailHelper
+public class SendGridEmailHelper(AppSettings appSettings, ILogger<SendGridEmailHelper> logger, IDbContext dbContext, IDateTime dateTime) : IEmailHelper
 {
     public async Task SendEmailAsync(string to, string subject, string body)
     {
         logger.LogInformation("Sending email to {To} with subject {Subject}", to, subject);
 
-        dbContext.Emails.Add(new EmailEntity { To = to, Subject = subject, Body = body });
+        dbContext.Emails.Add(new EmailEntity { To = to, Subject = subject, Body = body, SentOn = dateTime.UtcNow });
         await dbContext.SaveChangesAsync(default);
 
         if (string.IsNullOrEmpty(appSettings.SendGridApiKey))

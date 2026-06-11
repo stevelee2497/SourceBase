@@ -6,7 +6,7 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Infrastructure.Implementations;
 
-public class CloudflareR2StorageService(AppSettings appSettings) : IStorageService
+public class CloudflareR2StorageService(AppSettings appSettings, IDateTime dateTime) : IStorageService
 {
     private AmazonS3Client CreateClient()
     {
@@ -28,7 +28,7 @@ public class CloudflareR2StorageService(AppSettings appSettings) : IStorageServi
             BucketName = appSettings.R2.BucketName,
             Key = objectKey,
             Verb = HttpVerb.PUT,
-            Expires = DateTime.UtcNow.AddMinutes(appSettings.R2.ExpiryMinutes),
+            Expires = dateTime.UtcNow.AddMinutes(appSettings.R2.ExpiryMinutes),
             ContentType = contentType,
         };
         return await client.GetPreSignedURLAsync(request);

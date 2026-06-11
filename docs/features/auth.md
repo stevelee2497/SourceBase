@@ -19,17 +19,19 @@ As a registered user, I want to log in with my email and password, so that I can
 2. The server looks up the user by email.
 3. If the user doesn't exist, the email is not confirmed, or the password is wrong → `401 Unauthorized`.
 4. On success, the JWT middleware issues an access token (JWT) and a refresh token in the response.
+5. The response includes `expiresIn` (seconds), which reflects the configured `AccessTokenExpirationMinutes` in `AppSettings`.
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| LOGIN-001 | Valid credentials return 200 and access token | ✅ Pass |
-| LOGIN-002 | Wrong password returns 401 Unauthorized | ✅ Pass |
-| LOGIN-003 | Unknown email returns 401 Unauthorized | ✅ Pass |
-| LOGIN-004 | Unconfirmed email returns 401 Unauthorized | ✅ Pass |
-| LOGIN-005 | Login succeeds after email is confirmed | ✅ Pass |
-| LOGIN-006 | Missing password field returns 400 Bad Request | ✅ Pass |
+| Test Case ID | Description                                                                                | Status  |
+| ------------ | ------------------------------------------------------------------------------------------ | ------- |
+| LOGIN-001    | Valid credentials return 200 and access token                                              | ✅ Pass |
+| LOGIN-002    | Wrong password returns 401 Unauthorized                                                    | ✅ Pass |
+| LOGIN-003    | Unknown email returns 401 Unauthorized                                                     | ✅ Pass |
+| LOGIN-004    | Unconfirmed email returns 401 Unauthorized                                                 | ✅ Pass |
+| LOGIN-005    | Login succeeds after email is confirmed                                                    | ✅ Pass |
+| LOGIN-006    | Missing password field returns 400 Bad Request                                             | ✅ Pass |
+| LOGIN-007    | `expiresIn` in the response matches the configured access token lifetime (60 min → 3600 s) | ✅ Pass |
 
 ---
 
@@ -53,14 +55,14 @@ As a new user, I want to register an account with my username, email, and passwo
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| REGISTER-001 | Valid data returns 200 and new user ID | ✅ Pass |
+| Test Case ID | Description                                                   | Status  |
+| ------------ | ------------------------------------------------------------- | ------- |
+| REGISTER-001 | Valid data returns 200 and new user ID                        | ✅ Pass |
 | REGISTER-002 | Whitespace around email/username is trimmed before validation | ✅ Pass |
-| REGISTER-003 | Whitespace around password is trimmed before hashing | ✅ Pass |
-| REGISTER-004 | Duplicate email (case-insensitive) returns 400 Bad Request | ✅ Pass |
-| REGISTER-005 | Invalid email format returns 400 Bad Request | ✅ Pass |
-| REGISTER-006 | Password shorter than 6 characters returns 400 Bad Request | ✅ Pass |
+| REGISTER-003 | Whitespace around password is trimmed before hashing          | ✅ Pass |
+| REGISTER-004 | Duplicate email (case-insensitive) returns 400 Bad Request    | ✅ Pass |
+| REGISTER-005 | Invalid email format returns 400 Bad Request                  | ✅ Pass |
+| REGISTER-006 | Password shorter than 6 characters returns 400 Bad Request    | ✅ Pass |
 
 ---
 
@@ -83,12 +85,12 @@ As a newly registered user, I want to confirm my email with the OTP code I recei
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| CONFIRM-EMAIL-001 | Valid OTP code confirms email and returns 200 | ✅ Pass |
-| CONFIRM-EMAIL-002 | Invalid OTP code returns 401 Unauthorized | ✅ Pass |
-| CONFIRM-EMAIL-003 | Expired OTP code returns 401 Unauthorized | ✅ Pass |
-| CONFIRM-EMAIL-004 | Unknown email returns 401 Unauthorized | ✅ Pass |
+| Test Case ID      | Description                                                        | Status  |
+| ----------------- | ------------------------------------------------------------------ | ------- |
+| CONFIRM-EMAIL-001 | Valid OTP code confirms email and returns 200                      | ✅ Pass |
+| CONFIRM-EMAIL-002 | Invalid OTP code returns 401 Unauthorized                          | ✅ Pass |
+| CONFIRM-EMAIL-003 | Expired OTP code returns 401 Unauthorized                          | ✅ Pass |
+| CONFIRM-EMAIL-004 | Unknown email returns 401 Unauthorized                             | ✅ Pass |
 | CONFIRM-EMAIL-005 | Invalid payload (missing/malformed fields) returns 400 Bad Request | ✅ Pass |
 
 ---
@@ -112,11 +114,11 @@ As a user who forgot their password, I want to request a password reset code by 
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
+| Test Case ID   | Description                                               | Status  |
+| -------------- | --------------------------------------------------------- | ------- |
 | FORGOT-PWD-001 | Valid registered email triggers OTP email and returns 200 | ✅ Pass |
-| FORGOT-PWD-002 | Unknown email returns 404 Not Found | ✅ Pass |
-| FORGOT-PWD-003 | Invalid email format returns 400 Bad Request | ✅ Pass |
+| FORGOT-PWD-002 | Unknown email returns 404 Not Found                       | ✅ Pass |
+| FORGOT-PWD-003 | Invalid email format returns 400 Bad Request              | ✅ Pass |
 
 ---
 
@@ -138,13 +140,13 @@ As a user, I want to reset my password using the OTP code I received by email, s
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| RESET-PWD-001 | Valid OTP and new password returns 200 | ✅ Pass |
-| RESET-PWD-002 | After reset, user can log in with the new password | ✅ Pass |
-| RESET-PWD-003 | Invalid OTP code returns 400 Bad Request | ✅ Pass |
-| RESET-PWD-004 | Expired OTP code returns 400 Bad Request | ✅ Pass |
-| RESET-PWD-005 | Unknown email returns 404 Not Found | ✅ Pass |
+| Test Case ID  | Description                                                                                        | Status  |
+| ------------- | -------------------------------------------------------------------------------------------------- | ------- |
+| RESET-PWD-001 | Valid OTP and new password returns 200                                                             | ✅ Pass |
+| RESET-PWD-002 | After reset, user can log in with the new password                                                 | ✅ Pass |
+| RESET-PWD-003 | Invalid OTP code returns 400 Bad Request                                                           | ✅ Pass |
+| RESET-PWD-004 | Expired OTP code returns 400 Bad Request                                                           | ✅ Pass |
+| RESET-PWD-005 | Unknown email returns 404 Not Found                                                                | ✅ Pass |
 | RESET-PWD-006 | User who never confirmed email can reset password and log in — email is confirmed as a side-effect | ✅ Pass |
 
 ---
@@ -168,12 +170,12 @@ As a user whose confirmation email expired or was lost, I want to request a new 
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
+| Test Case ID    | Description                                         | Status  |
+| --------------- | --------------------------------------------------- | ------- |
 | RESEND-CONF-001 | Valid unconfirmed email resends OTP and returns 200 | ✅ Pass |
-| RESEND-CONF-002 | Already-confirmed email returns 400 Bad Request | ✅ Pass |
-| RESEND-CONF-003 | Unknown email returns 404 Not Found | ✅ Pass |
-| RESEND-CONF-004 | Invalid email format returns 400 Bad Request | ✅ Pass |
+| RESEND-CONF-002 | Already-confirmed email returns 400 Bad Request     | ✅ Pass |
+| RESEND-CONF-003 | Unknown email returns 404 Not Found                 | ✅ Pass |
+| RESEND-CONF-004 | Invalid email format returns 400 Bad Request        | ✅ Pass |
 
 ---
 
@@ -195,11 +197,11 @@ As an authenticated user, I want to log out, so that my access and refresh token
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| LOGOUT-001 | Valid token returns 200 | ✅ Pass |
-| LOGOUT-002 | Missing token returns 401 Unauthorized | ✅ Pass |
-| LOGOUT-003 | After logout, refresh token is invalidated | ✅ Pass |
+| Test Case ID | Description                                | Status  |
+| ------------ | ------------------------------------------ | ------- |
+| LOGOUT-001   | Valid token returns 200                    | ✅ Pass |
+| LOGOUT-002   | Missing token returns 401 Unauthorized     | ✅ Pass |
+| LOGOUT-003   | After logout, refresh token is invalidated | ✅ Pass |
 
 ---
 
@@ -222,12 +224,14 @@ As an authenticated user whose access token has expired, I want to exchange my r
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| REFRESH-001 | Valid refresh token returns new access token preserving roles | ✅ Pass |
-| REFRESH-002 | Invalid/tampered refresh token returns 401 Unauthorized | ✅ Pass |
-| REFRESH-003 | Refresh token used after logout returns 401 Unauthorized | ✅ Pass |
-| REFRESH-004 | Missing token field returns 400 Bad Request | ✅ Pass |
+| Test Case ID | Description                                                   | Status  |
+| ------------ | ------------------------------------------------------------- | ------- |
+| REFRESH-001  | Valid refresh token returns new access token preserving roles | ✅ Pass |
+| REFRESH-002  | Invalid/tampered refresh token returns 401 Unauthorized       | ✅ Pass |
+| REFRESH-003  | Refresh token used after logout returns 401 Unauthorized      | ✅ Pass |
+| REFRESH-004  | Missing token field returns 400 Bad Request                   | ✅ Pass |
+| REFRESH-005  | Expired refresh token returns 401 Unauthorized                | ✅ Pass |
+| REFRESH-006  | After refreshing, old refresh token returns 401 Unauthorized  | ✅ Pass |
 
 ---
 
@@ -248,11 +252,12 @@ As an authenticated user, I want to retrieve my profile information, so that I c
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| GET-INFO-001 | Valid token returns 200 with profile data | ✅ Pass |
+| Test Case ID | Description                                                   | Status  |
+| ------------ | ------------------------------------------------------------- | ------- |
+| GET-INFO-001 | Valid token returns 200 with profile data                     | ✅ Pass |
 | GET-INFO-002 | Response contains correct userName and email when they differ | ✅ Pass |
-| GET-INFO-003 | Missing token returns 401 Unauthorized | ✅ Pass |
+| GET-INFO-003 | Missing token returns 401 Unauthorized                        | ✅ Pass |
+| GET-INFO-004 | Token expired returns 401 Unauthorized                        | ✅ Pass |
 
 ---
 
@@ -273,9 +278,9 @@ As an authenticated user, I want to update my profile information (first name, l
 
 ### Test Cases
 
-| Test Case ID | Description | Status |
-|---|---|---|
-| UPDATE-INFO-001 | Missing token returns 401 Unauthorized | ✅ Pass |
-| UPDATE-INFO-002 | Valid data returns 200 | ✅ Pass |
+| Test Case ID    | Description                                                   | Status  |
+| --------------- | ------------------------------------------------------------- | ------- |
+| UPDATE-INFO-001 | Missing token returns 401 Unauthorized                        | ✅ Pass |
+| UPDATE-INFO-002 | Valid data returns 200                                        | ✅ Pass |
 | UPDATE-INFO-003 | Updated values are reflected in subsequent Get User Info call | ✅ Pass |
-| UPDATE-INFO-004 | Phone number exceeding 20 characters returns 400 Bad Request | ✅ Pass |
+| UPDATE-INFO-004 | Phone number exceeding 20 characters returns 400 Bad Request  | ✅ Pass |

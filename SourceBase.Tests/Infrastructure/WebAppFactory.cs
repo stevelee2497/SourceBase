@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SourceBase.Application.Features.Auth;
+using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Infrastructure.DbContexts;
 using Xunit;
 
@@ -20,7 +21,9 @@ namespace SourceBase.Tests.Infrastructure;
 public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public const string AdminEmail = "admin@test.com";
-    public const string AdminPassword = "Test@1234!";
+    public const string AdminPassword = "Test@1234!_Aokfn1";
+
+    public FakeDateTimeProvider FakeDateTime { get; } = new();
 
     private SqliteConnection? _anchorConnection;
     private readonly string _connectionString = $"Data Source=test_{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
@@ -36,6 +39,9 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["AppSettings:Roles:0"] = "Admin",
                 ["AppSettings:Roles:1"] = "User",
                 ["AppSettings:OtpTokenExpirationMinutes"] = "15",
+                ["AppSettings:AccessTokenExpirationMinutes"] = "60",
+                ["AppSettings:RefreshTokenExpirationMinutes"] = "20160",
+                ["AppSettings:SendGridApiKey"] = "",// Disable real email sending during tests
                 ["Serilog:MinimumLevel:Default"] = "Fatal"
             });
         });
@@ -51,6 +57,10 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
             // Replace the production PostgreSQL DbContext with SQLite in-memory for tests
             services.RemoveAll<IDbContextOptionsConfiguration<ApplicationDbContext>>();
+
+            // Replace real DateTimeProvider with controllable fake
+            services.RemoveAll<IDateTime>();
+            services.AddSingleton<IDateTime>(FakeDateTime);
 
             var appConfig = ctx.Configuration;
             services.AddDbContext<ApplicationDbContext>((_, options) =>

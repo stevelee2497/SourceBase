@@ -34,12 +34,15 @@ SourceBase.Api/           # HTTP entry point — wires AddApplication() + AddInf
 Features live in `SourceBase.Application/Features/` — one file per use case containing request record, response record, endpoint, handler, and validator. No MediatR, no controllers.
 
 ```csharp
+
 public record CreateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
+
 public record CreateTodoResponse(Guid Id);
 
 public class CreateTodoEndpoint : IEndpoint
 {
     public const string Route = "todos";
+
     public void MapEndpoint(IEndpointRouteBuilder app) => app
         .MapPost(Route, ([FromBody] CreateTodoRequest request, CreateTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Todos");
@@ -63,6 +66,7 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
         RuleFor(x => x.Title).NotEmpty().MaximumLength(256);
     }
 }
+
 ```
 
 **Key rules:**
@@ -131,6 +135,7 @@ public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
 - **Naming:** `MethodName_WithCondition_ReturnsExpected`
 - **Test case IDs:** `{FEATURE}-{ACTION}-{NNN}` in `DisplayName` (e.g. `TODOS-CREATE-001`)
 - All payload data defined inline — no helper methods that hide intent.
+- All Api call must use strong typed Route constants (e.g. `CreateTodoEndpoint.Route`) — never hardcoded strings.
 
 ## Blazor (`SourceBase.Web`)
 
@@ -149,3 +154,113 @@ private Func<Task> SelectItem(Guid id) => async () => { _selectedId = id; await 
 private void CancelDelete() { _showDelete = false; _deleting = null; }
 // OnCancel="CancelDelete"
 ```
+
+<!-- rtk-instructions v2 -->
+
+# RTK (Rust Token Killer) - Token-Optimized Commands
+
+## Golden Rule
+
+**Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This means RTK is always safe to use.
+
+**Important**: Even in command chains with `&&`, use `rtk`:
+
+```bash
+# ❌ Wrong
+git add . && git commit -m "msg" && git push
+
+# ✅ Correct
+rtk git add . && rtk git commit -m "msg" && rtk git push
+```
+
+## RTK Commands by Workflow
+
+### Build & Compile (80-90% savings)
+
+```bash
+rtk dotnet build         # .NET build output
+rtk dotnet test --filter <test>  # .NET test failures only
+```
+
+### Git (59-80% savings)
+
+```bash
+rtk git status          # Compact status
+rtk git log             # Compact log (works with all git flags)
+rtk git diff            # Compact diff (80%)
+rtk git show            # Compact show (80%)
+rtk git add             # Ultra-compact confirmations (59%)
+rtk git commit          # Ultra-compact confirmations (59%)
+rtk git push            # Ultra-compact confirmations
+rtk git pull            # Ultra-compact confirmations
+rtk git branch          # Compact branch list
+rtk git fetch           # Compact fetch
+rtk git stash           # Compact stash
+rtk git worktree        # Compact worktree
+```
+
+### Files & Search (60-75% savings)
+
+```bash
+rtk ls <path>           # Tree format, compact (65%)
+rtk read <file>         # Code reading with filtering (60%)
+rtk grep <pattern>      # Search grouped by file (75%). Format flags (-c, -l, -L, -o, -Z) run raw.
+rtk find <pattern>      # Find grouped by directory (70%)
+```
+
+### Analysis & Debug (70-90% savings)
+
+```bash
+rtk err <cmd>           # Filter errors only from any command
+rtk log <file>          # Deduplicated logs with counts
+rtk json <file>         # JSON structure without values
+rtk deps                # Dependency overview
+rtk env                 # Environment variables compact
+rtk summary <cmd>       # Smart summary of command output
+rtk diff                # Ultra-compact diffs
+```
+
+### Infrastructure (85% savings)
+
+```bash
+rtk docker ps           # Compact container list
+rtk docker images       # Compact image list
+rtk docker logs <c>     # Deduplicated logs
+rtk kubectl get         # Compact resource list
+rtk kubectl logs        # Deduplicated pod logs
+```
+
+### Network (65-70% savings)
+
+```bash
+rtk curl <url>          # Compact HTTP responses (70%)
+rtk wget <url>          # Compact download output (65%)
+```
+
+### Meta Commands
+
+```bash
+rtk gain                # View token savings statistics
+rtk gain --history      # View command history with savings
+rtk discover            # Analyze Claude Code sessions for missed RTK usage
+rtk proxy <cmd>         # Run command without filtering (for debugging)
+rtk init                # Add RTK instructions to CLAUDE.md
+rtk init --global       # Add RTK to ~/.claude/CLAUDE.md
+```
+
+## Token Savings Overview
+
+| Category         | Commands                       | Typical Savings |
+| ---------------- | ------------------------------ | --------------- |
+| Tests            | vitest, playwright, cargo test | 90-99%          |
+| Build            | next, tsc, lint, prettier      | 70-87%          |
+| Git              | status, log, diff, add, commit | 59-80%          |
+| GitHub           | gh pr, gh run, gh issue        | 26-87%          |
+| Package Managers | pnpm, npm, npx                 | 70-90%          |
+| Files            | ls, read, grep, find           | 60-75%          |
+| Infrastructure   | docker, kubectl                | 85%             |
+| Network          | curl, wget                     | 65-70%          |
+
+Overall average: **60-90% token reduction** on common development operations.
+
+<!-- /rtk-instructions -->

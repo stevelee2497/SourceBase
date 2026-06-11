@@ -16,6 +16,7 @@ public static class DependencyInjection
 {
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var appSettings = configuration.GetSection("AppSettings").Get<AppSettings>()!;
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
@@ -33,6 +34,8 @@ public static class DependencyInjection
             })
             .AddBearerToken(Constants.BearerScheme, options =>
             {
+                options.BearerTokenExpiration = TimeSpan.FromMinutes(appSettings.AccessTokenExpirationMinutes);
+                options.RefreshTokenExpiration = TimeSpan.FromMinutes(appSettings.RefreshTokenExpirationMinutes);
                 options.Events = new BearerTokenEvents
                 {
                     OnMessageReceived = context =>
@@ -46,12 +49,14 @@ public static class DependencyInjection
             });
 
         services.AddSignalR();
+        services.AddSingleton<IDateTime, DateTimeProvider>();
         services.AddScoped<ISecurityProvider, SecurityProvider>();
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<IEmailHelper, SendGridEmailHelper>();
         services.AddScoped<IStorageService, CloudflareR2StorageService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IOtpHelper, OtpHelper>();
     }
 
     public static void EnsureDatabaseMigrated(this WebApplication app)

@@ -6,6 +6,8 @@ public class AppSettings
     public string AdminPassword { get; set; } = null!;
     public List<string> Roles { get; set; } = [];
     public int OtpTokenExpirationMinutes { get; set; } = 15;
+    public int AccessTokenExpirationMinutes { get; set; } = 60;
+    public int RefreshTokenExpirationMinutes { get; set; } = 20160;
     public string WebUrl { get; set; } = null!;
     public string SendGridApiKey { get; set; } = null!;
     public string SendGridAccountOwner { get; set; } = null!;

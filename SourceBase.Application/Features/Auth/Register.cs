@@ -20,14 +20,14 @@ public class RegisterEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityProvider, IEmailHelper emailHelper, AppSettings appSettings) : IRequestHandler<RegisterRequest, RegisterResponse>
+public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityProvider, IEmailHelper emailHelper, IOtpHelper otpHelper) : IRequestHandler<RegisterRequest, RegisterResponse>
 {
     public async Task<RegisterResponse> Handle(RegisterRequest request, CancellationToken ct)
     {
         if (await dbContext.Users.AnyAsync(u => u.UserName == request.UserName || u.Email == request.Email, ct))
             throw new BadRequestException("Username or email is already taken.");
 
-        var (confirmationCode, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
+        var (confirmationCode, expiresOn) = otpHelper.Generate();
         var user = new UserEntity
         {
             Email = request.Email,

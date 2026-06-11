@@ -21,14 +21,14 @@ public class CreateUserEndpoint : IEndpoint
         .WithTags("Users");
 }
 
-public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityProvider, IEmailHelper emailHelper, AppSettings appSettings, INotificationService notificationService) : IRequestHandler<CreateUserRequest, CreateUserResponse>
+public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityProvider, IEmailHelper emailHelper, IOtpHelper otpHelper, INotificationService notificationService) : IRequestHandler<CreateUserRequest, CreateUserResponse>
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken ct)
     {
         if (await dbContext.Users.AnyAsync(u => u.UserName == request.UserName || u.Email == request.Email, ct))
             throw new BadRequestException("Username or email is already taken.");
 
-        var (confirmationCode, expiresOn) = OtpHelper.Generate(appSettings.OtpTokenExpirationMinutes);
+        var (confirmationCode, expiresOn) = otpHelper.Generate();
         var user = new UserEntity
         {
             UserName = request.UserName,

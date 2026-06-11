@@ -6,5 +6,5 @@ public class EmailEntity
     public required string To { get; set; }
     public required string Subject { get; set; }
     public required string Body { get; set; }
-    public DateTime SentOn { get; set; } = DateTime.UtcNow;
+    public DateTime SentOn { get; set; }
 }
