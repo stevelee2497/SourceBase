@@ -1,9 +1,10 @@
+using System.Text.Json.Serialization;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Transfers;
 
-public record GetTransfersRequest(Guid? WalletId, DateOnly? DateFrom, DateOnly? DateTo, int? Page = 1, int? Limit = 10, PagingOrder? Order = PagingOrder.Desc) : PagingRequest(Page, Limit, Order, null);
+public record GetTransfersRequest(Guid? WalletId, DateOnly? DateFrom, DateOnly? DateTo, int? Page = 1, int? Limit = 10, PagingOrder? Order = PagingOrder.Desc, TransferOrderBy OrderBy = TransferOrderBy.Date) : PagingRequest(Page, Limit, Order, OrderBy.ToString());
 
 public record TransferResponse(Guid Id, Guid FromWalletId, string FromWalletName, Guid ToWalletId, string ToWalletName, decimal Amount, DateOnly Date, string? Note);
 
@@ -25,7 +26,6 @@ public class GetTransfersHandler(IDbContext dbContext, ICurrentUser currentUser)
                 && (request.WalletId == null || t.FromWalletId == request.WalletId || t.ToWalletId == request.WalletId)
                 && (request.DateFrom == null || t.Date >= request.DateFrom)
                 && (request.DateTo == null || t.Date <= request.DateTo))
-            .OrderByDescending(t => t.Date)
             .PaginateAsync(t => new TransferResponse(
                 t.Id,
                 t.FromWalletId,
@@ -37,4 +37,11 @@ public class GetTransfersHandler(IDbContext dbContext, ICurrentUser currentUser)
                 t.Note
             ), request, ct);
     }
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum TransferOrderBy
+{
+    Date,
+    Amount
 }

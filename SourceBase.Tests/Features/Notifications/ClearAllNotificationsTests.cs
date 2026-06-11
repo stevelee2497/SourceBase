@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Features.Notifications;
+using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -39,7 +40,7 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
         body!.Success.Should().BeTrue();
 
         var notificationsResponse = await client.GetAsync(GetNotificationsEndpoint.Route);
-        var notifications = await notificationsResponse.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        var notifications = await notificationsResponse.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
         notifications!.Total.Should().Be(0);
     }
 

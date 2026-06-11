@@ -202,7 +202,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
 
         // Assert
         var notificationsResponse = await client.GetAsync($"{GetNotificationsEndpoint.Route}?limit=1");
-        var notifications = await notificationsResponse.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        var notifications = await notificationsResponse.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
         var notification = notifications!.Items.FirstOrDefault();
         notification.Should().NotBeNull();
         notification!.Title.Should().Be("Time Sheets Submitted");

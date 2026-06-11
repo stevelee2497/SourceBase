@@ -4,6 +4,7 @@ using FluentAssertions;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Features.Notifications;
+using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -36,7 +37,7 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
         body!.Success.Should().BeTrue();
 
         var notificationsResponse = await client.GetAsync($"{GetNotificationsEndpoint.Route}?limit=100");
-        var notifications = await notificationsResponse.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        var notifications = await notificationsResponse.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
         var notif = notifications!.Items.Single(n => n.Id == notifId);
         notif.IsRead.Should().BeTrue();
     }

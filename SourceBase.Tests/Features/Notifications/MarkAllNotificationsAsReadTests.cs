@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Features.Notifications;
+using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -39,7 +40,7 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
         body!.Success.Should().BeTrue();
 
         var unreadResponse = await client.GetAsync($"{GetNotificationsEndpoint.Route}?unreadOnly=true");
-        var unreadNotifications = await unreadResponse.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        var unreadNotifications = await unreadResponse.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
         unreadNotifications!.Total.Should().Be(0);
     }
 

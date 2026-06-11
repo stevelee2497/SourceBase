@@ -4,6 +4,7 @@ using FluentAssertions;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Features.Notifications;
+using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -22,7 +23,7 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
         body!.Items.Should().NotBeNull();
         body.Total.Should().BeGreaterThanOrEqualTo(0);
     }
@@ -47,7 +48,7 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
         body!.Items.Should().Contain(n => n.Title == "Test Title" && n.Message == "Test Message");
     }
 
@@ -74,7 +75,7 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
         body!.Items.Should().OnlyContain(n => !n.IsRead);
     }
 
@@ -99,7 +100,7 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<GetNotificationsResponse>();
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
         body!.Items.Should().HaveCount(2);
         body.Limit.Should().Be(2);
         body.Page.Should().Be(1);
