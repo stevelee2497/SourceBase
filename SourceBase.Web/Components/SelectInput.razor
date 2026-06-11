@@ -1,0 +1,49 @@
+<div class="relative @Class">
+    <button type="button" class="w-full flex items-center justify-between gap-2 rounded-md border bg-white px-3 py-2 text-left text-sm shadow-sm transition-colors focus:outline-none @(Disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer") @(_open ? "border-indigo-500 ring-1 ring-indigo-500" : "border-gray-300 hover:border-gray-400")" disabled="@Disabled" @onclick="ToggleOpen">
+        <span class="truncate @(SelectedLabel is null ? "text-gray-400" : "text-gray-900")">@(SelectedLabel ?? "Select…")</span>
+        <svg class="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150 @(_open ? "rotate-180" : "")" fill="none" stroke="currentColor" viewBox="0 0 20 20">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 8l4 4 4-4" />
+        </svg>
+    </button>
+    @if (_open)
+    {
+        <div class="fixed inset-0 z-200" @onclick="Close"></div>
+        <div class="absolute z-201 top-full left-0 mt-1 min-w-full rounded-md border border-gray-200 bg-white shadow-lg" style="max-height:15rem;overflow-y:auto">
+            @foreach (var opt in Options)
+            {
+                var isSelected = opt.Value == Value;
+                <button type="button" class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition-colors @(isSelected ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-50")" @onclick="OnOptionClick(opt.Value)" @onclick:stopPropagation>
+                    <span>@opt.Label</span>
+                    @if (isSelected)
+                    {
+                        <svg class="h-3.5 w-3.5 shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                        </svg>
+                    }
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public IReadOnlyList<SelectOption> Options { get; set; } = [];
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    private bool _open;
+
+    private string? SelectedLabel => Options.FirstOrDefault(o => o.Value == Value)?.Label;
+
+    private void ToggleOpen() { if (!Disabled) _open = !_open; }
+
+    private void Close() => _open = false;
+
+    private Func<Task> OnOptionClick(string value) => async () =>
+    {
+        _open = false;
+        await ValueChanged.InvokeAsync(value);
+    };
+}

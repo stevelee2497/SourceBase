@@ -160,10 +160,7 @@ else
                 </div>
                 <div>
                     <label class="form-label">Type</label>
-                    <select @bind="_categoryType" class="form-input" disabled="@(_editingCategory is not null)">
-                        <option value="Income">Income</option>
-                        <option value="Expense">Expense</option>
-                    </select>
+                    <SelectInput @bind-Value="_categoryType" Options="CategoryTypeOptions" Disabled="@(_editingCategory is not null)" />
                     @if (_editingCategory is not null)
                     {
                         <div class="text-xs text-gray-400 mt-1">Category type can only be chosen when the category is created.</div>
@@ -203,6 +200,8 @@ else
 
     private bool _showDeleteCategory;
     private CategoryResponse? _deletingCategory;
+
+    private static readonly IReadOnlyList<SelectOption> CategoryTypeOptions = [new("Income", "Income"), new("Expense", "Expense")];
 
     private List<CategoryResponse> IncomeCategories => _categories.Where(c => string.Equals(c.Type, "Income", StringComparison.OrdinalIgnoreCase)).ToList();
     private List<CategoryResponse> ExpenseCategories => _categories.Where(c => string.Equals(c.Type, "Expense", StringComparison.OrdinalIgnoreCase)).ToList();

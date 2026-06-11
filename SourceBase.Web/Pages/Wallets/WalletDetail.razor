@@ -87,13 +87,7 @@ else
                 </div>
                 <div>
                     <label class="form-label">Category</label>
-                    <select @bind="_categoryFilterId" class="form-input">
-                        <option value="">All categories</option>
-                        @foreach (var category in _categories)
-                        {
-                            <option value="@category.Id">@($"{CategoryIcon(category.Icon)} {category.Name} ({category.Type})")</option>
-                        }
-                    </select>
+                    <SelectInput @bind-Value="_categoryFilterId" Options="CategoryFilterOptions" />
                 </div>
             </div>
             <div class="flex flex-col sm:flex-row sm:justify-end gap-3">
@@ -183,10 +177,7 @@ else
                 </div>
                 <div>
                     <label class="form-label">Type</label>
-                    <select class="form-input" value="@_transactionType" @onchange="OnTransactionTypeChanged">
-                        <option value="Income">Income</option>
-                        <option value="Expense">Expense</option>
-                    </select>
+                    <SelectInput @bind-Value="_transactionType" @bind-Value:after="OnTransactionTypeAfterChange" Options="TransactionTypeOptions" />
                 </div>
                 <div>
                     <label class="form-label">Date *</label>
@@ -198,13 +189,7 @@ else
                 </div>
                 <div>
                     <label class="form-label">Category *</label>
-                    <select @bind="_transactionCategoryId" class="form-input">
-                        <option value="">Select category</option>
-                        @foreach (var category in FilteredTransactionCategories)
-                        {
-                            <option value="@category.Id">@($"{CategoryIcon(category.Icon)} {category.Name}")</option>
-                        }
-                    </select>
+                    <SelectInput @bind-Value="_transactionCategoryId" Options="TransactionCategoryOptions" />
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-5">
@@ -232,13 +217,7 @@ else
                 </div>
                 <div>
                     <label class="form-label">To Wallet *</label>
-                    <select @bind="_transferToWalletId" class="form-input">
-                        <option value="">Select wallet</option>
-                        @foreach (var wallet in TransferTargets)
-                        {
-                            <option value="@wallet.Id">@($"{WalletIcon(wallet.Icon)} {wallet.Name} ({wallet.Currency})")</option>
-                        }
-                    </select>
+                    <SelectInput @bind-Value="_transferToWalletId" Options="TransferWalletOptions" />
                     @if (TransferTargets.Count == 0)
                     {
                         <div class="text-xs text-gray-400 mt-1">Create another wallet to transfer funds.</div>
@@ -319,8 +298,12 @@ else
     private TransactionResponse? _deletingTransaction;
 
     private List<CategoryResponse> FilteredTransactionCategories => _categories.Where(c => string.Equals(c.Type, _transactionType, StringComparison.OrdinalIgnoreCase)).ToList();
-
     private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != Id).ToList();
+
+    private static readonly IReadOnlyList<SelectOption> TransactionTypeOptions = [new("Income", "Income"), new("Expense", "Expense")];
+    private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name} ({c.Type})")).Prepend(new SelectOption("", "All categories")).ToList();
+    private IReadOnlyList<SelectOption> TransactionCategoryOptions => FilteredTransactionCategories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name}")).Prepend(new SelectOption("", "Select category")).ToList();
+    private IReadOnlyList<SelectOption> TransferWalletOptions => TransferTargets.Select(w => new SelectOption(w.Id.ToString(), $"{WalletIcon(w.Icon)} {w.Name} ({w.Currency})")).Prepend(new SelectOption("", "Select wallet")).ToList();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -469,13 +452,11 @@ else
 
     private void CloseTransactionForm() => _showTransactionForm = false;
 
-    private Task OnTransactionTypeChanged(ChangeEventArgs args)
+    private void OnTransactionTypeAfterChange()
     {
-        _transactionType = args.Value?.ToString() ?? "Expense";
         var selectedCategory = FilteredTransactionCategories.FirstOrDefault(c => c.Id == ParseGuid(_transactionCategoryId));
         if (selectedCategory is null)
             _transactionCategoryId = string.Empty;
-        return Task.CompletedTask;
     }
 
     private async Task SaveTransactionAsync()

@@ -72,11 +72,7 @@
             <div class="flex items-center justify-between gap-3 flex-wrap">
                 <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">@(_lists.FirstOrDefault(l => l.Id == _selectedListId)?.Name ?? "Todos")</h2>
                 <div class="flex justify-end gap-2 flex-wrap">
-                    <select name="sortBy" @bind="_sortBy" @bind:after="LoadTodosAsync" class="form-input btn-sm w-auto height-auto text-sm">
-                        <option value="">Default</option>
-                        <option value="Date">By Date</option>
-                        <option value="Title">By Name</option>
-                    </select>
+                    <SelectInput @bind-Value="_sortBy" @bind-Value:after="LoadTodosAsync" Options="SortByOptions" Class="w-auto" />
                     @if (!string.IsNullOrEmpty(_sortBy))
                     {
                         <button class="btn-secondary btn-sm" @onclick="ToggleSortOrder">
@@ -242,11 +238,7 @@
                 </div>
                 <div>
                     <label class="form-label">Status</label>
-                    <select @bind="_todoStatus" class="form-input">
-                        <option value="Open">Open</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Archived">Archived</option>
-                    </select>
+                    <SelectInput @bind-Value="_todoStatus" Options="TodoStatusOptions" />
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-5">
@@ -287,6 +279,9 @@
     private const int _todosPageSize = 100;
     private string _sortBy = string.Empty;
     private string _sortOrder = "Asc";
+
+    private static readonly IReadOnlyList<SelectOption> SortByOptions = [new("", "Default"), new("Date", "By Date"), new("Title", "By Name")];
+    private static readonly IReadOnlyList<SelectOption> TodoStatusOptions = [new("Open", "Open"), new("Completed", "Completed"), new("Archived", "Archived")];
 
     // Shared error
     private string? _error;

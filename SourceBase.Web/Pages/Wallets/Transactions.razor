@@ -20,13 +20,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
                 <label class="form-label">Wallet</label>
-                <select @bind="_walletFilterId" class="form-input">
-                    <option value="">All wallets</option>
-                    @foreach (var wallet in _wallets)
-                    {
-                        <option value="@wallet.Id">@($"{WalletIcon(wallet.Icon)} {wallet.Name} ({wallet.Currency})")</option>
-                    }
-                </select>
+                <SelectInput @bind-Value="_walletFilterId" Options="WalletFilterOptions" />
             </div>
             <div>
                 <label class="form-label">Date From</label>
@@ -38,13 +32,7 @@
             </div>
             <div>
                 <label class="form-label">Category</label>
-                <select @bind="_categoryFilterId" class="form-input">
-                    <option value="">All categories</option>
-                    @foreach (var category in _categories)
-                    {
-                        <option value="@category.Id">@($"{CategoryIcon(category.Icon)} {category.Name} ({category.Type})")</option>
-                    }
-                </select>
+                <SelectInput @bind-Value="_categoryFilterId" Options="CategoryFilterOptions" />
             </div>
         </div>
         <div class="flex flex-col sm:flex-row sm:justify-end gap-3">
@@ -133,10 +121,7 @@
                 </div>
                 <div>
                     <label class="form-label">Type</label>
-                    <select class="form-input" value="@_type" @onchange="OnTypeChanged">
-                        <option value="Income">Income</option>
-                        <option value="Expense">Expense</option>
-                    </select>
+                    <SelectInput @bind-Value="_type" @bind-Value:after="OnTypeAfterChange" Options="TransactionTypeOptions" />
                 </div>
                 <div>
                     <label class="form-label">Date *</label>
@@ -148,13 +133,7 @@
                 </div>
                 <div>
                     <label class="form-label">Category *</label>
-                    <select @bind="_categoryId" class="form-input">
-                        <option value="">Select category</option>
-                        @foreach (var category in FilteredCategories)
-                        {
-                            <option value="@category.Id">@($"{CategoryIcon(category.Icon)} {category.Name}")</option>
-                        }
-                    </select>
+                    <SelectInput @bind-Value="_categoryId" Options="EditCategoryOptions" />
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-5">
@@ -202,6 +181,11 @@
     private TransactionResponse? _deleting;
 
     private List<CategoryResponse> FilteredCategories => _categories.Where(c => string.Equals(c.Type, _type, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private static readonly IReadOnlyList<SelectOption> TransactionTypeOptions = [new("Income", "Income"), new("Expense", "Expense")];
+    private IReadOnlyList<SelectOption> WalletFilterOptions => _wallets.Select(w => new SelectOption(w.Id.ToString(), $"{WalletIcon(w.Icon)} {w.Name} ({w.Currency})")).Prepend(new SelectOption("", "All wallets")).ToList();
+    private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name} ({c.Type})")).Prepend(new SelectOption("", "All categories")).ToList();
+    private IReadOnlyList<SelectOption> EditCategoryOptions => FilteredCategories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name}")).Prepend(new SelectOption("", "Select category")).ToList();
 
     protected override async Task OnInitializedAsync() => await Task.WhenAll(LoadWalletsAsync(), LoadCategoriesAsync(), LoadTransactionsAsync());
 
@@ -281,12 +265,10 @@
 
     private void CloseForm() => _showForm = false;
 
-    private Task OnTypeChanged(ChangeEventArgs args)
+    private void OnTypeAfterChange()
     {
-        _type = args.Value?.ToString() ?? "Expense";
         var selected = FilteredCategories.FirstOrDefault(c => c.Id == ParseGuid(_categoryId));
         if (selected is null) _categoryId = string.Empty;
-        return Task.CompletedTask;
     }
 
     private async Task SaveAsync()
