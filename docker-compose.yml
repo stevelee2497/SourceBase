@@ -48,7 +48,7 @@ services:
       - AppSettings__AdminPassword=${ADMIN_PASSWORD}
       - AppSettings__SendGridApiKey=${SENDGRID_API_KEY}
       - AppSettings__SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
-      - AllowedSpecificOrigins__0=https://quoctran.qzz.io
+      - AllowedSpecificOrigins__1=${WEB_URL}
     volumes:
       - ./logs/api:/app/Logs
     ports:

@@ -8,7 +8,6 @@ public class AppSettings
     public int OtpTokenExpirationMinutes { get; set; } = 15;
     public int AccessTokenExpirationMinutes { get; set; } = 60;
     public int RefreshTokenExpirationMinutes { get; set; } = 20160;
-    public string WebUrl { get; set; } = null!;
     public string SendGridApiKey { get; set; } = null!;
     public string SendGridAccountOwner { get; set; } = null!;
     public R2Settings R2 { get; set; } = new();

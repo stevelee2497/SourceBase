@@ -3,9 +3,7 @@
 ## Prerequisites
 
 - A VPS running Docker and Docker Compose
-- DNS A records pointing to the VPS IP:
-  - `quoctran.qzz.io` → VPS IP
-  - `api.quoctran.qzz.io` → VPS IP
+- DNS A records pointing to the VPS IP
 - Ports 80 and 443 open in the firewall
 
 ---
@@ -18,20 +16,22 @@ Go to **GitHub → repo → Settings → Environments → Production**.
 
 **Environment Variables** (visible in UI):
 
-| Variable name            | Description                  |
-| ------------------------ | ---------------------------- |
-| `POSTGRES_USER`          | PostgreSQL username          |
-| `POSTGRES_DB`            | PostgreSQL database name     |
-| `ADMIN_EMAIL`            | Seeded admin account email   |
-| `SENDGRID_ACCOUNT_OWNER` | SendGrid account owner email |
+| Variable name       | Description                          |
+| ------------------- | ------------------------------------ |
+| `ADMIN_EMAIL`       | Seeded admin account email           |
+| `ADMIN_PASSWORD`    | Seeded admin account password        |
+| `POSTGRES_USER`     | PostgreSQL username                  |
+| `POSTGRES_PASSWORD` | PostgreSQL password                  |
+| `POSTGRES_DB`       | PostgreSQL database name             |
+| `WEB_URL`           | Web app URL (e.g. `app.example.com`) |
+| `API_URL`           | API URL (e.g. `api.example.com`)     |
 
 **Environment Secrets** (masked — keep these as secrets):
 
-| Secret name         | Description                   |
-| ------------------- | ----------------------------- |
-| `POSTGRES_PASSWORD` | PostgreSQL password           |
-| `ADMIN_PASSWORD`    | Seeded admin account password |
-| `SENDGRID_API_KEY`  | SendGrid API key              |
+| Secret name              | Description                  |
+| ------------------------ | ---------------------------- |
+| `SENDGRID_API_KEY`       | SendGrid API key             |
+| `SENDGRID_ACCOUNT_OWNER` | SendGrid account owner email |
 
 ### 2. Clone the repository
 

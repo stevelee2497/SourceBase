@@ -23,12 +23,12 @@
     respond @badpaths 404
 }
 
-quoctran.qzz.io {
+{env.WEB_URL} {
     import security
     reverse_proxy sourcebase-web:8080
 }
 
-api.quoctran.qzz.io {
+{env.API_URL} {
     import security
     reverse_proxy sourcebase-api:8080
 }
