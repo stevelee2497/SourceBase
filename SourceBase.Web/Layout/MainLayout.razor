@@ -7,13 +7,19 @@
 @implements IDisposable
 
 <div class="flex h-screen bg-gray-50">
-    <NavMenu MobileOpen="_mobileMenuOpen" OnMobileClose="CloseMobileMenu" />
+    <NavMenu MobileOpen="_mobileMenuOpen" Collapsed="_navCollapsed" OnMobileClose="CloseMobileMenu" />
 
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <!-- Top bar -->
         <div class="flex items-center h-16 px-4 md:px-6 bg-white border-b border-gray-200 shrink-0 gap-3">
             <!-- Hamburger (mobile only) -->
             <button class="md:hidden p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100" @onclick="OpenMobileMenu" aria-label="Open menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <!-- Nav toggle (desktop only) -->
+            <button class="hidden md:flex p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100" @onclick="ToggleNav" aria-label="Toggle navigation">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
@@ -76,12 +82,14 @@
 
 @code {
     private bool _mobileMenuOpen;
+    private bool _navCollapsed;
     private bool _showEditCurrentUser;
     private string _displayName = string.Empty;
     private List<RoleResponse> _allRoles = [];
 
     private void OpenMobileMenu() => _mobileMenuOpen = true;
     private void CloseMobileMenu() => _mobileMenuOpen = false;
+    private void ToggleNav() => _navCollapsed = !_navCollapsed;
     private void CloseEditCurrentUser() => _showEditCurrentUser = false;
 
 

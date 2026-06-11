@@ -44,9 +44,10 @@
 
 @code {
     [Parameter] public bool MobileOpen { get; set; }
+    [Parameter] public bool Collapsed { get; set; }
     [Parameter] public EventCallback OnMobileClose { get; set; }
 
-    private string AsideClass => MobileOpen ? "fixed inset-y-0 left-0 z-50 flex" : "hidden md:flex";
+    private string AsideClass => MobileOpen ? "fixed inset-y-0 left-0 z-50 flex" : Collapsed ? "hidden" : "hidden md:flex";
 
     private static NavLinkMatch GetNavLinkMatch(string url) => url == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix;
 
