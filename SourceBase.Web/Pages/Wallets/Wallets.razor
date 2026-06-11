@@ -224,35 +224,41 @@ else
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div>
                             <label class="form-label">Date From</label>
-                            <InputDate @bind-Value="_dateFrom" class="form-input" />
+                            <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
                         </div>
                         <div>
                             <label class="form-label">Date To</label>
-                            <InputDate @bind-Value="_dateTo" class="form-input" />
+                            <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
                         </div>
                         <div>
                             <label class="form-label">Category</label>
-                            <SelectInput @bind-Value="_categoryFilterId" Options="CategoryFilterOptions" />
+                            <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
                         </div>
-                        <div class="flex items-end gap-2">
+                        <div class="flex items-end">
                             <button class="btn-secondary w-full" @onclick="ResetFiltersAsync">Clear</button>
-                            <button class="btn-primary w-full" @onclick="ApplyFiltersAsync">Apply</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            @if (_loadingTransactions)
+            @if (_loadingTransactions && _transactions.Count == 0)
             {
                 <LoadingSpinner />
             }
-            else if (_transactions.Count == 0)
+            else if (!_loadingTransactions && _transactions.Count == 0)
             {
                 <div class="text-sm text-gray-400 py-8 text-center">No transactions found.</div>
             }
-            else
+            else if (_transactions.Count > 0)
             {
-                <div class="flex flex-col divide-y divide-gray-100">
+                <div class="relative">
+                    @if (_loadingTransactions)
+                    {
+                        <div class="absolute inset-0 z-10 flex items-start justify-center pt-10 bg-white/40 rounded">
+                            <LoadingSpinner />
+                        </div>
+                    }
+                <div class="@(_loadingTransactions ? "blur-sm pointer-events-none select-none" : "") flex flex-col divide-y divide-gray-100">
                     @foreach (var transaction in _transactions)
                     {
                         <div class="py-4 flex flex-col sm:flex-row sm:items-center gap-3">
@@ -294,6 +300,7 @@ else
                     }
                 </div>
                 <Pagination CurrentPage="_transactionsPage" TotalItems="_transactionsTotal" PageSize="_transactionsPageSize" OnPageChanged="ChangeTransactionsPage" />
+                </div>
             }
         </div>
     }
@@ -611,10 +618,9 @@ else
         await LoadTransactionsAsync();
     }
 
-    private Action SelectTypeFilter(string type) => () => _typeFilter = type;
-    private Action SelectAllTypes => SelectTypeFilter(string.Empty);
-    private Action SelectIncomeType => SelectTypeFilter(IncomeType);
-    private Action SelectExpenseType => SelectTypeFilter(ExpenseType);
+    private async Task SelectAllTypes() { _typeFilter = string.Empty; await ApplyFiltersAsync(); }
+    private async Task SelectIncomeType() { _typeFilter = IncomeType; await ApplyFiltersAsync(); }
+    private async Task SelectExpenseType() { _typeFilter = ExpenseType; await ApplyFiltersAsync(); }
 
     private async Task ApplyFiltersAsync()
     {
