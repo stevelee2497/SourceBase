@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
@@ -43,6 +44,7 @@ public class GetTransactionsHandler(IDbContext dbContext, ICurrentUser currentUs
     }
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum TransactionOrderBy
 {
     Date,

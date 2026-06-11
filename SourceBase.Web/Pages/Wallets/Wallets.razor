@@ -54,8 +54,8 @@ else
                         }
                     </svg>
                 </div>
-                <div class="flex flex-col gap-3 flex-1">
-                    <div class="flex flex-wrap gap-x-4 gap-y-1">
+                <div class="flex flex-col gap-3 flex-1 justify-center items-center">
+                    <div class="flex flex-wrap gap-x-4 gap-y-1 justify-center">
                         @{
                             var legendData = BuildPieData();
                         }
@@ -74,7 +74,7 @@ else
                             : _wallets;
                         var selectedBalance = selectedWalletList.Sum(w => w.Balance);
                     }
-                    <div class="border-t border-gray-100">
+                    <div class="border-t border-gray-100 w-full text-center">
                         <div class="text-sm text-gray-400 mt-1">@(_selectedWalletIds.Count > 0 ? "Selected balance" : "Total balance")</div>
                         <div class="text-lg font-bold text-gray-900">@FormatAmount(selectedBalance)</div>
                     </div>
