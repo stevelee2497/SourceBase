@@ -240,6 +240,34 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
     public Task<ErrorResponse?> ConfigureWalletAsync(Guid id, string currency) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/wallets/{id}/config", new { currency }));
 
+    // ── Icons ────────────────────────────────────────────────────────────────
+
+    public Task<(List<IconResponse>? data, ErrorResponse? error)> GetIconsAsync(string? group = null) =>
+        ExecuteAsync<List<IconResponse>>(() => AuthorizedRequest(HttpMethod.Get,
+            $"/api/icons{(string.IsNullOrWhiteSpace(group) ? string.Empty : $"?group={Uri.EscapeDataString(group)}")}"));
+
+    public Task<ErrorResponse?> CreateIconAsync(string value, string name, string group, int sortOrder) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/icons", new { value, name, group, sortOrder }));
+
+    public Task<ErrorResponse?> UpdateIconAsync(Guid id, string value, string name, string group, int sortOrder) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/icons/{id}", new { value, name, group, sortOrder }));
+
+    public Task<ErrorResponse?> DeleteIconAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/icons/{id}"));
+
+    public Task<(IconUploadUrlResponse? data, ErrorResponse? error)> GetIconUploadUrlAsync(string fileName) =>
+        ExecuteAsync<IconUploadUrlResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/icons/upload-image", new { fileName }));
+
+    public async Task<string?> PerformIconUploadAsync(IBrowserFile file, IconUploadUrlResponse uploadInfo)
+    {
+        using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+        using var content = new StreamContent(stream);
+        content.Headers.ContentType = new MediaTypeHeaderValue(uploadInfo.ContentType);
+        content.Headers.ContentLength = file.Size;
+        var response = await http.PutAsync(uploadInfo.UploadUrl, content);
+        return response.IsSuccessStatusCode ? uploadInfo.IconUrl : null;
+    }
+
     // ── Categories ───────────────────────────────────────────────────────────
 
     public Task<(List<CategoryResponse>? data, ErrorResponse? error)> GetCategoriesAsync(string? type = null) =>
@@ -374,3 +402,5 @@ public sealed record TimeSheetUpsertItem(string Date, string Project, decimal Ho
 public sealed record TimeSheetBulkResponse(List<Guid> Ids);
 public sealed record NotificationResponse(Guid Id, string Title, string Message, bool IsRead, DateTime? CreatedOn);
 public sealed record GetNotificationsResponse(List<NotificationResponse> Items, int Page, int Limit, int Total);
+public sealed record IconResponse(Guid Id, string Value, string Name, string Group, int SortOrder, bool IsSystem);
+public sealed record IconUploadUrlResponse(string UploadUrl, string IconUrl, string ContentType);

@@ -34,6 +34,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<NotificationEntity> Notifications { get; set; }
 
+    public DbSet<IconEntity> Icons { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser, dateTime));
@@ -129,6 +131,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         }
 
         SeedCategories(context);
+        SeedIcons(context);
     }
 
     private static void SeedCategories(DbContext context)
@@ -166,6 +169,70 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                     UserId = null
                 });
             }
+        }
+        context.SaveChanges();
+    }
+
+    private static void SeedIcons(DbContext context)
+    {
+        if (context.Set<IconEntity>().Any())
+            return;
+
+        var icons = new List<(string Value, string Name, IconGroup Group, int SortOrder)>
+        {
+            ("💳", "Credit Card", IconGroup.Wallet, 1),
+            ("🏦", "Bank", IconGroup.Wallet, 2),
+            ("💵", "Cash", IconGroup.Wallet, 3),
+            ("👛", "Wallet", IconGroup.Wallet, 4),
+            ("💰", "Savings", IconGroup.Wallet, 5),
+            ("📈", "Investment", IconGroup.Wallet, 6),
+            ("🏠", "Property", IconGroup.Wallet, 7),
+            ("🚀", "Goals", IconGroup.Wallet, 8),
+            ("💎", "Premium", IconGroup.Wallet, 9),
+            ("🏧", "ATM", IconGroup.Wallet, 10),
+            ("💹", "Trading", IconGroup.Wallet, 11),
+            ("🌏", "Foreign", IconGroup.Wallet, 12),
+            ("🍔", "Food", IconGroup.Category, 1),
+            ("☕", "Cafe", IconGroup.Category, 2),
+            ("🚗", "Transport", IconGroup.Category, 3),
+            ("✈️", "Travel", IconGroup.Category, 4),
+            ("🛍️", "Shopping", IconGroup.Category, 5),
+            ("💡", "Utilities", IconGroup.Category, 6),
+            ("❤️", "Health", IconGroup.Category, 7),
+            ("🎬", "Entertainment", IconGroup.Category, 8),
+            ("📚", "Education", IconGroup.Category, 9),
+            ("🎁", "Gift", IconGroup.Category, 10),
+            ("💻", "Freelance", IconGroup.Category, 11),
+            ("💼", "Salary", IconGroup.Category, 12),
+            ("📦", "Other", IconGroup.Category, 13),
+            ("🛒", "Groceries", IconGroup.Category, 14),
+            ("🏥", "Medical", IconGroup.Category, 15),
+            ("🎓", "Tuition", IconGroup.Category, 16),
+            ("⚽", "Sports", IconGroup.Category, 17),
+            ("🐾", "Pets", IconGroup.Category, 18),
+            ("🔧", "Maintenance", IconGroup.Category, 19),
+            ("🎮", "Gaming", IconGroup.Category, 20),
+            ("⭐", "Favourite", IconGroup.General, 1),
+            ("📌", "Pinned", IconGroup.General, 2),
+            ("🔔", "Alert", IconGroup.General, 3),
+            ("🌟", "Special", IconGroup.General, 4),
+            ("🏷️", "Tag", IconGroup.General, 5),
+            ("💬", "Note", IconGroup.General, 6),
+            ("🔑", "Key", IconGroup.General, 7),
+            ("📊", "Stats", IconGroup.General, 8),
+        };
+
+        foreach (var (value, name, group, sortOrder) in icons)
+        {
+            context.Set<IconEntity>().Add(new IconEntity
+            {
+                Id = Guid.NewGuid(),
+                Value = value,
+                Name = name,
+                Group = group,
+                SortOrder = sortOrder,
+                IsSystem = true,
+            });
         }
         context.SaveChanges();
     }

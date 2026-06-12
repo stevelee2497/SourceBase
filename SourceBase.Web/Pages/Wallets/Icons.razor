@@ -1,0 +1,405 @@
+@page "/wallets/icons"
+@attribute [Authorize]
+@inject ApiHttpClient Api
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+}
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Icons</h1>
+        <div class="text-sm text-gray-500 mt-1">Browse and manage icons for wallets and categories.</div>
+    </div>
+    <button class="btn-primary self-start sm:self-auto" @onclick="OpenCreateIcon">
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Icon
+    </button>
+</div>
+
+@if (_loading)
+{
+    <LoadingSpinner />
+}
+else
+{
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <section class="card">
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Wallet Icons</h2>
+                <span class="badge-blue">@WalletIcons.Count</span>
+            </div>
+            @if (WalletIcons.Count == 0)
+            {
+                <div class="text-sm text-gray-400 py-6 text-center">No wallet icons yet.</div>
+            }
+            else
+            {
+                <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                    @foreach (var icon in WalletIcons)
+                    {
+                        <div class="relative group flex flex-col items-center gap-1 rounded-lg border border-gray-100 p-2 hover:border-gray-300 transition-colors">
+                            <div class="w-10 h-10 flex items-center justify-center text-gray-700">
+                                @RenderIconDisplay(icon.Value)
+                            </div>
+                            <span class="text-xs text-gray-500 text-center leading-tight truncate w-full text-center">@icon.Name</span>
+                            @if (icon.IsSystem)
+                            {
+                                <span class="absolute top-1 right-1 text-gray-300" title="System icon">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 10-8 0v4h8z" />
+                                    </svg>
+                                </span>
+                            }
+                            else
+                            {
+                                <div class="absolute top-1 right-1 hidden group-hover:flex gap-0.5">
+                                    <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEditIcon(icon)" title="Edit">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDeleteIcon(icon)" title="Delete">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="card">
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Category Icons</h2>
+                <span class="badge-green">@CategoryIcons.Count</span>
+            </div>
+            @if (CategoryIcons.Count == 0)
+            {
+                <div class="text-sm text-gray-400 py-6 text-center">No category icons yet.</div>
+            }
+            else
+            {
+                <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                    @foreach (var icon in CategoryIcons)
+                    {
+                        <div class="relative group flex flex-col items-center gap-1 rounded-lg border border-gray-100 p-2 hover:border-gray-300 transition-colors">
+                            <div class="w-10 h-10 flex items-center justify-center text-gray-700">
+                                @RenderIconDisplay(icon.Value)
+                            </div>
+                            <span class="text-xs text-gray-500 text-center leading-tight truncate w-full text-center">@icon.Name</span>
+                            @if (icon.IsSystem)
+                            {
+                                <span class="absolute top-1 right-1 text-gray-300" title="System icon">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 10-8 0v4h8z" />
+                                    </svg>
+                                </span>
+                            }
+                            else
+                            {
+                                <div class="absolute top-1 right-1 hidden group-hover:flex gap-0.5">
+                                    <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEditIcon(icon)" title="Edit">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDeleteIcon(icon)" title="Delete">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+}
+
+@if (_showForm)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseIconForm"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 overflow-y-auto" style="max-height:90vh">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingIcon is null ? "Add Icon" : "Edit Icon")</h2>
+            @if (!string.IsNullOrEmpty(_formError))
+            {
+                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_formError</div>
+            }
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Name *</label>
+                    <input @bind="_iconName" class="form-input" placeholder="Icon name" />
+                </div>
+                <div>
+                    <label class="form-label">Group</label>
+                    <SelectInput @bind-Value="_iconGroup" Options="IconGroupOptions" />
+                </div>
+                <div>
+                    <label class="form-label">Sort Order</label>
+                    <input @bind="_iconSortOrder" class="form-input" type="number" min="0" />
+                </div>
+                <div>
+                    <label class="form-label">Icon Value</label>
+                    <div class="flex gap-2 mb-2">
+                        <button type="button" class="text-xs px-2 py-1 rounded border @(_inputMode == "emoji" ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-gray-300 text-gray-600 hover:border-gray-400")" @onclick="SetModeEmoji">Emoji</button>
+                        <button type="button" class="text-xs px-2 py-1 rounded border @(_inputMode == "svg" ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-gray-300 text-gray-600 hover:border-gray-400")" @onclick="SetModeSvg">SVG Path</button>
+                        <button type="button" class="text-xs px-2 py-1 rounded border @(_inputMode == "image" ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-gray-300 text-gray-600 hover:border-gray-400")" @onclick="SetModeImage">Image Upload</button>
+                    </div>
+                    @if (_inputMode == "emoji")
+                    {
+                        <input @bind="_iconValue" class="form-input" placeholder="e.g. 💳" />
+                    }
+                    else if (_inputMode == "svg")
+                    {
+                        <textarea @bind="_iconValue" class="form-input font-mono text-xs" rows="4" placeholder="<path stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; stroke-width=&quot;2&quot; d=&quot;M...&quot; />"></textarea>
+                        <div class="text-xs text-gray-400 mt-1">Paste the <code>&lt;path&gt;</code> content from a 24×24 SVG (e.g. Heroicons).</div>
+                    }
+                    else
+                    {
+                        @if (_uploadingImage)
+                        {
+                            <div class="text-sm text-gray-500 py-2">Uploading…</div>
+                        }
+                        else
+                        {
+                            <InputFile OnChange="HandleImageUpload" accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml" class="block w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-gray-300 file:text-sm file:bg-white file:text-gray-700 hover:file:border-gray-400" />
+                        }
+                        @if (!string.IsNullOrEmpty(_iconValue) && _iconValue.StartsWith("http"))
+                        {
+                            <div class="mt-2 text-xs text-gray-500 truncate">@_iconValue</div>
+                        }
+                    }
+                    @if (!string.IsNullOrEmpty(_iconValue))
+                    {
+                        <div class="mt-3 flex items-center gap-3">
+                            <span class="text-xs text-gray-500">Preview:</span>
+                            <div class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-700">
+                                @RenderIconDisplay(_iconValue)
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-5">
+                <button class="btn-secondary" @onclick="CloseIconForm">Cancel</button>
+                <button class="btn-primary" @onclick="SaveIconAsync" disabled="@_savingIcon">@(_savingIcon ? "Saving…" : "Save")</button>
+            </div>
+        </div>
+    </div>
+}
+
+<ConfirmDialog IsVisible="_showDeleteIcon"
+               Title="Delete icon"
+               Message="@($"Delete '{_deletingIcon?.Name}'?")"
+               OnConfirm="DeleteIconAsync"
+               OnCancel="CancelDeleteIcon" />
+
+@code {
+    private List<IconResponse> _icons = [];
+    private bool _loading = true;
+    private string? _error;
+
+    private bool _showForm;
+    private IconResponse? _editingIcon;
+    private string _iconValue = string.Empty;
+    private string _iconName = string.Empty;
+    private string _iconGroup = "General";
+    private int _iconSortOrder;
+    private string _inputMode = "emoji";
+    private bool _uploadingImage;
+    private string? _formError;
+    private bool _savingIcon;
+
+    private bool _showDeleteIcon;
+    private IconResponse? _deletingIcon;
+
+    private static readonly IReadOnlyList<SelectOption> IconGroupOptions =
+    [
+        new("Wallet", "Wallet"),
+        new("Category", "Category"),
+        new("General", "General"),
+    ];
+
+    private List<IconResponse> WalletIcons => _icons.Where(i => i.Group is "Wallet" or "General").ToList();
+    private List<IconResponse> CategoryIcons => _icons.Where(i => i.Group is "Category" or "General").ToList();
+
+    protected override async Task OnInitializedAsync() => await LoadIconsAsync();
+
+    private async Task LoadIconsAsync()
+    {
+        _loading = true;
+        _error = null;
+        var (data, error) = await Api.GetIconsAsync();
+        if (error is not null)
+        {
+            _icons = [];
+            _error = error.Message ?? "Failed to load icons.";
+        }
+        else
+        {
+            _icons = data ?? [];
+        }
+        _loading = false;
+    }
+
+    private void OpenCreateIcon()
+    {
+        _editingIcon = null;
+        _iconValue = string.Empty;
+        _iconName = string.Empty;
+        _iconGroup = "General";
+        _iconSortOrder = 0;
+        _inputMode = "emoji";
+        _formError = null;
+        _showForm = true;
+    }
+
+    private Action OpenEditIcon(IconResponse icon) => () =>
+    {
+        _editingIcon = icon;
+        _iconValue = icon.Value;
+        _iconName = icon.Name;
+        _iconGroup = icon.Group;
+        _iconSortOrder = icon.SortOrder;
+        _inputMode = DetectInputMode(icon.Value);
+        _formError = null;
+        _showForm = true;
+    };
+
+    private static string DetectInputMode(string value)
+    {
+        if (value.TrimStart().StartsWith("<")) return "svg";
+        if (value.StartsWith("http")) return "image";
+        return "emoji";
+    }
+
+    private void CloseIconForm() => _showForm = false;
+
+    private void SetModeEmoji() { _inputMode = "emoji"; _iconValue = string.Empty; }
+    private void SetModeSvg() { _inputMode = "svg"; _iconValue = string.Empty; }
+    private void SetModeImage() { _inputMode = "image"; _iconValue = string.Empty; }
+
+    private async Task HandleImageUpload(InputFileChangeEventArgs e)
+    {
+        _uploadingImage = true;
+        _formError = null;
+        StateHasChanged();
+
+        var file = e.File;
+        var (uploadInfo, uploadError) = await Api.GetIconUploadUrlAsync(file.Name);
+        if (uploadError is not null || uploadInfo is null)
+        {
+            _formError = uploadError?.Message ?? "Failed to get upload URL.";
+            _uploadingImage = false;
+            return;
+        }
+
+        var iconUrl = await Api.PerformIconUploadAsync(file, uploadInfo);
+        if (iconUrl is null)
+        {
+            _formError = "Image upload failed.";
+            _uploadingImage = false;
+            return;
+        }
+
+        _iconValue = iconUrl;
+        _uploadingImage = false;
+    }
+
+    private async Task SaveIconAsync()
+    {
+        _formError = null;
+        if (string.IsNullOrWhiteSpace(_iconName))
+        {
+            _formError = "Name is required.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(_iconValue))
+        {
+            _formError = "Icon value is required.";
+            return;
+        }
+
+        _savingIcon = true;
+        var error = _editingIcon is null
+            ? await Api.CreateIconAsync(_iconValue.Trim(), _iconName.Trim(), _iconGroup, _iconSortOrder)
+            : await Api.UpdateIconAsync(_editingIcon.Id, _iconValue.Trim(), _iconName.Trim(), _iconGroup, _iconSortOrder);
+
+        if (error is not null)
+        {
+            _formError = error.Message ?? "Failed to save icon.";
+            _savingIcon = false;
+            return;
+        }
+
+        _showForm = false;
+        _savingIcon = false;
+        await LoadIconsAsync();
+    }
+
+    private Action ConfirmDeleteIcon(IconResponse icon) => () =>
+    {
+        _deletingIcon = icon;
+        _showDeleteIcon = true;
+    };
+
+    private void CancelDeleteIcon()
+    {
+        _showDeleteIcon = false;
+        _deletingIcon = null;
+    }
+
+    private async Task DeleteIconAsync()
+    {
+        if (_deletingIcon is null)
+            return;
+
+        _showDeleteIcon = false;
+        var error = await Api.DeleteIconAsync(_deletingIcon.Id);
+        if (error is not null)
+            _error = error.Message ?? "Failed to delete icon.";
+        else
+            await LoadIconsAsync();
+
+        _deletingIcon = null;
+    }
+
+    private RenderFragment RenderIconDisplay(string value) => builder =>
+    {
+        if (value.TrimStart().StartsWith("<"))
+        {
+            builder.OpenElement(0, "svg");
+            builder.AddAttribute(1, "class", "w-6 h-6");
+            builder.AddAttribute(2, "viewBox", "0 0 24 24");
+            builder.AddAttribute(3, "fill", "none");
+            builder.AddAttribute(4, "stroke", "currentColor");
+            builder.AddMarkupContent(5, value);
+            builder.CloseElement();
+        }
+        else if (value.StartsWith("http"))
+        {
+            builder.OpenElement(0, "img");
+            builder.AddAttribute(1, "src", value);
+            builder.AddAttribute(2, "class", "w-6 h-6 object-contain rounded");
+            builder.AddAttribute(3, "alt", "");
+            builder.CloseElement();
+        }
+        else
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "class", "text-2xl leading-none");
+            builder.AddContent(2, value);
+            builder.CloseElement();
+        }
+    };
+}
