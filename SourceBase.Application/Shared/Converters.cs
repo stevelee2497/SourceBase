@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SourceBase.Api.Shared;
+namespace SourceBase.Application.Shared;
 
 public class TrimmingJsonConverter : JsonConverter<string>
 {
