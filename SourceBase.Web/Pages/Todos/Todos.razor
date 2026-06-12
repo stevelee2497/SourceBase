@@ -232,7 +232,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="form-label">Title *</label>
-                    <input @bind="_todoTitle" class="form-input" placeholder="What needs to be done?" />
+                    <input @bind="_todoTitle" @bind:event="oninput" class="form-input" placeholder="What needs to be done?" @onkeydown="TodoTitleKeyDown" />
                 </div>
                 <div>
                     <label class="form-label">Date *</label>
@@ -480,6 +480,11 @@
     };
 
     private void CloseTodoForm() => _showTodoForm = false;
+
+    private async Task TodoTitleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await SaveTodoAsync();
+    }
 
     private async Task SaveTodoAsync()
     {
