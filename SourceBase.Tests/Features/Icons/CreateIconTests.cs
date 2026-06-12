@@ -1,0 +1,151 @@
+using System.Net;
+using System.Net.Http.Json;
+using FluentAssertions;
+using SourceBase.Application.Features.Icons;
+using SourceBase.Tests.Infrastructure;
+using Xunit;
+
+namespace SourceBase.Tests.Features.Icons;
+
+public class CreateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
+{
+    [Fact(DisplayName = "ICONS-CREATE-001: CreateIcon_WithoutToken_ReturnsUnauthorized")]
+    public async Task CreateIcon_WithoutToken_ReturnsUnauthorized()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateIconEndpoint.Route, new
+        {
+            value = "⭐",
+            name = "Star",
+            group = "General",
+            sortOrder = 99,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact(DisplayName = "ICONS-CREATE-002: CreateIcon_WithValidRequest_ReturnsId")]
+    public async Task CreateIcon_WithValidRequest_ReturnsId()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateIconEndpoint.Route, new
+        {
+            value = "🦊",
+            name = $"Fox_{Guid.NewGuid():N}",
+            group = "General",
+            sortOrder = 99,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<CreateIconResponse>();
+        body!.Id.Should().NotBeEmpty();
+    }
+
+    [Fact(DisplayName = "ICONS-CREATE-003: CreateIcon_WithEmptyValue_ReturnsBadRequest")]
+    public async Task CreateIcon_WithEmptyValue_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateIconEndpoint.Route, new
+        {
+            value = "",
+            name = "Test",
+            group = "General",
+            sortOrder = 1,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact(DisplayName = "ICONS-CREATE-004: CreateIcon_WithEmptyName_ReturnsBadRequest")]
+    public async Task CreateIcon_WithEmptyName_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateIconEndpoint.Route, new
+        {
+            value = "🦊",
+            name = "",
+            group = "General",
+            sortOrder = 1,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact(DisplayName = "ICONS-CREATE-005: CreateIcon_WithValueTooLong_ReturnsBadRequest")]
+    public async Task CreateIcon_WithValueTooLong_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateIconEndpoint.Route, new
+        {
+            value = new string('x', 2001),
+            name = "Test",
+            group = "General",
+            sortOrder = 1,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact(DisplayName = "ICONS-CREATE-006: CreateIcon_WithNameTooLong_ReturnsBadRequest")]
+    public async Task CreateIcon_WithNameTooLong_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PostAsJsonAsync(CreateIconEndpoint.Route, new
+        {
+            value = "🦊",
+            name = new string('x', 101),
+            group = "General",
+            sortOrder = 1,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact(DisplayName = "ICONS-CREATE-007: CreateIcon_AppearsInGetIcons")]
+    public async Task CreateIcon_AppearsInGetIcons()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+        var uniqueName = $"Unique_{Guid.NewGuid():N}";
+
+        var createResponse = await client.PostAsJsonAsync(CreateIconEndpoint.Route, new
+        {
+            value = "🦋",
+            name = uniqueName,
+            group = "General",
+            sortOrder = 999,
+        });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        var response = await client.GetAsync(GetIconsEndpoint.Route);
+
+        // Assert
+        var icons = await response.Content.ReadFromJsonAsync<List<IconResponse>>();
+        icons.Should().Contain(i => i.Name == uniqueName);
+    }
+}
