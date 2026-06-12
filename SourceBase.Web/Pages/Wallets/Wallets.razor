@@ -116,7 +116,16 @@ else
             var isSelected = _selectedWalletIds.Contains(wallet.Id);
             <div class="rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50") cursor-pointer transition-all p-3 flex flex-col gap-1.5" @onclick="SelectWallet(wallet.Id)">
                 <div class="flex items-center justify-between gap-1">
-                    <span class="text-xl leading-none">@WalletIcon(wallet.Icon)</span>
+                    <span class="text-xl leading-none">
+                        @if (wallet.Icon?.StartsWith("http") == true)
+                        {
+                            <img src="@wallet.Icon" class="w-6 h-6 object-contain" alt="wallet icon" />
+                        }
+                        else
+                        {
+                            @((MarkupString)(string.IsNullOrWhiteSpace(wallet.Icon) ? "👛" : wallet.Icon))
+                        }
+                    </span>
                     <span class="text-xs @(isSelected ? "text-indigo-600 font-semibold" : "text-gray-400")">@wallet.Currency</span>
                 </div>
                 <div class="text-xs font-semibold @(isSelected ? "text-indigo-700" : "text-gray-700") truncate">@wallet.Name</div>
@@ -248,7 +257,17 @@ else
                         {
                             <div class="py-4 flex flex-col sm:flex-row sm:items-center gap-3">
                                 <div class="flex items-start gap-3 flex-1 min-w-0">
-                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">@TransactionIcon(transaction)</div>
+                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">
+                                        @{ var txIcon = TransactionIcon(transaction); }
+                                        @if (txIcon.StartsWith("http"))
+                                        {
+                                            <img src="@txIcon" class="w-6 h-6 object-contain" alt="category icon" />
+                                        }
+                                        else
+                                        {
+                                            @((MarkupString)txIcon)
+                                        }
+                                    </div>
                                     <div class="min-w-0 flex-1">
                                         <div class="font-medium text-gray-900 truncate">@TransactionCategoryLabel(transaction)</div>
                                         <div class="text-sm text-gray-500 truncate">@TransactionTitle(transaction)</div>
