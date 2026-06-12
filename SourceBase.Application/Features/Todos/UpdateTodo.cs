@@ -35,8 +35,8 @@ public class UpdateTodoHandler(IDbContext dbContext, ICurrentUser currentUser, I
         {
             UserId = item.UserId,
             Event = NotificationEvent.TodoUpdatedEvent,
-            Title = string.Empty,
-            Message = string.Empty,
+            Title = "Todo item updated",
+            Message = $"Your todo item {item.Title} has been updated.",
             Data = item.Serialize(),
             IsRead = true,
         }, ct);

@@ -6,6 +6,11 @@ namespace SourceBase.Web.Services;
 
 public class NotificationService(BlazorAuthStateProvider auth, IConfiguration configuration) : IAsyncDisposable
 {
+    public static JsonSerializerOptions JsonOptions => new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
+
     private HubConnection? _connection;
     private readonly string _hubUrl = configuration["ApiBaseUrl"]!.TrimEnd('/') + "/hubs/notifications";
 
@@ -42,7 +47,7 @@ public class NotificationService(BlazorAuthStateProvider auth, IConfiguration co
             if (!payload.TryGetProperty("data", out var dataProp)) return;
             var dataStr = dataProp.GetString();
             if (dataStr is null) return;
-            var todo = JsonSerializer.Deserialize<TodoItemResponse>(dataStr);
+            var todo = JsonSerializer.Deserialize<TodoItemResponse>(dataStr, JsonOptions);
             if (todo is not null) OnTodoUpdated?.Invoke(todo);
         });
 
