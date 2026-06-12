@@ -1,6 +1,8 @@
 @page "/todos"
 @attribute [Authorize]
+@implements IDisposable
 @inject ApiHttpClient Api
+@inject NotificationService Notifications
 
 @if (!string.IsNullOrEmpty(_error))
 {
@@ -310,7 +312,23 @@
     private bool _showDeleteTodo;
     private TodoItemResponse? _deletingTodo;
 
-    protected override async Task OnInitializedAsync() => await LoadListsAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        Notifications.OnTodoUpdated += HandleTodoUpdated;
+        await LoadListsAsync();
+    }
+
+    public void Dispose() => Notifications.OnTodoUpdated -= HandleTodoUpdated;
+
+    private void HandleTodoUpdated(TodoItemResponse updated)
+    {
+        var index = _todos.FindIndex(t => t.Id == updated.Id);
+        if (index >= 0)
+        {
+            _todos[index] = updated;
+            InvokeAsync(StateHasChanged);
+        }
+    }
 
     private async Task LoadListsAsync()
     {

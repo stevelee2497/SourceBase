@@ -38,7 +38,7 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
 
         await factory.WithDbContextAsync(async db =>
         {
-            db.Notifications.Add(new NotificationEntity { UserId = userInfo!.Id, Title = "Test Title", Message = "Test Message" });
+            db.Notifications.Add(new NotificationEntity { UserId = userInfo!.Id, Title = "Test Title", Message = "Test Message", Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty });
             await db.SaveChangesAsync();
             return true;
         });
@@ -63,8 +63,8 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
         await factory.WithDbContextAsync(async db =>
         {
             db.Notifications.AddRange(
-                new NotificationEntity { UserId = userInfo!.Id, Title = "Unread", Message = "msg", IsRead = false },
-                new NotificationEntity { UserId = userInfo.Id, Title = "Read", Message = "msg", IsRead = true }
+                new NotificationEntity { UserId = userInfo!.Id, Title = "Unread", Message = "msg", IsRead = false, Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty },
+                new NotificationEntity { UserId = userInfo.Id, Title = "Read", Message = "msg", IsRead = true, Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty }
             );
             await db.SaveChangesAsync();
             return true;
@@ -90,7 +90,7 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
         await factory.WithDbContextAsync(async db =>
         {
             for (var i = 0; i < 5; i++)
-                db.Notifications.Add(new NotificationEntity { UserId = userInfo!.Id, Title = $"Paged_{i}", Message = "msg" });
+                db.Notifications.Add(new NotificationEntity { UserId = userInfo!.Id, Title = $"Paged_{i}", Message = "msg", Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty });
             await db.SaveChangesAsync();
             return true;
         });

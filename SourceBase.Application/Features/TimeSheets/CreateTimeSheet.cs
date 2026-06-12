@@ -51,7 +51,14 @@ public class CreateTimeSheetHandler(IDbContext dbContext, ICurrentUser currentUs
         }
 
         await dbContext.SaveChangesAsync(ct);
-        await notificationService.CreateAsync(currentUser.UserId, "Time Sheets Submitted", "Your time sheets have been submitted successfully.", ct);
+        await notificationService.CreateAsync(new NotificationEntity
+        {
+            UserId = currentUser.UserId,
+            Event = NotificationEvent.GlobalNotificationEvent,
+            Title = "Time Sheets Submitted",
+            Message = "Your time sheets have been submitted successfully.",
+            Data = string.Empty,
+        }, ct);
         return new CreateTimeSheetResponse(ids);
     }
 }

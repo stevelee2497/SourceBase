@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using SourceBase.Web.Auth;
 
@@ -12,6 +13,7 @@ public class NotificationService(BlazorAuthStateProvider auth, IConfiguration co
     public int UnreadCount => Notifications.Count(n => !n.IsRead);
 
     public event Action? OnChange;
+    public event Action<TodoItemResponse>? OnTodoUpdated;
 
     public async Task StartAsync()
     {
@@ -33,6 +35,15 @@ public class NotificationService(BlazorAuthStateProvider auth, IConfiguration co
         {
             Notifications.Insert(0, notification);
             OnChange?.Invoke();
+        });
+
+        _connection.On<JsonElement>("TodoUpdatedEvent", payload =>
+        {
+            if (!payload.TryGetProperty("data", out var dataProp)) return;
+            var dataStr = dataProp.GetString();
+            if (dataStr is null) return;
+            var todo = JsonSerializer.Deserialize<TodoItemResponse>(dataStr);
+            if (todo is not null) OnTodoUpdated?.Invoke(todo);
         });
 
         await _connection.StartAsync();

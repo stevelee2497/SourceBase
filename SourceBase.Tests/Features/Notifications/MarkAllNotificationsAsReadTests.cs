@@ -24,8 +24,8 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
         await factory.WithDbContextAsync(async db =>
         {
             db.Notifications.AddRange(
-                new NotificationEntity { UserId = userInfo!.Id, Title = "N1", Message = "msg", IsRead = false },
-                new NotificationEntity { UserId = userInfo.Id, Title = "N2", Message = "msg", IsRead = false }
+                new NotificationEntity { UserId = userInfo!.Id, Title = "N1", Message = "msg", IsRead = false, Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty },
+                new NotificationEntity { UserId = userInfo.Id, Title = "N2", Message = "msg", IsRead = false, Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty }
             );
             await db.SaveChangesAsync();
             return true;
@@ -68,7 +68,7 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
 
         await factory.WithDbContextAsync(async db =>
         {
-            db.Notifications.Add(new NotificationEntity { UserId = otherUserId, Title = "Other", Message = "msg", IsRead = false });
+            db.Notifications.Add(new NotificationEntity { UserId = otherUserId, Title = "Other", Message = "msg", IsRead = false, Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty });
             await db.SaveChangesAsync();
             return true;
         });
