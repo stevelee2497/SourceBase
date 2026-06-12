@@ -18,5 +18,6 @@ public class NotificationEntity : BaseAuditableEntity
 public enum NotificationEvent
 {
     GlobalNotificationEvent,
-    TodoUpdatedEvent
+    TodoUpdatedEvent,
+    TodoCreatedEvent
 }

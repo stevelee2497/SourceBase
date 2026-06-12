@@ -19,6 +19,7 @@ public class NotificationService(BlazorAuthStateProvider auth, IConfiguration co
 
     public event Action? OnChange;
     public event Action<TodoItemResponse>? OnTodoUpdated;
+    public event Action<TodoItemResponse>? OnTodoCreated;
 
     public async Task StartAsync()
     {
@@ -49,6 +50,15 @@ public class NotificationService(BlazorAuthStateProvider auth, IConfiguration co
             if (dataStr is null) return;
             var todo = JsonSerializer.Deserialize<TodoItemResponse>(dataStr, JsonOptions);
             if (todo is not null) OnTodoUpdated?.Invoke(todo);
+        });
+
+        _connection.On<JsonElement>("TodoCreatedEvent", payload =>
+        {
+            if (!payload.TryGetProperty("data", out var dataProp)) return;
+            var dataStr = dataProp.GetString();
+            if (dataStr is null) return;
+            var todo = JsonSerializer.Deserialize<TodoItemResponse>(dataStr, JsonOptions);
+            if (todo is not null) OnTodoCreated?.Invoke(todo);
         });
 
         await _connection.StartAsync();

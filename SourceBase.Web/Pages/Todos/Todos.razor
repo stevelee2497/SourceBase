@@ -315,10 +315,15 @@
     protected override async Task OnInitializedAsync()
     {
         Notifications.OnTodoUpdated += HandleTodoUpdated;
+        Notifications.OnTodoCreated += HandleTodoCreated;
         await LoadListsAsync();
     }
 
-    public void Dispose() => Notifications.OnTodoUpdated -= HandleTodoUpdated;
+    public void Dispose()
+    {
+        Notifications.OnTodoUpdated -= HandleTodoUpdated;
+        Notifications.OnTodoCreated -= HandleTodoCreated;
+    }
 
     private void HandleTodoUpdated(TodoItemResponse updated)
     {
@@ -328,6 +333,17 @@
             _todos[index] = updated;
             InvokeAsync(StateHasChanged);
         }
+    }
+
+    private void HandleTodoCreated(TodoItemResponse created)
+    {
+        if (created.TodoListId != _selectedListId) return;
+        InvokeAsync(() =>
+        {
+            _todos.Insert(0, created);
+            _todosTotal++;
+            StateHasChanged();
+        });
     }
 
     private async Task LoadListsAsync()
