@@ -19,7 +19,7 @@ public class CreateTodoEndpoint : IEndpoint
         .WithTags("Todos");
 }
 
-public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateTodoRequest, CreateTodoResponse>
+public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser, INotificationService notifications) : IRequestHandler<CreateTodoRequest, CreateTodoResponse>
 {
     public async Task<CreateTodoResponse> Handle(CreateTodoRequest request, CancellationToken ct)
     {
@@ -40,6 +40,15 @@ public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) :
         };
         dbContext.TodoItems.Add(item);
         await dbContext.SaveChangesAsync(ct);
+        await notifications.CreateAsync(new NotificationEntity
+        {
+            UserId = item.UserId,
+            Event = NotificationEvent.TodoCreatedEvent,
+            Title = "Todo item created",
+            Message = $"A new todo item {item.Title} has been created.",
+            Data = item.Serialize(),
+            IsRead = true,
+        }, ct);
         return new CreateTodoResponse(item.Id);
     }
 }

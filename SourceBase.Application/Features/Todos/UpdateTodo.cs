@@ -19,7 +19,7 @@ public class UpdateTodoEndpoint : IEndpoint
         .WithTags("Todos");
 }
 
-public class UpdateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<UpdateTodoRequest, UpdateTodoResponse>
+public class UpdateTodoHandler(IDbContext dbContext, ICurrentUser currentUser, INotificationService notifications) : IRequestHandler<UpdateTodoRequest, UpdateTodoResponse>
 {
     public async Task<UpdateTodoResponse> Handle(UpdateTodoRequest request, CancellationToken ct)
     {
@@ -31,6 +31,15 @@ public class UpdateTodoHandler(IDbContext dbContext, ICurrentUser currentUser) :
         item.Status = request.Status;
         item.Date = request.Date;
         await dbContext.SaveChangesAsync(ct);
+        await notifications.CreateAsync(new NotificationEntity
+        {
+            UserId = item.UserId,
+            Event = NotificationEvent.TodoUpdatedEvent,
+            Title = "Todo item updated",
+            Message = $"Your todo item {item.Title} has been updated.",
+            Data = item.Serialize(),
+            IsRead = true,
+        }, ct);
         return new UpdateTodoResponse(item.Id);
     }
 }

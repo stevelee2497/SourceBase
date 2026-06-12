@@ -22,7 +22,7 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
 
         var notifId = await factory.WithDbContextAsync(async db =>
         {
-            var n = new NotificationEntity { UserId = userInfo!.Id, Title = "Unread", Message = "msg", IsRead = false };
+            var n = new NotificationEntity { UserId = userInfo!.Id, Title = "Unread", Message = "msg", IsRead = false, Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty };
             db.Notifications.Add(n);
             await db.SaveChangesAsync();
             return n.Id;
@@ -64,7 +64,7 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
 
         var notifId = await factory.WithDbContextAsync(async db =>
         {
-            var n = new NotificationEntity { UserId = anotherUserId, Title = "Other", Message = "msg", IsRead = false };
+            var n = new NotificationEntity { UserId = anotherUserId, Title = "Other", Message = "msg", IsRead = false, Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty };
             db.Notifications.Add(n);
             await db.SaveChangesAsync();
             return n.Id;
@@ -87,7 +87,7 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
 
         var notifId = await factory.WithDbContextAsync(async db =>
         {
-            var n = new NotificationEntity { UserId = userInfo!.Id, Title = "AlreadyRead", Message = "msg", IsRead = true };
+            var n = new NotificationEntity { UserId = userInfo!.Id, Title = "AlreadyRead", Message = "msg", IsRead = true, Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty };
             db.Notifications.Add(n);
             await db.SaveChangesAsync();
             return n.Id;

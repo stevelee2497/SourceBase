@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using SourceBase.Web.Auth;
 
@@ -5,6 +6,11 @@ namespace SourceBase.Web.Services;
 
 public class NotificationService(BlazorAuthStateProvider auth, IConfiguration configuration) : IAsyncDisposable
 {
+    public static JsonSerializerOptions JsonOptions => new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
+
     private HubConnection? _connection;
     private readonly string _hubUrl = configuration["ApiBaseUrl"]!.TrimEnd('/') + "/hubs/notifications";
 
@@ -12,6 +18,8 @@ public class NotificationService(BlazorAuthStateProvider auth, IConfiguration co
     public int UnreadCount => Notifications.Count(n => !n.IsRead);
 
     public event Action? OnChange;
+    public event Action<TodoItemResponse>? OnTodoUpdated;
+    public event Action<TodoItemResponse>? OnTodoCreated;
 
     public async Task StartAsync()
     {
@@ -33,6 +41,24 @@ public class NotificationService(BlazorAuthStateProvider auth, IConfiguration co
         {
             Notifications.Insert(0, notification);
             OnChange?.Invoke();
+        });
+
+        _connection.On<JsonElement>("TodoUpdatedEvent", payload =>
+        {
+            if (!payload.TryGetProperty("data", out var dataProp)) return;
+            var dataStr = dataProp.GetString();
+            if (dataStr is null) return;
+            var todo = JsonSerializer.Deserialize<TodoItemResponse>(dataStr, JsonOptions);
+            if (todo is not null) OnTodoUpdated?.Invoke(todo);
+        });
+
+        _connection.On<JsonElement>("TodoCreatedEvent", payload =>
+        {
+            if (!payload.TryGetProperty("data", out var dataProp)) return;
+            var dataStr = dataProp.GetString();
+            if (dataStr is null) return;
+            var todo = JsonSerializer.Deserialize<TodoItemResponse>(dataStr, JsonOptions);
+            if (todo is not null) OnTodoCreated?.Invoke(todo);
         });
 
         await _connection.StartAsync();

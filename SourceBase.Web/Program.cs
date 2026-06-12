@@ -39,7 +39,7 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapDefaultEndpoints();
-app.MapRazorComponents<SourceBase.Web.App>()
+app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AllowAnonymous();
 

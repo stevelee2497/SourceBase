@@ -7,25 +7,11 @@ namespace SourceBase.Infrastructure.Implementations;
 
 public class NotificationService(IDbContext dbContext, IHubContext<NotificationHub> hubContext) : INotificationService
 {
-    public async Task CreateAsync(Guid userId, string title, string message, CancellationToken ct)
+    public async Task CreateAsync(NotificationEntity notification, CancellationToken ct)
     {
-        var notification = new NotificationEntity
-        {
-            UserId = userId,
-            Title = title,
-            Message = message,
-            IsRead = false,
-        };
-
         dbContext.Notifications.Add(notification);
         await dbContext.SaveChangesAsync(ct);
 
-        await hubContext.Clients.Group(userId.ToString()).SendAsync("GlobalNotificationEvent", new
-        {
-            notification.Id,
-            notification.Title,
-            notification.Message,
-            notification.CreatedOn,
-        }, ct);
+        await hubContext.Clients.Group(notification.UserId.ToString()).SendAsync(notification.Event.ToString(), notification, ct);
     }
 }

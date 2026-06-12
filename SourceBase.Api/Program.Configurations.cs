@@ -1,13 +1,10 @@
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Sinks.OpenTelemetry;
 using SourceBase.Api.Middlewares;
-using SourceBase.Api.Shared;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Infrastructure.Hubs;
@@ -26,10 +23,12 @@ public static class ProgramConfigurations
     {
         services.ConfigureHttpJsonOptions(options =>
         {
-            options.SerializerOptions.Converters.Add(new TrimmingJsonConverter());
-            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+            options.SerializerOptions.DefaultIgnoreCondition = Utilities.JsonOptions.DefaultIgnoreCondition;
+            options.SerializerOptions.DictionaryKeyPolicy = Utilities.JsonOptions.DictionaryKeyPolicy;
+            foreach (var converter in Utilities.JsonOptions.Converters)
+            {
+                options.SerializerOptions.Converters.Add(converter);
+            }
         });
     }
 

@@ -24,8 +24,8 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
         await factory.WithDbContextAsync(async db =>
         {
             db.Notifications.AddRange(
-                new NotificationEntity { UserId = userInfo!.Id, Title = "C1", Message = "msg" },
-                new NotificationEntity { UserId = userInfo.Id, Title = "C2", Message = "msg" }
+                new NotificationEntity { UserId = userInfo!.Id, Title = "C1", Message = "msg", Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty },
+                new NotificationEntity { UserId = userInfo.Id, Title = "C2", Message = "msg", Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty }
             );
             await db.SaveChangesAsync();
             return true;
@@ -68,7 +68,7 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
 
         await factory.WithDbContextAsync(async db =>
         {
-            db.Notifications.Add(new NotificationEntity { UserId = otherUserId, Title = "Other", Message = "msg" });
+            db.Notifications.Add(new NotificationEntity { UserId = otherUserId, Title = "Other", Message = "msg", Event = NotificationEvent.GlobalNotificationEvent, Data = string.Empty });
             await db.SaveChangesAsync();
             return true;
         });

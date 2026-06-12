@@ -66,7 +66,14 @@ public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityP
             .ToListAsync(ct);
 
         foreach (var adminId in adminUsers)
-            await notificationService.CreateAsync(adminId, "New User Registered", $"A new user {user.Email} has been registered.", ct);
+            await notificationService.CreateAsync(new NotificationEntity
+            {
+                UserId = adminId,
+                Event = NotificationEvent.GlobalNotificationEvent,
+                Title = "New User Registered",
+                Message = $"A new user {user.Email} has been registered.",
+                Data = string.Empty,
+            }, ct);
 
         return new CreateUserResponse(user.Id);
     }
