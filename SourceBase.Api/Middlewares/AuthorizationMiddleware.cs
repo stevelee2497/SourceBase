@@ -8,7 +8,7 @@ public class AuthorizationMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context, IDbContext dbContext)
     {
-        if (await IsUserValidAsync(context, dbContext) is false)
+        if (!await IsRequestValidAsync(context, dbContext))
         {
             throw new UnAuthorizedException("User is not authorized");
         }
@@ -16,9 +16,14 @@ public class AuthorizationMiddleware(RequestDelegate next)
         await next(context);
     }
 
-    private static async Task<bool> IsUserValidAsync(HttpContext context, IDbContext dbContext)
+    private static async Task<bool> IsRequestValidAsync(HttpContext context, IDbContext dbContext)
     {
-        if (context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() is not null)
+        // If the endpoint is null, it means that the request does not match any route, so we can allow it to pass through and let the routing middleware handle it.
+        var endpoint = context.GetEndpoint();
+        if (endpoint is null)
+            return true;
+
+        if (endpoint.Metadata.GetMetadata<IAllowAnonymous>() is not null)
             return true;
 
         if (context.User.Identity is not { IsAuthenticated: true })
