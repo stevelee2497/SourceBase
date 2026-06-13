@@ -107,5 +107,9 @@ jobs:
           script: |
             cd ${{ vars.VPS_APP_PATH || '~/SourceBase' }}
             git pull
-            docker compose pull
-            docker compose up -d --remove-orphans
+            output=$(docker compose pull 2>&1 && docker compose up -d --remove-orphans 2>&1)
+            echo "$output"
+            if echo "$output" | grep -q 'variable is not set. Defaulting to a blank string'; then
+              echo "ERROR: One or more required environment variables are not set."
+              exit 1
+            fi
