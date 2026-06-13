@@ -39,7 +39,7 @@ public class CreateIconRequestValidator : AbstractValidator<CreateIconRequest>
 {
     public CreateIconRequestValidator()
     {
-        RuleFor(x => x.Value).NotEmpty().MaximumLength(2000);
+        RuleFor(x => x.Value).NotEmpty();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
     }
 }

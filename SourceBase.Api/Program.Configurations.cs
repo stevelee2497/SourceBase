@@ -85,27 +85,27 @@ public static class ProgramConfigurations
 
     public static void AddSeriLog(this WebApplicationBuilder builder)
     {
-        var logConfig = new LoggerConfiguration()
-            .ReadFrom.Configuration(builder.Configuration)
-            .Enrich.WithSpan();
-
-        var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
-        if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+        builder.Host.UseSerilog((ctx, logConfig) =>
         {
-            logConfig = logConfig.WriteTo.OpenTelemetry(options =>
-            {
-                options.Endpoint = otlpEndpoint;
-                options.Protocol = OtlpProtocol.Grpc;
-                options.ResourceAttributes = new Dictionary<string, object>
-                {
-                    ["service.name"] = builder.Configuration["OTEL_SERVICE_NAME"] ?? builder.Configuration["ApplicationName"] ?? "SourceBase.Api",
-                    ["service.version"] = builder.Configuration["OTEL_SERVICE_VERSION"] ?? "1.0.0",
-                };
-            });
-        }
+            logConfig
+                .ReadFrom.Configuration(ctx.Configuration)
+                .Enrich.WithSpan();
 
-        Log.Logger = logConfig.CreateLogger();
-        builder.Host.UseSerilog();
+            var otlpEndpoint = ctx.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+            if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+            {
+                logConfig.WriteTo.OpenTelemetry(options =>
+                {
+                    options.Endpoint = otlpEndpoint;
+                    options.Protocol = OtlpProtocol.Grpc;
+                    options.ResourceAttributes = new Dictionary<string, object>
+                    {
+                        ["service.name"] = ctx.Configuration["OTEL_SERVICE_NAME"] ?? ctx.Configuration["ApplicationName"] ?? "SourceBase.Api",
+                        ["service.version"] = ctx.Configuration["OTEL_SERVICE_VERSION"] ?? "1.0.0",
+                    };
+                });
+            }
+        });
     }
 
     public static void UseSeriLog(this WebApplication app)

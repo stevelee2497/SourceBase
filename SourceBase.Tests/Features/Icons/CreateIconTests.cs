@@ -87,8 +87,8 @@ public class CreateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "ICONS-CREATE-005: CreateIcon_WithValueTooLong_ReturnsBadRequest")]
-    public async Task CreateIcon_WithValueTooLong_ReturnsBadRequest()
+    [Fact(DisplayName = "ICONS-CREATE-005: CreateIcon_WithValueTooLong_OK")]
+    public async Task CreateIcon_WithValueTooLong_OK()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -103,7 +103,7 @@ public class CreateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact(DisplayName = "ICONS-CREATE-006: CreateIcon_WithNameTooLong_ReturnsBadRequest")]
