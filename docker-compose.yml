@@ -92,6 +92,9 @@ services:
     image: caddy:alpine
     container_name: sourcebase-caddy
     restart: unless-stopped
+    environment:
+      - WEB_URL=${WEB_URL}
+      - API_URL=${API_URL}
     ports:
       - "80:80"
       - "443:443"
