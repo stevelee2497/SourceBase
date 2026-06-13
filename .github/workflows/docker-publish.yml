@@ -91,10 +91,10 @@ jobs:
         uses: appleboy/ssh-action@v1
         env:
           POSTGRES_USER: ${{ vars.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ vars.POSTGRES_PASSWORD }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ vars.POSTGRES_DB }}
           ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
-          ADMIN_PASSWORD: ${{ vars.ADMIN_PASSWORD }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           SENDGRID_ACCOUNT_OWNER: ${{ secrets.SENDGRID_ACCOUNT_OWNER }}
           WEB_URL: ${{ vars.WEB_URL }}
