@@ -23,16 +23,20 @@ public class AuthorizationMiddleware(RequestDelegate next)
         if (endpoint is null)
             return true;
 
+        // If the endpoint has the AllowAnonymous attribute, we can allow it to pass through without checking for authentication.
         if (endpoint.Metadata.GetMetadata<IAllowAnonymous>() is not null)
             return true;
 
+        // If the user is not authenticated, we can immediately return false.
         if (context.User.Identity is not { IsAuthenticated: true })
             return false;
 
+        // If the user is authenticated, we need to check if the user's email is confirmed and if the security stamp matches. This is to ensure that the user's account is still valid and has not been compromised.
         var user = await dbContext.Users.FindAsync([context.User.UserId], context.RequestAborted);
         if (user is null || !user.EmailConfirmed || !string.Equals(user.SecurityStamp, context.User.SecurityStamp, StringComparison.Ordinal))
             return false;
 
+        // If all checks pass, we can allow the request to proceed.
         return true;
     }
 }
