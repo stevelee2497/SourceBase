@@ -97,11 +97,13 @@ jobs:
           ADMIN_PASSWORD: ${{ vars.ADMIN_PASSWORD }}
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           SENDGRID_ACCOUNT_OWNER: ${{ secrets.SENDGRID_ACCOUNT_OWNER }}
+          WEB_URL: ${{ vars.WEB_URL }}
+          API_URL: ${{ vars.API_URL }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB,ADMIN_EMAIL,ADMIN_PASSWORD,SENDGRID_API_KEY,SENDGRID_ACCOUNT_OWNER
+          envs: POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB,ADMIN_EMAIL,ADMIN_PASSWORD,SENDGRID_API_KEY,SENDGRID_ACCOUNT_OWNER,WEB_URL,API_URL
           script: |
             cd ${{ vars.VPS_APP_PATH || '~/SourceBase' }}
             git pull
