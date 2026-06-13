@@ -23,12 +23,12 @@
     respond @badpaths 404
 }
 
-{env.WEB_URL} {
+{$WEB_URL} {
     import security
     reverse_proxy sourcebase-web:8080
 }
 
-{env.API_URL} {
+{$API_URL} {
     import security
     reverse_proxy sourcebase-api:8080
 }
