@@ -422,5 +422,5 @@ app.min.css
 .profile
 .zshrc
 .zprofile
-.claude
+.claude/plans
 .ripgreprc

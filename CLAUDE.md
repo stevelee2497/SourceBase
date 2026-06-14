@@ -1,23 +1,20 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Commands
 
 ```sh
 # Development
-dotnet run --project SourceBase.AppHost   # Recommended: Aspire dashboard at :15017 (logs/traces/metrics)
+dotnet run --project SourceBase.AppHost   # Aspire dashboard at :15017 (logs/traces/metrics)
 sh run.sh                                  # API + Web without Aspire
 
 # Build & test
 dotnet build
 dotnet test
-dotnet test --filter "ClassName.MethodName"   # Single test
+dotnet test --filter "ClassName.MethodName"
 
 # Migrations (always both steps together)
 sh cmd-migration-add.sh <Name>
 sh cmd-migration-update-db.sh
-
 ```
 
 ## Architecture
@@ -34,7 +31,6 @@ SourceBase.Api/           # HTTP entry point — wires AddApplication() + AddInf
 Features live in `SourceBase.Application/Features/` — one file per use case containing request record, response record, endpoint, handler, and validator. No MediatR, no controllers.
 
 ```csharp
-
 public record CreateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
 
 public record CreateTodoResponse(Guid Id);
@@ -66,7 +62,6 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
         RuleFor(x => x.Title).NotEmpty().MaximumLength(256);
     }
 }
-
 ```
 
 **Key rules:**
@@ -155,3 +150,9 @@ private Func<Task> SelectItem(Guid id) => async () => { _selectedId = id; await 
 private void CancelDelete() { _showDelete = false; _deleting = null; }
 // OnCancel="CancelDelete"
 ```
+
+## Skills
+
+- `/coding` — full architecture, conventions, and Blazor reference
+- `/testing` — test infrastructure and patterns
+- `/pr-reviewer` — PR review checklist
