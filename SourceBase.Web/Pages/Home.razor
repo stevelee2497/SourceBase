@@ -3,180 +3,297 @@
 @inject BlazorAuthStateProvider Auth
 @inject ApiHttpClient Api
 
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-    <div class="card">
-        <div class="text-sm font-medium text-gray-500 mb-1">Email</div>
-        <div class="text-gray-900">@(Auth.UserInfo?.Email ?? "—")</div>
+<!-- Overview row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+    <!-- Log time status -->
+    <div class="card flex flex-col gap-2">
+        <div class="text-sm font-medium text-gray-500">Log Time Status</div>
+        @if (_timesheetLoading)
+        {
+            <div class="text-sm text-gray-400">Loading…</div>
+        }
+        else
+        {
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full shrink-0 @(_allLogged ? "bg-green-500" : "bg-red-500")"></div>
+                <span class="text-lg font-semibold @(_allLogged ? "text-green-700" : "text-red-700")">@(_allLogged ? "Logged" : "Not logged")</span>
+            </div>
+            <div class="text-xs text-gray-400">@_logTimeDetail</div>
+        }
     </div>
-    <div class="card">
-        <div class="text-sm font-medium text-gray-500 mb-1">Roles</div>
-        <div class="flex flex-wrap gap-1">
-            @foreach (var role in Auth.UserInfo?.Roles ?? [])
-            {
-                <span class="badge-blue">@role</span>
-            }
+
+    <!-- Total users (admin only) -->
+    <AuthorizeView Roles="Admin">
+        <div class="card flex flex-col gap-1">
+            <div class="text-sm font-medium text-gray-500">Total Users</div>
+            <div class="text-3xl font-bold text-indigo-600">@(_stats?.UserCount ?? 0)</div>
+            <a href="/users" class="text-xs text-indigo-500 hover:text-indigo-700">Manage →</a>
         </div>
+    </AuthorizeView>
+
+    <!-- Total balance -->
+    <div class="card flex flex-col gap-1">
+        <div class="text-sm font-medium text-gray-500">Total Balance</div>
+        @if (_walletsLoading)
+        {
+            <div class="text-sm text-gray-400">Loading…</div>
+        }
+        else
+        {
+            <div class="text-3xl font-bold text-indigo-600">@FormatAmount(_wallets?.TotalBalance ?? 0)</div>
+            <div class="text-xs text-gray-400">Across all wallets</div>
+        }
+    </div>
+
+    <!-- Monthly income / expense -->
+    <div class="card flex flex-col gap-2">
+        <div class="text-sm font-medium text-gray-500">This Month</div>
+        @if (_walletSummaryLoading)
+        {
+            <div class="text-sm text-gray-400">Loading…</div>
+        }
+        else
+        {
+            <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-gray-500">Income</span>
+                    <span class="text-sm font-semibold text-green-600">+@FormatAmount(_walletSummary?.MonthlyIncome ?? 0)</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-gray-500">Expenses</span>
+                    <span class="text-sm font-semibold text-red-600">-@FormatAmount(_walletSummary?.MonthlyExpense ?? 0)</span>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
-@if (_statsLoading)
-{
-    <LoadingSpinner />
-}
-else if (_stats is not null)
-{
-    <div class="mb-8">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">Overview</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <AuthorizeView Roles="Admin">
-                <div class="card text-center">
-                    <div class="text-3xl font-bold text-indigo-600">@_stats.UserCount</div>
-                    <div class="text-sm text-gray-500 mt-1">Users</div>
-                </div>
-            </AuthorizeView>
-            <div class="card text-center">
-                <div class="text-3xl font-bold text-indigo-600">@_stats.TotalTodoLists</div>
-                <div class="text-sm text-gray-500 mt-1">Todo Lists</div>
-            </div>
-            <div class="card text-center">
-                <div class="text-3xl font-bold text-indigo-600">@_stats.TotalTodoItems</div>
-                <div class="text-sm text-gray-500 mt-1">Total Todos</div>
-            </div>
-            <div class="card text-center">
-                <div class="text-3xl font-bold text-green-600">@_stats.CompletedTodoItems</div>
-                <div class="text-sm text-gray-500 mt-1">Completed</div>
-            </div>
-            <div class="card text-center">
-                <div class="text-3xl font-bold text-purple-600">@_stats.TotalWallets</div>
-                <div class="text-sm text-gray-500 mt-1">Wallets</div>
-            </div>
-            <div class="card text-center">
-                <div class="text-3xl font-bold text-blue-600">@_stats.TotalTransactions</div>
-                <div class="text-sm text-gray-500 mt-1">Transactions</div>
-            </div>
-        </div>
-    </div>
-}
+<!-- Main content: two columns -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-<div class="mb-8">
-    <div class="flex items-center justify-between gap-3 mb-4">
-        <h2 class="text-lg font-medium text-gray-900">Wallet Summary</h2>
-        <a href="/wallets" class="text-sm text-indigo-600 hover:text-indigo-700">View Wallets</a>
-    </div>
-    <div class="card">
-        @if (!_walletsLoaded)
+    <!-- Left: Default todo list -->
+    <div class="card flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-base font-semibold text-gray-800">Your Todo List</h2>
+            <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">View all →</a>
+        </div>
+
+        @if (_todosLoading)
         {
             <LoadingSpinner />
         }
-        else if (!_hasWallets)
+        else if (Auth.UserInfo?.DefaultTodoListId is null)
         {
-            <div class="py-8 text-center">
-                <div class="text-sm text-gray-500 mb-3">No wallets yet.</div>
-                <a href="/wallets" class="btn-primary">Create Wallet</a>
+            <div class="py-6 text-center">
+                <div class="text-sm text-gray-400 mb-2">No default list set.</div>
+                <a href="/todos" class="btn-primary btn-sm">Go to Todos to star a list</a>
             </div>
         }
-        else if (_walletSummary is not null)
+        else if (_defaultListName is not null)
         {
-            <div class="space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="rounded-lg bg-indigo-50 px-4 py-5">
-                        <div class="text-sm text-indigo-600 font-medium mb-1">Total Balance</div>
-                        <div class="text-3xl font-bold text-indigo-700">@FormatAmount(_walletSummary.TotalBalance)</div>
-                    </div>
-                    <div class="rounded-lg bg-green-50 px-4 py-5">
-                        <div class="text-sm text-green-600 font-medium mb-1">Monthly Income</div>
-                        <div class="text-2xl font-bold text-green-700">@FormatAmount(_walletSummary.MonthlyIncome)</div>
-                    </div>
-                    <div class="rounded-lg bg-red-50 px-4 py-5">
-                        <div class="text-sm text-red-600 font-medium mb-1">Monthly Expense</div>
-                        <div class="text-2xl font-bold text-red-700">@FormatAmount(_walletSummary.MonthlyExpense)</div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="text-sm font-medium text-gray-700 mb-3">Recent Transactions</div>
-                    @if (_walletSummary.RecentTransactions.Count == 0)
+            @if (_defaultTodos.Count == 0)
+            {
+                <div class="text-sm text-gray-400 text-center py-4">No open todos in this list.</div>
+            }
+            else
+            {
+                <div class="flex flex-col gap-2">
+                    @foreach (var todo in _defaultTodos.Take(10))
                     {
-                        <div class="text-sm text-gray-400">No recent transactions yet.</div>
+                        <div class="flex items-center gap-3">
+                            <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 hover:border-green-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoDone(todo)" title="Mark complete">
+                            </button>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm text-gray-800 truncate">@todo.Title</div>
+                                <div class="text-xs text-gray-400">@todo.Date</div>
+                            </div>
+                        </div>
                     }
-                    else
-                    {
-                        <div class="flex flex-col divide-y divide-gray-100">
-                            @foreach (var transaction in _walletSummary.RecentTransactions.Take(5))
+                </div>
+                @if (_defaultTodos.Count > 10)
+                {
+                    <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">+@(_defaultTodos.Count - 10) more →</a>
+                }
+            }
+        }
+    </div>
+
+    <!-- Right: Wallets distribution -->
+    <div class="card flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-base font-semibold text-gray-800">Wallets Distribution</h2>
+            <a href="/wallets" class="text-xs text-indigo-500 hover:text-indigo-700">View Wallets →</a>
+        </div>
+
+        @if (_walletsLoading)
+        {
+            <LoadingSpinner />
+        }
+        else if (_wallets is null || _wallets.Wallets.Count == 0)
+        {
+            <div class="py-6 text-center">
+                <div class="text-sm text-gray-400 mb-2">No wallets yet.</div>
+                <a href="/wallets" class="btn-primary btn-sm">Create Wallet</a>
+            </div>
+        }
+        else
+        {
+            <div class="flex flex-col items-center gap-4">
+                <div class="shrink-0">
+                    @{
+                        var pieData = BuildWalletPieData();
+                    }
+                    <svg width="200" height="200" viewBox="-1 -1 2 2" style="transform: rotate(-90deg)">
+                        @if (pieData.Count == 1)
+                        {
+                            <circle cx="0" cy="0" r="1" fill="@pieData[0].Color" />
+                        }
+                        else
+                        {
+                            double cumulative = 0;
+                            foreach (var slice in pieData)
                             {
-                                <div class="py-3 flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">@RecentTransactionIcon(transaction)</div>
-                                    <div class="min-w-0 flex-1">
-                                        <div class="font-medium text-gray-900 truncate">@RecentTransactionTitle(transaction)</div>
-                                        <div class="text-sm text-gray-500 truncate">@transaction.WalletName • @FormatDisplayDate(transaction.Date)</div>
-                                    </div>
-                                    <div class="font-semibold @TransactionAmountClass(transaction.Type)">@SignedAmount(transaction.Amount, transaction.Type)</div>
-                                </div>
+                                var startAngle = cumulative * 2 * Math.PI;
+                                cumulative += slice.Fraction;
+                                var endAngle = cumulative * 2 * Math.PI;
+                                var x1 = Math.Cos(startAngle);
+                                var y1 = Math.Sin(startAngle);
+                                var x2 = Math.Cos(endAngle);
+                                var y2 = Math.Sin(endAngle);
+                                var largeArc = slice.Fraction > 0.5 ? 1 : 0;
+                                var pathD = $"M 0 0 L {x1:F4} {y1:F4} A 1 1 0 {largeArc} 1 {x2:F4} {y2:F4} Z";
+                                <path d="@pathD" fill="@slice.Color" stroke="white" stroke-width="0.02" />
                             }
+                        }
+                    </svg>
+                </div>
+                <div class="flex flex-wrap gap-x-4 gap-y-2 justify-center">
+                    @foreach (var slice in BuildWalletPieData())
+                    {
+                        var wallet = _wallets.Wallets.FirstOrDefault(w => w.Name == slice.Name);
+                        <div class="flex items-center gap-1.5 text-sm">
+                            <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: @slice.Color"></div>
+                            <span class="text-gray-700 font-medium">@slice.Name</span>
+                            <span class="text-gray-500">@FormatAmount(wallet?.Balance ?? 0)</span>
                         </div>
                     }
                 </div>
             </div>
         }
-        else
-        {
-            <div class="text-sm text-gray-400 py-8 text-center">Unable to load wallet summary right now.</div>
-        }
     </div>
 </div>
 
-<AuthorizeView Roles="Admin">
-    <div class="mt-4">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
-        <div class="flex flex-wrap gap-3">
-            <a href="/users" class="btn-primary">Manage Users</a>
-            <a href="/roles" class="btn-secondary">Manage Roles</a>
-        </div>
-    </div>
-</AuthorizeView>
-
 @code {
     private StatsResponse? _stats;
-    private bool _statsLoading = true;
+    private GetWalletsResponse? _wallets;
     private GetWalletSummaryResponse? _walletSummary;
-    private bool _walletsLoaded;
-    private bool _hasWallets;
+    private TimeSheetSummaryResponse? _timesheetSummary;
+    private List<TodoItemResponse> _defaultTodos = [];
+    private string? _defaultListName;
 
-    protected override async Task OnInitializedAsync() => await Task.WhenAll(LoadStatsAsync(), LoadWalletSummaryAsync());
+    private bool _timesheetLoading = true;
+    private bool _walletsLoading = true;
+    private bool _walletSummaryLoading = true;
+    private bool _todosLoading = true;
+
+    private bool _allLogged;
+    private string _logTimeDetail = string.Empty;
+
+    private static readonly string[] PieColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#a855f7"];
+
+    private record PieSlice(string Name, double Fraction, string Color);
+
+    protected override async Task OnInitializedAsync() =>
+        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadWalletSummaryAsync(), LoadTimesheetAsync(), LoadDefaultTodosAsync());
 
     private async Task LoadStatsAsync()
     {
-        _statsLoading = true;
         var (data, _) = await Api.GetStatsAsync();
         _stats = data;
-        _statsLoading = false;
+    }
+
+    private async Task LoadWalletsAsync()
+    {
+        _walletsLoading = true;
+        var (data, _) = await Api.GetWalletsAsync();
+        _wallets = data;
+        _walletsLoading = false;
     }
 
     private async Task LoadWalletSummaryAsync()
     {
-        var summaryTask = Api.GetWalletSummaryAsync();
-        var walletsTask = Api.GetWalletsAsync();
-        await Task.WhenAll(summaryTask, walletsTask);
+        _walletSummaryLoading = true;
+        var (data, _) = await Api.GetWalletSummaryAsync();
+        _walletSummary = data;
+        _walletSummaryLoading = false;
+    }
 
-        var (summary, _) = await summaryTask;
-        var (wallets, walletError) = await walletsTask;
+    private async Task LoadTimesheetAsync()
+    {
+        _timesheetLoading = true;
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var (data, _) = await Api.GetTimeSheetSummaryAsync(today.Year, today.Month);
+        _timesheetSummary = data;
+        ComputeLogTimeStatus(today);
+        _timesheetLoading = false;
+    }
 
-        _walletSummary = summary;
-        _hasWallets = walletError is null && (wallets?.Wallets.Count ?? 0) > 0;
-        _walletsLoaded = true;
+    private void ComputeLogTimeStatus(DateOnly today)
+    {
+        var monday = today.AddDays(-(((int)today.DayOfWeek - 1 + 7) % 7));
+        var weekdaysSoFar = Enumerable.Range(0, today.DayNumber - monday.DayNumber + 1)
+            .Select(i => monday.AddDays(i))
+            .Where(d => d.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday))
+            .ToList();
+
+        var loggedDates = (_timesheetSummary?.Days ?? [])
+            .Where(d => d.TotalHours > 0)
+            .Select(d => d.Date)
+            .ToHashSet();
+
+        _allLogged = weekdaysSoFar.Count > 0 && weekdaysSoFar.All(d => loggedDates.Contains(d));
+        var logged = weekdaysSoFar.Count(d => loggedDates.Contains(d));
+        _logTimeDetail = weekdaysSoFar.Count == 0 ? "No weekdays yet this week" : $"{logged}/{weekdaysSoFar.Count} days this week";
+    }
+
+    private async Task LoadDefaultTodosAsync()
+    {
+        _todosLoading = true;
+        var defaultId = Auth.UserInfo?.DefaultTodoListId;
+        if (defaultId is null)
+        {
+            _todosLoading = false;
+            return;
+        }
+
+        var lists = await Api.GetTodoListsAsync(1, 100);
+        _defaultListName = lists.data?.Items.FirstOrDefault(l => l.Id == defaultId)?.Name;
+
+        var (data, _) = await Api.GetTodosAsync(1, 100, defaultId);
+        _defaultTodos = data?.Items.Where(t => t.Status != "Completed").ToList() ?? [];
+        _todosLoading = false;
+    }
+
+    private Func<Task> ToggleTodoDone(TodoItemResponse todo) => async () =>
+    {
+        var dateStr = DateOnly.TryParse(todo.Date, out var d) ? d.ToString("yyyy-MM-dd") : todo.Date;
+        var error = await Api.UpdateTodoAsync(todo.Id, todo.Title, dateStr, "Completed");
+        if (error is null)
+            _defaultTodos.Remove(todo);
+    };
+
+    private List<PieSlice> BuildWalletPieData()
+    {
+        if (_wallets is null || _wallets.Wallets.Count == 0) return [];
+        var positiveTotal = _wallets.Wallets.Sum(w => Math.Max(0m, w.Balance));
+        if (positiveTotal <= 0)
+            return _wallets.Wallets.Select((w, i) => new PieSlice(w.Name, 1.0 / _wallets.Wallets.Count, PieColors[i % PieColors.Length])).ToList();
+        return _wallets.Wallets
+            .Select((w, i) => new PieSlice(w.Name, (double)(Math.Max(0m, w.Balance) / positiveTotal), PieColors[i % PieColors.Length]))
+            .Where(s => s.Fraction > 0)
+            .ToList();
     }
 
     private static string FormatAmount(decimal amount) => amount.ToString("N0");
-
-    private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N0}" : $"-{amount:N0}";
-
-    private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600" : "text-red-600";
-
-    private static string RecentTransactionTitle(RecentTransactionResponse transaction) => !string.IsNullOrWhiteSpace(transaction.Note)
-        ? transaction.Note
-        : !string.IsNullOrWhiteSpace(transaction.CategoryName) ? transaction.CategoryName : "Recent transaction";
-
-    private static string RecentTransactionIcon(RecentTransactionResponse transaction) => string.Equals(transaction.Type, "Income", StringComparison.OrdinalIgnoreCase) ? "💰" : "💸";
-
-    private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MMM yyyy") : value;
 }

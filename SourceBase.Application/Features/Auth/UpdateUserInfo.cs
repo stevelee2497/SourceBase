@@ -6,7 +6,7 @@ using SourceBase.Application.Shared;
 
 namespace SourceBase.Application.Features.Auth;
 
-public record UpdateUserInfoRequest(string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl);
+public record UpdateUserInfoRequest(string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, Guid? DefaultTodoListId);
 
 public record UpdateUserInfoResponse(Guid Id);
 
@@ -15,7 +15,7 @@ public class UpdateUserInfoEndpoint : IEndpoint
     public const string Route = "auth/info";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut(Route, ([FromBody] UpdateUserInfoRequest request, UpdateUserInfoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPatch(Route, ([FromBody] UpdateUserInfoRequest request, UpdateUserInfoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Auth");
 }
 
@@ -24,10 +24,11 @@ public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUse
     public async Task<UpdateUserInfoResponse> Handle(UpdateUserInfoRequest request, CancellationToken ct)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == currentUser.UserId, ct) ?? throw new NotFoundException();
-        user.FirstName = request.FirstName;
-        user.LastName = request.LastName;
-        user.PhoneNumber = request.PhoneNumber;
-        user.AvatarUrl = request.AvatarUrl;
+        user.FirstName = request.FirstName ?? user.FirstName;
+        user.LastName = request.LastName ?? user.LastName;
+        user.PhoneNumber = request.PhoneNumber ?? user.PhoneNumber;
+        user.AvatarUrl = request.AvatarUrl ?? user.AvatarUrl;
+        user.DefaultTodoListId = request.DefaultTodoListId ?? user.DefaultTodoListId;
         await dbContext.SaveChangesAsync(ct);
         return new UpdateUserInfoResponse(user.Id);
     }

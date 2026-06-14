@@ -171,7 +171,7 @@ else if (_data is not null)
     private Action OpenEdit(UserResponse user) => () =>
     {
         _userModalUser = new UserInfoResponse(user.Id, user.UserName, user.Email, user.FirstName, user.LastName,
-user.PhoneNumber, user.AvatarUrl, user.Roles.ToArray());
+user.PhoneNumber, user.AvatarUrl, null, user.Roles.ToArray());
         _showUserModal = true;
     };
 

@@ -3,6 +3,7 @@
 @implements IDisposable
 @inject ApiHttpClient Api
 @inject NotificationService Notifications
+@inject BlazorAuthStateProvider Auth
 
 @if (!string.IsNullOrEmpty(_error))
 {
@@ -39,6 +40,20 @@
                     <div class="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors @(list.Id == _selectedListId ? "bg-indigo-50 text-indigo-700 font-medium" : "hover:bg-gray-100 text-gray-700")" @onclick="SelectList(list.Id)">
                         <span class="flex-1 text-md font-medium truncate">@list.Name</span>
                         <span class="text-xs text-gray-400">@list.ItemCount</span>
+                        <button class="shrink-0 transition-colors @(list.IsDefault ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400")" disabled="@list.IsDefault" @onclick:stopPropagation @onclick="SetDefaultList(list.Id)" title="@(list.IsDefault ? "Default list" : "Set as default")">
+                            @if (list.IsDefault)
+                            {
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                            }
+                            else
+                            {
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                            }
+                        </button>
                         <button class="text-gray-400 hover:text-indigo-600 shrink-0" @onclick:stopPropagation @onclick="OpenEditList(list)" title="Rename">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -357,7 +372,7 @@
 
         if (_selectedListId == Guid.Empty && _lists.Count > 0)
         {
-            _selectedListId = _lists[0].Id;
+            _selectedListId = _lists.FirstOrDefault(l => l.IsDefault)?.Id ?? _lists[0].Id;
             await LoadTodosAsync();
         }
     }
@@ -401,6 +416,17 @@
             _error = error.Message ?? "Failed to update todo.";
         else
             await LoadTodosAsync();
+    };
+
+    private Func<Task> SetDefaultList(Guid id) => async () =>
+    {
+        var error = await Api.UpdateUserInfoAsync(new { defaultTodoListId = id });
+        if (error is null)
+        {
+            var (freshInfo, _) = await Api.GetUserInfoAsync();
+            if (freshInfo is not null) Auth.SetUserInfo(freshInfo);
+            await LoadListsAsync();
+        }
     };
 
     // ── List CRUD ──
