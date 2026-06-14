@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using SourceBase.Application.Features.Auth;
+using SourceBase.Application.Features.TodoLists;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -72,6 +73,47 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body!.FirstName.Should().Be(firstName);
         body.LastName.Should().Be(lastName);
         body.PhoneNumber.Should().Be(phoneNumber);
+    }
+
+    [Fact(DisplayName = "UPDATE-INFO-005: UpdateUserInfo_WithValidTodoListId_SetsDefault")]
+    public async Task UpdateUserInfo_WithValidTodoListId_SetsDefault()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+        var listResponse = await client.PostAsJsonAsync(CreateTodoListEndpoint.Route, new { name = $"List_{Guid.NewGuid():N}" });
+        var list = await listResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
+
+        // Act
+        var response = await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new
+        {
+            defaultTodoListId = list!.Id,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var info = await client.GetFromJsonAsync<GetUserInfoResponse>(GetUserInfoEndpoint.Route);
+        info!.DefaultTodoListId.Should().Be(list.Id);
+    }
+
+    [Fact(DisplayName = "UPDATE-INFO-006: UpdateUserInfo_WithNullTodoListId_ClearsDefault")]
+    public async Task UpdateUserInfo_WithNullTodoListId_ClearsDefault()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+        var listResponse = await client.PostAsJsonAsync(CreateTodoListEndpoint.Route, new { name = $"List_{Guid.NewGuid():N}" });
+        var list = await listResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
+        await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new { defaultTodoListId = list!.Id });
+
+        // Act
+        var response = await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new
+        {
+            defaultTodoListId = (Guid?)null,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var info = await client.GetFromJsonAsync<GetUserInfoResponse>(GetUserInfoEndpoint.Route);
+        info!.DefaultTodoListId.Should().BeNull();
     }
 
     [Fact(DisplayName = "UPDATE-INFO-004: UpdateUserInfo_WithPhoneNumberTooLong_ReturnsBadRequest")]

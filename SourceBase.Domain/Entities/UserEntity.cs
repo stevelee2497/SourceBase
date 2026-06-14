@@ -20,6 +20,8 @@ public class UserEntity : BaseAuditableEntity
 
     public string? AvatarUrl { get; set; }
 
+    public Guid? DefaultTodoListId { get; set; }
+
     public string? OtpCode { get; set; }
 
     public DateTime? OtpCodeExpiresOn { get; set; }

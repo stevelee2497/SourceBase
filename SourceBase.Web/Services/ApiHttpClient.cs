@@ -136,8 +136,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
         }
     }
 
-    public Task<ErrorResponse?> UpdateUserInfoAsync(string? firstName, string? lastName, string? phoneNumber, string? avatarUrl) =>
-        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, "/api/auth/info", new { firstName, lastName, phoneNumber, avatarUrl }));
+    public Task<ErrorResponse?> UpdateUserInfoAsync(string? firstName, string? lastName, string? phoneNumber, string? avatarUrl, Guid? defaultTodoListId = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, "/api/auth/info", new { firstName, lastName, phoneNumber, avatarUrl, defaultTodoListId }));
 
     // ── Roles ────────────────────────────────────────────────────────────────
 
@@ -378,12 +378,12 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
 
 public sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
 public sealed record AvatarUploadUrlResponse(string UploadUrl, string AvatarUrl, string ContentType);
-public sealed record UserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, string[] Roles);
+public sealed record UserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, Guid? DefaultTodoListId, string[] Roles);
 public sealed record LoginResponse(string AccessToken, string RefreshToken, int ExpiresIn, string TokenType);
 public sealed record RoleResponse(Guid Id, string Name, string? Description);
 public sealed record UserResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, bool EmailConfirmed, string? AvatarUrl, IEnumerable<string> Roles);
 public sealed record TodoItemResponse(Guid Id, string Title, string Date, string Status, Guid? TodoListId);
-public sealed record TodoListResponse(Guid Id, string Name, int ItemCount, DateTime? CreatedOn, string? CreatedBy);
+public sealed record TodoListResponse(Guid Id, string Name, int ItemCount, DateTime? CreatedOn, string? CreatedBy, bool IsDefault);
 public sealed record StatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems, int TotalWallets, int TotalTransactions);
 public sealed record ErrorResponse(string Code, string Message, Dictionary<string, string[]>? Errors = null);
 public sealed record WalletResponse(Guid Id, string Name, decimal Balance, decimal InitialBalance, string Currency, string? Icon);
