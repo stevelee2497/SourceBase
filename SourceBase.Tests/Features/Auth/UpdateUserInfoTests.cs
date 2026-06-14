@@ -17,7 +17,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new
+        var response = await client.PatchAsJsonAsync(UpdateUserInfoEndpoint.Route, new
         {
             firstName = "John",
             lastName = "Doe",
@@ -35,7 +35,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var client = await factory.CreateAuthorizedClient();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new
+        var response = await client.PatchAsJsonAsync(UpdateUserInfoEndpoint.Route, new
         {
             firstName = "Admin",
             lastName = "User",
@@ -58,7 +58,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var phoneNumber = "0987654321";
 
         // Act
-        await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new
+        await client.PatchAsJsonAsync(UpdateUserInfoEndpoint.Route, new
         {
             firstName,
             lastName,
@@ -84,7 +84,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var list = await listResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new
+        var response = await client.PatchAsJsonAsync(UpdateUserInfoEndpoint.Route, new
         {
             defaultTodoListId = list!.Id,
         });
@@ -95,17 +95,17 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         info!.DefaultTodoListId.Should().Be(list.Id);
     }
 
-    [Fact(DisplayName = "UPDATE-INFO-006: UpdateUserInfo_WithNullTodoListId_ClearsDefault")]
-    public async Task UpdateUserInfo_WithNullTodoListId_ClearsDefault()
+    [Fact(DisplayName = "UPDATE-INFO-006: UpdateUserInfo_WithNullTodoListId_DoesNotClearDefault")]
+    public async Task UpdateUserInfo_WithNullTodoListId_DoesNotClearDefault()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
         var listResponse = await client.PostAsJsonAsync(CreateTodoListEndpoint.Route, new { name = $"List_{Guid.NewGuid():N}" });
         var list = await listResponse.Content.ReadFromJsonAsync<CreateTodoListResponse>();
-        await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new { defaultTodoListId = list!.Id });
+        await client.PatchAsJsonAsync(UpdateUserInfoEndpoint.Route, new { defaultTodoListId = list!.Id });
 
-        // Act
-        var response = await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new
+        // Act — null is treated as absent (partial update), so the field is not cleared
+        var response = await client.PatchAsJsonAsync(UpdateUserInfoEndpoint.Route, new
         {
             defaultTodoListId = (Guid?)null,
         });
@@ -113,7 +113,24 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var info = await client.GetFromJsonAsync<GetUserInfoResponse>(GetUserInfoEndpoint.Route);
-        info!.DefaultTodoListId.Should().BeNull();
+        info!.DefaultTodoListId.Should().Be(list.Id);
+    }
+
+    [Fact(DisplayName = "UPDATE-INFO-007: UpdateUserInfo_PartialUpdate_DoesNotOverwriteOmittedFields")]
+    public async Task UpdateUserInfo_PartialUpdate_DoesNotOverwriteOmittedFields()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+        await client.PatchAsJsonAsync(UpdateUserInfoEndpoint.Route, new { phoneNumber = "0111222333" });
+
+        // Act — send only firstName, phoneNumber should remain unchanged
+        var response = await client.PatchAsJsonAsync(UpdateUserInfoEndpoint.Route, new { firstName = "PartialFirst" });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var info = await client.GetFromJsonAsync<GetUserInfoResponse>(GetUserInfoEndpoint.Route);
+        info!.FirstName.Should().Be("PartialFirst");
+        info.PhoneNumber.Should().Be("0111222333");
     }
 
     [Fact(DisplayName = "UPDATE-INFO-004: UpdateUserInfo_WithPhoneNumberTooLong_ReturnsBadRequest")]
@@ -123,7 +140,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var client = await factory.CreateAuthorizedClient();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateUserInfoEndpoint.Route, new
+        var response = await client.PatchAsJsonAsync(UpdateUserInfoEndpoint.Route, new
         {
             firstName = "Admin",
             lastName = "User",

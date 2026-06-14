@@ -40,7 +40,7 @@
                     <div class="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors @(list.Id == _selectedListId ? "bg-indigo-50 text-indigo-700 font-medium" : "hover:bg-gray-100 text-gray-700")" @onclick="SelectList(list.Id)">
                         <span class="flex-1 text-md font-medium truncate">@list.Name</span>
                         <span class="text-xs text-gray-400">@list.ItemCount</span>
-                        <button class="shrink-0 transition-colors @(list.IsDefault ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400")" @onclick:stopPropagation @onclick="ToggleDefaultList(list.Id)" title="@(list.IsDefault ? "Unset default" : "Set as default")">
+                        <button class="shrink-0 transition-colors @(list.IsDefault ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400")" disabled="@list.IsDefault" @onclick:stopPropagation @onclick="SetDefaultList(list.Id)" title="@(list.IsDefault ? "Default list" : "Set as default")">
                             @if (list.IsDefault)
                             {
                                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -418,11 +418,9 @@
             await LoadTodosAsync();
     };
 
-    private Func<Task> ToggleDefaultList(Guid id) => async () =>
+    private Func<Task> SetDefaultList(Guid id) => async () =>
     {
-        var info = Auth.UserInfo!;
-        var newDefault = info.DefaultTodoListId == id ? (Guid?)null : id;
-        var error = await Api.UpdateUserInfoAsync(info.FirstName, info.LastName, info.PhoneNumber, info.AvatarUrl, newDefault);
+        var error = await Api.UpdateUserInfoAsync(new { defaultTodoListId = id });
         if (error is null)
         {
             var (freshInfo, _) = await Api.GetUserInfoAsync();

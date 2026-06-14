@@ -136,8 +136,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
         }
     }
 
-    public Task<ErrorResponse?> UpdateUserInfoAsync(string? firstName, string? lastName, string? phoneNumber, string? avatarUrl, Guid? defaultTodoListId = null) =>
-        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, "/api/auth/info", new { firstName, lastName, phoneNumber, avatarUrl, defaultTodoListId }));
+    public Task<ErrorResponse?> UpdateUserInfoAsync(object fields) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Patch, "/api/auth/info", fields));
 
     // ── Roles ────────────────────────────────────────────────────────────────
 
