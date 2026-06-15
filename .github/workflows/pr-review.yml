@@ -36,18 +36,18 @@ jobs:
             DESCRIPTION="_No description provided._"
           fi
 
-          cat > /tmp/pr-summary.md << EOF
-## PR Summary
-
-**Branch:** \`${HEAD_REF}\` -> \`${BASE_REF}\`
-**Changes:** ${STATS}
-
-### Description
-${DESCRIPTION}
-
-### Changed files
-${FILES}
-EOF
+          {
+            echo "## PR Summary"
+            echo ""
+            echo "**Branch:** \`${HEAD_REF}\` -> \`${BASE_REF}\`"
+            echo "**Changes:** ${STATS}"
+            echo ""
+            echo "### Description"
+            echo "${DESCRIPTION}"
+            echo ""
+            echo "### Changed files"
+            echo "${FILES}"
+          } > /tmp/pr-summary.md
 
           gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file /tmp/pr-summary.md
 
@@ -79,17 +79,17 @@ EOF
           REPO: ${{ github.repository }}
           ERROR_MSG: ${{ steps.copilot-review.outputs.error_output }}
         run: |
-          cat > /tmp/review-failure.md << 'EOF'
-### Copilot review could not be requested
-
-**Common causes:**
-- Copilot code review is not enabled — go to **Settings -> Copilot -> Code review** and enable it
-- The `GITHUB_TOKEN` lacks `pull-requests: write` permission
-- The `github-copilot` reviewer is not available for this repository or plan
-
-Please enable Copilot code review in repository settings or add a reviewer manually.
-EOF
-          echo "" >> /tmp/review-failure.md
-          echo "**Error:** \`${ERROR_MSG}\`" >> /tmp/review-failure.md
+          {
+            echo "### Copilot review could not be requested"
+            echo ""
+            echo "**Error:** \`${ERROR_MSG}\`"
+            echo ""
+            echo "**Common causes:**"
+            echo "- Copilot code review is not enabled — go to **Settings -> Copilot -> Code review** and enable it"
+            echo "- The \`GITHUB_TOKEN\` lacks \`pull-requests: write\` permission"
+            echo "- The \`github-copilot\` reviewer is not available for this repository or plan"
+            echo ""
+            echo "Please enable Copilot code review in repository settings or add a reviewer manually."
+          } > /tmp/review-failure.md
 
           gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file /tmp/review-failure.md
