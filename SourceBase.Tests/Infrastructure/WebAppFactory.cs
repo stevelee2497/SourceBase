@@ -16,6 +16,7 @@ using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Infrastructure.DbContexts;
 using Xunit;
 
+
 namespace SourceBase.Tests.Infrastructure;
 
 public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
@@ -41,7 +42,8 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["AppSettings:OtpTokenExpirationMinutes"] = "15",
                 ["AppSettings:AccessTokenExpirationMinutes"] = "60",
                 ["AppSettings:RefreshTokenExpirationMinutes"] = "20160",
-                ["AppSettings:SendGridApiKey"] = "",// Disable real email sending during tests
+                ["AppSettings:SendGridApiKey"] = "", // Disable real email sending during tests
+                ["ConnectionStrings:RedisConnection"] = "", // Disable Redis — RedisCacheService no-ops when connection string is empty
                 ["Serilog:MinimumLevel:Default"] = "Fatal",
                 ["Logging:LogLevel:Default"] = "Fatal",
             });
@@ -62,6 +64,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
             // Replace real DateTimeProvider with controllable fake
             services.RemoveAll<IDateTime>();
             services.AddSingleton<IDateTime>(FakeDateTime);
+
 
             var appConfig = ctx.Configuration;
             services.AddDbContext<ApplicationDbContext>((_, options) =>
