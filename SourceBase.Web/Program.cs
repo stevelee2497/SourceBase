@@ -3,12 +3,23 @@ using Serilog;
 using SourceBase.Web;
 using SourceBase.Web.Auth;
 using SourceBase.Web.Services;
+using Microsoft.AspNetCore.DataProtection;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration));
 
 builder.AddServiceDefaults();
+
+var redisConnection = builder.Configuration.GetConnectionString("RedisConnection");
+if (!string.IsNullOrWhiteSpace(redisConnection))
+{
+    var redis = ConnectionMultiplexer.Connect(redisConnection);
+    builder.Services.AddDataProtection()
+        .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
+        .SetApplicationName("SourceBase.Web");
+}
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
