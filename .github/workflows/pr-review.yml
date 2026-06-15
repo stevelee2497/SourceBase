@@ -15,41 +15,53 @@ jobs:
     steps:
       - name: Post PR summary comment
         if: github.event.action == 'opened'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          REPO="${{ github.repository }}"
-
-          STATS=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json additions,deletions,changedFiles \
+          STATS=$(gh pr view "$PR_NUMBER" --repo "$REPO" \
+            --json additions,deletions,changedFiles \
             --jq '"**+\(.additions) / -\(.deletions)** across \(.changedFiles) file(s)"')
 
-          FILES=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json files \
+          FILES=$(gh pr view "$PR_NUMBER" --repo "$REPO" \
+            --json files \
             --jq '.files[] | "- `\(.path)` (+\(.additions)/-\(.deletions))"' | head -30)
 
-          DESCRIPTION="${{ github.event.pull_request.body }}"
+          DESCRIPTION="$PR_BODY"
           if [ -z "$DESCRIPTION" ]; then
             DESCRIPTION="_No description provided._"
           fi
 
-          gh pr comment "$PR_NUMBER" --repo "$REPO" --body "## PR Summary
+          cat > /tmp/pr-summary.md << EOF
+## PR Summary
 
-**Branch:** \`${{ github.head_ref }}\` → \`${{ github.base_ref }}\`
+**Branch:** \`${HEAD_REF}\` -> \`${BASE_REF}\`
 **Changes:** ${STATS}
 
 ### Description
 ${DESCRIPTION}
 
 ### Changed files
-${FILES}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+${FILES}
+EOF
+
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file /tmp/pr-summary.md
 
       - name: Request Copilot code review
         id: copilot-review
         continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
           ERROR=$(gh api \
             --method POST \
-            "/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/requested_reviewers" \
+            "/repos/${REPO}/pulls/${PR_NUMBER}/requested_reviewers" \
             -f "reviewers[]=github-copilot" 2>&1)
           EXIT_CODE=$?
           if [ $EXIT_CODE -ne 0 ]; then
@@ -58,23 +70,26 @@ ${FILES}"
             echo "EOF" >> "$GITHUB_OUTPUT"
             exit $EXIT_CODE
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Comment on Copilot review failure
         if: steps.copilot-review.outcome == 'failure'
-        run: |
-          gh pr comment "${{ github.event.pull_request.number }}" \
-            --repo "${{ github.repository }}" \
-            --body "### Copilot review could not be requested
-
-**Error:** \`${{ steps.copilot-review.outputs.error_output }}\`
-
-**Common causes:**
-- Copilot code review is not enabled — go to **Settings → Copilot → Code review** and enable it
-- The \`GITHUB_TOKEN\` lacks \`pull-requests: write\` permission
-- The \`github-copilot\` reviewer is not available for this repository or plan
-
-Please enable Copilot code review in repository settings or add a reviewer manually."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          ERROR_MSG: ${{ steps.copilot-review.outputs.error_output }}
+        run: |
+          cat > /tmp/review-failure.md << 'EOF'
+### Copilot review could not be requested
+
+**Common causes:**
+- Copilot code review is not enabled — go to **Settings -> Copilot -> Code review** and enable it
+- The `GITHUB_TOKEN` lacks `pull-requests: write` permission
+- The `github-copilot` reviewer is not available for this repository or plan
+
+Please enable Copilot code review in repository settings or add a reviewer manually.
+EOF
+          echo "" >> /tmp/review-failure.md
+          echo "**Error:** \`${ERROR_MSG}\`" >> /tmp/review-failure.md
+
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file /tmp/review-failure.md
