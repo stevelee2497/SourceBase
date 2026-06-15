@@ -1,0 +1,22 @@
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  copilot-review:
+    name: Request Copilot Review
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Request Copilot code review
+        run: |
+          gh pr edit "${{ github.event.pull_request.number }}" \
+            --add-reviewer "copilot-pull-request-review[bot]" \
+            --repo "${{ github.repository }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
