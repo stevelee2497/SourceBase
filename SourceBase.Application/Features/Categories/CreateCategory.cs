@@ -12,8 +12,8 @@ public class CreateCategoryEndpoint : IEndpoint
 {
     public const string Route = "categories";
 
-    public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost(Route, ([FromBody] CreateCategoryRequest request, CreateCategoryHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+    public void MapEndpoint(IEndpointRouteBuilder app) => app.MapPost(Route, ([FromBody] CreateCategoryRequest request, CreateCategoryHandler handler, CancellationToken ct) =>
+    handler.Handle(request, ct))
         .WithTags("Categories");
 }
 
