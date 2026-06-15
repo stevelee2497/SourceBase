@@ -79,54 +79,7 @@
 <!-- Main content: two columns -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-    <!-- Left: Default todo list -->
-    <div class="card flex flex-col gap-4">
-        <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-gray-800">Your Todo List</h2>
-            <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">View all →</a>
-        </div>
-
-        @if (_todosLoading)
-        {
-            <LoadingSpinner />
-        }
-        else if (Auth.UserInfo?.DefaultTodoListId is null)
-        {
-            <div class="py-6 text-center">
-                <div class="text-sm text-gray-400 mb-2">No default list set.</div>
-                <a href="/todos" class="btn-primary btn-sm">Go to Todos to star a list</a>
-            </div>
-        }
-        else if (_defaultListName is not null)
-        {
-            @if (_defaultTodos.Count == 0)
-            {
-                <div class="text-sm text-gray-400 text-center py-4">No open todos in this list.</div>
-            }
-            else
-            {
-                <div class="flex flex-col gap-2">
-                    @foreach (var todo in _defaultTodos.Take(10))
-                    {
-                        <div class="flex items-center gap-3">
-                            <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 hover:border-green-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoDone(todo)" title="Mark complete">
-                            </button>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm text-gray-800 truncate">@todo.Title</div>
-                                <div class="text-xs text-gray-400">@todo.Date</div>
-                            </div>
-                        </div>
-                    }
-                </div>
-                @if (_defaultTodos.Count > 10)
-                {
-                    <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">+@(_defaultTodos.Count - 10) more →</a>
-                }
-            }
-        }
-    </div>
-
-    <!-- Right: Wallets distribution -->
+    <!-- Left: Wallets distribution -->
     <div class="card flex flex-col gap-4">
         <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold text-gray-800">Wallets Distribution</h2>
@@ -187,6 +140,53 @@
                     }
                 </div>
             </div>
+        }
+    </div>
+
+    <!-- Right: Default todo list -->
+    <div class="card flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-base font-semibold text-gray-800">Your Todo List</h2>
+            <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">View all →</a>
+        </div>
+
+        @if (_todosLoading)
+        {
+            <LoadingSpinner />
+        }
+        else if (Auth.UserInfo?.DefaultTodoListId is null)
+        {
+            <div class="py-6 text-center">
+                <div class="text-sm text-gray-400 mb-2">No default list set.</div>
+                <a href="/todos" class="btn-primary btn-sm">Go to Todos to star a list</a>
+            </div>
+        }
+        else if (_defaultListName is not null)
+        {
+            @if (_defaultTodos.Count == 0)
+            {
+                <div class="text-sm text-gray-400 text-center py-4">No open todos in this list.</div>
+            }
+            else
+            {
+                <div class="flex flex-col gap-2">
+                    @foreach (var todo in _defaultTodos.Take(10))
+                    {
+                        <div class="flex items-center gap-3">
+                            <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 hover:border-green-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoDone(todo)" title="Mark complete">
+                            </button>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm text-gray-800 truncate">@todo.Title</div>
+                                <div class="text-xs text-gray-400">@todo.Date</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (_defaultTodos.Count > 10)
+                {
+                    <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">+@(_defaultTodos.Count - 10) more →</a>
+                }
+            }
         }
     </div>
 </div>
