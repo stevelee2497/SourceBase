@@ -19,7 +19,7 @@ public class UpdateUserInfoEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<UpdateUserInfoRequest, UpdateUserInfoResponse>
+public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUser, ICacheService cacheService) : IRequestHandler<UpdateUserInfoRequest, UpdateUserInfoResponse>
 {
     public async Task<UpdateUserInfoResponse> Handle(UpdateUserInfoRequest request, CancellationToken ct)
     {
@@ -30,6 +30,7 @@ public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUse
         user.AvatarUrl = request.AvatarUrl ?? user.AvatarUrl;
         user.DefaultTodoListId = request.DefaultTodoListId ?? user.DefaultTodoListId;
         await dbContext.SaveChangesAsync(ct);
+        await cacheService.RemoveAsync(GetUserInfoHandler.CacheKey(currentUser.UserId), ct);
         return new UpdateUserInfoResponse(user.Id);
     }
 }

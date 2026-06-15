@@ -17,7 +17,7 @@ public class CreateWalletEndpoint : IEndpoint
         .WithTags("Wallets");
 }
 
-public class CreateWalletHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateWalletRequest, CreateWalletResponse>
+public class CreateWalletHandler(IDbContext dbContext, ICurrentUser currentUser, ICacheService cacheService) : IRequestHandler<CreateWalletRequest, CreateWalletResponse>
 {
     public async Task<CreateWalletResponse> Handle(CreateWalletRequest request, CancellationToken ct)
     {
@@ -31,6 +31,7 @@ public class CreateWalletHandler(IDbContext dbContext, ICurrentUser currentUser)
         };
         dbContext.Wallets.Add(wallet);
         await dbContext.SaveChangesAsync(ct);
+        await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
         return new CreateWalletResponse(wallet.Id);
     }
 }

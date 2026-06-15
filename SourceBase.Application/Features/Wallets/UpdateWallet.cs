@@ -19,7 +19,7 @@ public class UpdateWalletEndpoint : IEndpoint
         .WithTags("Wallets");
 }
 
-public class UpdateWalletHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<UpdateWalletRequest, UpdateWalletResponse>
+public class UpdateWalletHandler(IDbContext dbContext, ICurrentUser currentUser, ICacheService cacheService) : IRequestHandler<UpdateWalletRequest, UpdateWalletResponse>
 {
     public async Task<UpdateWalletResponse> Handle(UpdateWalletRequest request, CancellationToken ct)
     {
@@ -30,6 +30,7 @@ public class UpdateWalletHandler(IDbContext dbContext, ICurrentUser currentUser)
         wallet.Name = request.Name;
         wallet.Icon = request.Icon;
         await dbContext.SaveChangesAsync(ct);
+        await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
         return new UpdateWalletResponse(wallet.Id);
     }
 }

@@ -3,6 +3,13 @@
 @inject BlazorAuthStateProvider Auth
 @inject ApiHttpClient Api
 
+<!-- Redis cache status badge -->
+<div class="flex justify-end mb-2">
+    <span class="badge @(_redisOnline ? "badge-green" : "badge-red")">
+        Cache @(_redisOnline ? "Online" : "Offline")
+    </span>
+</div>
+
 <!-- Overview row -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 
@@ -196,6 +203,7 @@
     private bool _walletsLoading = true;
     private bool _walletSummaryLoading = true;
     private bool _todosLoading = true;
+    private bool _redisOnline;
 
     private bool _allLogged;
     private string _logTimeDetail = string.Empty;
@@ -205,7 +213,13 @@
     private record PieSlice(string Name, double Fraction, string Color);
 
     protected override async Task OnInitializedAsync() =>
-        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadWalletSummaryAsync(), LoadTimesheetAsync(), LoadDefaultTodosAsync());
+        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadWalletSummaryAsync(), LoadTimesheetAsync(), LoadDefaultTodosAsync(), LoadRedisStatusAsync());
+
+    private async Task LoadRedisStatusAsync()
+    {
+        var (data, _) = await Api.GetRedisStatusAsync();
+        _redisOnline = data?.IsOnline ?? false;
+    }
 
     private async Task LoadStatsAsync()
     {

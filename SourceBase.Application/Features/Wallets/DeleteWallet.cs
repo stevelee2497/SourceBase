@@ -16,7 +16,7 @@ public class DeleteWalletEndpoint : IEndpoint
         .WithTags("Wallets");
 }
 
-public class DeleteWalletHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<DeleteWalletRequest, DeleteWalletResponse>
+public class DeleteWalletHandler(IDbContext dbContext, ICurrentUser currentUser, ICacheService cacheService) : IRequestHandler<DeleteWalletRequest, DeleteWalletResponse>
 {
     public async Task<DeleteWalletResponse> Handle(DeleteWalletRequest request, CancellationToken ct)
     {
@@ -26,6 +26,7 @@ public class DeleteWalletHandler(IDbContext dbContext, ICurrentUser currentUser)
 
         dbContext.Wallets.Remove(wallet);
         await dbContext.SaveChangesAsync(ct);
+        await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
         return new DeleteWalletResponse(true);
     }
 }
