@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using StackExchange.Redis;
-using System.Text.Json;
 
 namespace SourceBase.Infrastructure.Implementations;
 
@@ -33,8 +33,8 @@ public class RedisCacheService(IConfiguration configuration, ILogger<RedisCacheS
             var db = _db.Value;
             if (db is null) return default;
             var value = await db.StringGetAsync(key);
-            if (!value.HasValue) return default;
-            return JsonSerializer.Deserialize<T>((string)value!);
+            if (!value.HasValue || value.IsNullOrEmpty || string.IsNullOrWhiteSpace(value)) return default;
+            return value.ToString().Deserialize<T>();
         }
         catch (Exception ex)
         {
@@ -49,7 +49,7 @@ public class RedisCacheService(IConfiguration configuration, ILogger<RedisCacheS
         {
             var db = _db.Value;
             if (db is null) return;
-            var json = JsonSerializer.Serialize(value);
+            var json = value?.Serialize();
             await db.StringSetAsync(key, json, expiry);
         }
         catch (Exception ex)
