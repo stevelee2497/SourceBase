@@ -29,7 +29,9 @@ jobs:
 
           FILES=$(gh pr view "$PR_NUMBER" --repo "$REPO" \
             --json files \
-            --jq '.files[] | "- `\(.path)` (+\(.additions)/-\(.deletions))"' | head -30)
+            --jq '.files[] | "- `\(.path)` (+\(.additions)/-\(.deletions))"')
+
+          DIFF=$(gh pr diff "$PR_NUMBER" --repo "$REPO" | head -c 10000)
 
           DESCRIPTION="$PR_BODY"
           if [ -z "$DESCRIPTION" ]; then
@@ -47,9 +49,107 @@ jobs:
             echo ""
             echo "### Changed files"
             echo "${FILES}"
+            echo ""
+            echo "<details><summary>View diff</summary>"
+            echo ""
+            echo '```diff'
+            echo "${DIFF}"
+            echo '```'
+            echo ""
+            echo "</details>"
           } > /tmp/pr-summary.md
 
           gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file /tmp/pr-summary.md
+
+      - name: Run checklist review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          DIFF=$(gh pr diff "$PR_NUMBER" --repo "$REPO" | head -c 10000)
+
+          {
+            echo "Architecture:"
+            echo "- Feature lives in SourceBase.Application/Features/ as a single file (request, response, endpoint, handler, validator)"
+            echo "- No MediatR, no controllers — uses IEndpoint / IRequestHandler<TRequest, TResponse>"
+            echo "- Dependency direction: Api -> Application <- Infrastructure <- Domain"
+            echo "- New interfaces in SourceBase.Application/Shared/Interfaces/; implementations in SourceBase.Infrastructure/Implementations/"
+            echo "- New settings added to both AppSettings.cs and appsettings.json"
+            echo ""
+            echo "Endpoints & handlers:"
+            echo "- MapEndpoint chain uses separate lines (.MapXxx, then auth, then .WithTags)"
+            echo "- Update endpoints: Id is a route param marked [property: SwaggerIgnore] on the request record"
+            echo "- No multi-line parameter lists on records, handlers, or constructors"
+            echo "- Auth: RequireAuthorization() by default, or .AllowAnonymous() intentional"
+            echo "- Pagination: PagingRequest base + feature-specific OrderBy enum + .PaginateAsync()"
+            echo ""
+            echo "Entities & data:"
+            echo "- Entity inherits BaseAuditableEntity; audit fields (CreatedOn/By, UpdatedOn/By) never set manually"
+            echo "- Enums stored via EnumToStringConverter"
+            echo "- Errors thrown as typed exceptions (NotFoundException, BadRequestException, etc.) — no raw status codes"
+            echo ""
+            echo "Partial updates:"
+            echo "- Use entity.Field = request.Field ?? entity.Field (null-coalescing), not if-guards"
+            echo "- Single-field updates extend existing endpoints, not new dedicated endpoints"
+            echo ""
+            echo "Tests:"
+            echo "- At least one integration test per new/changed endpoint in SourceBase.Tests/"
+            echo "- Test class mirrors Features/ path"
+            echo "- Test IDs follow {FEATURE}-{ACTION}-{NNN} format in DisplayName"
+            echo "- Method name follows MethodName_WithCondition_ReturnsExpected"
+            echo "- Uses strong-typed route constants — no hardcoded URL strings"
+            echo "- Email codes retrieved via GetLatestEmailCodeAsync — no manually generated tokens"
+            echo "- WithDbContextAsync only for DB fields not returned by the API"
+            echo ""
+            echo "Blazor (if applicable):"
+            echo "- No inline lambdas on event handlers or component parameters"
+            echo "- Loop-captured params use Action or Func<Task> methods"
+            echo "- Multi-statement handlers extracted to named methods"
+          } > /tmp/checklist.txt
+
+          CHECKLIST=$(cat /tmp/checklist.txt)
+
+          PAYLOAD=$(jq -n \
+            --arg diff "$DIFF" \
+            --arg checklist "$CHECKLIST" \
+            '{
+              model: "openai/gpt-4o",
+              messages: [
+                {
+                  role: "system",
+                  content: ("You are a strict code reviewer for the SourceBase project. Review the PR diff against the checklist below. List each violated rule as a short bullet. If nothing is violated, respond with exactly: \"All checklist items passed.\"\n\nChecklist:\n" + $checklist)
+                },
+                {
+                  role: "user",
+                  content: ("Review this diff:\n\n```diff\n" + $diff + "\n```")
+                }
+              ],
+              max_tokens: 800,
+              temperature: 0
+            }')
+
+          RESPONSE=$(curl -s \
+            "https://models.github.ai/inference/chat/completions" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+
+          REVIEW=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "Could not generate review."')
+
+          PREV_ID=$(gh api "/repos/${REPO}/issues/${PR_NUMBER}/comments" \
+            --jq '[.[] | select(.user.login == "github-actions[bot]") | select(.body | startswith("## PR Review Checklist")) | .id][0]')
+          if [ "$PREV_ID" != "null" ] && [ -n "$PREV_ID" ]; then
+            gh api --method DELETE "/repos/${REPO}/issues/comments/${PREV_ID}" || true
+          fi
+
+          {
+            echo "## PR Review Checklist"
+            echo ""
+            echo "${REVIEW}"
+          } > /tmp/checklist-result.md
+
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file /tmp/checklist-result.md
 
       - name: Request Copilot code review
         id: copilot-review
