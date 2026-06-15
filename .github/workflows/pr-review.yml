@@ -15,8 +15,9 @@ jobs:
     steps:
       - name: Request Copilot code review
         run: |
-          gh pr edit "${{ github.event.pull_request.number }}" \
-            --add-reviewer "copilot-pull-request-review[bot]" \
-            --repo "${{ github.repository }}"
+          gh api \
+            --method POST \
+            "/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/requested_reviewers" \
+            -f "reviewers[]=github-copilot"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
