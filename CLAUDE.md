@@ -1,23 +1,20 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Commands
 
 ```sh
 # Development
-dotnet run --project SourceBase.AppHost   # Recommended: Aspire dashboard at :15017 (logs/traces/metrics)
+dotnet run --project SourceBase.AppHost   # Aspire dashboard at :15017 (logs/traces/metrics)
 sh run.sh                                  # API + Web without Aspire
 
 # Build & test
 dotnet build
 dotnet test
-dotnet test --filter "ClassName.MethodName"   # Single test
+dotnet test --filter "ClassName.MethodName"
 
 # Migrations (always both steps together)
 sh cmd-migration-add.sh <Name>
 sh cmd-migration-update-db.sh
-
 ```
 
 ## Architecture
@@ -34,7 +31,6 @@ SourceBase.Api/           # HTTP entry point — wires AddApplication() + AddInf
 Features live in `SourceBase.Application/Features/` — one file per use case containing request record, response record, endpoint, handler, and validator. No MediatR, no controllers.
 
 ```csharp
-
 public record CreateTodoRequest(DateOnly Date, string Title, TodoItemStatus Status);
 
 public record CreateTodoResponse(Guid Id);
@@ -66,7 +62,6 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
         RuleFor(x => x.Title).NotEmpty().MaximumLength(256);
     }
 }
-
 ```
 
 **Key rules:**
@@ -79,6 +74,7 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 - DI wiring: `AddApplication()` in `SourceBase.Application/DependencyInjection.cs`; `AddInfrastructure()` in `SourceBase.Infrastructure/DependencyInjection.cs`; thin `Program.Configurations.cs` for HTTP-layer config.
 - Interfaces belong in `SourceBase.Application/Shared/Interfaces/`; implementations belong in `SourceBase.Infrastructure/Implementations/`.
 - Pagination: Define OrderBy enums per feature (e.g. `TransactionOrderBy`) and use `PagingRequest` base class for common paging params (`Page`, `Limit`, `Order`, `OrderBy`). Using `.PaginateAsync()` extension method on IQueryable applies sorting and pagination based on those params.
+- Use primary constructors for handlers and services to keep code concise and avoid boilerplate.
 
 ## Conventions
 
@@ -155,3 +151,9 @@ private Func<Task> SelectItem(Guid id) => async () => { _selectedId = id; await 
 private void CancelDelete() { _showDelete = false; _deleting = null; }
 // OnCancel="CancelDelete"
 ```
+
+## Skills
+
+- `/coding` — full architecture, conventions, and Blazor reference
+- `/testing` — test infrastructure and patterns
+- `/pr-reviewer` — PR review checklist

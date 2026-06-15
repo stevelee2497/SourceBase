@@ -150,3 +150,52 @@ public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
   private void CancelDelete() { _showDelete = false; _deleting = null; }
   // usage: OnCancel="CancelDelete"
   ```
+
+## PR Review Checklist
+
+Apply this checklist on every pull request review.
+
+### Architecture
+
+- Feature lives in `SourceBase.Application/Features/` as a single file (request, response, endpoint, handler, validator)
+- No MediatR, no controllers — uses `IEndpoint` / `IRequestHandler<TRequest, TResponse>`
+- Dependency direction respected: `Api` → `Application` ← `Infrastructure` ← `Domain`
+- New interfaces in `SourceBase.Application/Shared/Interfaces/`; implementations in `SourceBase.Infrastructure/Implementations/`
+- New settings added to both `AppSettings.cs` and `appsettings.json`
+
+### Endpoints & handlers
+
+- `MapEndpoint` chain uses separate lines (`.MapXxx`, then auth, then `.WithTags`)
+- Update endpoints: `Id` is a route param marked `[property: SwaggerIgnore]` on the request record
+- No multi-line parameter lists on records, handlers, or constructors
+- Auth: default `RequireAuthorization()` present, or `.AllowAnonymous()` intentional
+- Pagination uses `PagingRequest` base + feature-specific `OrderBy` enum + `.PaginateAsync()`
+
+### Entities & data
+
+- Entity inherits `BaseAuditableEntity`; audit fields (`CreatedOn/By`, `UpdatedOn/By`) never set manually
+- Enums stored via `EnumToStringConverter`
+- Errors thrown as typed exceptions (`NotFoundException`, `BadRequestException`, etc.) — no raw status codes
+
+### Partial updates
+
+- Partial update handlers use `entity.Field = request.Field ?? entity.Field` (null-coalescing), not if-guards
+- Single-field updates extend existing endpoints rather than adding new dedicated endpoints
+
+### Tests
+
+- At least one integration test per new/changed endpoint in `SourceBase.Tests/`
+- Test class mirrors `Features/` path
+- Test IDs follow `{FEATURE}-{ACTION}-{NNN}` format in `DisplayName`
+- Method name follows `MethodName_WithCondition_ReturnsExpected`
+- Uses strong-typed route constants (e.g. `CreateTodoEndpoint.Route`) — no hardcoded URL strings
+- Email codes retrieved via `GetLatestEmailCodeAsync` — no manually generated tokens
+- `WithDbContextAsync` only used when asserting on a DB field not returned by the API
+
+### Blazor
+
+- No inline lambdas on event handlers or component parameters
+- Loop-captured params use `Action`-returning or `Func<Task>`-returning methods
+- Multi-statement handlers extracted to named methods
+
+---

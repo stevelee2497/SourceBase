@@ -50,6 +50,7 @@ public static class DependencyInjection
 
         services.AddSignalR();
         services.AddSingleton<IDateTime, DateTimeProvider>();
+        services.AddSingleton<ICacheService, RedisCacheService>();
         services.AddScoped<ISecurityProvider, SecurityProvider>();
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();

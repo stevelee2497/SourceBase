@@ -18,10 +18,15 @@ public class GetWalletSummaryEndpoint : IEndpoint
         .WithTags("Wallets");
 }
 
-public class GetWalletSummaryHandler(IDbContext dbContext, ICurrentUser currentUser, IDateTime dateTime) : IRequestHandler<GetWalletSummaryRequest, GetWalletSummaryResponse>
+public class GetWalletSummaryHandler(IDbContext dbContext, ICurrentUser currentUser, IDateTime dateTime, ICacheService cacheService) : IRequestHandler<GetWalletSummaryRequest, GetWalletSummaryResponse>
 {
+    public static string CacheKey(Guid userId) => $"wallet-summary:{userId}";
+
     public async Task<GetWalletSummaryResponse> Handle(GetWalletSummaryRequest request, CancellationToken ct)
     {
+        var cached = await cacheService.GetAsync<GetWalletSummaryResponse>(CacheKey(currentUser.UserId), ct);
+        if (cached is not null) return cached;
+
         var today = DateOnly.FromDateTime(dateTime.UtcNow);
         var monthStart = new DateOnly(today.Year, today.Month, 1);
         var nextMonth = monthStart.AddMonths(1);
@@ -57,6 +62,8 @@ public class GetWalletSummaryHandler(IDbContext dbContext, ICurrentUser currentU
             .Take(5)
             .ToListAsync(ct);
 
-        return new GetWalletSummaryResponse(walletBalances.Sum(), monthlyIncome, monthlyExpense, recentTransactions);
+        var result = new GetWalletSummaryResponse(walletBalances.Sum(), monthlyIncome, monthlyExpense, recentTransactions);
+        await cacheService.SetAsync(CacheKey(currentUser.UserId), result, TimeSpan.FromMinutes(5), ct);
+        return result;
     }
 }

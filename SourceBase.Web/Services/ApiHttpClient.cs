@@ -209,6 +209,9 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
     public Task<(StatsResponse? data, ErrorResponse? error)> GetStatsAsync() =>
         ExecuteAsync<StatsResponse>(() => AuthorizedRequest(HttpMethod.Get, "/api/data/stats"));
 
+    public Task<(RedisStatusResponse? data, ErrorResponse? error)> GetRedisStatusAsync() =>
+        ExecuteAsync<RedisStatusResponse>(() => AuthorizedRequest(HttpMethod.Get, "/api/data/redis-status"));
+
     // ── User Admin Actions ───────────────────────────────────────────────────
 
     public Task<ErrorResponse?> ResetUserPasswordAsync(Guid id, string newPassword) =>
@@ -385,6 +388,7 @@ public sealed record UserResponse(Guid Id, string? UserName, string? Email, stri
 public sealed record TodoItemResponse(Guid Id, string Title, string Date, string Status, Guid? TodoListId);
 public sealed record TodoListResponse(Guid Id, string Name, int ItemCount, DateTime? CreatedOn, string? CreatedBy, bool IsDefault);
 public sealed record StatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems, int TotalWallets, int TotalTransactions);
+public sealed record RedisStatusResponse(bool IsOnline);
 public sealed record ErrorResponse(string Code, string Message, Dictionary<string, string[]>? Errors = null);
 public sealed record WalletResponse(Guid Id, string Name, decimal Balance, decimal InitialBalance, string Currency, string? Icon);
 public sealed record GetWalletsResponse(List<WalletResponse> Wallets, decimal TotalBalance);

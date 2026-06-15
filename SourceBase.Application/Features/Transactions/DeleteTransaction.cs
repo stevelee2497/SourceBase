@@ -1,3 +1,4 @@
+using SourceBase.Application.Features.Wallets;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
@@ -16,7 +17,7 @@ public class DeleteTransactionEndpoint : IEndpoint
         .WithTags("Transactions");
 }
 
-public class DeleteTransactionHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<DeleteTransactionRequest, DeleteTransactionResponse>
+public class DeleteTransactionHandler(IDbContext dbContext, ICurrentUser currentUser, ICacheService cacheService) : IRequestHandler<DeleteTransactionRequest, DeleteTransactionResponse>
 {
     public async Task<DeleteTransactionResponse> Handle(DeleteTransactionRequest request, CancellationToken ct)
     {
@@ -28,6 +29,7 @@ public class DeleteTransactionHandler(IDbContext dbContext, ICurrentUser current
 
         dbContext.Transactions.Remove(transaction);
         await dbContext.SaveChangesAsync(ct);
+        await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
         return new DeleteTransactionResponse(true);
     }
 }

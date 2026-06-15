@@ -33,6 +33,23 @@ services:
     networks:
       - internal
 
+  redis:
+    image: redis:7-alpine
+    container_name: sourcebase-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   sourcebase-api:
     image: ghcr.io/stevelee2497/sourcebase-api:latest
     build:
@@ -48,6 +65,7 @@ services:
       - AppSettings__AdminPassword=${ADMIN_PASSWORD}
       - AppSettings__SendGridApiKey=${SENDGRID_API_KEY}
       - AppSettings__SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
+      - ConnectionStrings__RedisConnection=redis:6379,password=${REDIS_PASSWORD}
       - AllowedSpecificOrigins__1=${WEB_URL}
     volumes:
       - ./logs/api:/app/Logs
@@ -55,6 +73,8 @@ services:
       - "3000:8080"
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - internal
@@ -109,6 +129,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
   caddy_data:
   caddy_config:
 

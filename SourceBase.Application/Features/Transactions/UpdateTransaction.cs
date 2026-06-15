@@ -1,8 +1,9 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Application.Shared.Interfaces;
+using SourceBase.Application.Features.Wallets;
 using SourceBase.Application.Shared;
+using SourceBase.Application.Shared.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Transactions;
@@ -20,7 +21,7 @@ public class UpdateTransactionEndpoint : IEndpoint
         .WithTags("Transactions");
 }
 
-public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<UpdateTransactionRequest, UpdateTransactionResponse>
+public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser currentUser, ICacheService cacheService) : IRequestHandler<UpdateTransactionRequest, UpdateTransactionResponse>
 {
     public async Task<UpdateTransactionResponse> Handle(UpdateTransactionRequest request, CancellationToken ct)
     {
@@ -40,6 +41,7 @@ public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser current
         transaction.Note = request.Note;
         transaction.CategoryId = request.CategoryId;
         await dbContext.SaveChangesAsync(ct);
+        await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
         return new UpdateTransactionResponse(transaction.Id);
     }
 }
