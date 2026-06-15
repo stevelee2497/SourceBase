@@ -131,6 +131,26 @@ public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
 
 **Feature isolation** — tests for different features (Auth, Todos, etc.) organized into separate test classes and files. Each test class should only focus on one endpoint.
 
+## Blazor
+
+**Event handlers** — never use inline lambdas (`() => Method(param)`) for event handlers or component parameters. Use named delegates instead:
+
+- `void` method with loop-captured parameter → return `Action`:
+  ```csharp
+  private Action OpenEdit(T item) => () => { _editing = item; _showForm = true; };
+  // usage: @onclick="OpenEdit(item)"
+  ```
+- `async Task` method with loop-captured parameter → return `Func<Task>`:
+  ```csharp
+  private Func<Task> SelectItem(Guid id) => async () => { _selectedId = id; await LoadAsync(); };
+  // usage: @onclick="SelectItem(item.Id)"
+  ```
+- Multi-statement or single-expression inline lambdas on component parameters (`OnClose`, `OnCancel`, `OnSaved`, etc.) → extract to named `void` methods:
+  ```csharp
+  private void CancelDelete() { _showDelete = false; _deleting = null; }
+  // usage: OnCancel="CancelDelete"
+  ```
+
 ## PR Review Checklist
 
 Apply this checklist on every pull request review.
@@ -179,23 +199,3 @@ Apply this checklist on every pull request review.
 - Multi-statement handlers extracted to named methods
 
 ---
-
-## Blazor
-
-**Event handlers** — never use inline lambdas (`() => Method(param)`) for event handlers or component parameters. Use named delegates instead:
-
-- `void` method with loop-captured parameter → return `Action`:
-  ```csharp
-  private Action OpenEdit(T item) => () => { _editing = item; _showForm = true; };
-  // usage: @onclick="OpenEdit(item)"
-  ```
-- `async Task` method with loop-captured parameter → return `Func<Task>`:
-  ```csharp
-  private Func<Task> SelectItem(Guid id) => async () => { _selectedId = id; await LoadAsync(); };
-  // usage: @onclick="SelectItem(item.Id)"
-  ```
-- Multi-statement or single-expression inline lambdas on component parameters (`OnClose`, `OnCancel`, `OnSaved`, etc.) → extract to named `void` methods:
-  ```csharp
-  private void CancelDelete() { _showDelete = false; _deleting = null; }
-  // usage: OnCancel="CancelDelete"
-  ```
