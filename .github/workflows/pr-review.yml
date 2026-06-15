@@ -135,7 +135,14 @@ jobs:
             -H "Content-Type: application/json" \
             -d "$PAYLOAD")
 
-          REVIEW=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "Could not generate review."')
+          echo "Models API response: $RESPONSE"
+
+          API_ERROR=$(echo "$RESPONSE" | jq -r '.error.message // empty')
+          if [ -n "$API_ERROR" ]; then
+            REVIEW="Could not generate review — API error: ${API_ERROR}"
+          else
+            REVIEW=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "Could not generate review."')
+          fi
 
           PREV_ID=$(gh api "/repos/${REPO}/issues/${PR_NUMBER}/comments" \
             --jq '[.[] | select(.user.login == "github-actions[bot]") | select(.body | startswith("## PR Review Checklist")) | .id][0]')
