@@ -90,10 +90,13 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ApiBaseUrl=http://sourcebase-api:8080
+      - ConnectionStrings__RedisConnection=redis:6379,password=${REDIS_PASSWORD}
     volumes:
       - ./logs/web:/app/Logs
     depends_on:
       - sourcebase-api
+      - redis:
+          condition: service_healthy
     networks:
       - internal
 
