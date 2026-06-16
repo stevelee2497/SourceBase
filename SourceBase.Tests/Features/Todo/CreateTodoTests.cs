@@ -139,8 +139,8 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         todo!.TodoListId.Should().Be(list.Id);
     }
 
-    [Fact(DisplayName = "TODOS-CREATE-007: CreateTodo_WithInvalidTodoListId_ReturnsNotFound")]
-    public async Task CreateTodo_WithInvalidTodoListId_ReturnsNotFound()
+    [Fact(DisplayName = "TODOS-CREATE-007: CreateTodo_WithInvalidTodoListId_ReturnsBadRequest")]
+    public async Task CreateTodo_WithInvalidTodoListId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -155,6 +155,6 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

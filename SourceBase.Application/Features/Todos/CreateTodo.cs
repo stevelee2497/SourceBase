@@ -23,13 +23,6 @@ public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser, I
 {
     public async Task<CreateTodoResponse> Handle(CreateTodoRequest request, CancellationToken ct)
     {
-        if (request.TodoListId.HasValue)
-        {
-            var listExists = await dbContext.TodoLists.AnyAsync(x => x.Id == request.TodoListId.Value && x.UserId == currentUser.UserId, ct);
-            if (!listExists)
-                throw new NotFoundException("Todo list not found.");
-        }
-
         var item = new TodoItemEntity
         {
             Title = request.Title,
@@ -55,9 +48,13 @@ public class CreateTodoHandler(IDbContext dbContext, ICurrentUser currentUser, I
 
 public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 {
-    public CreateTodoRequestValidator()
+    public CreateTodoRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
         RuleFor(x => x.Date).NotNull();
         RuleFor(x => x.Title).NotEmpty();
+        RuleFor(x => x.TodoListId)
+            .MustAsync((id, ct) => dbContext.TodoLists.AnyAsync(x => x.Id == id!.Value && x.UserId == currentUser.UserId, ct))
+            .WithMessage("Todo list not found.")
+            .When(x => x.TodoListId.HasValue);
     }
 }

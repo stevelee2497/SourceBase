@@ -2,7 +2,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Wallets;
-using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Transactions;
@@ -24,14 +23,6 @@ public class CreateTransactionHandler(IDbContext dbContext, ICurrentUser current
 {
     public async Task<CreateTransactionResponse> Handle(CreateTransactionRequest request, CancellationToken ct)
     {
-        var walletExists = await dbContext.Wallets.AnyAsync(w => w.Id == request.WalletId && w.UserId == currentUser.UserId, ct);
-        if (!walletExists)
-            throw new NotFoundException("Wallet not found.");
-
-        var categoryExists = await dbContext.Categories.AnyAsync(c => c.Id == request.CategoryId && (c.IsSystem || c.UserId == currentUser.UserId), ct);
-        if (!categoryExists)
-            throw new NotFoundException("Category not found.");
-
         var transaction = new TransactionEntity
         {
             WalletId = request.WalletId,
@@ -52,12 +43,22 @@ public class CreateTransactionHandler(IDbContext dbContext, ICurrentUser current
 
 public class CreateTransactionRequestValidator : AbstractValidator<CreateTransactionRequest>
 {
-    public CreateTransactionRequestValidator()
+    public CreateTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
-        RuleFor(x => x.WalletId).NotEmpty();
+        RuleFor(x => x.WalletId)
+            .NotEmpty()
+            .Must(x => x != Guid.Empty)
+            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id && w.UserId == currentUser.UserId, ct))
+            .WithMessage("Wallet not found.");
+
         RuleFor(x => x.Amount).GreaterThan(0);
         RuleFor(x => x.Type).NotNull();
         RuleFor(x => x.Date).NotNull();
-        RuleFor(x => x.CategoryId).NotEmpty();
+
+        RuleFor(x => x.CategoryId)
+            .NotEmpty()
+            .Must(x => x != Guid.Empty)
+            .MustAsync((id, ct) => dbContext.Categories.AnyAsync(c => c.Id == id && (c.IsSystem || c.UserId == currentUser.UserId), ct))
+            .WithMessage("Category not found.");
     }
 }
