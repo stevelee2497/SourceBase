@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Icons;
 
-public record UpdateIconRequest([property: SwaggerIgnore] Guid Id, string? Value, string? Name, IconGroup? Group, int? SortOrder);
+public record UpdateIconRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string? Value, string? Name, IconGroup? Group, int? SortOrder);
 
 public record UpdateIconResponse(Guid Id);
 

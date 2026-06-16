@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Wallets;
 
-public record ConfigureWalletRequest([property: SwaggerIgnore] Guid Id, string Currency);
+public record ConfigureWalletRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string Currency);
 
 public record ConfigureWalletResponse(Guid Id);
 

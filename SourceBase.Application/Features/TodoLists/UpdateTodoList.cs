@@ -5,7 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.TodoLists;
 
-public record UpdateTodoListRequest([property: SwaggerIgnore] Guid Id, string? Name);
+public record UpdateTodoListRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string? Name);
 
 public record UpdateTodoListResponse(Guid Id);
 

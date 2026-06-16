@@ -7,7 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Transactions;
 
-public record UpdateTransactionRequest([property: SwaggerIgnore] Guid Id, Guid? WalletId, decimal? Amount, TransactionType? Type, DateOnly? Date, string? Note, Guid? CategoryId);
+public record UpdateTransactionRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, Guid? WalletId, decimal? Amount, TransactionType? Type, DateOnly? Date, string? Note, Guid? CategoryId);
 
 public record UpdateTransactionResponse(Guid Id);
 

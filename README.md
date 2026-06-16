@@ -93,7 +93,7 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 Update endpoints use **`PATCH`** with partial update semantics. All request fields are nullable; only provided (non-null) fields are applied. The handler uses null-coalescing so omitted fields are never overwritten, and validator rules are guarded with `.When`:
 
 ```csharp
-public record UpdateTodoRequest([property: SwaggerIgnore] Guid Id, DateOnly? Date, string? Title, TodoItemStatus? Status);
+public record UpdateTodoRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, DateOnly? Date, string? Title, TodoItemStatus? Status);
 ```
 
 ```csharp

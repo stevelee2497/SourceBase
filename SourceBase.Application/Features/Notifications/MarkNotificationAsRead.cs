@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Notifications;
 
-public record MarkNotificationAsReadRequest([property: SwaggerIgnore] Guid Id);
+public record MarkNotificationAsReadRequest([property: SwaggerIgnore][property: FromRoute] Guid Id);
 
 public record MarkNotificationAsReadResponse(bool Success);
 
@@ -15,7 +15,7 @@ public class MarkNotificationAsReadEndpoint : IEndpoint
     public const string Route = "notifications/{id}/read";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut(Route, ([FromRoute] Guid id, MarkNotificationAsReadHandler handler, CancellationToken ct) => handler.Handle(new MarkNotificationAsReadRequest(id), ct))
+        .MapPut(Route, ([FromBody] MarkNotificationAsReadRequest request, MarkNotificationAsReadHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Notifications");
 }
 

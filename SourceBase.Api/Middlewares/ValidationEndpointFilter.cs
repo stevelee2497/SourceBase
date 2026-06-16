@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using FluentValidation;
-using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SourceBase.Api.Middlewares;
 
@@ -13,8 +13,8 @@ public class ValidationEndpointFilter : IEndpointFilter
         {
             if (argument is null) continue;
 
-            // set id from route if the property has [SwaggerIgnore] attribute (used for update endpoints) => validator can check if the entity exists and belongs to the user
-            var idProp = argument.GetType().GetProperties().FirstOrDefault(p => p.Name == "Id" && p.GetCustomAttribute<SwaggerIgnoreAttribute>() is not null);
+            // set id from route if the property has [property: FromRoute] attribute (used for update endpoints) => validator can check if the entity exists and belongs to the user
+            var idProp = argument.GetType().GetProperties().FirstOrDefault(p => p.Name == "Id" && p.GetCustomAttribute<FromRouteAttribute>() is not null);
             if (idProp is not null
                 && context.HttpContext.Request.RouteValues.TryGetValue("id", out var routeId)
                 && Guid.TryParse(routeId?.ToString(), out var parsedId))

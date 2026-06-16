@@ -5,7 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Categories;
 
-public record UpdateCategoryRequest([property: SwaggerIgnore] Guid Id, string? Name, string? Icon);
+public record UpdateCategoryRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string? Name, string? Icon);
 
 public record UpdateCategoryResponse(Guid Id);
 

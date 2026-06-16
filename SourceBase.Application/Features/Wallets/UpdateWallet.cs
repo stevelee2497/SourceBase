@@ -5,7 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Wallets;
 
-public record UpdateWalletRequest([property: SwaggerIgnore] Guid Id, string? Name, string? Icon);
+public record UpdateWalletRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string? Name, string? Icon);
 
 public record UpdateWalletResponse(Guid Id);
 

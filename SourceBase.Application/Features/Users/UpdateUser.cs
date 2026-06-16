@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Users;
 
-public record UpdateUserRequest([property: SwaggerIgnore] Guid Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, string[]? Roles);
+public record UpdateUserRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, string[]? Roles);
 
 public record UpdateUserResponse(Guid Id);
 

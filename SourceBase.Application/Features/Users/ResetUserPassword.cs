@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Users;
 
-public record ResetUserPasswordRequest([property: SwaggerIgnore] Guid Id, string NewPassword);
+public record ResetUserPasswordRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string NewPassword);
 
 public record ResetUserPasswordResponse(bool Success);
 

@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Roles;
 
-public record UpdateRoleRequest([property: SwaggerIgnore] Guid Id, string? Name, string? Description);
+public record UpdateRoleRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string? Name, string? Description);
 
 public record UpdateRoleResponse(Guid Id);
 

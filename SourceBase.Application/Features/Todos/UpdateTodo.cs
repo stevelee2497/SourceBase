@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Todos;
 
-public record UpdateTodoRequest([property: SwaggerIgnore] Guid Id, DateOnly? Date, string? Title, TodoItemStatus? Status);
+public record UpdateTodoRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, DateOnly? Date, string? Title, TodoItemStatus? Status);
 
 public record UpdateTodoResponse(Guid Id);
 
