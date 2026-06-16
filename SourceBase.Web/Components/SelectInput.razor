@@ -1,6 +1,12 @@
 <div class="relative @Class">
     <button type="button" class="w-full flex items-center justify-between gap-2 rounded-md border bg-white px-3 py-2 text-left text-sm shadow-sm transition-colors focus:outline-none @(Disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer") @(_open ? "border-indigo-500 ring-1 ring-indigo-500" : "border-gray-300 hover:border-gray-400")" disabled="@Disabled" @onclick="ToggleOpen">
-        <span class="truncate @(SelectedLabel is null ? "text-gray-400" : "text-gray-900")">@(SelectedLabel ?? "Select…")</span>
+        <span class="flex items-center gap-2 truncate min-w-0 @(_selected is null ? "text-gray-400" : "text-gray-900")">
+            @if (_selected?.Icon is { } selIcon && !string.IsNullOrEmpty(selIcon))
+            {
+                @RenderIcon(selIcon, "w-4 h-4")
+            }
+            <span class="truncate">@(_selected?.Label ?? "Select…")</span>
+        </span>
         <svg class="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150 @(_open ? "rotate-180" : "")" fill="none" stroke="currentColor" viewBox="0 0 20 20">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 8l4 4 4-4" />
         </svg>
@@ -13,7 +19,13 @@
             {
                 var isSelected = opt.Value == Value;
                 <button type="button" class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition-colors @(isSelected ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-50")" @onclick="OnOptionClick(opt.Value)" @onclick:stopPropagation>
-                    <span>@opt.Label</span>
+                    <span class="flex items-center gap-2 truncate min-w-0">
+                        @if (!string.IsNullOrEmpty(opt.Icon))
+                        {
+                            @RenderIcon(opt.Icon, "w-4 h-4")
+                        }
+                        <span class="truncate">@opt.Label</span>
+                    </span>
                     @if (isSelected)
                     {
                         <svg class="h-3.5 w-3.5 shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,7 +47,7 @@
 
     private bool _open;
 
-    private string? SelectedLabel => Options.FirstOrDefault(o => o.Value == Value)?.Label;
+    private SelectOption? _selected => Options.FirstOrDefault(o => o.Value == Value);
 
     private void ToggleOpen() { if (!Disabled) _open = !_open; }
 
@@ -45,5 +57,34 @@
     {
         _open = false;
         await ValueChanged.InvokeAsync(value);
+    };
+
+    private RenderFragment RenderIcon(string icon, string sizeClass) => builder =>
+    {
+        if (icon.TrimStart().StartsWith("<"))
+        {
+            builder.OpenElement(0, "svg");
+            builder.AddAttribute(1, "class", $"{sizeClass} shrink-0");
+            builder.AddAttribute(2, "viewBox", "0 0 24 24");
+            builder.AddAttribute(3, "fill", "none");
+            builder.AddAttribute(4, "stroke", "currentColor");
+            builder.AddMarkupContent(5, icon);
+            builder.CloseElement();
+        }
+        else if (icon.StartsWith("http"))
+        {
+            builder.OpenElement(0, "img");
+            builder.AddAttribute(1, "src", icon);
+            builder.AddAttribute(2, "class", $"{sizeClass} shrink-0 object-contain rounded");
+            builder.AddAttribute(3, "alt", "");
+            builder.CloseElement();
+        }
+        else
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "class", "text-base leading-none shrink-0");
+            builder.AddContent(2, icon);
+            builder.CloseElement();
+        }
     };
 }
