@@ -26,23 +26,20 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public FakeDateTimeProvider FakeDateTime { get; } = new();
 
-    private SqliteConnection? _anchorConnection;
-    private readonly string _connectionString = $"Data Source=test_{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
+    private SqliteConnection? anchorConnection;
+    private readonly string connectionString = $"Data Source=test_{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
+        builder.UseContentRoot(AppContext.BaseDirectory);
+
         builder.ConfigureAppConfiguration((_, config) =>
         {
-            config.Sources.Clear();
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["AppSettings:AdminEmail"] = AdminEmail,
                 ["AppSettings:AdminPassword"] = AdminPassword,
-                ["AppSettings:Roles:0"] = "Admin",
-                ["AppSettings:Roles:1"] = "User",
-                ["AppSettings:OtpTokenExpiration"] = "00:15:00",
-                ["AppSettings:AccessTokenExpiration"] = "01:00:00",
-                ["AppSettings:RefreshTokenExpiration"] = "14.00:00:00",
             });
         });
 
@@ -66,7 +63,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
             var appConfig = ctx.Configuration;
             services.AddDbContext<ApplicationDbContext>((_, options) =>
             {
-                options.UseSqlite(_connectionString)
+                options.UseSqlite(connectionString)
                     .UseSeeding((context, _) => ApplicationDbContext.SeedData(context, appConfig))
                     .UseAsyncSeeding(async (context, _, _) => ApplicationDbContext.SeedData(context, appConfig));
             });
@@ -77,16 +74,16 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _anchorConnection = new SqliteConnection(_connectionString);
-        await _anchorConnection.OpenAsync();
+        anchorConnection = new SqliteConnection(connectionString);
+        await anchorConnection.OpenAsync();
 
         await WithDbContextAsync(db => db.Database.EnsureCreatedAsync());
     }
 
     public new async Task DisposeAsync()
     {
-        if (_anchorConnection != null)
-            await _anchorConnection.DisposeAsync();
+        if (anchorConnection != null)
+            await anchorConnection.DisposeAsync();
         await base.DisposeAsync().AsTask();
     }
 
