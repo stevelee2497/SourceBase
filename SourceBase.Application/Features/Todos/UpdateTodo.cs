@@ -19,15 +19,13 @@ public class UpdateTodoEndpoint : IEndpoint
         .WithTags("Todos");
 }
 
-public class UpdateTodoHandler(IDbContext dbContext, ICurrentUser currentUser, INotificationService notifications) : IRequestHandler<UpdateTodoRequest, UpdateTodoResponse>
+public class UpdateTodoHandler(IDbContext dbContext, INotificationService notifications) : IRequestHandler<UpdateTodoRequest, UpdateTodoResponse>
 {
     public async Task<UpdateTodoResponse> Handle(UpdateTodoRequest request, CancellationToken ct)
     {
-        var item = await dbContext.TodoItems.FindAsync([request.Id], ct);
-        if (item == null || item.UserId != currentUser.UserId)
-            throw new NotFoundException();
+        var item = await dbContext.TodoItems.FindAsync([request.Id], ct)!;
 
-        item.Title = request.Title ?? item.Title;
+        item!.Title = request.Title ?? item.Title;
         item.Status = request.Status ?? item.Status;
         item.Date = request.Date ?? item.Date;
         await dbContext.SaveChangesAsync(ct);
@@ -46,8 +44,16 @@ public class UpdateTodoHandler(IDbContext dbContext, ICurrentUser currentUser, I
 
 public class UpdateTodoRequestValidator : AbstractValidator<UpdateTodoRequest>
 {
-    public UpdateTodoRequestValidator()
+    public UpdateTodoRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) =>
+            {
+                var item = await dbContext.TodoItems.FindAsync([id], ct);
+                return item is not null && item.UserId == currentUser.UserId;
+            })
+            .WithMessage("Todo item not found.");
+
         RuleFor(x => x.Title).NotEmpty().When(x => x.Title is not null);
     }
 }

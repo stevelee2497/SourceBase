@@ -102,7 +102,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "CATS-UPDATE-005: UpdateCategory_WithOtherUsersCategory_ReturnsNotFound")]
@@ -124,7 +124,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "CATS-UPDATE-006: UpdateCategory_WithUnknownId_ReturnsNotFound")]
@@ -141,6 +141,6 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

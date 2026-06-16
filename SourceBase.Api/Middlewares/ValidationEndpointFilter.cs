@@ -1,5 +1,7 @@
+using System.Reflection;
 using System.Text.Json;
 using FluentValidation;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Api.Middlewares;
 
@@ -10,6 +12,15 @@ public class ValidationEndpointFilter : IEndpointFilter
         foreach (var argument in context.Arguments)
         {
             if (argument is null) continue;
+
+            // set id from route if the property has [SwaggerIgnore] attribute (used for update endpoints) => validator can check if the entity exists and belongs to the user
+            var idProp = argument.GetType().GetProperties().FirstOrDefault(p => p.Name == "Id" && p.GetCustomAttribute<SwaggerIgnoreAttribute>() is not null);
+            if (idProp is not null
+                && context.HttpContext.Request.RouteValues.TryGetValue("id", out var routeId)
+                && Guid.TryParse(routeId?.ToString(), out var parsedId))
+            {
+                idProp.SetValue(argument, parsedId);
+            }
 
             var validatorType = typeof(IValidator<>).MakeGenericType(argument.GetType());
             if (context.HttpContext.RequestServices.GetService(validatorType) is not IValidator validator) continue;
@@ -23,7 +34,7 @@ public class ValidationEndpointFilter : IEndpointFilter
                 .GroupBy(e => e.PropertyName)
                 .ToDictionary(g => JsonNamingPolicy.CamelCase.ConvertName(g.Key), g => g.Select(e => e.ErrorMessage).ToArray());
 
-            throw new SourceBase.Application.Shared.ValidationException(errors: errors);
+            throw new Application.Shared.ValidationException(errors: errors);
         }
 
         return await next(context);

@@ -1,7 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Application.Shared;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Categories;
@@ -19,19 +18,13 @@ public class UpdateCategoryEndpoint : IEndpoint
         .WithTags("Categories");
 }
 
-public class UpdateCategoryHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<UpdateCategoryRequest, UpdateCategoryResponse>
+public class UpdateCategoryHandler(IDbContext dbContext) : IRequestHandler<UpdateCategoryRequest, UpdateCategoryResponse>
 {
     public async Task<UpdateCategoryResponse> Handle(UpdateCategoryRequest request, CancellationToken ct)
     {
-        var category = await dbContext.Categories.FindAsync([request.Id], ct);
-        if (category is null)
-            throw new NotFoundException();
-        if (category.IsSystem)
-            throw new ForbiddenException();
-        if (category.UserId != currentUser.UserId)
-            throw new NotFoundException();
+        var category = await dbContext.Categories.FindAsync([request.Id], ct)!;
 
-        category.Name = request.Name ?? category.Name;
+        category!.Name = request.Name ?? category.Name;
         category.Icon = request.Icon ?? category.Icon;
         await dbContext.SaveChangesAsync(ct);
         return new UpdateCategoryResponse(category.Id);
@@ -40,8 +33,26 @@ public class UpdateCategoryHandler(IDbContext dbContext, ICurrentUser currentUse
 
 public class UpdateCategoryRequestValidator : AbstractValidator<UpdateCategoryRequest>
 {
-    public UpdateCategoryRequestValidator()
+    public UpdateCategoryRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) =>
+            {
+                var category = await dbContext.Categories.FindAsync([id], ct);
+                return category is not null && category.UserId == currentUser.UserId;
+            })
+            .WithMessage("Category not found.")
+            .DependentRules(() =>
+            {
+                RuleFor(x => x.Id)
+                    .MustAsync(async (id, ct) =>
+                    {
+                        var category = await dbContext.Categories.FindAsync([id], ct);
+                        return !category!.IsSystem;
+                    })
+                    .WithMessage("System category cannot be updated.");
+            });
+
         RuleFor(x => x.Name).NotEmpty().MaximumLength(100).When(x => x.Name is not null);
     }
 }

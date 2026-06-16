@@ -26,12 +26,9 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, I
 {
     public async Task<UpdateUserResponse> Handle(UpdateUserRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users
+        var user = (await dbContext.Users
             .Include(x => x.Roles)
-            .FirstOrDefaultAsync(u => u.Id == request.Id, ct) ?? throw new NotFoundException();
-
-        if (await dbContext.Users.AnyAsync(u => u.Id != request.Id && u.Email == request.Email, ct))
-            throw new BadRequestException("Email is already taken.");
+            .FirstOrDefaultAsync(u => u.Id == request.Id, ct))!;
 
         var emailChanged = !string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase);
 
@@ -99,7 +96,15 @@ public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
 {
     public UpdateUserRequestValidator(IDbContext dbContext)
     {
+        RuleFor(x => x.Id)
+            .MustAsync((id, ct) => dbContext.Users.AnyAsync(u => u.Id == id, ct))
+            .WithMessage("User not found.");
+
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Email)
+            .MustAsync((req, email, ct) => dbContext.Users.AllAsync(u => u.Id == req.Id || u.Email != email, ct))
+            .WithMessage("Email is already taken.");
+
         RuleFor(x => x.FirstName).MaximumLength(100).When(x => x.FirstName is not null);
         RuleFor(x => x.LastName).MaximumLength(100).When(x => x.LastName is not null);
         RuleFor(x => x.PhoneNumber).MaximumLength(20).When(x => x.PhoneNumber is not null);

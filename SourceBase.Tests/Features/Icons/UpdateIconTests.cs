@@ -111,7 +111,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ICONS-UPDATE-005: UpdateIcon_OnSystemIcon_ReturnsForbidden")]
@@ -134,7 +134,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ICONS-UPDATE-006: UpdateIcon_WithEmptyValue_ReturnsBadRequest")]

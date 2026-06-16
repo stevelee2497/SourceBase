@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -24,13 +23,9 @@ public class UpdateIconHandler(IDbContext dbContext) : IRequestHandler<UpdateIco
 {
     public async Task<UpdateIconResponse> Handle(UpdateIconRequest request, CancellationToken ct)
     {
-        var icon = await dbContext.Icons.FindAsync([request.Id], ct);
-        if (icon is null)
-            throw new NotFoundException();
-        if (icon.IsSystem)
-            throw new ForbiddenException();
+        var icon = await dbContext.Icons.FindAsync([request.Id], ct)!;
 
-        icon.Value = request.Value ?? icon.Value;
+        icon!.Value = request.Value ?? icon.Value;
         icon.Name = request.Name ?? icon.Name;
         icon.Group = request.Group ?? icon.Group;
         icon.SortOrder = request.SortOrder ?? icon.SortOrder;
@@ -41,8 +36,22 @@ public class UpdateIconHandler(IDbContext dbContext) : IRequestHandler<UpdateIco
 
 public class UpdateIconRequestValidator : AbstractValidator<UpdateIconRequest>
 {
-    public UpdateIconRequestValidator()
+    public UpdateIconRequestValidator(IDbContext dbContext)
     {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) => await dbContext.Icons.FindAsync([id], ct) is not null)
+            .WithMessage("Icon not found.")
+            .DependentRules(() =>
+            {
+                RuleFor(x => x.Id)
+                    .MustAsync(async (id, ct) =>
+                    {
+                        var icon = await dbContext.Icons.FindAsync([id], ct);
+                        return !icon!.IsSystem;
+                    })
+                    .WithMessage("System icon cannot be updated.");
+            });
+
         RuleFor(x => x.Value).NotEmpty().When(x => x.Value is not null);
         RuleFor(x => x.Name).NotEmpty().MaximumLength(100).When(x => x.Name is not null);
     }

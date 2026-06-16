@@ -26,19 +26,9 @@ public class UpdateRoleHandler(IDbContext dbContext) : IRequestHandler<UpdateRol
 {
     public async Task<UpdateRoleResponse> Handle(UpdateRoleRequest request, CancellationToken ct)
     {
-        var role = await dbContext.Roles.FindAsync([request.Id], ct) ?? throw new NotFoundException();
+        var role = await dbContext.Roles.FindAsync([request.Id], ct)!;
 
-        if (role.Name == AppRoles.Admin)
-            throw new BadRequestException("Admin role cannot be updated.");
-
-        if (request.Name is not null)
-        {
-            var duplicateName = await dbContext.Roles.AnyAsync(r => r.Id != request.Id && r.Name == request.Name, ct);
-            if (duplicateName)
-                throw new BadRequestException("Role name is already taken.");
-        }
-
-        role.Name = request.Name ?? role.Name;
+        role!.Name = request.Name ?? role.Name;
         role.Description = request.Description ?? role.Description;
 
         await dbContext.SaveChangesAsync(ct);
@@ -49,9 +39,28 @@ public class UpdateRoleHandler(IDbContext dbContext) : IRequestHandler<UpdateRol
 
 public class UpdateRoleRequestValidator : AbstractValidator<UpdateRoleRequest>
 {
-    public UpdateRoleRequestValidator()
+    public UpdateRoleRequestValidator(IDbContext dbContext)
     {
+        RuleFor(x => x.Id)
+            .MustAsync((id, ct) => dbContext.Roles.AnyAsync(r => r.Id == id, ct))
+            .WithMessage("Role not found.")
+            .DependentRules(() =>
+            {
+                RuleFor(x => x.Id)
+                    .MustAsync(async (id, ct) =>
+                    {
+                        var role = await dbContext.Roles.FindAsync([id], ct);
+                        return role?.Name != AppRoles.Admin;
+                    })
+                    .WithMessage("Admin role cannot be updated.");
+            });
+
         RuleFor(x => x.Name).NotEmpty().MaximumLength(256).When(x => x.Name is not null);
+        RuleFor(x => x.Name)
+            .MustAsync((req, name, ct) => dbContext.Roles.AllAsync(r => r.Id == req.Id || r.Name != name, ct))
+            .WithMessage("Role name is already taken.")
+            .When(x => x.Name is not null);
+
         RuleFor(x => x.Description).NotEmpty().MaximumLength(500).When(x => x.Description is not null);
     }
 }

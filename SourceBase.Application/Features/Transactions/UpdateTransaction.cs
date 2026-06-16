@@ -2,7 +2,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Wallets;
-using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -25,13 +24,9 @@ public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser current
 {
     public async Task<UpdateTransactionResponse> Handle(UpdateTransactionRequest request, CancellationToken ct)
     {
-        var transaction = await dbContext.Transactions.FindAsync([request.Id], ct);
-        if (transaction is null || transaction.UserId != currentUser.UserId)
-            throw new NotFoundException();
-        if (transaction.IsTransfer)
-            throw new Shared.ValidationException("Transfer transactions cannot be edited directly. Delete the transfer instead.");
+        var transaction = await dbContext.Transactions.FindAsync([request.Id], ct)!;
 
-        transaction.WalletId = request.WalletId ?? transaction.WalletId;
+        transaction!.WalletId = request.WalletId ?? transaction.WalletId;
         transaction.Amount = request.Amount ?? transaction.Amount;
         transaction.Type = request.Type ?? transaction.Type;
         transaction.Date = request.Date ?? transaction.Date;
@@ -47,6 +42,24 @@ public class UpdateTransactionRequestValidator : AbstractValidator<UpdateTransac
 {
     public UpdateTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) =>
+            {
+                var transaction = await dbContext.Transactions.FindAsync([id], ct);
+                return transaction is not null && transaction.UserId == currentUser.UserId;
+            })
+            .WithMessage("Transaction not found.")
+            .DependentRules(() =>
+            {
+                RuleFor(x => x.Id)
+                    .MustAsync(async (id, ct) =>
+                    {
+                        var transaction = await dbContext.Transactions.FindAsync([id], ct);
+                        return !transaction!.IsTransfer;
+                    })
+                    .WithMessage("Transfer transactions cannot be edited directly. Delete the transfer instead.");
+            });
+
         RuleFor(x => x.WalletId)
             .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id!.Value && w.UserId == currentUser.UserId, ct))
             .WithMessage("Wallet not found.")

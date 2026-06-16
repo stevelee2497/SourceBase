@@ -54,6 +54,6 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await otherClient.PatchAsJsonAsync(UpdateTodoListEndpoint.Route.WithId(created!.Id), new { name = "Hijacked" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

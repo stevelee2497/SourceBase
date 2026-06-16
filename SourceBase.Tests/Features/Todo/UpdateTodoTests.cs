@@ -99,7 +99,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TODOS-UPDATE-005: UpdateTodo_WithOtherUsersTodo_ReturnsNotFound")]
@@ -126,6 +126,6 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }
