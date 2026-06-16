@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Auth;
@@ -23,9 +24,9 @@ public class ForgotPasswordHandler(IDbContext dbContext, IEmailHelper emailHelpe
 {
     public async Task<ForgotPasswordResponse> Handle(ForgotPasswordRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email, ct);
+        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email, ct) ?? throw new BadRequestException("User with this email does not exist.");
         var (otp, expiresOn) = otpHelper.Generate();
-        user!.OtpCode = otp;
+        user.OtpCode = otp;
         user.OtpCodeExpiresOn = expiresOn;
         await dbContext.SaveChangesAsync(ct);
         await emailHelper.SendEmailAsync(request.Email, "Reset Password", $"Your password reset code is: <b>{otp}</b>");
@@ -35,12 +36,8 @@ public class ForgotPasswordHandler(IDbContext dbContext, IEmailHelper emailHelpe
 
 public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
 {
-    public ForgotPasswordRequestValidator(IDbContext dbContext)
+    public ForgotPasswordRequestValidator()
     {
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
-        RuleFor(x => x.Email)
-            .MustAsync(async (email, ct) => await dbContext.Users.AnyAsync(x => x.Email == email, ct))
-            .WithMessage("User not found.")
-            .When(x => !string.IsNullOrEmpty(x.Email));
     }
 }
