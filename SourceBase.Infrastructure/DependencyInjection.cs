@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +10,7 @@ using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Domain.Entities;
 using SourceBase.Infrastructure.DbContexts;
 using SourceBase.Infrastructure.Implementations;
+using StackExchange.Redis;
 
 namespace SourceBase.Infrastructure;
 
@@ -18,6 +20,15 @@ public static class DependencyInjection
     {
         var appSettings = configuration.GetSection("AppSettings").Get<AppSettings>()!;
         var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        var redisConnection = configuration.GetConnectionString("RedisConnection");
+        if (!string.IsNullOrWhiteSpace(redisConnection))
+        {
+            var redis = ConnectionMultiplexer.Connect(redisConnection);
+            services.AddDataProtection()
+                .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
+                .SetApplicationName("SourceBase.Api");
+        }
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.UseNpgsql(connectionString, o => o.MigrationsAssembly("SourceBase.Infrastructure"))
