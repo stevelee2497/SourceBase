@@ -42,7 +42,11 @@ public class GetWalletRequestValidator : AbstractValidator<GetWalletRequest>
     public GetWalletRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
         RuleFor(x => x.Id)
-            .MustAsync(async (id, ct) => await dbContext.Wallets.AnyAsync(w => w.Id == id && w.UserId == currentUser.UserId, ct))
+            .MustAsync(async (id, ct) =>
+            {
+                var wallet = await dbContext.Wallets.FindAsync([id], ct);
+                return wallet is not null && wallet.UserId == currentUser.UserId;
+            })
             .WithMessage("Wallet not found.");
     }
 }

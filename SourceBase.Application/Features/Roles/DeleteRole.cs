@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
@@ -24,7 +23,7 @@ public class DeleteRoleHandler(IDbContext dbContext) : IRequestHandler<DeleteRol
 {
     public async Task<DeleteRoleResponse> Handle(DeleteRoleRequest request, CancellationToken ct)
     {
-        var role = await dbContext.Roles.FirstOrDefaultAsync(x => x.Id == request.Id, ct);
+        var role = await dbContext.Roles.FindAsync([request.Id], ct);
         dbContext.Roles.Remove(role!);
         await dbContext.SaveChangesAsync(ct);
         return new DeleteRoleResponse(true);
@@ -37,14 +36,14 @@ public class DeleteRoleRequestValidator : AbstractValidator<DeleteRoleRequest>
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .MustAsync(async (id, ct) => await dbContext.Roles.AnyAsync(x => x.Id == id, ct))
+            .MustAsync(async (id, ct) => await dbContext.Roles.FindAsync([id], ct) is not null)
             .WithMessage("Role not found.")
             .DependentRules(() =>
             {
                 RuleFor(x => x.Id)
                     .MustAsync(async (id, ct) =>
                     {
-                        var role = await dbContext.Roles.FirstOrDefaultAsync(x => x.Id == id, ct);
+                        var role = await dbContext.Roles.FindAsync([id], ct);
                         return role?.Name != AppRoles.Admin;
                     })
                     .WithMessage("Cannot delete the Admin role.");

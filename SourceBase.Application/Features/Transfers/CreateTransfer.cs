@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Transfers;
@@ -72,13 +71,21 @@ public class CreateTransferRequestValidator : AbstractValidator<CreateTransferRe
         RuleFor(x => x.FromWalletId)
             .NotEmpty()
             .Must(x => x != Guid.Empty)
-            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id && w.UserId == currentUser.UserId, ct))
+            .MustAsync(async (id, ct) =>
+            {
+                var wallet = await dbContext.Wallets.FindAsync([id], ct);
+                return wallet is not null && wallet.UserId == currentUser.UserId;
+            })
             .WithMessage("Source wallet not found.");
 
         RuleFor(x => x.ToWalletId)
             .NotEmpty()
             .Must(x => x != Guid.Empty)
-            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id && w.UserId == currentUser.UserId, ct))
+            .MustAsync(async (id, ct) =>
+            {
+                var wallet = await dbContext.Wallets.FindAsync([id], ct);
+                return wallet is not null && wallet.UserId == currentUser.UserId;
+            })
             .WithMessage("Destination wallet not found.")
             .When(x => x.ToWalletId != Guid.Empty);
 

@@ -97,7 +97,7 @@ public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
     public UpdateUserRequestValidator(IDbContext dbContext)
     {
         RuleFor(x => x.Id)
-            .MustAsync((id, ct) => dbContext.Users.AnyAsync(u => u.Id == id, ct))
+            .MustAsync(async (id, ct) => await dbContext.Users.FindAsync([id], ct) is not null)
             .WithMessage("User not found.");
 
         RuleFor(x => x.Email).NotEmpty().EmailAddress();

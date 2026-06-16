@@ -1,7 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -26,7 +25,7 @@ public class ResetUserPasswordHandler(IDbContext dbContext, ISecurityProvider se
 {
     public async Task<ResetUserPasswordResponse> Handle(ResetUserPasswordRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == request.Id, ct);
+        var user = await dbContext.Users.FindAsync([request.Id], ct);
 
         user!.PasswordHash = securityProvider.HashPassword(user, request.NewPassword);
         user.SecurityStamp = Guid.NewGuid().ToString();
@@ -46,7 +45,7 @@ public class ResetUserPasswordRequestValidator : AbstractValidator<ResetUserPass
     {
         RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(6);
         RuleFor(x => x.Id)
-            .MustAsync(async (id, ct) => await dbContext.Users.AnyAsync(u => u.Id == id, ct))
+            .MustAsync(async (id, ct) => await dbContext.Users.FindAsync([id], ct) is not null)
             .WithMessage("User not found.");
     }
 }

@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Wallets;
 using SourceBase.Application.Shared.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -61,14 +60,22 @@ public class UpdateTransactionRequestValidator : AbstractValidator<UpdateTransac
             });
 
         RuleFor(x => x.WalletId)
-            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id!.Value && w.UserId == currentUser.UserId, ct))
+            .MustAsync(async (id, ct) =>
+            {
+                var wallet = await dbContext.Wallets.FindAsync([id!.Value], ct);
+                return wallet is not null && wallet.UserId == currentUser.UserId;
+            })
             .WithMessage("Wallet not found.")
             .When(x => x.WalletId is not null);
 
         RuleFor(x => x.Amount).GreaterThan(0).When(x => x.Amount is not null);
 
         RuleFor(x => x.CategoryId)
-            .MustAsync((id, ct) => dbContext.Categories.AnyAsync(c => c.Id == id!.Value && (c.IsSystem || c.UserId == currentUser.UserId), ct))
+            .MustAsync(async (id, ct) =>
+            {
+                var category = await dbContext.Categories.FindAsync([id!.Value], ct);
+                return category is not null && (category.IsSystem || category.UserId == currentUser.UserId);
+            })
             .WithMessage("Category not found.")
             .When(x => x.CategoryId is not null);
     }

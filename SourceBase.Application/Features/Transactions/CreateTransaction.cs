@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Wallets;
 using SourceBase.Application.Shared.Interfaces;
 
@@ -48,7 +47,11 @@ public class CreateTransactionRequestValidator : AbstractValidator<CreateTransac
         RuleFor(x => x.WalletId)
             .NotEmpty()
             .Must(x => x != Guid.Empty)
-            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id && w.UserId == currentUser.UserId, ct))
+            .MustAsync(async (id, ct) =>
+            {
+                var wallet = await dbContext.Wallets.FindAsync([id], ct);
+                return wallet is not null && wallet.UserId == currentUser.UserId;
+            })
             .WithMessage("Wallet not found.");
 
         RuleFor(x => x.Amount).GreaterThan(0);
@@ -58,7 +61,11 @@ public class CreateTransactionRequestValidator : AbstractValidator<CreateTransac
         RuleFor(x => x.CategoryId)
             .NotEmpty()
             .Must(x => x != Guid.Empty)
-            .MustAsync((id, ct) => dbContext.Categories.AnyAsync(c => c.Id == id && (c.IsSystem || c.UserId == currentUser.UserId), ct))
+            .MustAsync(async (id, ct) =>
+            {
+                var category = await dbContext.Categories.FindAsync([id], ct);
+                return category is not null && (category.IsSystem || category.UserId == currentUser.UserId);
+            })
             .WithMessage("Category not found.");
     }
 }

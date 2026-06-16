@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
@@ -24,7 +23,7 @@ public class DeleteUserHandler(IDbContext dbContext) : IRequestHandler<DeleteUse
 {
     public async Task<DeleteUserResponse> Handle(DeleteUserRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == request.Id, ct);
+        var user = await dbContext.Users.FindAsync([request.Id], ct);
         dbContext.Users.Remove(user!);
         await dbContext.SaveChangesAsync(ct);
         return new DeleteUserResponse(true);
@@ -37,7 +36,7 @@ public class DeleteUserRequestValidator : AbstractValidator<DeleteUserRequest>
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .MustAsync(async (id, ct) => await dbContext.Users.AnyAsync(x => x.Id == id, ct))
+            .MustAsync(async (id, ct) => await dbContext.Users.FindAsync([id], ct) is not null)
             .WithMessage("User not found.");
     }
 }

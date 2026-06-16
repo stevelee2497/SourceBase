@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.TodoLists;
@@ -17,11 +16,11 @@ public class DeleteTodoListEndpoint : IEndpoint
         .WithTags("TodoLists");
 }
 
-public class DeleteTodoListHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<DeleteTodoListRequest, DeleteTodoListResponse>
+public class DeleteTodoListHandler(IDbContext dbContext) : IRequestHandler<DeleteTodoListRequest, DeleteTodoListResponse>
 {
     public async Task<DeleteTodoListResponse> Handle(DeleteTodoListRequest request, CancellationToken ct)
     {
-        var list = await dbContext.TodoLists.FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == currentUser.UserId, ct);
+        var list = await dbContext.TodoLists.FindAsync([request.Id], ct);
         dbContext.TodoLists.Remove(list!);
         await dbContext.SaveChangesAsync(ct);
         return new DeleteTodoListResponse(true);
@@ -33,7 +32,11 @@ public class DeleteTodoListRequestValidator : AbstractValidator<DeleteTodoListRe
     public DeleteTodoListRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
         RuleFor(x => x.Id)
-            .MustAsync(async (id, ct) => await dbContext.TodoLists.AnyAsync(x => x.Id == id && x.UserId == currentUser.UserId, ct))
+            .MustAsync(async (id, ct) =>
+            {
+                var list = await dbContext.TodoLists.FindAsync([id], ct);
+                return list is not null && list.UserId == currentUser.UserId;
+            })
             .WithMessage("Todo list not found.");
     }
 }

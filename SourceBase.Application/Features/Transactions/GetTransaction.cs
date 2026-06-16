@@ -46,7 +46,11 @@ public class GetTransactionRequestValidator : AbstractValidator<GetTransactionRe
     public GetTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
         RuleFor(x => x.Id)
-            .MustAsync(async (id, ct) => await dbContext.Transactions.AnyAsync(t => t.Id == id && t.UserId == currentUser.UserId, ct))
+            .MustAsync(async (id, ct) =>
+            {
+                var transaction = await dbContext.Transactions.FindAsync([id], ct);
+                return transaction is not null && transaction.UserId == currentUser.UserId;
+            })
             .WithMessage("Transaction not found.");
     }
 }

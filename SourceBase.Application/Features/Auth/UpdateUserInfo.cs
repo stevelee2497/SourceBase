@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Auth;
@@ -22,7 +21,7 @@ public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUse
 {
     public async Task<UpdateUserInfoResponse> Handle(UpdateUserInfoRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == currentUser.UserId, ct);
+        var user = await dbContext.Users.FindAsync([currentUser.UserId], ct);
         user!.FirstName = request.FirstName ?? user.FirstName;
         user.LastName = request.LastName ?? user.LastName;
         user.PhoneNumber = request.PhoneNumber ?? user.PhoneNumber;
@@ -42,7 +41,7 @@ public class UpdateUserInfoRequestValidator : AbstractValidator<UpdateUserInfoRe
         RuleFor(x => x.LastName).MaximumLength(100).When(x => x.LastName is not null);
         RuleFor(x => x.PhoneNumber).MaximumLength(20).When(x => x.PhoneNumber is not null);
         RuleFor(x => x)
-            .MustAsync(async (_, ct) => await dbContext.Users.AnyAsync(u => u.Id == currentUser.UserId, ct))
+            .MustAsync(async (_, ct) => await dbContext.Users.FindAsync([currentUser.UserId], ct) is not null)
             .WithMessage("User not found.");
     }
 }

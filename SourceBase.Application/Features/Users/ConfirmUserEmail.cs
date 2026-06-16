@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
@@ -24,7 +23,7 @@ public class ConfirmUserEmailHandler(IDbContext dbContext) : IRequestHandler<Con
 {
     public async Task<ConfirmUserEmailResponse> Handle(ConfirmUserEmailRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == request.Id, ct);
+        var user = await dbContext.Users.FindAsync([request.Id], ct);
 
         user!.EmailConfirmed = true;
         user.OtpCode = null;
@@ -40,7 +39,7 @@ public class ConfirmUserEmailRequestValidator : AbstractValidator<ConfirmUserEma
     public ConfirmUserEmailRequestValidator(IDbContext dbContext)
     {
         RuleFor(x => x.Id)
-            .MustAsync(async (id, ct) => await dbContext.Users.AnyAsync(u => u.Id == id, ct))
+            .MustAsync(async (id, ct) => await dbContext.Users.FindAsync([id], ct) is not null)
             .WithMessage("User not found.");
     }
 }
