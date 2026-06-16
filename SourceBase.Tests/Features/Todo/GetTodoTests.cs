@@ -49,8 +49,8 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Date.Should().Be(new DateOnly(2025, 7, 15));
     }
 
-    [Fact(DisplayName = "TODOS-GET-003: GetTodo_NonExistentId_ReturnsNotFound")]
-    public async Task GetTodo_NonExistentId_ReturnsNotFound()
+    [Fact(DisplayName = "TODOS-GET-003: GetTodo_NonExistentId_ReturnsBadRequest")]
+    public async Task GetTodo_NonExistentId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -59,11 +59,11 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetTodoEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TODOS-GET-004: GetTodo_WithOtherUsersTodo_ReturnsNotFound")]
-    public async Task GetTodo_WithOtherUsersTodo_ReturnsNotFound()
+    [Fact(DisplayName = "TODOS-GET-004: GetTodo_WithOtherUsersTodo_ReturnsBadRequest")]
+    public async Task GetTodo_WithOtherUsersTodo_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"owner_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -81,6 +81,6 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await strangerClient.GetAsync(GetTodoEndpoint.Route.WithId(createBody!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

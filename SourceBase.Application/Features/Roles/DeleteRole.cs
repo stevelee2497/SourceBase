@@ -25,21 +25,29 @@ public class DeleteRoleHandler(IDbContext dbContext) : IRequestHandler<DeleteRol
     public async Task<DeleteRoleResponse> Handle(DeleteRoleRequest request, CancellationToken ct)
     {
         var role = await dbContext.Roles.FirstOrDefaultAsync(x => x.Id == request.Id, ct);
-
-        if (role == null || role.Name == AppRoles.Admin)
-            throw new BadRequestException("Role not found or cannot delete Admin role.");
-
-        dbContext.Roles.Remove(role);
+        dbContext.Roles.Remove(role!);
         await dbContext.SaveChangesAsync(ct);
-
         return new DeleteRoleResponse(true);
     }
 }
 
 public class DeleteRoleRequestValidator : AbstractValidator<DeleteRoleRequest>
 {
-    public DeleteRoleRequestValidator()
+    public DeleteRoleRequestValidator(IDbContext dbContext)
     {
-        RuleFor(x => x.Id).NotEmpty();
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await dbContext.Roles.AnyAsync(x => x.Id == id, ct))
+            .WithMessage("Role not found.")
+            .DependentRules(() =>
+            {
+                RuleFor(x => x.Id)
+                    .MustAsync(async (id, ct) =>
+                    {
+                        var role = await dbContext.Roles.FirstOrDefaultAsync(x => x.Id == id, ct);
+                        return role?.Name != AppRoles.Admin;
+                    })
+                    .WithMessage("Cannot delete the Admin role.");
+            });
     }
 }

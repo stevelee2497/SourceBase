@@ -59,8 +59,8 @@ public class GetTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body.IsTransfer.Should().BeFalse();
     }
 
-    [Fact(DisplayName = "TXN-GET-003: GetTransaction_WithUnknownId_ReturnsNotFound")]
-    public async Task GetTransaction_WithUnknownId_ReturnsNotFound()
+    [Fact(DisplayName = "TXN-GET-003: GetTransaction_WithUnknownId_ReturnsBadRequest")]
+    public async Task GetTransaction_WithUnknownId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -69,11 +69,11 @@ public class GetTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.GetAsync(GetTransactionEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-GET-004: GetTransaction_WithOtherUsersTransaction_ReturnsNotFound")]
-    public async Task GetTransaction_WithOtherUsersTransaction_ReturnsNotFound()
+    [Fact(DisplayName = "TXN-GET-004: GetTransaction_WithOtherUsersTransaction_ReturnsBadRequest")]
+    public async Task GetTransaction_WithOtherUsersTransaction_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -94,6 +94,6 @@ public class GetTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await otherClient.GetAsync(GetTransactionEndpoint.Route.WithId(transaction!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared;
@@ -14,7 +15,7 @@ public class ConfirmUserEmailEndpoint : IEndpoint
     public const string Route = "users/{id:guid}/confirm-email";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost(Route, (Guid id, ConfirmUserEmailHandler handler, CancellationToken ct) => handler.Handle(new ConfirmUserEmailRequest(id), ct))
+        .MapPost(Route, ([AsParameters] ConfirmUserEmailRequest request, ConfirmUserEmailHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Users");
 }
@@ -23,14 +24,23 @@ public class ConfirmUserEmailHandler(IDbContext dbContext) : IRequestHandler<Con
 {
     public async Task<ConfirmUserEmailResponse> Handle(ConfirmUserEmailRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == request.Id, ct)
-            ?? throw new NotFoundException();
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == request.Id, ct);
 
-        user.EmailConfirmed = true;
+        user!.EmailConfirmed = true;
         user.OtpCode = null;
         user.OtpCodeExpiresOn = null;
 
         await dbContext.SaveChangesAsync(ct);
         return new ConfirmUserEmailResponse(true);
+    }
+}
+
+public class ConfirmUserEmailRequestValidator : AbstractValidator<ConfirmUserEmailRequest>
+{
+    public ConfirmUserEmailRequestValidator(IDbContext dbContext)
+    {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) => await dbContext.Users.AnyAsync(u => u.Id == id, ct))
+            .WithMessage("User not found.");
     }
 }

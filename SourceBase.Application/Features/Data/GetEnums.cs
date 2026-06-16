@@ -40,7 +40,7 @@ public class GetEnumsHandler(IDbContext dbContext) : IRequestHandler<GetEnumsReq
             AvailableEnums.RolesOrder => BuildEnumDefinitions<RolesOrder>(),
             AvailableEnums.TodoItemStatus => BuildEnumDefinitions<TodoItemStatus>(),
             AvailableEnums.Roles => GetRolesAsync(ct),
-            _ => throw new BadRequestException("One or more enum types are not supported")
+            _ => throw new InvalidOperationException($"Unhandled enum type: {enumType}")
         };
     }
 
@@ -67,6 +67,10 @@ public class GetEnumsRequestValidator : AbstractValidator<GetEnumsRequest>
     public GetEnumsRequestValidator()
     {
         RuleFor(x => x.Enums).NotEmpty();
+        RuleFor(x => x.Enums)
+            .Must(enums => enums.All(e => Enum.IsDefined(typeof(AvailableEnums), e)))
+            .WithMessage("One or more enum types are not supported.")
+            .When(x => x.Enums?.Any() == true);
     }
 }
 

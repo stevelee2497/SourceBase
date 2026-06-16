@@ -44,11 +44,11 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Success.Should().BeTrue();
 
         var getResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create.Id));
-        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        getResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-003: DeleteWallet_WithOtherUsersWallet_ReturnsNotFound")]
-    public async Task DeleteWallet_WithOtherUsersWallet_ReturnsNotFound()
+    [Fact(DisplayName = "WALLETS-DELETE-003: DeleteWallet_WithOtherUsersWallet_ReturnsBadRequest")]
+    public async Task DeleteWallet_WithOtherUsersWallet_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -62,11 +62,11 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await otherClient.DeleteAsync(DeleteWalletEndpoint.Route.WithId(create!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-004: DeleteWallet_WithUnknownId_ReturnsNotFound")]
-    public async Task DeleteWallet_WithUnknownId_ReturnsNotFound()
+    [Fact(DisplayName = "WALLETS-DELETE-004: DeleteWallet_WithUnknownId_ReturnsBadRequest")]
+    public async Task DeleteWallet_WithUnknownId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -75,7 +75,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.DeleteAsync(DeleteWalletEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "WALLETS-DELETE-005: DeleteWallet_RemovesAssociatedTransactions")]
@@ -105,7 +105,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create!.Id));
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        walletResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var txnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={create.Id}&limit=100");
         var txns = await txnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();

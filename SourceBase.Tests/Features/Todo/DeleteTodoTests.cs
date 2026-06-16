@@ -45,11 +45,11 @@ public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         body!.Success.Should().BeTrue();
 
         var getResponse = await client.GetAsync(GetTodoEndpoint.Route.WithId(createBody.Id));
-        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        getResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TODOS-DELETE-003: DeleteTodo_WithNonExistentId_ReturnsNotFound")]
-    public async Task DeleteTodo_WithNonExistentId_ReturnsNotFound()
+    [Fact(DisplayName = "TODOS-DELETE-003: DeleteTodo_WithNonExistentId_ReturnsBadRequest")]
+    public async Task DeleteTodo_WithNonExistentId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -58,11 +58,11 @@ public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteTodoEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TODOS-DELETE-004: DeleteTodo_WithOtherUsersTodo_ReturnsNotFound")]
-    public async Task DeleteTodo_WithOtherUsersTodo_ReturnsNotFound()
+    [Fact(DisplayName = "TODOS-DELETE-004: DeleteTodo_WithOtherUsersTodo_ReturnsBadRequest")]
+    public async Task DeleteTodo_WithOtherUsersTodo_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"delete_owner_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -80,6 +80,6 @@ public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await strangerClient.DeleteAsync(DeleteTodoEndpoint.Route.WithId(createBody!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

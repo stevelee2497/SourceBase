@@ -1,4 +1,4 @@
-using SourceBase.Application.Shared;
+using FluentValidation;
 using SourceBase.Application.Shared.Interfaces;
 
 
@@ -13,7 +13,7 @@ public class DeleteIconEndpoint : IEndpoint
     public const string Route = "icons/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapDelete(Route, (Guid id, DeleteIconHandler handler, CancellationToken ct) => handler.Handle(new DeleteIconRequest(id), ct))
+        .MapDelete(Route, ([AsParameters] DeleteIconRequest request, DeleteIconHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Icons");
 }
 
@@ -22,13 +22,32 @@ public class DeleteIconHandler(IDbContext dbContext) : IRequestHandler<DeleteIco
     public async Task<DeleteIconResponse> Handle(DeleteIconRequest request, CancellationToken ct)
     {
         var icon = await dbContext.Icons.FindAsync([request.Id], ct);
-        if (icon is null)
-            throw new NotFoundException();
-        if (icon.IsSystem)
-            throw new ForbiddenException();
-
-        dbContext.Icons.Remove(icon);
+        dbContext.Icons.Remove(icon!);
         await dbContext.SaveChangesAsync(ct);
         return new DeleteIconResponse(true);
+    }
+}
+
+public class DeleteIconRequestValidator : AbstractValidator<DeleteIconRequest>
+{
+    public DeleteIconRequestValidator(IDbContext dbContext)
+    {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) =>
+            {
+                var icon = await dbContext.Icons.FindAsync([id], ct);
+                return icon is not null;
+            })
+            .WithMessage("Icon not found.")
+            .DependentRules(() =>
+            {
+                RuleFor(x => x.Id)
+                    .MustAsync(async (id, ct) =>
+                    {
+                        var icon = await dbContext.Icons.FindAsync([id], ct);
+                        return icon is not { IsSystem: true };
+                    })
+                    .WithMessage("Cannot delete a system icon.");
+            });
     }
 }

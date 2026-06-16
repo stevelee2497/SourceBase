@@ -72,8 +72,8 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         icons.Should().NotContain(i => i.Id == created.Id);
     }
 
-    [Fact(DisplayName = "ICONS-DELETE-004: DeleteIcon_WithUnknownId_ReturnsNotFound")]
-    public async Task DeleteIcon_WithUnknownId_ReturnsNotFound()
+    [Fact(DisplayName = "ICONS-DELETE-004: DeleteIcon_WithUnknownId_ReturnsBadRequest")]
+    public async Task DeleteIcon_WithUnknownId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -82,11 +82,11 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteIconEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "ICONS-DELETE-005: DeleteIcon_OnSystemIcon_ReturnsForbidden")]
-    public async Task DeleteIcon_OnSystemIcon_ReturnsForbidden()
+    [Fact(DisplayName = "ICONS-DELETE-005: DeleteIcon_OnSystemIcon_ReturnsBadRequest")]
+    public async Task DeleteIcon_OnSystemIcon_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -99,6 +99,6 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteIconEndpoint.Route.WithId(systemIcon.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

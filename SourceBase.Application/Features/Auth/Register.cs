@@ -1,7 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Auth;
@@ -24,9 +23,6 @@ public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityPro
 {
     public async Task<RegisterResponse> Handle(RegisterRequest request, CancellationToken ct)
     {
-        if (await dbContext.Users.AnyAsync(u => u.UserName == request.UserName || u.Email == request.Email, ct))
-            throw new BadRequestException("Username or email is already taken.");
-
         var (confirmationCode, expiresOn) = otpHelper.Generate();
         var user = new UserEntity
         {
@@ -51,10 +47,14 @@ public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityPro
 
 public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
-    public RegisterRequestValidator()
+    public RegisterRequestValidator(IDbContext dbContext)
     {
         RuleFor(x => x.UserName).NotEmpty().MaximumLength(256);
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
+        RuleFor(x => x)
+            .MustAsync(async (request, ct) => !await dbContext.Users.AnyAsync(u => u.UserName == request.UserName || u.Email == request.Email, ct))
+            .WithMessage("Username or email is already taken.")
+            .When(x => !string.IsNullOrEmpty(x.UserName) && !string.IsNullOrEmpty(x.Email));
     }
 }

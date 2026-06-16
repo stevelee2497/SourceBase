@@ -79,8 +79,8 @@ public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "RESEND-CONF-003: ResendConfirmationEmail_WithUnknownEmail_ReturnsNotFound")]
-    public async Task ResendConfirmationEmail_WithUnknownEmail_ReturnsNotFound()
+    [Fact(DisplayName = "RESEND-CONF-003: ResendConfirmationEmail_WithUnknownEmail_ReturnsBadRequest")]
+    public async Task ResendConfirmationEmail_WithUnknownEmail_ReturnsBadRequest()
     {
         // Arrange
         var client = factory.CreateClient();
@@ -92,7 +92,7 @@ public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "RESEND-CONF-004: ResendConfirmationEmail_WithInvalidEmail_ReturnsBadRequest")]

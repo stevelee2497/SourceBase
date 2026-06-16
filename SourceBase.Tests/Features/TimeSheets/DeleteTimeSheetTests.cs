@@ -44,11 +44,11 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Success.Should().BeTrue();
 
         var getResponse = await client.GetAsync(GetTimeSheetEndpoint.Route.WithId(createBody.Ids[0]));
-        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        getResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TIMESHEET-DELETE-003: DeleteTimeSheet_WithNonExistentId_ReturnsNotFound")]
-    public async Task DeleteTimeSheet_WithNonExistentId_ReturnsNotFound()
+    [Fact(DisplayName = "TIMESHEET-DELETE-003: DeleteTimeSheet_WithNonExistentId_ReturnsBadRequest")]
+    public async Task DeleteTimeSheet_WithNonExistentId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -57,11 +57,11 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.DeleteAsync(DeleteTimeSheetEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TIMESHEET-DELETE-004: DeleteTimeSheet_WithOtherUsersEntry_ReturnsNotFound")]
-    public async Task DeleteTimeSheet_WithOtherUsersEntry_ReturnsNotFound()
+    [Fact(DisplayName = "TIMESHEET-DELETE-004: DeleteTimeSheet_WithOtherUsersEntry_ReturnsBadRequest")]
+    public async Task DeleteTimeSheet_WithOtherUsersEntry_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"ts_del_owner_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -77,6 +77,6 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await strangerClient.DeleteAsync(DeleteTimeSheetEndpoint.Route.WithId(createBody!.Ids[0]));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

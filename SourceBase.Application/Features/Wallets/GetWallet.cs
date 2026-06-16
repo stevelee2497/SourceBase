@@ -1,6 +1,6 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Application.Shared;
 
 namespace SourceBase.Application.Features.Wallets;
 
@@ -13,7 +13,7 @@ public class GetWalletEndpoint : IEndpoint
     public const string Route = "wallets/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet(Route, (Guid id, GetWalletHandler handler, CancellationToken ct) => handler.Handle(new GetWalletRequest(id), ct))
+        .MapGet(Route, ([AsParameters] GetWalletRequest request, GetWalletHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Wallets");
 }
 
@@ -31,8 +31,18 @@ public class GetWalletHandler(IDbContext dbContext, ICurrentUser currentUser) : 
                 w.Currency,
                 w.Icon
             ))
-            .FirstOrDefaultAsync(ct) ?? throw new NotFoundException();
+            .FirstOrDefaultAsync(ct);
 
-        return wallet;
+        return wallet!;
+    }
+}
+
+public class GetWalletRequestValidator : AbstractValidator<GetWalletRequest>
+{
+    public GetWalletRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
+    {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) => await dbContext.Wallets.AnyAsync(w => w.Id == id && w.UserId == currentUser.UserId, ct))
+            .WithMessage("Wallet not found.");
     }
 }

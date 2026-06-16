@@ -60,8 +60,8 @@ public class DeleteTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         toWalletData!.Balance.Should().Be(50m);
     }
 
-    [Fact(DisplayName = "TRANSFER-DELETE-003: DeleteTransfer_WithUnknownId_ReturnsNotFound")]
-    public async Task DeleteTransfer_WithUnknownId_ReturnsNotFound()
+    [Fact(DisplayName = "TRANSFER-DELETE-003: DeleteTransfer_WithUnknownId_ReturnsBadRequest")]
+    public async Task DeleteTransfer_WithUnknownId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -70,11 +70,11 @@ public class DeleteTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.DeleteAsync(DeleteTransferEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-DELETE-004: DeleteTransfer_WithOtherUsersTransfer_ReturnsNotFound")]
-    public async Task DeleteTransfer_WithOtherUsersTransfer_ReturnsNotFound()
+    [Fact(DisplayName = "TRANSFER-DELETE-004: DeleteTransfer_WithOtherUsersTransfer_ReturnsBadRequest")]
+    public async Task DeleteTransfer_WithOtherUsersTransfer_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -93,7 +93,7 @@ public class DeleteTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await otherClient.DeleteAsync(DeleteTransferEndpoint.Route.WithId(transfer!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TRANSFER-DELETE-005: DeleteTransfer_RemovesBothLinkedTransactions")]

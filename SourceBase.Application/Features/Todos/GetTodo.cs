@@ -1,6 +1,6 @@
+using FluentValidation;
 using System.Text.Json.Serialization;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Application.Shared;
 
 namespace SourceBase.Application.Features.Todos;
 
@@ -19,21 +19,29 @@ public class GetTodoEndpoint : IEndpoint
     public const string Route = "todos/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet(Route, (Guid id, GetTodoHandler handler, CancellationToken ct) => handler.Handle(new GetTodoRequest(id), ct))
+        .MapGet(Route, ([AsParameters] GetTodoRequest request, GetTodoHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Todos");
 }
 
-public class GetTodoHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetTodoRequest, GetTodoResponse>
+public class GetTodoHandler(IDbContext dbContext) : IRequestHandler<GetTodoRequest, GetTodoResponse>
 {
     public async Task<GetTodoResponse> Handle(GetTodoRequest request, CancellationToken ct)
     {
         var todo = await dbContext.TodoItems.FindAsync([request.Id], ct);
+        return new GetTodoResponse(todo!);
+    }
+}
 
-        if (todo is null || todo.UserId != currentUser.UserId)
-        {
-            throw new NotFoundException(); // Don't reveal existence of the todo if the user doesn't own it
-        }
-
-        return new GetTodoResponse(todo);
+public class GetTodoRequestValidator : AbstractValidator<GetTodoRequest>
+{
+    public GetTodoRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
+    {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) =>
+            {
+                var item = await dbContext.TodoItems.FindAsync([id], ct);
+                return item is not null && item.UserId == currentUser.UserId;
+            })
+            .WithMessage("Todo not found.");
     }
 }

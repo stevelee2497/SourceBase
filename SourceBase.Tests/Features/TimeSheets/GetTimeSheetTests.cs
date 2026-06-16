@@ -47,8 +47,8 @@ public class GetTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body.Date.Should().Be(new DateOnly(2025, 6, 20));
     }
 
-    [Fact(DisplayName = "TIMESHEET-GET-003: GetTimeSheet_WithNonExistentId_ReturnsNotFound")]
-    public async Task GetTimeSheet_WithNonExistentId_ReturnsNotFound()
+    [Fact(DisplayName = "TIMESHEET-GET-003: GetTimeSheet_WithNonExistentId_ReturnsBadRequest")]
+    public async Task GetTimeSheet_WithNonExistentId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -57,11 +57,11 @@ public class GetTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync(GetTimeSheetEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TIMESHEET-GET-004: GetTimeSheet_WithOtherUsersId_ReturnsNotFound")]
-    public async Task GetTimeSheet_WithOtherUsersId_ReturnsNotFound()
+    [Fact(DisplayName = "TIMESHEET-GET-004: GetTimeSheet_WithOtherUsersId_ReturnsBadRequest")]
+    public async Task GetTimeSheet_WithOtherUsersId_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"ts_get_owner_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -77,6 +77,6 @@ public class GetTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await strangerClient.GetAsync(GetTimeSheetEndpoint.Route.WithId(createBody!.Ids[0]));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

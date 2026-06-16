@@ -51,8 +51,8 @@ public class ForgotPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFa
     }
 
 
-    [Fact(DisplayName = "FORGOT-PWD-002: ForgotPassword_WithUnknownEmail_ReturnsNotFound")]
-    public async Task ForgotPassword_WithUnknownEmail_ReturnsNotFound()
+    [Fact(DisplayName = "FORGOT-PWD-002: ForgotPassword_WithUnknownEmail_ReturnsBadRequest")]
+    public async Task ForgotPassword_WithUnknownEmail_ReturnsBadRequest()
     {
         // Arrange
         var client = factory.CreateClient();
@@ -64,7 +64,7 @@ public class ForgotPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
 

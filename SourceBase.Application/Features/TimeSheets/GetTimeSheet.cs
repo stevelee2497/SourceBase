@@ -1,6 +1,6 @@
+using FluentValidation;
 using System.Text.Json.Serialization;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Application.Shared;
 
 namespace SourceBase.Application.Features.TimeSheets;
 
@@ -19,19 +19,29 @@ public class GetTimeSheetEndpoint : IEndpoint
     public const string Route = "time-sheets/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet(Route, (Guid id, GetTimeSheetHandler handler, CancellationToken ct) => handler.Handle(new GetTimeSheetRequest(id), ct))
+        .MapGet(Route, ([AsParameters] GetTimeSheetRequest request, GetTimeSheetHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("TimeSheets");
 }
 
-public class GetTimeSheetHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetTimeSheetRequest, GetTimeSheetResponse>
+public class GetTimeSheetHandler(IDbContext dbContext) : IRequestHandler<GetTimeSheetRequest, GetTimeSheetResponse>
 {
     public async Task<GetTimeSheetResponse> Handle(GetTimeSheetRequest request, CancellationToken ct)
     {
         var entity = await dbContext.TimeSheets.FindAsync([request.Id], ct);
+        return new GetTimeSheetResponse(entity!);
+    }
+}
 
-        if (entity is null || entity.UserId != currentUser.UserId)
-            throw new NotFoundException();
-
-        return new GetTimeSheetResponse(entity);
+public class GetTimeSheetRequestValidator : AbstractValidator<GetTimeSheetRequest>
+{
+    public GetTimeSheetRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
+    {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) =>
+            {
+                var entity = await dbContext.TimeSheets.FindAsync([id], ct);
+                return entity is not null && entity.UserId == currentUser.UserId;
+            })
+            .WithMessage("Time sheet not found.");
     }
 }

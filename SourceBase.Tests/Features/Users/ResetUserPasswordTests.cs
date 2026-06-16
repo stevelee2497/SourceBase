@@ -37,8 +37,8 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "USERS-RESET-PWD-003: ResetUserPassword_WithNonExistentUser_ReturnsNotFound")]
-    public async Task ResetUserPassword_WithNonExistentUser_ReturnsNotFound()
+    [Fact(DisplayName = "USERS-RESET-PWD-003: ResetUserPassword_WithNonExistentUser_ReturnsBadRequest")]
+    public async Task ResetUserPassword_WithNonExistentUser_ReturnsBadRequest()
     {
         // Arrange
         var adminClient = await factory.CreateAuthorizedClient();
@@ -47,7 +47,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         var response = await adminClient.PostAsJsonAsync(ResetUserPasswordEndpoint.Route.WithId(Guid.NewGuid()), new { newPassword = "NewPass@1234!" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "USERS-RESET-PWD-004: ResetUserPassword_WithValidData_ReturnsOk")]

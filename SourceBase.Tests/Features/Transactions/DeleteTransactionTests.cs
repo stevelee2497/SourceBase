@@ -106,8 +106,8 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         content.Should().Contain("Transfer transactions cannot be deleted directly");
     }
 
-    [Fact(DisplayName = "TXN-DELETE-005: DeleteTransaction_WithUnknownId_ReturnsNotFound")]
-    public async Task DeleteTransaction_WithUnknownId_ReturnsNotFound()
+    [Fact(DisplayName = "TXN-DELETE-005: DeleteTransaction_WithUnknownId_ReturnsBadRequest")]
+    public async Task DeleteTransaction_WithUnknownId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -116,11 +116,11 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var response = await client.DeleteAsync(DeleteTransactionEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-DELETE-006: DeleteTransaction_WithOtherUsersTransaction_ReturnsNotFound")]
-    public async Task DeleteTransaction_WithOtherUsersTransaction_ReturnsNotFound()
+    [Fact(DisplayName = "TXN-DELETE-006: DeleteTransaction_WithOtherUsersTransaction_ReturnsBadRequest")]
+    public async Task DeleteTransaction_WithOtherUsersTransaction_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -141,6 +141,6 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var response = await otherClient.DeleteAsync(DeleteTransactionEndpoint.Route.WithId(transaction!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

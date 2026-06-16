@@ -172,8 +172,8 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "RESET-PWD-005: ResetPassword_WithUnknownEmail_ReturnsNotFound")]
-    public async Task ResetPassword_WithUnknownEmail_ReturnsNotFound()
+    [Fact(DisplayName = "RESET-PWD-005: ResetPassword_WithUnknownEmail_ReturnsBadRequest")]
+    public async Task ResetPassword_WithUnknownEmail_ReturnsBadRequest()
     {
         // Arrange
         var client = factory.CreateClient();
@@ -187,7 +187,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "RESET-PWD-006: ResetPassword_AfterReset_EmailIsConfirmedAndLoginWithNewPassword")]

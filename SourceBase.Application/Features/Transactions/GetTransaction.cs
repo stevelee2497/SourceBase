@@ -1,6 +1,6 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Application.Shared;
 
 namespace SourceBase.Application.Features.Transactions;
 
@@ -13,7 +13,7 @@ public class GetTransactionEndpoint : IEndpoint
     public const string Route = "transactions/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapGet(Route, (Guid id, GetTransactionHandler handler, CancellationToken ct) => handler.Handle(new GetTransactionRequest(id), ct))
+        .MapGet(Route, ([AsParameters] GetTransactionRequest request, GetTransactionHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("Transactions");
 }
 
@@ -35,8 +35,18 @@ public class GetTransactionHandler(IDbContext dbContext, ICurrentUser currentUse
                 t.Category != null ? t.Category.Name : null,
                 t.IsTransfer
             ))
-            .FirstOrDefaultAsync(ct) ?? throw new NotFoundException();
+            .FirstOrDefaultAsync(ct);
 
-        return transaction;
+        return transaction!;
+    }
+}
+
+public class GetTransactionRequestValidator : AbstractValidator<GetTransactionRequest>
+{
+    public GetTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
+    {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) => await dbContext.Transactions.AnyAsync(t => t.Id == id && t.UserId == currentUser.UserId, ct))
+            .WithMessage("Transaction not found.");
     }
 }

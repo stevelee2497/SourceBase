@@ -26,10 +26,9 @@ public class ResetUserPasswordHandler(IDbContext dbContext, ISecurityProvider se
 {
     public async Task<ResetUserPasswordResponse> Handle(ResetUserPasswordRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == request.Id, ct)
-            ?? throw new NotFoundException();
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == request.Id, ct);
 
-        user.PasswordHash = securityProvider.HashPassword(user, request.NewPassword);
+        user!.PasswordHash = securityProvider.HashPassword(user, request.NewPassword);
         user.SecurityStamp = Guid.NewGuid().ToString();
 
         await dbContext.SaveChangesAsync(ct);
@@ -43,8 +42,11 @@ public class ResetUserPasswordHandler(IDbContext dbContext, ISecurityProvider se
 
 public class ResetUserPasswordRequestValidator : AbstractValidator<ResetUserPasswordRequest>
 {
-    public ResetUserPasswordRequestValidator()
+    public ResetUserPasswordRequestValidator(IDbContext dbContext)
     {
         RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(6);
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) => await dbContext.Users.AnyAsync(u => u.Id == id, ct))
+            .WithMessage("User not found.");
     }
 }

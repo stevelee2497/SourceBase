@@ -74,8 +74,8 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         users!.Items.Should().NotContain(x => x.Id == createBody.Id);
     }
 
-    [Fact(DisplayName = "USERS-DELETE-004: DeleteUser_WithUnknownUser_ReturnsNotFound")]
-    public async Task DeleteUser_WithUnknownUser_ReturnsNotFound()
+    [Fact(DisplayName = "USERS-DELETE-004: DeleteUser_WithUnknownUser_ReturnsBadRequest")]
+    public async Task DeleteUser_WithUnknownUser_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -84,7 +84,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteUserEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "USERS-DELETE-005: DeleteUser_WithDeletedUser_RevokesExistingToken")]

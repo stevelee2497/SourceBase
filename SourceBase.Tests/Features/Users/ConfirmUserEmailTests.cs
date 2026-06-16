@@ -37,8 +37,8 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-003: ConfirmUserEmail_WithNonExistentUser_ReturnsNotFound")]
-    public async Task ConfirmUserEmail_WithNonExistentUser_ReturnsNotFound()
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-003: ConfirmUserEmail_WithNonExistentUser_ReturnsBadRequest")]
+    public async Task ConfirmUserEmail_WithNonExistentUser_ReturnsBadRequest()
     {
         // Arrange
         var adminClient = await factory.CreateAuthorizedClient();
@@ -47,7 +47,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         var response = await adminClient.PostAsJsonAsync(ConfirmUserEmailEndpoint.Route.WithId(Guid.NewGuid()), new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "USERS-CONFIRM-EMAIL-004: ConfirmUserEmail_WithValidUser_ReturnsOk")]

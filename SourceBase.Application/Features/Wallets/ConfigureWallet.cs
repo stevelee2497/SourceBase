@@ -1,7 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Application.Shared;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Wallets;
@@ -19,15 +18,12 @@ public class ConfigureWalletEndpoint : IEndpoint
         .WithTags("Wallets");
 }
 
-public class ConfigureWalletHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<ConfigureWalletRequest, ConfigureWalletResponse>
+public class ConfigureWalletHandler(IDbContext dbContext) : IRequestHandler<ConfigureWalletRequest, ConfigureWalletResponse>
 {
     public async Task<ConfigureWalletResponse> Handle(ConfigureWalletRequest request, CancellationToken ct)
     {
         var wallet = await dbContext.Wallets.FindAsync([request.Id], ct);
-        if (wallet is null || wallet.UserId != currentUser.UserId)
-            throw new NotFoundException();
-
-        wallet.Currency = request.Currency.Trim().ToUpperInvariant();
+        wallet!.Currency = request.Currency.Trim().ToUpperInvariant();
         await dbContext.SaveChangesAsync(ct);
         return new ConfigureWalletResponse(wallet.Id);
     }
@@ -35,8 +31,16 @@ public class ConfigureWalletHandler(IDbContext dbContext, ICurrentUser currentUs
 
 public class ConfigureWalletRequestValidator : AbstractValidator<ConfigureWalletRequest>
 {
-    public ConfigureWalletRequestValidator()
+    public ConfigureWalletRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) =>
+            {
+                var wallet = await dbContext.Wallets.FindAsync([id], ct);
+                return wallet is not null && wallet.UserId == currentUser.UserId;
+            })
+            .WithMessage("Wallet not found.");
+
         RuleFor(x => x.Currency).NotEmpty().MaximumLength(10);
     }
 }

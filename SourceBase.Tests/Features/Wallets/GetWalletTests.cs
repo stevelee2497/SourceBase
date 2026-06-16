@@ -53,8 +53,8 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         body.Balance.Should().Be(250m);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-003: GetWallet_WithUnknownId_ReturnsNotFound")]
-    public async Task GetWallet_WithUnknownId_ReturnsNotFound()
+    [Fact(DisplayName = "WALLETS-GET-003: GetWallet_WithUnknownId_ReturnsBadRequest")]
+    public async Task GetWallet_WithUnknownId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -63,11 +63,11 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var response = await client.GetAsync(GetWalletEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-004: GetWallet_WithOtherUsersWallet_ReturnsNotFound")]
-    public async Task GetWallet_WithOtherUsersWallet_ReturnsNotFound()
+    [Fact(DisplayName = "WALLETS-GET-004: GetWallet_WithOtherUsersWallet_ReturnsBadRequest")]
+    public async Task GetWallet_WithOtherUsersWallet_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -81,7 +81,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var response = await otherClient.GetAsync(GetWalletEndpoint.Route.WithId(create!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "WALLETS-GET-005: GetWallet_BalanceReflectsMultipleTransactions")]

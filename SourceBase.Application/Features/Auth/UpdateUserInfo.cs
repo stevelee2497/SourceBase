@@ -2,7 +2,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Application.Shared;
 
 namespace SourceBase.Application.Features.Auth;
 
@@ -23,8 +22,8 @@ public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUse
 {
     public async Task<UpdateUserInfoResponse> Handle(UpdateUserInfoRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == currentUser.UserId, ct) ?? throw new NotFoundException();
-        user.FirstName = request.FirstName ?? user.FirstName;
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == currentUser.UserId, ct);
+        user!.FirstName = request.FirstName ?? user.FirstName;
         user.LastName = request.LastName ?? user.LastName;
         user.PhoneNumber = request.PhoneNumber ?? user.PhoneNumber;
         user.AvatarUrl = request.AvatarUrl ?? user.AvatarUrl;
@@ -37,10 +36,13 @@ public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUse
 
 public class UpdateUserInfoRequestValidator : AbstractValidator<UpdateUserInfoRequest>
 {
-    public UpdateUserInfoRequestValidator()
+    public UpdateUserInfoRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
         RuleFor(x => x.FirstName).MaximumLength(100).When(x => x.FirstName is not null);
         RuleFor(x => x.LastName).MaximumLength(100).When(x => x.LastName is not null);
         RuleFor(x => x.PhoneNumber).MaximumLength(20).When(x => x.PhoneNumber is not null);
+        RuleFor(x => x)
+            .MustAsync(async (_, ct) => await dbContext.Users.AnyAsync(u => u.Id == currentUser.UserId, ct))
+            .WithMessage("User not found.");
     }
 }

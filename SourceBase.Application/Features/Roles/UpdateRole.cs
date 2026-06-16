@@ -42,7 +42,7 @@ public class UpdateRoleRequestValidator : AbstractValidator<UpdateRoleRequest>
     public UpdateRoleRequestValidator(IDbContext dbContext)
     {
         RuleFor(x => x.Id)
-            .MustAsync((id, ct) => dbContext.Roles.AnyAsync(r => r.Id == id, ct))
+            .MustAsync(async (id, ct) => await dbContext.Roles.FindAsync([id], ct) != null)
             .WithMessage("Role not found.")
             .DependentRules(() =>
             {

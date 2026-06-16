@@ -1,5 +1,5 @@
+using FluentValidation;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Application.Shared;
 
 namespace SourceBase.Application.Features.TimeSheets;
 
@@ -12,21 +12,31 @@ public class DeleteTimeSheetEndpoint : IEndpoint
     public const string Route = "time-sheets/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapDelete(Route, (Guid id, DeleteTimeSheetHandler handler, CancellationToken ct) => handler.Handle(new DeleteTimeSheetRequest(id), ct))
+        .MapDelete(Route, ([AsParameters] DeleteTimeSheetRequest request, DeleteTimeSheetHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("TimeSheets");
 }
 
-public class DeleteTimeSheetHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<DeleteTimeSheetRequest, DeleteTimeSheetResponse>
+public class DeleteTimeSheetHandler(IDbContext dbContext) : IRequestHandler<DeleteTimeSheetRequest, DeleteTimeSheetResponse>
 {
     public async Task<DeleteTimeSheetResponse> Handle(DeleteTimeSheetRequest request, CancellationToken ct)
     {
         var entity = await dbContext.TimeSheets.FindAsync([request.Id], ct);
-
-        if (entity is null || entity.UserId != currentUser.UserId)
-            throw new NotFoundException();
-
-        dbContext.TimeSheets.Remove(entity);
+        dbContext.TimeSheets.Remove(entity!);
         await dbContext.SaveChangesAsync(ct);
         return new DeleteTimeSheetResponse(true);
+    }
+}
+
+public class DeleteTimeSheetRequestValidator : AbstractValidator<DeleteTimeSheetRequest>
+{
+    public DeleteTimeSheetRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
+    {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) =>
+            {
+                var entity = await dbContext.TimeSheets.FindAsync([id], ct);
+                return entity is not null && entity.UserId == currentUser.UserId;
+            })
+            .WithMessage("Time sheet not found.");
     }
 }

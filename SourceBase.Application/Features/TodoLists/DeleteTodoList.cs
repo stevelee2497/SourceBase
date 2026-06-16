@@ -1,6 +1,6 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Application.Shared;
 
 namespace SourceBase.Application.Features.TodoLists;
 
@@ -13,7 +13,7 @@ public class DeleteTodoListEndpoint : IEndpoint
     public const string Route = "todo-lists/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapDelete(Route, (Guid id, DeleteTodoListHandler handler, CancellationToken ct) => handler.Handle(new DeleteTodoListRequest(id), ct))
+        .MapDelete(Route, ([AsParameters] DeleteTodoListRequest request, DeleteTodoListHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("TodoLists");
 }
 
@@ -21,11 +21,19 @@ public class DeleteTodoListHandler(IDbContext dbContext, ICurrentUser currentUse
 {
     public async Task<DeleteTodoListResponse> Handle(DeleteTodoListRequest request, CancellationToken ct)
     {
-        var list = await dbContext.TodoLists.FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == currentUser.UserId, ct)
-            ?? throw new NotFoundException();
-
-        dbContext.TodoLists.Remove(list);
+        var list = await dbContext.TodoLists.FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == currentUser.UserId, ct);
+        dbContext.TodoLists.Remove(list!);
         await dbContext.SaveChangesAsync(ct);
         return new DeleteTodoListResponse(true);
+    }
+}
+
+public class DeleteTodoListRequestValidator : AbstractValidator<DeleteTodoListRequest>
+{
+    public DeleteTodoListRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
+    {
+        RuleFor(x => x.Id)
+            .MustAsync(async (id, ct) => await dbContext.TodoLists.AnyAsync(x => x.Id == id && x.UserId == currentUser.UserId, ct))
+            .WithMessage("Todo list not found.");
     }
 }

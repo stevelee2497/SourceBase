@@ -1,7 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Auth;
@@ -24,12 +23,9 @@ public class ResendConfirmationEmailHandler(IDbContext dbContext, IEmailHelper e
 {
     public async Task<ResendConfirmationEmailResponse> Handle(ResendConfirmationEmailRequest request, CancellationToken ct)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email, ct) ?? throw new NotFoundException("User not found");
-        if (user.EmailConfirmed)
-            throw new BadRequestException("Email already confirmed");
-
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email, ct);
         var (otp, expiresOn) = otpHelper.Generate();
-        user.OtpCode = otp;
+        user!.OtpCode = otp;
         user.OtpCodeExpiresOn = expiresOn;
         await dbContext.SaveChangesAsync(ct);
 
@@ -40,8 +36,20 @@ public class ResendConfirmationEmailHandler(IDbContext dbContext, IEmailHelper e
 
 public class ResendConfirmationEmailRequestValidator : AbstractValidator<ResendConfirmationEmailRequest>
 {
-    public ResendConfirmationEmailRequestValidator()
+    public ResendConfirmationEmailRequestValidator(IDbContext dbContext)
     {
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Email)
+            .MustAsync(async (email, ct) => await dbContext.Users.AnyAsync(u => u.Email == email, ct))
+            .WithMessage("User not found.")
+            .When(x => !string.IsNullOrEmpty(x.Email));
+        RuleFor(x => x.Email)
+            .MustAsync(async (email, ct) =>
+            {
+                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
+                return user is null || !user.EmailConfirmed;
+            })
+            .WithMessage("Email already confirmed.")
+            .When(x => !string.IsNullOrEmpty(x.Email));
     }
 }

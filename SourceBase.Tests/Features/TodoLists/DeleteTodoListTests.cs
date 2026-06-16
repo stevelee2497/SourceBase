@@ -40,8 +40,8 @@ public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body!.Success.Should().BeTrue();
     }
 
-    [Fact(DisplayName = "TODOLISTS-DELETE-003: DeleteTodoList_OwnedByAnotherUser_ReturnsNotFound")]
-    public async Task DeleteTodoList_OwnedByAnotherUser_ReturnsNotFound()
+    [Fact(DisplayName = "TODOLISTS-DELETE-003: DeleteTodoList_OwnedByAnotherUser_ReturnsBadRequest")]
+    public async Task DeleteTodoList_OwnedByAnotherUser_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"del_owner_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -54,6 +54,6 @@ public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await otherClient.DeleteAsync(DeleteTodoListEndpoint.Route.WithId(created!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }
