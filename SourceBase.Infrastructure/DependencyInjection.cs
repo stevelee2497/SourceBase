@@ -34,8 +34,8 @@ public static class DependencyInjection
             })
             .AddBearerToken(Constants.BearerScheme, options =>
             {
-                options.BearerTokenExpiration = TimeSpan.FromMinutes(appSettings.AccessTokenExpirationMinutes);
-                options.RefreshTokenExpiration = TimeSpan.FromMinutes(appSettings.RefreshTokenExpirationMinutes);
+                options.BearerTokenExpiration = appSettings.AccessTokenExpiration;
+                options.RefreshTokenExpiration = appSettings.RefreshTokenExpiration;
                 options.Events = new BearerTokenEvents
                 {
                     OnMessageReceived = context =>

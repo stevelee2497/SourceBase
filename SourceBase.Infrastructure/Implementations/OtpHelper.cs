@@ -9,7 +9,7 @@ public class OtpHelper(AppSettings appSettings, IDateTime dateTime) : IOtpHelper
     public (string, DateTime) Generate()
     {
         var otp = RandomNumberGenerator.GetInt32(100_000, 1_000_000).ToString();
-        var expiresOn = dateTime.UtcNow.AddMinutes(appSettings.OtpTokenExpirationMinutes);
+        var expiresOn = dateTime.UtcNow.Add(appSettings.OtpTokenExpiration);
         return (otp, expiresOn);
     }
 }

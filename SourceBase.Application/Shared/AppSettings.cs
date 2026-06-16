@@ -5,9 +5,9 @@ public class AppSettings
     public string AdminEmail { get; set; } = null!;
     public string AdminPassword { get; set; } = null!;
     public List<string> Roles { get; set; } = [];
-    public int OtpTokenExpirationMinutes { get; set; } = 15;
-    public int AccessTokenExpirationMinutes { get; set; } = 60;
-    public int RefreshTokenExpirationMinutes { get; set; } = 20160;
+    public TimeSpan OtpTokenExpiration { get; set; } = TimeSpan.FromMinutes(15);
+    public TimeSpan AccessTokenExpiration { get; set; } = TimeSpan.FromMinutes(60);
+    public TimeSpan RefreshTokenExpiration { get; set; } = TimeSpan.FromDays(30);
     public string SendGridApiKey { get; set; } = null!;
     public string SendGridAccountOwner { get; set; } = null!;
     public R2Settings R2 { get; set; } = new();

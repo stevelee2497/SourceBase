@@ -39,9 +39,9 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["AppSettings:AdminPassword"] = AdminPassword,
                 ["AppSettings:Roles:0"] = "Admin",
                 ["AppSettings:Roles:1"] = "User",
-                ["AppSettings:OtpTokenExpirationMinutes"] = "15",
-                ["AppSettings:AccessTokenExpirationMinutes"] = "60",
-                ["AppSettings:RefreshTokenExpirationMinutes"] = "20160",
+                ["AppSettings:OtpTokenExpiration"] = "00:15:00",
+                ["AppSettings:AccessTokenExpiration"] = "01:00:00",
+                ["AppSettings:RefreshTokenExpiration"] = "14.00:00:00",
                 ["AppSettings:SendGridApiKey"] = "", // Disable real email sending during tests
                 ["ConnectionStrings:RedisConnection"] = "", // Disable Redis — RedisCacheService no-ops when connection string is empty
                 ["Serilog:MinimumLevel:Default"] = "Fatal",
