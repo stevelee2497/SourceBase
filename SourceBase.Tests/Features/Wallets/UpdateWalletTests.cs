@@ -181,4 +181,20 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet!.Name.Should().Be(newName);
         wallet.Icon.Should().Be("💳");
     }
+
+    [Fact(DisplayName = "WALLETS-UPDATE-008: UpdateWallet_WithEmptyId_ReturnsBadRequest")]
+    public async Task UpdateWallet_WithEmptyId_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        // Act
+        var response = await client.PatchAsJsonAsync(UpdateWalletEndpoint.Route.WithId(Guid.Empty), new
+        {
+            name = "Test",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

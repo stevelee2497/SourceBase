@@ -24,9 +24,7 @@ public class UpdateIconHandler(IDbContext dbContext) : IRequestHandler<UpdateIco
 {
     public async Task<UpdateIconResponse> Handle(UpdateIconRequest request, CancellationToken ct)
     {
-        var icon = await dbContext.Icons.FindAsync([request.Id], ct);
-        if (icon is null)
-            throw new NotFoundException();
+        var icon = await dbContext.Icons.FindAsync([request.Id], ct) ?? throw new NotFoundException();
         if (icon.IsSystem)
             throw new ForbiddenException();
 
@@ -43,6 +41,7 @@ public class UpdateIconRequestValidator : AbstractValidator<UpdateIconRequest>
 {
     public UpdateIconRequestValidator()
     {
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Value).NotEmpty().When(x => x.Value is not null);
         RuleFor(x => x.Name).NotEmpty().MaximumLength(100).When(x => x.Name is not null);
     }

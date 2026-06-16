@@ -39,6 +39,7 @@ public class UpdateWalletRequestValidator : AbstractValidator<UpdateWalletReques
 {
     public UpdateWalletRequestValidator()
     {
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(100).When(x => x.Name is not null);
     }
 }

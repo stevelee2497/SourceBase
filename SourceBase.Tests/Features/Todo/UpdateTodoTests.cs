@@ -128,4 +128,20 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact(DisplayName = "TODOS-UPDATE-006: UpdateTodo_WithEmptyId_ReturnsBadRequest")]
+    public async Task UpdateTodo_WithEmptyId_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PatchAsJsonAsync(UpdateTodoEndpoint.Route.WithId(Guid.Empty), new
+        {
+            title = "Test",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

@@ -383,4 +383,20 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    [Fact(DisplayName = "TXN-UPDATE-012: UpdateTransaction_WithEmptyId_ReturnsBadRequest")]
+    public async Task UpdateTransaction_WithEmptyId_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        // Act
+        var response = await client.PatchAsJsonAsync(UpdateTransactionEndpoint.Route.WithId(Guid.Empty), new
+        {
+            amount = 10m,
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

@@ -47,6 +47,7 @@ public class UpdateTransactionRequestValidator : AbstractValidator<UpdateTransac
 {
     public UpdateTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.WalletId)
             .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id!.Value && w.UserId == currentUser.UserId, ct))
             .WithMessage("Wallet not found.")

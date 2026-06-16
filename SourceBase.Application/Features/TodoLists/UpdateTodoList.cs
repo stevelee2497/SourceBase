@@ -37,6 +37,7 @@ public class UpdateTodoListRequestValidator : AbstractValidator<UpdateTodoListRe
 {
     public UpdateTodoListRequestValidator()
     {
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(200).When(x => x.Name is not null);
     }
 }

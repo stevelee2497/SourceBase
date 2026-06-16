@@ -51,6 +51,7 @@ public class UpdateRoleRequestValidator : AbstractValidator<UpdateRoleRequest>
 {
     public UpdateRoleRequestValidator()
     {
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(256).When(x => x.Name is not null);
         RuleFor(x => x.Description).NotEmpty().MaximumLength(500).When(x => x.Description is not null);
     }

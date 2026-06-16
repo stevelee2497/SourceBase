@@ -235,4 +235,23 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var getInfoResponse = await targetClient.GetAsync(GetUserInfoEndpoint.Route);
         getInfoResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    [Fact(DisplayName = "USERS-UPDATE-008: UpdateUser_WithEmptyId_ReturnsBadRequest")]
+    public async Task UpdateUser_WithEmptyId_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PutAsJsonAsync(UpdateUserEndpoint.Route.WithId(Guid.Empty), new
+        {
+            email = $"test_{Guid.NewGuid():N}@test.com",
+            firstName = "Test",
+            lastName = "User",
+            roles = new[] { "User" },
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

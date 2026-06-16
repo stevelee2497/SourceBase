@@ -48,6 +48,7 @@ public class UpdateTodoRequestValidator : AbstractValidator<UpdateTodoRequest>
 {
     public UpdateTodoRequestValidator()
     {
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Title).NotEmpty().When(x => x.Title is not null);
     }
 }
