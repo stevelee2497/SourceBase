@@ -15,7 +15,7 @@ public class ConfigureWalletEndpoint : IEndpoint
     public const string Route = "wallets/{id:guid}/config";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut(Route, (Guid id, [FromBody] ConfigureWalletRequest body, ConfigureWalletHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPut(Route, ([FromBody] ConfigureWalletRequest body, ConfigureWalletHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .WithTags("Wallets");
 }
 

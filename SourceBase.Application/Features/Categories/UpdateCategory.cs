@@ -14,7 +14,7 @@ public class UpdateCategoryEndpoint : IEndpoint
     public const string Route = "categories/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPatch(Route, (Guid id, [FromBody] UpdateCategoryRequest body, UpdateCategoryHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, ([FromBody] UpdateCategoryRequest body, UpdateCategoryHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .WithTags("Categories");
 }
 
