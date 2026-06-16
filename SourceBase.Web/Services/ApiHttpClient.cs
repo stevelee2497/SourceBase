@@ -306,8 +306,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
     public Task<ErrorResponse?> CreateTransactionAsync(Guid walletId, decimal amount, string type, string date, string? note, Guid categoryId) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/transactions", new { walletId, amount, type, date, note, categoryId }));
 
-    public Task<ErrorResponse?> UpdateTransactionAsync(Guid id, decimal amount, string type, string date, string? note, Guid categoryId) =>
-        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/transactions/{id}", new { amount, type, date, note, categoryId }));
+    public Task<ErrorResponse?> UpdateTransactionAsync(Guid id, decimal? amount = null, string? type = null, string? date = null, string? note = null, Guid? categoryId = null, Guid? walletId = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Patch, $"/api/transactions/{id}", new { amount, type, date, note, categoryId, walletId }));
 
     public Task<ErrorResponse?> DeleteTransactionAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/transactions/{id}"));
