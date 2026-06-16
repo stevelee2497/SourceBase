@@ -7,7 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Icons;
 
-public record UpdateIconRequest([property: SwaggerIgnore] Guid Id, string? Value, string? Name, IconGroup? Group, int? SortOrder);
+public record UpdateIconRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string? Value, string? Name, IconGroup? Group, int? SortOrder);
 
 public record UpdateIconResponse(Guid Id);
 
@@ -16,7 +16,7 @@ public class UpdateIconEndpoint : IEndpoint
     public const string Route = "icons/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPatch(Route, (Guid id, [FromBody] UpdateIconRequest body, UpdateIconHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, ([FromBody] UpdateIconRequest body, UpdateIconHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .WithTags("Icons");
 }
 

@@ -7,7 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.TodoLists;
 
-public record UpdateTodoListRequest([property: SwaggerIgnore] Guid Id, string? Name);
+public record UpdateTodoListRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string? Name);
 
 public record UpdateTodoListResponse(Guid Id);
 
@@ -16,7 +16,7 @@ public class UpdateTodoListEndpoint : IEndpoint
     public const string Route = "todo-lists/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPatch(Route, (Guid id, [FromBody] UpdateTodoListRequest body, UpdateTodoListHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, ([FromBody] UpdateTodoListRequest body, UpdateTodoListHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .WithTags("TodoLists");
 }
 

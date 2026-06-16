@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Categories;
 
-public record UpdateCategoryRequest([property: SwaggerIgnore] Guid Id, string? Name, string? Icon);
+public record UpdateCategoryRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string? Name, string? Icon);
 
 public record UpdateCategoryResponse(Guid Id);
 
@@ -15,7 +15,7 @@ public class UpdateCategoryEndpoint : IEndpoint
     public const string Route = "categories/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPatch(Route, (Guid id, [FromBody] UpdateCategoryRequest body, UpdateCategoryHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, ([FromBody] UpdateCategoryRequest body, UpdateCategoryHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .WithTags("Categories");
 }
 

@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Users;
 
-public record UpdateUserRequest([property: SwaggerIgnore] Guid Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, string[]? Roles);
+public record UpdateUserRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, string[]? Roles);
 
 public record UpdateUserResponse(Guid Id);
 
@@ -17,7 +17,7 @@ public class UpdateUserEndpoint : IEndpoint
     public const string Route = "users/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut(Route, (Guid id, [FromBody] UpdateUserRequest body, UpdateUserHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPut(Route, ([FromBody] UpdateUserRequest body, UpdateUserHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Users");
 }
