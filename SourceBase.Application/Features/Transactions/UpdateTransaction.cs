@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Transactions;
 
-public record UpdateTransactionRequest([property: SwaggerIgnore] Guid Id, decimal Amount, TransactionType Type, DateOnly? Date, string? Note, Guid CategoryId);
+public record UpdateTransactionRequest([property: SwaggerIgnore] Guid Id, Guid? WalletId, decimal? Amount, TransactionType? Type, DateOnly? Date, string? Note, Guid? CategoryId);
 
 public record UpdateTransactionResponse(Guid Id);
 
@@ -17,7 +17,7 @@ public class UpdateTransactionEndpoint : IEndpoint
     public const string Route = "transactions/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut(Route, (Guid id, [FromBody] UpdateTransactionRequest body, UpdateTransactionHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, (Guid id, [FromBody] UpdateTransactionRequest body, UpdateTransactionHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
         .WithTags("Transactions");
 }
 
@@ -31,15 +31,12 @@ public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser current
         if (transaction.IsTransfer)
             throw new Shared.ValidationException("Transfer transactions cannot be edited directly. Delete the transfer instead.");
 
-        var categoryExists = await dbContext.Categories.AnyAsync(c => c.Id == request.CategoryId && (c.IsSystem || c.UserId == currentUser.UserId), ct);
-        if (!categoryExists)
-            throw new NotFoundException("Category not found.");
-
-        transaction.Amount = request.Amount;
-        transaction.Type = request.Type;
-        transaction.Date = request.Date!.Value;
-        transaction.Note = request.Note;
-        transaction.CategoryId = request.CategoryId;
+        transaction.WalletId = request.WalletId ?? transaction.WalletId;
+        transaction.Amount = request.Amount ?? transaction.Amount;
+        transaction.Type = request.Type ?? transaction.Type;
+        transaction.Date = request.Date ?? transaction.Date;
+        transaction.Note = request.Note ?? transaction.Note;
+        transaction.CategoryId = request.CategoryId ?? transaction.CategoryId;
         await dbContext.SaveChangesAsync(ct);
         await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
         return new UpdateTransactionResponse(transaction.Id);
@@ -48,10 +45,18 @@ public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser current
 
 public class UpdateTransactionRequestValidator : AbstractValidator<UpdateTransactionRequest>
 {
-    public UpdateTransactionRequestValidator()
+    public UpdateTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
     {
-        RuleFor(x => x.Amount).GreaterThan(0);
-        RuleFor(x => x.Date).NotNull();
-        RuleFor(x => x.CategoryId).NotEmpty();
+        RuleFor(x => x.WalletId)
+            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id!.Value && w.UserId == currentUser.UserId, ct))
+            .WithMessage("Wallet not found.")
+            .When(x => x.WalletId is not null);
+
+        RuleFor(x => x.Amount).GreaterThan(0).When(x => x.Amount is not null);
+
+        RuleFor(x => x.CategoryId)
+            .MustAsync((id, ct) => dbContext.Categories.AnyAsync(c => c.Id == id!.Value && (c.IsSystem || c.UserId == currentUser.UserId), ct))
+            .WithMessage("Category not found.")
+            .When(x => x.CategoryId is not null);
     }
 }
