@@ -25,6 +25,9 @@ public class CreateRoleHandler(IDbContext dbContext) : IRequestHandler<CreateRol
 {
     public async Task<CreateRoleResponse> Handle(CreateRoleRequest request, CancellationToken ct)
     {
+        if (await dbContext.Roles.AnyAsync(r => r.Name == request.Name, ct))
+            throw new BadRequestException("Role name is already taken.");
+
         var role = new RoleEntity
         {
             Name = request.Name,
@@ -40,19 +43,9 @@ public class CreateRoleHandler(IDbContext dbContext) : IRequestHandler<CreateRol
 
 public class CreateRoleRequestValidator : AbstractValidator<CreateRoleRequest>
 {
-    public CreateRoleRequestValidator(IDbContext dbContext)
+    public CreateRoleRequestValidator()
     {
-        RuleFor(x => x.Name)
-            .NotEmpty()
-            .MaximumLength(256);
-
-        RuleFor(x => x.Name)
-            .MustAsync(async (name, ct) => !await dbContext.Roles.AnyAsync(r => r.Name == name, ct))
-            .WithMessage("Role name is already taken.")
-            .When(x => !string.IsNullOrEmpty(x.Name));
-
-        RuleFor(x => x.Description)
-            .NotEmpty()
-            .MaximumLength(500);
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(256);
+        RuleFor(x => x.Description).NotEmpty().MaximumLength(500);
     }
 }

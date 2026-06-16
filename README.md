@@ -108,21 +108,6 @@ item.Date = request.Date ?? item.Date;
 RuleFor(x => x.Title).NotEmpty().When(x => x.Title is not null);
 ```
 
-DB-level validation (existence checks, ownership) belongs in the **validator**, not the handler. Inject `IDbContext` and `ICurrentUser` into the validator constructor and use `MustAsync`:
-
-```csharp
-public class UpdateTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser) : AbstractValidator<UpdateTransactionRequest>
-{
-    public UpdateTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
-    {
-        RuleFor(x => x.WalletId)
-            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id!.Value && w.UserId == currentUser.UserId, ct))
-            .WithMessage("Wallet not found.")
-            .When(x => x.WalletId is not null);
-    }
-}
-```
-
 > **Note:** Sending `null` for a field means "keep existing value" — it does not clear the field.
 
 ### Endpoint Formatting

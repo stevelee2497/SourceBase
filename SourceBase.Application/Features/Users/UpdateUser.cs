@@ -51,6 +51,13 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, I
 
         var rolesChanged = false;
         var normalizedRoles = request.Roles?.Normalize();
+        if (normalizedRoles is not null && normalizedRoles.Length > 0)
+        {
+            var count = await dbContext.Roles.CountAsync(r => r.Name != null && normalizedRoles.Contains(r.Name), ct);
+            if (count != normalizedRoles.Length)
+                throw new BadRequestException("One or more specified roles do not exist.");
+        }
+
         if (normalizedRoles is not null)
         {
             var existingRoles = user.Roles
@@ -97,7 +104,7 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, I
 
 public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
 {
-    public UpdateUserRequestValidator(IDbContext dbContext)
+    public UpdateUserRequestValidator()
     {
         RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
@@ -105,14 +112,5 @@ public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
         RuleFor(x => x.LastName).MaximumLength(100).When(x => x.LastName is not null);
         RuleFor(x => x.PhoneNumber).MaximumLength(20).When(x => x.PhoneNumber is not null);
         RuleForEach(x => x.Roles).NotEmpty().MaximumLength(256);
-        RuleFor(x => x.Roles)
-            .MustAsync(async (roles, ct) =>
-            {
-                var normalized = roles!.Normalize();
-                var count = await dbContext.Roles.CountAsync(r => r.Name != null && normalized.Contains(r.Name), ct);
-                return count == normalized.Length;
-            })
-            .WithMessage("One or more specified roles do not exist.")
-            .When(x => x.Roles is not null && x.Roles.Length > 0);
     }
 }

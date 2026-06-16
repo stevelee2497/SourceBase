@@ -31,6 +31,18 @@ public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser current
         if (transaction.IsTransfer)
             throw new Shared.ValidationException("Transfer transactions cannot be edited directly. Delete the transfer instead.");
 
+        if (request.WalletId is not null)
+        {
+            var walletExists = await dbContext.Wallets.AnyAsync(w => w.Id == request.WalletId.Value && w.UserId == currentUser.UserId, ct);
+            if (!walletExists) throw new BadRequestException("Wallet not found.");
+        }
+
+        if (request.CategoryId is not null)
+        {
+            var categoryExists = await dbContext.Categories.AnyAsync(c => c.Id == request.CategoryId.Value && (c.IsSystem || c.UserId == currentUser.UserId), ct);
+            if (!categoryExists) throw new BadRequestException("Category not found.");
+        }
+
         transaction.WalletId = request.WalletId ?? transaction.WalletId;
         transaction.Amount = request.Amount ?? transaction.Amount;
         transaction.Type = request.Type ?? transaction.Type;
@@ -45,19 +57,9 @@ public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser current
 
 public class UpdateTransactionRequestValidator : AbstractValidator<UpdateTransactionRequest>
 {
-    public UpdateTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
+    public UpdateTransactionRequestValidator()
     {
         RuleFor(x => x.Id).NotEmpty();
-        RuleFor(x => x.WalletId)
-            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id!.Value && w.UserId == currentUser.UserId, ct))
-            .WithMessage("Wallet not found.")
-            .When(x => x.WalletId is not null);
-
         RuleFor(x => x.Amount).GreaterThan(0).When(x => x.Amount is not null);
-
-        RuleFor(x => x.CategoryId)
-            .MustAsync((id, ct) => dbContext.Categories.AnyAsync(c => c.Id == id!.Value && (c.IsSystem || c.UserId == currentUser.UserId), ct))
-            .WithMessage("Category not found.")
-            .When(x => x.CategoryId is not null);
     }
 }
