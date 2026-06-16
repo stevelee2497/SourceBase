@@ -394,33 +394,38 @@ As an authenticated user, I want to retrieve the details of a specific transacti
 
 ## Update Transaction
 
-**Endpoint:** `PUT /api/transactions/{id}`
+**Endpoint:** `PATCH /api/transactions/{id}`
 **Auth:** Required
 
 ### Use Case
 
-As an authenticated user, I want to edit a transaction's amount, type, date, note, or category, so that I can correct mistakes or add missing details.
+As an authenticated user, I want to partially update a transaction's amount, type, date, note, category, or wallet, so that I can correct mistakes, add missing details, or move a transaction to a different wallet.
 
 ### Description
 
-1. Client sends the transaction `id` (route) and updated `amount` (required), `type` (required), `date` (required), optional `note`, optional `categoryId`.
+1. Client sends the transaction `id` (route) and any subset of: `amount`, `type`, `date`, `note`, `categoryId`, `walletId`. All fields are optional — only provided (non-null) fields are updated.
 2. If the transaction doesn't exist or belongs to a different user → `404 Not Found`.
 3. If the transaction is part of a transfer → `400 Bad Request` (edit the transfer instead).
-4. The transaction fields are updated. The wallet's computed balance automatically reflects the change on next query.
-5. Returns the updated transaction's `Id`.
+4. If a `walletId` is provided but doesn't exist or belongs to a different user → `400 Bad Request`.
+5. If a `categoryId` is provided but doesn't exist or isn't accessible to the user → `400 Bad Request`.
+6. The transaction fields are updated. Both the old and new wallet's computed balance automatically reflect the change on next query.
+7. Returns the updated transaction's `Id`.
 
 ### Test Cases
 
 | Test Case ID   | Description                                                                             | Status  |
 | -------------- | --------------------------------------------------------------------------------------- | ------- |
 | TXN-UPDATE-001 | Missing token returns 401 Unauthorized                                                  | ✅ Pass |
-| TXN-UPDATE-002 | Valid update returns 200                                                                | ✅ Pass |
+| TXN-UPDATE-002 | Valid partial update returns 200                                                        | ✅ Pass |
 | TXN-UPDATE-003 | After changing amount, computed wallet balance reflects the updated transaction         | ✅ Pass |
 | TXN-UPDATE-004 | After changing type from Income to Expense, computed wallet balance reflects the change | ✅ Pass |
 | TXN-UPDATE-005 | Zero or negative amount returns 400 Bad Request                                         | ✅ Pass |
 | TXN-UPDATE-006 | Non-existent transaction id returns 404 Not Found                                       | ✅ Pass |
 | TXN-UPDATE-007 | Updating another user's transaction returns 404 Not Found                               | ✅ Pass |
 | TXN-UPDATE-008 | Updating a transfer transaction returns 400 Bad Request                                 | ✅ Pass |
+| TXN-UPDATE-009 | Providing a new `walletId` moves the transaction; both wallets' balances update         | ✅ Pass |
+| TXN-UPDATE-010 | Providing a non-existent `walletId` returns 400 Bad Request                             | ✅ Pass |
+| TXN-UPDATE-011 | Providing another user's `walletId` returns 400 Bad Request                             | ✅ Pass |
 
 ---
 
