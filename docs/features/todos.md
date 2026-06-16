@@ -58,25 +58,25 @@ As an authenticated user, I want to retrieve my todo lists, so that I can naviga
 
 ## Update Todo List
 
-**Endpoint:** `PUT /api/todo-lists/{id}`
+**Endpoint:** `PATCH /api/todo-lists/{id}`
 **Auth:** Required
 
 ### Use Case
 
-As an authenticated user, I want to rename one of my todo lists, so that I can keep its name relevant to my tasks.
+As an authenticated user, I want to partially update one of my todo lists, so that I can keep its name relevant to my tasks without sending all fields.
 
 ### Description
 
-1. Client sends the list `id` (route) and a new `name`.
+1. Client sends the list `id` (route) and any subset of: `name`. All fields are optional — only provided (non-null) fields are updated.
 2. If the list doesn't exist or belongs to a different user → `404 Not Found`.
-3. The list name is updated and the updated list `Id` is returned.
+3. Returns the updated list's `Id`.
 
 ### Test Cases
 
 | Test Case ID | Description | Status |
 |---|---|---|
 | TODOLISTS-UPDATE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
-| TODOLISTS-UPDATE-002 | Valid update returns 200 | ✅ Pass |
+| TODOLISTS-UPDATE-002 | Valid partial update returns 200 | ✅ Pass |
 | TODOLISTS-UPDATE-003 | Updating another user's list returns 404 Not Found | ✅ Pass |
 
 ---
@@ -192,26 +192,26 @@ As an authenticated user, I want to retrieve the details of a specific todo item
 
 ## Update Todo
 
-**Endpoint:** `PUT /api/todos/{id}`
+**Endpoint:** `PATCH /api/todos/{id}`
 **Auth:** Required
 
 ### Use Case
 
-As an authenticated user, I want to update a todo item's title, date, and status, so that I can keep my task list current.
+As an authenticated user, I want to partially update a todo item's title, date, or status, so that I can keep my task list current without sending all fields.
 
 ### Description
 
-1. Client sends the todo `id` (route) plus updated `title`, `date`, and `status`.
+1. Client sends the todo `id` (route) and any subset of: `title`, `date`, `status`. All fields are optional — only provided (non-null) fields are updated.
 2. If the item doesn't exist or belongs to a different user → `404 Not Found`.
-3. The item fields are updated.
+3. If `title` is provided but empty → `400 Bad Request`.
 
 ### Test Cases
 
 | Test Case ID | Description | Status |
 |---|---|---|
 | TODOS-UPDATE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
-| TODOS-UPDATE-002 | Valid update returns 200 | ✅ Pass |
-| TODOS-UPDATE-003 | Missing title returns 400 Bad Request | ✅ Pass |
+| TODOS-UPDATE-002 | Valid partial update returns 200 | ✅ Pass |
+| TODOS-UPDATE-003 | Providing an empty string title returns 400 Bad Request | ✅ Pass |
 | TODOS-UPDATE-004 | Non-existent todo ID returns 404 Not Found | ✅ Pass |
 | TODOS-UPDATE-005 | Updating another user's todo returns 404 Not Found | ✅ Pass |
 

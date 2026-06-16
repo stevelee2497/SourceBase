@@ -17,7 +17,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateIconEndpoint.Route.WithId(Guid.NewGuid()), new
+        var response = await client.PatchAsJsonAsync(UpdateIconEndpoint.Route.WithId(Guid.NewGuid()), new
         {
             value = "🦊",
             name = "Fox",
@@ -45,7 +45,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var created = await createResponse.Content.ReadFromJsonAsync<CreateIconResponse>();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateIconEndpoint.Route.WithId(created!.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateIconEndpoint.Route.WithId(created!.Id), new
         {
             value = "🐺",
             name = "Wolf",
@@ -74,7 +74,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
         var created = await createResponse.Content.ReadFromJsonAsync<CreateIconResponse>();
 
-        await client.PutAsJsonAsync(UpdateIconEndpoint.Route.WithId(created!.Id), new
+        await client.PatchAsJsonAsync(UpdateIconEndpoint.Route.WithId(created!.Id), new
         {
             value = "🐺",
             name = "Wolf_Updated",
@@ -102,7 +102,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var client = await factory.CreateAuthorizedClient();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateIconEndpoint.Route.WithId(Guid.NewGuid()), new
+        var response = await client.PatchAsJsonAsync(UpdateIconEndpoint.Route.WithId(Guid.NewGuid()), new
         {
             value = "🦊",
             name = "Fox",
@@ -125,7 +125,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var systemIcon = icons!.First(i => i.IsSystem);
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateIconEndpoint.Route.WithId(systemIcon.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateIconEndpoint.Route.WithId(systemIcon.Id), new
         {
             value = "❌",
             name = "Hacked",
@@ -153,7 +153,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var created = await createResponse.Content.ReadFromJsonAsync<CreateIconResponse>();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateIconEndpoint.Route.WithId(created!.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateIconEndpoint.Route.WithId(created!.Id), new
         {
             value = "",
             name = "Fox",

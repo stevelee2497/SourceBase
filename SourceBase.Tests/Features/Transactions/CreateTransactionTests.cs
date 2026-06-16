@@ -243,8 +243,8 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-009: CreateTransaction_WithOtherUsersWallet_ReturnsNotFound")]
-    public async Task CreateTransaction_WithOtherUsersWallet_ReturnsNotFound()
+    [Fact(DisplayName = "TXN-CREATE-009: CreateTransaction_WithOtherUsersWallet_ReturnsBadRequest")]
+    public async Task CreateTransaction_WithOtherUsersWallet_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -269,11 +269,11 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-010: CreateTransaction_WithOtherUsersCategory_ReturnsNotFound")]
-    public async Task CreateTransaction_WithOtherUsersCategory_ReturnsNotFound()
+    [Fact(DisplayName = "TXN-CREATE-010: CreateTransaction_WithOtherUsersCategory_ReturnsBadRequest")]
+    public async Task CreateTransaction_WithOtherUsersCategory_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -298,7 +298,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TXN-CREATE-011: CreateTransaction_WithoutCategory_ReturnsBadRequest")]

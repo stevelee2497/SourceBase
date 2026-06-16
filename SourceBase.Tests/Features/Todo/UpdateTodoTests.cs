@@ -18,7 +18,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateTodoEndpoint.Route.WithId(Guid.NewGuid()), new
+        var response = await client.PatchAsJsonAsync(UpdateTodoEndpoint.Route.WithId(Guid.NewGuid()), new
         {
             date = "2025-08-01",
             title = "Updated",
@@ -43,7 +43,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var createBody = await createResponse.Content.ReadFromJsonAsync<CreateTodoResponse>();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateTodoEndpoint.Route.WithId(createBody!.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateTodoEndpoint.Route.WithId(createBody!.Id), new
         {
             date = "2025-08-01",
             title = "Updated Title",
@@ -61,17 +61,23 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         updated.Status.Should().Be(TodoItemStatus.Completed);
     }
 
-    [Fact(DisplayName = "TODOS-UPDATE-003: UpdateTodo_WithMissingTitle_ReturnsBadRequest")]
-    public async Task UpdateTodo_WithMissingTitle_ReturnsBadRequest()
+    [Fact(DisplayName = "TODOS-UPDATE-003: UpdateTodo_WithEmptyTitle_ReturnsBadRequest")]
+    public async Task UpdateTodo_WithEmptyTitle_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
-
-        // Act
-        var response = await client.PutAsJsonAsync(UpdateTodoEndpoint.Route.WithId(Guid.NewGuid()), new
+        var createResponse = await client.PostAsJsonAsync(CreateTodoEndpoint.Route, new
         {
             date = "2025-08-01",
-            status = "Completed",
+            title = "To Be Updated",
+            status = "Open",
+        });
+        var createBody = await createResponse.Content.ReadFromJsonAsync<CreateTodoResponse>();
+
+        // Act
+        var response = await client.PatchAsJsonAsync(UpdateTodoEndpoint.Route.WithId(createBody!.Id), new
+        {
+            title = "",
         });
 
         // Assert
@@ -85,7 +91,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var client = await factory.CreateAuthorizedClient();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateTodoEndpoint.Route.WithId(Guid.NewGuid()), new
+        var response = await client.PatchAsJsonAsync(UpdateTodoEndpoint.Route.WithId(Guid.NewGuid()), new
         {
             date = "2025-08-01",
             title = "Updated",
@@ -112,7 +118,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var createBody = await createResponse.Content.ReadFromJsonAsync<CreateTodoResponse>();
 
         // Act
-        var response = await strangerClient.PutAsJsonAsync(UpdateTodoEndpoint.Route.WithId(createBody!.Id), new
+        var response = await strangerClient.PatchAsJsonAsync(UpdateTodoEndpoint.Route.WithId(createBody!.Id), new
         {
             date = "2025-08-01",
             title = "Hacked",

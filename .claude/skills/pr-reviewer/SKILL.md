@@ -25,6 +25,7 @@ Start with the global `/review` skill for diff analysis, then apply the checklis
 ### Endpoints & handlers
 
 - [ ] `MapEndpoint` chain uses separate lines (`.MapXxx`, then auth, then `.WithTags`)
+- [ ] Update endpoints use `PATCH` (not `PUT`) with partial semantics — `MapPatch`, not `MapPut`
 - [ ] Update endpoints: `Id` is a route param marked `[property: SwaggerIgnore]` on the request record
 - [ ] No multi-line parameter lists on records, handlers, or constructors
 - [ ] Auth: default `RequireAuthorization()` present, or `.AllowAnonymous()` intentional
@@ -38,7 +39,11 @@ Start with the global `/review` skill for diff analysis, then apply the checklis
 
 ### Partial updates
 
+- [ ] Update endpoints use `PATCH` (not `PUT`)
+- [ ] All update request fields are nullable — only non-null fields are applied
 - [ ] Partial update handlers use `entity.Field = request.Field ?? entity.Field` (null-coalescing), not if-guards
+- [ ] Validator rules guarded with `.When(x => x.Field is not null)`
+- [ ] DB-level validation (existence/ownership) is in the validator via `MustAsync`, not in the handler
 - [ ] Single-field updates extend existing endpoints rather than adding new dedicated endpoints
 
 ### Tests

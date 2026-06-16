@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Roles;
 
-public record UpdateRoleRequest([property: SwaggerIgnore] Guid Id, string Name, string Description);
+public record UpdateRoleRequest([property: SwaggerIgnore] Guid Id, string? Name, string? Description);
 
 public record UpdateRoleResponse(Guid Id);
 
@@ -17,7 +17,7 @@ public class UpdateRoleEndpoint : IEndpoint
     public const string Route = "roles/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut(Route, (Guid id, [FromBody] UpdateRoleRequest body, UpdateRoleHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, (Guid id, [FromBody] UpdateRoleRequest body, UpdateRoleHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Roles");
 }
@@ -31,12 +31,15 @@ public class UpdateRoleHandler(IDbContext dbContext) : IRequestHandler<UpdateRol
         if (role.Name == AppRoles.Admin)
             throw new BadRequestException("Admin role cannot be updated.");
 
-        var duplicateName = await dbContext.Roles.AnyAsync(r => r.Id != request.Id && r.Name == request.Name, ct);
-        if (duplicateName)
-            throw new BadRequestException("Role name is already taken.");
+        if (request.Name is not null)
+        {
+            var duplicateName = await dbContext.Roles.AnyAsync(r => r.Id != request.Id && r.Name == request.Name, ct);
+            if (duplicateName)
+                throw new BadRequestException("Role name is already taken.");
+        }
 
-        role.Name = request.Name;
-        role.Description = request.Description;
+        role.Name = request.Name ?? role.Name;
+        role.Description = request.Description ?? role.Description;
 
         await dbContext.SaveChangesAsync(ct);
 
@@ -48,7 +51,7 @@ public class UpdateRoleRequestValidator : AbstractValidator<UpdateRoleRequest>
 {
     public UpdateRoleRequestValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(256);
-        RuleFor(x => x.Description).NotEmpty().MaximumLength(500);
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(256).When(x => x.Name is not null);
+        RuleFor(x => x.Description).NotEmpty().MaximumLength(500).When(x => x.Description is not null);
     }
 }

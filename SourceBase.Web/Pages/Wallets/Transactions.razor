@@ -135,6 +135,10 @@
                     <label class="form-label">Category *</label>
                     <SelectInput @bind-Value="_categoryId" Options="EditCategoryOptions" />
                 </div>
+                <div>
+                    <label class="form-label">Wallet *</label>
+                    <SelectInput @bind-Value="_walletId" Options="EditWalletOptions" />
+                </div>
             </div>
             <div class="flex justify-end gap-3 mt-5">
                 <button class="btn-secondary" @onclick="CloseForm">Cancel</button>
@@ -174,6 +178,7 @@
     private DateOnly _date = DateOnly.FromDateTime(DateTime.Today);
     private string _note = string.Empty;
     private string _categoryId = string.Empty;
+    private string _walletId = string.Empty;
     private string? _formError;
     private bool _saving;
 
@@ -186,6 +191,7 @@
     private IReadOnlyList<SelectOption> WalletFilterOptions => _wallets.Select(w => new SelectOption(w.Id.ToString(), $"{WalletIcon(w.Icon)} {w.Name} ({w.Currency})")).Prepend(new SelectOption("", "All wallets")).ToList();
     private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name} ({c.Type})")).Prepend(new SelectOption("", "All categories")).ToList();
     private IReadOnlyList<SelectOption> EditCategoryOptions => FilteredCategories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name}")).Prepend(new SelectOption("", "Select category")).ToList();
+    private IReadOnlyList<SelectOption> EditWalletOptions => _wallets.Select(w => new SelectOption(w.Id.ToString(), $"{WalletIcon(w.Icon)} {w.Name} ({w.Currency})")).Prepend(new SelectOption("", "Select wallet")).ToList();
 
     protected override async Task OnInitializedAsync() => await Task.WhenAll(LoadWalletsAsync(), LoadCategoriesAsync(), LoadTransactionsAsync());
 
@@ -260,6 +266,7 @@
         _date = ParseDate(transaction.Date);
         _note = transaction.Note ?? string.Empty;
         _categoryId = transaction.CategoryId?.ToString() ?? string.Empty;
+        _walletId = transaction.WalletId.ToString();
         _formError = null;
         _showForm = true;
     };
@@ -277,9 +284,10 @@
         _formError = null;
         if (_amount <= 0) { _formError = "Amount must be greater than zero."; return; }
         if (ParseGuid(_categoryId) is not Guid categoryId) { _formError = "Category is required."; return; }
+        if (ParseGuid(_walletId) is not Guid walletId) { _formError = "Wallet is required."; return; }
 
         _saving = true;
-        var error = await Api.UpdateTransactionAsync(_editing!.Id, _amount, _type, _date.ToString("yyyy-MM-dd"), CleanOptional(_note), categoryId);
+        var error = await Api.UpdateTransactionAsync(_editing!.Id, _amount, _type, _date.ToString("yyyy-MM-dd"), CleanOptional(_note), categoryId, walletId);
         if (error is not null)
         {
             _formError = error.Message ?? "Failed to save transaction.";

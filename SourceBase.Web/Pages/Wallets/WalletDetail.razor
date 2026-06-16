@@ -191,6 +191,13 @@ else
                     <label class="form-label">Category *</label>
                     <SelectInput @bind-Value="_transactionCategoryId" Options="TransactionCategoryOptions" />
                 </div>
+                @if (_editingTransaction is not null)
+                {
+                    <div>
+                        <label class="form-label">Wallet *</label>
+                        <SelectInput @bind-Value="_transactionWalletId" Options="EditWalletOptions" />
+                    </div>
+                }
             </div>
             <div class="flex justify-end gap-3 mt-5">
                 <button class="btn-secondary" @onclick="CloseTransactionForm">Cancel</button>
@@ -283,6 +290,7 @@ else
     private DateOnly _transactionDate = DateOnly.FromDateTime(DateTime.Today);
     private string _transactionNote = string.Empty;
     private string _transactionCategoryId = string.Empty;
+    private string _transactionWalletId = string.Empty;
     private string? _transactionFormError;
     private bool _savingTransaction;
 
@@ -304,6 +312,7 @@ else
     private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name} ({c.Type})")).Prepend(new SelectOption("", "All categories")).ToList();
     private IReadOnlyList<SelectOption> TransactionCategoryOptions => FilteredTransactionCategories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name}")).Prepend(new SelectOption("", "Select category")).ToList();
     private IReadOnlyList<SelectOption> TransferWalletOptions => TransferTargets.Select(w => new SelectOption(w.Id.ToString(), $"{WalletIcon(w.Icon)} {w.Name} ({w.Currency})")).Prepend(new SelectOption("", "Select wallet")).ToList();
+    private IReadOnlyList<SelectOption> EditWalletOptions => _wallets.Select(w => new SelectOption(w.Id.ToString(), $"{WalletIcon(w.Icon)} {w.Name} ({w.Currency})")).Prepend(new SelectOption("", "Select wallet")).ToList();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -434,6 +443,7 @@ else
         _transactionDate = DateOnly.FromDateTime(DateTime.Today);
         _transactionNote = string.Empty;
         _transactionCategoryId = string.Empty;
+        _transactionWalletId = Id.ToString();
         _transactionFormError = null;
         _showTransactionForm = true;
     }
@@ -446,6 +456,7 @@ else
         _transactionDate = ParseDate(transaction.Date);
         _transactionNote = transaction.Note ?? string.Empty;
         _transactionCategoryId = transaction.CategoryId?.ToString() ?? string.Empty;
+        _transactionWalletId = transaction.WalletId.ToString();
         _transactionFormError = null;
         _showTransactionForm = true;
     };
@@ -474,10 +485,16 @@ else
             return;
         }
 
+        if (ParseGuid(_transactionWalletId) is not Guid walletId)
+        {
+            _transactionFormError = "Wallet is required.";
+            return;
+        }
+
         _savingTransaction = true;
         var error = _editingTransaction is null
-            ? await Api.CreateTransactionAsync(Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId)
-            : await Api.UpdateTransactionAsync(_editingTransaction.Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId);
+            ? await Api.CreateTransactionAsync(walletId, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId)
+            : await Api.UpdateTransactionAsync(_editingTransaction.Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId, walletId);
 
         if (error is not null)
         {

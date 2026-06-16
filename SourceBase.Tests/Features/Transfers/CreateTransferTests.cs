@@ -93,8 +93,8 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-004: CreateTransfer_WithOtherUsersFromWallet_ReturnsNotFound")]
-    public async Task CreateTransfer_WithOtherUsersFromWallet_ReturnsNotFound()
+    [Fact(DisplayName = "TRANSFER-CREATE-004: CreateTransfer_WithOtherUsersFromWallet_ReturnsBadRequest")]
+    public async Task CreateTransfer_WithOtherUsersFromWallet_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -116,11 +116,11 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-005: CreateTransfer_WithOtherUsersToWallet_ReturnsNotFound")]
-    public async Task CreateTransfer_WithOtherUsersToWallet_ReturnsNotFound()
+    [Fact(DisplayName = "TRANSFER-CREATE-005: CreateTransfer_WithOtherUsersToWallet_ReturnsBadRequest")]
+    public async Task CreateTransfer_WithOtherUsersToWallet_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -142,7 +142,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-006: CreateTransfer_WithZeroOrNegativeAmount_ReturnsBadRequest")]
@@ -246,8 +246,8 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-010: CreateTransfer_WithUnknownFromWallet_ReturnsNotFound")]
-    public async Task CreateTransfer_WithUnknownFromWallet_ReturnsNotFound()
+    [Fact(DisplayName = "TRANSFER-CREATE-010: CreateTransfer_WithUnknownFromWallet_ReturnsBadRequest")]
+    public async Task CreateTransfer_WithUnknownFromWallet_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -265,11 +265,11 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-011: CreateTransfer_WithUnknownToWallet_ReturnsNotFound")]
-    public async Task CreateTransfer_WithUnknownToWallet_ReturnsNotFound()
+    [Fact(DisplayName = "TRANSFER-CREATE-011: CreateTransfer_WithUnknownToWallet_ReturnsBadRequest")]
+    public async Task CreateTransfer_WithUnknownToWallet_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -287,6 +287,6 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }
