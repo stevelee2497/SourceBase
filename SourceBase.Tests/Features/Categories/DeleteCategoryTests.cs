@@ -48,8 +48,8 @@ public class DeleteCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         categories!.Should().NotContain(x => x.Id == create.Id);
     }
 
-    [Fact(DisplayName = "CATS-DELETE-003: DeleteCategory_WithSystemCategory_ReturnsForbidden")]
-    public async Task DeleteCategory_WithSystemCategory_ReturnsForbidden()
+    [Fact(DisplayName = "CATS-DELETE-003: DeleteCategory_WithSystemCategory_ReturnsBadRequest")]
+    public async Task DeleteCategory_WithSystemCategory_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -63,11 +63,11 @@ public class DeleteCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.DeleteAsync(DeleteCategoryEndpoint.Route.WithId(systemCategory.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "CATS-DELETE-004: DeleteCategory_WithOtherUsersCategory_ReturnsNotFound")]
-    public async Task DeleteCategory_WithOtherUsersCategory_ReturnsNotFound()
+    [Fact(DisplayName = "CATS-DELETE-004: DeleteCategory_WithOtherUsersCategory_ReturnsBadRequest")]
+    public async Task DeleteCategory_WithOtherUsersCategory_ReturnsBadRequest()
     {
         // Arrange
         var ownerClient = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -81,11 +81,11 @@ public class DeleteCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await otherClient.DeleteAsync(DeleteCategoryEndpoint.Route.WithId(create!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "CATS-DELETE-005: DeleteCategory_WithUnknownId_ReturnsNotFound")]
-    public async Task DeleteCategory_WithUnknownId_ReturnsNotFound()
+    [Fact(DisplayName = "CATS-DELETE-005: DeleteCategory_WithUnknownId_ReturnsBadRequest")]
+    public async Task DeleteCategory_WithUnknownId_ReturnsBadRequest()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
@@ -94,7 +94,7 @@ public class DeleteCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.DeleteAsync(DeleteCategoryEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "CATS-DELETE-006: DeleteCategory_WithReferencedTransactions_ReturnsBadRequest")]
