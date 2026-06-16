@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Application.Shared;
+using Microsoft.EntityFrameworkCore;
 
 namespace SourceBase.Application.Features.Todos;
 
@@ -52,10 +53,9 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
         RuleFor(x => x.Date).NotNull();
         RuleFor(x => x.Title).NotEmpty();
         RuleFor(x => x.TodoListId)
-            .MustAsync(async (id, ct) =>
+            .MustAsync((id, ct) =>
             {
-                var list = await dbContext.TodoLists.FindAsync([id!.Value], ct);
-                return list is not null && list.UserId == currentUser.UserId;
+                return dbContext.TodoLists.AnyAsync(l => l.Id == id && l.UserId == currentUser.UserId, ct);
             })
             .WithMessage("Todo list not found.")
             .When(x => x.TodoListId.HasValue);
