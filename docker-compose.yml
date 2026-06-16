@@ -94,9 +94,10 @@ services:
     volumes:
       - ./logs/web:/app/Logs
     depends_on:
-      - sourcebase-api
-      - redis:
-          condition: service_healthy
+      sourcebase-api:
+        condition: service_started
+      redis:
+        condition: service_healthy
     networks:
       - internal
 
