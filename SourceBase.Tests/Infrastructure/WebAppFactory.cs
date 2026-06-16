@@ -21,8 +21,8 @@ namespace SourceBase.Tests.Infrastructure;
 
 public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    public const string AdminEmail = "admin@test.com";
-    public const string AdminPassword = "Test@1234!_Aokfn1";
+    public static readonly string AdminEmail = "admin-qt@yopmail.com";
+    public static readonly string AdminPassword = $"pw_{Guid.NewGuid():N}";
 
     public FakeDateTimeProvider FakeDateTime { get; } = new();
 
@@ -33,6 +33,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         builder.ConfigureAppConfiguration((_, config) =>
         {
+            config.Sources.Clear();
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["AppSettings:AdminEmail"] = AdminEmail,
@@ -42,10 +43,6 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["AppSettings:OtpTokenExpiration"] = "00:15:00",
                 ["AppSettings:AccessTokenExpiration"] = "01:00:00",
                 ["AppSettings:RefreshTokenExpiration"] = "14.00:00:00",
-                ["AppSettings:SendGridApiKey"] = "", // Disable real email sending during tests
-                ["ConnectionStrings:RedisConnection"] = "", // Disable Redis — RedisCacheService no-ops when connection string is empty
-                ["Serilog:MinimumLevel:Default"] = "Fatal",
-                ["Logging:LogLevel:Default"] = "Fatal",
             });
         });
 
@@ -93,8 +90,10 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         await base.DisposeAsync().AsTask();
     }
 
-    public async Task<HttpClient> CreateAuthorizedClient(string email = AdminEmail, string password = AdminPassword)
+    public async Task<HttpClient> CreateAuthorizedClient(string? email = null, string? password = null)
     {
+        email ??= AdminEmail;
+        password ??= AdminPassword;
         var client = CreateClient();
 
         if (email != AdminEmail)

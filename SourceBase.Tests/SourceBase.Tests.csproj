@@ -25,4 +25,5 @@
 		<ProjectReference Include="..\SourceBase.Infrastructure\SourceBase.Infrastructure.csproj" />
 	</ItemGroup>
 
+
 </Project>
