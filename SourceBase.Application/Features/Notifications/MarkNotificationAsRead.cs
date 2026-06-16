@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Application.Shared;
 using Swashbuckle.AspNetCore.Annotations;
+using FluentValidation;
 
 namespace SourceBase.Application.Features.Notifications;
 
@@ -19,16 +18,25 @@ public class MarkNotificationAsReadEndpoint : IEndpoint
         .WithTags("Notifications");
 }
 
-public class MarkNotificationAsReadHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<MarkNotificationAsReadRequest, MarkNotificationAsReadResponse>
+public class MarkNotificationAsReadHandler(IDbContext dbContext) : IRequestHandler<MarkNotificationAsReadRequest, MarkNotificationAsReadResponse>
 {
     public async Task<MarkNotificationAsReadResponse> Handle(MarkNotificationAsReadRequest request, CancellationToken ct)
     {
-        var notification = await dbContext.Notifications
-            .FirstOrDefaultAsync(n => n.Id == request.Id && n.UserId == currentUser.UserId, ct)
-            ?? throw new NotFoundException("Notification not found.");
-
-        notification.IsRead = true;
+        var notification = await dbContext.Notifications.FindAsync([request.Id], ct);
+        notification!.IsRead = true;
         await dbContext.SaveChangesAsync(ct);
         return new MarkNotificationAsReadResponse(true);
+    }
+}
+
+public class MarkNotificationAsReadRequestValidator : AbstractValidator<MarkNotificationAsReadRequest>
+{
+    public MarkNotificationAsReadRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
+    {
+        RuleFor(x => x.Id).NotEmpty().MustAsync(async (id, ct) =>
+        {
+            var noti = await dbContext.Notifications.FindAsync([id], ct);
+            return noti is not null && noti.UserId == currentUser.UserId;
+        }).WithMessage("Notification not found.");
     }
 }
