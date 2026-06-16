@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Wallets;
 
-public record UpdateWalletRequest([property: SwaggerIgnore] Guid Id, string Name, string? Icon);
+public record UpdateWalletRequest([property: SwaggerIgnore] Guid Id, string? Name, string? Icon);
 
 public record UpdateWalletResponse(Guid Id);
 
@@ -15,7 +15,7 @@ public class UpdateWalletEndpoint : IEndpoint
     public const string Route = "wallets/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut(Route, (Guid id, [FromBody] UpdateWalletRequest body, UpdateWalletHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, (Guid id, [FromBody] UpdateWalletRequest body, UpdateWalletHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
         .WithTags("Wallets");
 }
 
@@ -27,8 +27,8 @@ public class UpdateWalletHandler(IDbContext dbContext, ICurrentUser currentUser,
         if (wallet is null || wallet.UserId != currentUser.UserId)
             throw new NotFoundException();
 
-        wallet.Name = request.Name;
-        wallet.Icon = request.Icon;
+        wallet.Name = request.Name ?? wallet.Name;
+        wallet.Icon = request.Icon ?? wallet.Icon;
         await dbContext.SaveChangesAsync(ct);
         await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
         return new UpdateWalletResponse(wallet.Id);
@@ -39,6 +39,6 @@ public class UpdateWalletRequestValidator : AbstractValidator<UpdateWalletReques
 {
     public UpdateWalletRequestValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(100).When(x => x.Name is not null);
     }
 }

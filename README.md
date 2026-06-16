@@ -48,6 +48,7 @@ SourceBase.Api/
 - **Layered DI**: `AddApplication()` auto-discovers endpoints, handlers, and validators. `AddInfrastructure()` registers EF Core, auth, and service implementations.
 - **Middleware-based error handling**: `GlobalExceptionMiddleware` catches typed exceptions and maps them to `{ TraceId, Code, Message, Errors }` JSON responses.
 - **Identity on `UserEntity`**: ASP.NET Core BearerToken auth wired directly to `UserEntity` — no separate `ApplicationUser`.
+- **PATCH with partial updates**: All update endpoints use `PATCH`. Fields are nullable and only applied when non-null (null-coalescing). DB-level validation lives in the validator via `MustAsync`.
 
 ### Feature Structure
 
@@ -89,11 +90,40 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 
 ### Update Requests Convention
 
-For update operations, the `Id` is passed as a route parameter and marked with `[property: SwaggerIgnore]` in the request record to exclude it from the OpenAPI schema:
+Update endpoints use **`PATCH`** with partial update semantics. All request fields are nullable; only provided (non-null) fields are applied. The handler uses null-coalescing so omitted fields are never overwritten, and validator rules are guarded with `.When`:
 
 ```csharp
-public record UpdateTodoRequest([property: SwaggerIgnore] Guid Id, DateOnly Date, string Title, TodoItemStatus Status);
+public record UpdateTodoRequest([property: SwaggerIgnore] Guid Id, DateOnly? Date, string? Title, TodoItemStatus? Status);
 ```
+
+```csharp
+// Handler — null-coalescing keeps existing values for omitted fields
+item.Title = request.Title ?? item.Title;
+item.Status = request.Status ?? item.Status;
+item.Date = request.Date ?? item.Date;
+```
+
+```csharp
+// Validator — rules only fire when the field is actually provided
+RuleFor(x => x.Title).NotEmpty().When(x => x.Title is not null);
+```
+
+DB-level validation (existence checks, ownership) belongs in the **validator**, not the handler. Inject `IDbContext` and `ICurrentUser` into the validator constructor and use `MustAsync`:
+
+```csharp
+public class UpdateTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser) : AbstractValidator<UpdateTransactionRequest>
+{
+    public UpdateTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
+    {
+        RuleFor(x => x.WalletId)
+            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id!.Value && w.UserId == currentUser.UserId, ct))
+            .WithMessage("Wallet not found.")
+            .When(x => x.WalletId is not null);
+    }
+}
+```
+
+> **Note:** Sending `null` for a field means "keep existing value" — it does not clear the field.
 
 ### Endpoint Formatting
 

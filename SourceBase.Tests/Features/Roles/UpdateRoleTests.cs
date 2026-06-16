@@ -17,7 +17,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateRoleEndpoint.Route.WithId(Guid.NewGuid()), new
+        var response = await client.PatchAsJsonAsync(UpdateRoleEndpoint.Route.WithId(Guid.NewGuid()), new
         {
             name = $"Role_{Guid.NewGuid():N}",
             description = "After update",
@@ -42,7 +42,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var createBody = await createResponse.Content.ReadFromJsonAsync<CreateRoleResponse>();
 
         // Act
-        var response = await nonAdminClient.PutAsJsonAsync(UpdateRoleEndpoint.Route.WithId(createBody!.Id), new
+        var response = await nonAdminClient.PatchAsJsonAsync(UpdateRoleEndpoint.Route.WithId(createBody!.Id), new
         {
             name = $"Role_{Guid.NewGuid():N}_Updated",
             description = "After update",
@@ -67,7 +67,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var updatedRoleName = $"{roleName}_Updated";
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateRoleEndpoint.Route.WithId(createBody!.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateRoleEndpoint.Route.WithId(createBody!.Id), new
         {
             name = updatedRoleName,
             description = "After update",
@@ -102,7 +102,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var secondRoleBody = await secondRoleResponse.Content.ReadFromJsonAsync<CreateRoleResponse>();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateRoleEndpoint.Route.WithId(secondRoleBody!.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateRoleEndpoint.Route.WithId(secondRoleBody!.Id), new
         {
             name = firstName.ToUpperInvariant(),
             description = "Updated",
@@ -122,7 +122,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var adminRole = roles!.Items.Single(x => x.Name == "Admin");
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateRoleEndpoint.Route.WithId(adminRole.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateRoleEndpoint.Route.WithId(adminRole.Id), new
         {
             name = "AdminUpdated",
             description = "Updated",
@@ -146,7 +146,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var createBody = await createResponse.Content.ReadFromJsonAsync<CreateRoleResponse>();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateRoleEndpoint.Route.WithId(createBody!.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateRoleEndpoint.Route.WithId(createBody!.Id), new
         {
             name = roleName,
             description = "After update",

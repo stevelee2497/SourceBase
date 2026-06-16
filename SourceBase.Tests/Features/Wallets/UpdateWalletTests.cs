@@ -19,7 +19,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateWalletEndpoint.Route.WithId(Guid.NewGuid()), new
+        var response = await client.PatchAsJsonAsync(UpdateWalletEndpoint.Route.WithId(Guid.NewGuid()), new
         {
             name = $"Updated_{Guid.NewGuid():N}",
             icon = "🏦",
@@ -41,7 +41,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var updatedName = $"Updated_{Guid.NewGuid():N}";
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateWalletEndpoint.Route.WithId(create!.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateWalletEndpoint.Route.WithId(create!.Id), new
         {
             name = updatedName,
             icon = "🏦",
@@ -58,24 +58,29 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.Icon.Should().Be("🏦");
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-003: UpdateWallet_WithMissingName_ReturnsBadRequest")]
-    public async Task UpdateWallet_WithMissingName_ReturnsBadRequest()
+    [Fact(DisplayName = "WALLETS-UPDATE-003: UpdateWallet_WithOnlyIcon_ReturnsOkAndKeepsName")]
+    public async Task UpdateWallet_WithOnlyIcon_ReturnsOkAndKeepsName()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var originalName = $"Wallet_{Guid.NewGuid():N}";
 
-        var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
+        var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = originalName, initialBalance = 0m, currency = "USD", icon = "💳" });
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateWalletEndpoint.Route.WithId(create!.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateWalletEndpoint.Route.WithId(create!.Id), new
         {
             icon = "🏦",
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create.Id));
+        var wallet = await walletResponse.Content.ReadFromJsonAsync<WalletResponse>();
+        wallet!.Name.Should().Be(originalName);
+        wallet.Icon.Should().Be("🏦");
     }
 
     [Fact(DisplayName = "WALLETS-UPDATE-004: UpdateWallet_WithOtherUsersWallet_ReturnsNotFound")]
@@ -90,7 +95,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
-        var response = await otherClient.PutAsJsonAsync(UpdateWalletEndpoint.Route.WithId(create!.Id), new
+        var response = await otherClient.PatchAsJsonAsync(UpdateWalletEndpoint.Route.WithId(create!.Id), new
         {
             name = $"Hacked_{Guid.NewGuid():N}",
             icon = "🚫",
@@ -107,7 +112,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateWalletEndpoint.Route.WithId(Guid.NewGuid()), new
+        var response = await client.PatchAsJsonAsync(UpdateWalletEndpoint.Route.WithId(Guid.NewGuid()), new
         {
             name = $"Unknown_{Guid.NewGuid():N}",
             icon = "🏦",
@@ -137,7 +142,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var before = await beforeResponse.Content.ReadFromJsonAsync<WalletResponse>();
 
         // Act
-        var updateResponse = await client.PutAsJsonAsync(UpdateWalletEndpoint.Route.WithId(create.Id), new
+        var updateResponse = await client.PatchAsJsonAsync(UpdateWalletEndpoint.Route.WithId(create.Id), new
         {
             name = $"Renamed_{Guid.NewGuid():N}",
             icon = "🏦",
@@ -151,20 +156,21 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         after.Balance.Should().Be(125m);
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-007: UpdateWallet_WithNullIcon_ClearsIcon")]
-    public async Task UpdateWallet_WithNullIcon_ClearsIcon()
+    [Fact(DisplayName = "WALLETS-UPDATE-007: UpdateWallet_WithNullIcon_KeepsExistingIcon")]
+    public async Task UpdateWallet_WithNullIcon_KeepsExistingIcon()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var newName = $"Wallet_{Guid.NewGuid():N}";
 
         var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateWalletEndpoint.Route.WithId(create!.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateWalletEndpoint.Route.WithId(create!.Id), new
         {
-            name = $"Wallet_{Guid.NewGuid():N}",
+            name = newName,
             icon = (string?)null,
         });
 
@@ -172,6 +178,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create.Id));
         var wallet = await walletResponse.Content.ReadFromJsonAsync<WalletResponse>();
-        wallet!.Icon.Should().BeNullOrEmpty();
+        wallet!.Name.Should().Be(newName);
+        wallet.Icon.Should().Be("💳");
     }
 }

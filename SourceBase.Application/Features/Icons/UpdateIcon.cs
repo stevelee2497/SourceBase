@@ -7,7 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Icons;
 
-public record UpdateIconRequest([property: SwaggerIgnore] Guid Id, string Value, string Name, IconGroup Group, int SortOrder);
+public record UpdateIconRequest([property: SwaggerIgnore] Guid Id, string? Value, string? Name, IconGroup? Group, int? SortOrder);
 
 public record UpdateIconResponse(Guid Id);
 
@@ -16,7 +16,7 @@ public class UpdateIconEndpoint : IEndpoint
     public const string Route = "icons/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut(Route, (Guid id, [FromBody] UpdateIconRequest body, UpdateIconHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, (Guid id, [FromBody] UpdateIconRequest body, UpdateIconHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
         .WithTags("Icons");
 }
 
@@ -30,10 +30,10 @@ public class UpdateIconHandler(IDbContext dbContext) : IRequestHandler<UpdateIco
         if (icon.IsSystem)
             throw new ForbiddenException();
 
-        icon.Value = request.Value;
-        icon.Name = request.Name;
-        icon.Group = request.Group;
-        icon.SortOrder = request.SortOrder;
+        icon.Value = request.Value ?? icon.Value;
+        icon.Name = request.Name ?? icon.Name;
+        icon.Group = request.Group ?? icon.Group;
+        icon.SortOrder = request.SortOrder ?? icon.SortOrder;
         await dbContext.SaveChangesAsync(ct);
         return new UpdateIconResponse(icon.Id);
     }
@@ -43,7 +43,7 @@ public class UpdateIconRequestValidator : AbstractValidator<UpdateIconRequest>
 {
     public UpdateIconRequestValidator()
     {
-        RuleFor(x => x.Value).NotEmpty().MaximumLength(2000);
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.Value).NotEmpty().When(x => x.Value is not null);
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(100).When(x => x.Name is not null);
     }
 }

@@ -105,30 +105,32 @@ As an authenticated user, I want to retrieve the details of a specific wallet, s
 
 ## Update Wallet
 
-**Endpoint:** `PUT /api/wallets/{id}`
+**Endpoint:** `PATCH /api/wallets/{id}`
 **Auth:** Required
 
 ### Use Case
 
-As an authenticated user, I want to rename or change the icon of one of my wallets, so that I can keep it organised.
+As an authenticated user, I want to partially update a wallet's name or icon, so that I can keep it organised without resending all fields.
 
 ### Description
 
-1. Client sends the wallet `id` (route) and `name` (required), optional `icon`.
+1. Client sends the wallet `id` (route) and any subset of: `name`, `icon`. All fields are optional — only provided (non-null) fields are updated. Sending `null` for a field keeps the existing value.
 2. If the wallet doesn't exist or belongs to a different user → `404 Not Found`.
-3. Only metadata fields (`name`, `icon`) are updated.
-4. Returns the updated wallet's `Id`.
+3. If `name` is provided but empty → `400 Bad Request`.
+4. Only metadata fields (`name`, `icon`) are updated; computed balance is unaffected.
+5. Returns the updated wallet's `Id`.
 
 ### Test Cases
 
-| Test Case ID       | Description                                          | Status  |
-| ------------------ | ---------------------------------------------------- | ------- |
-| WALLETS-UPDATE-001 | Missing token returns 401 Unauthorized               | ✅ Pass |
-| WALLETS-UPDATE-002 | Valid update returns 200                             | ✅ Pass |
-| WALLETS-UPDATE-003 | Missing name returns 400 Bad Request                 | ✅ Pass |
-| WALLETS-UPDATE-004 | Updating another user's wallet returns 404 Not Found | ✅ Pass |
-| WALLETS-UPDATE-005 | Non-existent wallet id returns 404 Not Found         | ✅ Pass |
-| WALLETS-UPDATE-006 | Update does not affect the computed wallet balance   | ✅ Pass |
+| Test Case ID       | Description                                                              | Status  |
+| ------------------ | ------------------------------------------------------------------------ | ------- |
+| WALLETS-UPDATE-001 | Missing token returns 401 Unauthorized                                   | ✅ Pass |
+| WALLETS-UPDATE-002 | Valid partial update returns 200                                         | ✅ Pass |
+| WALLETS-UPDATE-003 | Sending only `icon` (no `name`) returns 200 and keeps existing name      | ✅ Pass |
+| WALLETS-UPDATE-004 | Updating another user's wallet returns 404 Not Found                     | ✅ Pass |
+| WALLETS-UPDATE-005 | Non-existent wallet id returns 404 Not Found                             | ✅ Pass |
+| WALLETS-UPDATE-006 | Update does not affect the computed wallet balance                       | ✅ Pass |
+| WALLETS-UPDATE-007 | Sending `null` for `icon` keeps the existing icon (null = no-op)         | ✅ Pass |
 
 ---
 
@@ -242,30 +244,31 @@ As an authenticated user, I want to create a custom transaction category, so tha
 
 ## Update Category
 
-**Endpoint:** `PUT /api/categories/{id}`
+**Endpoint:** `PATCH /api/categories/{id}`
 **Auth:** Required
 
 ### Use Case
 
-As an authenticated user, I want to rename or change the icon of one of my custom categories, so that I can keep my organisation up to date.
+As an authenticated user, I want to partially update a custom category's name or icon, so that I can keep my organisation up to date without resending all fields.
 
 ### Description
 
-1. Client sends the category `id` (route) and `name` (required), optional `icon`.
+1. Client sends the category `id` (route) and any subset of: `name`, `icon`. All fields are optional — only provided (non-null) fields are updated.
 2. If the category doesn't exist or belongs to a different user → `404 Not Found`.
 3. If the category is a system category (`IsSystem = true`) → `403 Forbidden`.
-4. Returns the updated category's `Id`.
+4. If `name` is provided but empty → `400 Bad Request`.
+5. Returns the updated category's `Id`.
 
 ### Test Cases
 
-| Test Case ID    | Description                                            | Status  |
-| --------------- | ------------------------------------------------------ | ------- |
-| CATS-UPDATE-001 | Missing token returns 401 Unauthorized                 | ✅ Pass |
-| CATS-UPDATE-002 | Valid update returns 200                               | ✅ Pass |
-| CATS-UPDATE-003 | Missing name returns 400 Bad Request                   | ✅ Pass |
-| CATS-UPDATE-004 | Updating a system category returns 403 Forbidden       | ✅ Pass |
-| CATS-UPDATE-005 | Updating another user's category returns 404 Not Found | ✅ Pass |
-| CATS-UPDATE-006 | Non-existent category id returns 404 Not Found         | ✅ Pass |
+| Test Case ID    | Description                                                              | Status  |
+| --------------- | ------------------------------------------------------------------------ | ------- |
+| CATS-UPDATE-001 | Missing token returns 401 Unauthorized                                   | ✅ Pass |
+| CATS-UPDATE-002 | Valid partial update returns 200                                         | ✅ Pass |
+| CATS-UPDATE-003 | Sending only `icon` (no `name`) returns 200 and keeps existing name      | ✅ Pass |
+| CATS-UPDATE-004 | Updating a system category returns 403 Forbidden                         | ✅ Pass |
+| CATS-UPDATE-005 | Updating another user's category returns 404 Not Found                   | ✅ Pass |
+| CATS-UPDATE-006 | Non-existent category id returns 404 Not Found                           | ✅ Pass |
 
 ---
 
@@ -635,30 +638,31 @@ As an authenticated user, I want to add a custom icon so that wallets and catego
 
 ## Update Icon
 
-**Endpoint:** `PUT /api/icons/{id}`
+**Endpoint:** `PATCH /api/icons/{id}`
 **Auth:** Required
 
 ### Use Case
 
-As an authenticated user, I want to edit a custom icon's value, name, group, or sort order so that I can correct or reorganise it.
+As an authenticated user, I want to partially update a custom icon's value, name, group, or sort order, so that I can correct or reorganise it without resending all fields.
 
 ### Description
 
-1. Client sends the icon `id` (route) and updated `value`, `name`, `group`, `sortOrder`.
+1. Client sends the icon `id` (route) and any subset of: `value`, `name`, `group`, `sortOrder`. All fields are optional — only provided (non-null) fields are updated.
 2. If the icon doesn't exist → `404 Not Found`.
 3. If the icon is a system icon (`IsSystem = true`) → `403 Forbidden`.
-4. Returns the updated icon's `Id`.
+4. If `value` or `name` is provided but empty → `400 Bad Request`.
+5. Returns the updated icon's `Id`.
 
 ### Test Cases
 
 | Test Case ID     | Description                                       | Status  |
 | ---------------- | ------------------------------------------------- | ------- |
 | ICONS-UPDATE-001 | Missing token returns 401 Unauthorized            | ✅ Pass |
-| ICONS-UPDATE-002 | Valid update returns 200                          | ✅ Pass |
+| ICONS-UPDATE-002 | Valid partial update returns 200                  | ✅ Pass |
 | ICONS-UPDATE-003 | Changes are persisted and reflected in GET /icons | ✅ Pass |
 | ICONS-UPDATE-004 | Non-existent icon id returns 404 Not Found        | ✅ Pass |
 | ICONS-UPDATE-005 | Updating a system icon returns 403 Forbidden      | ✅ Pass |
-| ICONS-UPDATE-006 | Empty value returns 400 Bad Request               | ✅ Pass |
+| ICONS-UPDATE-006 | Providing an empty string value returns 400 Bad Request | ✅ Pass |
 
 ---
 

@@ -58,18 +58,18 @@ As any client (authenticated or not), I want to retrieve the list of available r
 
 ## Update Role
 
-**Endpoint:** `PUT /api/roles/{id}`
+**Endpoint:** `PATCH /api/roles/{id}`
 **Auth:** Admin only
 
 ### Use Case
 
-As an admin, I want to update a role's name and description, so that I can keep role definitions accurate.
+As an admin, I want to partially update a role's name or description, so that I can keep role definitions accurate without resending all fields.
 
 ### Description
 
-1. Admin sends the role `id` (route) plus updated `name` and `description`.
-2. The `Admin` role is protected and cannot be renamed or modified → `400 Bad Request`.
-3. If the new name is already used by a different role → `400 Bad Request`.
+1. Admin sends the role `id` (route) and any subset of: `name`, `description`. All fields are optional — only provided (non-null) fields are updated.
+2. The `Admin` role is protected and cannot be modified → `400 Bad Request`.
+3. If `name` is provided and already used by a different role → `400 Bad Request`.
 4. Updating a role to its current name (no-op rename) is valid and returns 200.
 
 ### Test Cases
@@ -78,7 +78,7 @@ As an admin, I want to update a role's name and description, so that I can keep 
 |---|---|---|
 | ROLES-UPDATE-001 | Missing token returns 401 Unauthorized | ✅ Pass |
 | ROLES-UPDATE-002 | Non-admin user returns 403 Forbidden | ✅ Pass |
-| ROLES-UPDATE-003 | Valid update returns 200 | ✅ Pass |
+| ROLES-UPDATE-003 | Valid partial update returns 200 | ✅ Pass |
 | ROLES-UPDATE-004 | Duplicate name (case-insensitive, different role) returns 400 Bad Request | ✅ Pass |
 | ROLES-UPDATE-005 | Attempting to update the Admin role returns 400 Bad Request | ✅ Pass |
 | ROLES-UPDATE-006 | Updating a role with its own current name returns 200 | ✅ Pass |

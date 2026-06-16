@@ -63,6 +63,8 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 - Keep `MapEndpoint` chains on separate lines: `.MapXxx(...)`, `.AllowAnonymous()` / `.RequireAuthorization()`, `.WithTags(...)`
 - Record/handler/constructor parameters on one line; avoid multi-line parameter lists
 - For update operations, `Id` is a route parameter marked `[property: SwaggerIgnore]` in the request record
+- **Update endpoints use `PATCH` with partial update semantics.** All request fields are nullable; only provided (non-null) fields are applied. Handler uses null-coalescing: `entity.Field = request.Field ?? entity.Field`. Validator rules guarded with `.When(x => x.Field is not null)`. Sending `null` keeps the existing value.
+- **DB-level validation (e.g. existence checks) belongs in the validator.** Inject `IDbContext` and `ICurrentUser` into the validator and use `MustAsync`; guard with `.When` for optional fields.
 
 ## Conventions
 
@@ -179,7 +181,11 @@ Apply this checklist on every pull request review.
 
 ### Partial updates
 
+- All update endpoints use `PATCH` (not `PUT`) with partial semantics
+- All request fields are nullable; only non-null fields are applied
 - Partial update handlers use `entity.Field = request.Field ?? entity.Field` (null-coalescing), not if-guards
+- Validator rules are guarded with `.When(x => x.Field is not null)`
+- DB-level validation (existence/ownership checks) belongs in the validator via `MustAsync`, not in the handler
 - Single-field updates extend existing endpoints rather than adding new dedicated endpoints
 
 ### Tests

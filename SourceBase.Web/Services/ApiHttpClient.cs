@@ -147,8 +147,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
     public Task<ErrorResponse?> CreateRoleAsync(string name, string? description) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/roles", new { name, description }));
 
-    public Task<ErrorResponse?> UpdateRoleAsync(Guid id, string name, string? description) =>
-        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/roles/{id}", new { name, description }));
+    public Task<ErrorResponse?> UpdateRoleAsync(Guid id, string? name = null, string? description = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Patch, $"/api/roles/{id}", new { name, description }));
 
     public Task<ErrorResponse?> DeleteRoleAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/roles/{id}"));
@@ -184,8 +184,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
     public Task<ErrorResponse?> CreateTodoAsync(string title, string date, string status, Guid? todoListId = null) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/todos", new { title, date, status, todoListId }));
 
-    public Task<ErrorResponse?> UpdateTodoAsync(Guid id, string title, string date, string status) =>
-        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/todos/{id}", new { title, date, status }));
+    public Task<ErrorResponse?> UpdateTodoAsync(Guid id, string? title = null, string? date = null, string? status = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Patch, $"/api/todos/{id}", new { title, date, status }));
 
     public Task<ErrorResponse?> DeleteTodoAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/todos/{id}"));
@@ -198,8 +198,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
     public Task<ErrorResponse?> CreateTodoListAsync(string name) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/todo-lists", new { name }));
 
-    public Task<ErrorResponse?> UpdateTodoListAsync(Guid id, string name) =>
-        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/todo-lists/{id}", new { name }));
+    public Task<ErrorResponse?> UpdateTodoListAsync(Guid id, string? name = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Patch, $"/api/todo-lists/{id}", new { name }));
 
     public Task<ErrorResponse?> DeleteTodoListAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/todo-lists/{id}"));
@@ -231,8 +231,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
     public Task<ErrorResponse?> CreateWalletAsync(string name, decimal initialBalance, string currency, string? icon) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/wallets", new { name, initialBalance, currency, icon }));
 
-    public Task<ErrorResponse?> UpdateWalletAsync(Guid id, string name, string? icon) =>
-        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/wallets/{id}", new { name, icon }));
+    public Task<ErrorResponse?> UpdateWalletAsync(Guid id, string? name = null, string? icon = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Patch, $"/api/wallets/{id}", new { name, icon }));
 
     public Task<ErrorResponse?> DeleteWalletAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/wallets/{id}"));
@@ -252,8 +252,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
     public Task<ErrorResponse?> CreateIconAsync(string value, string name, string group, int sortOrder) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/icons", new { value, name, group, sortOrder }));
 
-    public Task<ErrorResponse?> UpdateIconAsync(Guid id, string value, string name, string group, int sortOrder) =>
-        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/icons/{id}", new { value, name, group, sortOrder }));
+    public Task<ErrorResponse?> UpdateIconAsync(Guid id, string? value = null, string? name = null, string? group = null, int? sortOrder = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Patch, $"/api/icons/{id}", new { value, name, group, sortOrder }));
 
     public Task<ErrorResponse?> DeleteIconAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/icons/{id}"));
@@ -279,8 +279,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
     public Task<ErrorResponse?> CreateCategoryAsync(string name, string type, string? icon) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/categories", new { name, type, icon }));
 
-    public Task<ErrorResponse?> UpdateCategoryAsync(Guid id, string name, string? icon) =>
-        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/categories/{id}", new { name, icon }));
+    public Task<ErrorResponse?> UpdateCategoryAsync(Guid id, string? name = null, string? icon = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Patch, $"/api/categories/{id}", new { name, icon }));
 
     public Task<ErrorResponse?> DeleteCategoryAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/categories/{id}"));

@@ -7,7 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.TodoLists;
 
-public record UpdateTodoListRequest([property: SwaggerIgnore] Guid Id, string Name);
+public record UpdateTodoListRequest([property: SwaggerIgnore] Guid Id, string? Name);
 
 public record UpdateTodoListResponse(Guid Id);
 
@@ -16,7 +16,7 @@ public class UpdateTodoListEndpoint : IEndpoint
     public const string Route = "todo-lists/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut(Route, (Guid id, [FromBody] UpdateTodoListRequest body, UpdateTodoListHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, (Guid id, [FromBody] UpdateTodoListRequest body, UpdateTodoListHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
         .WithTags("TodoLists");
 }
 
@@ -27,7 +27,7 @@ public class UpdateTodoListHandler(IDbContext dbContext, ICurrentUser currentUse
         var list = await dbContext.TodoLists.FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == currentUser.UserId, ct)
             ?? throw new NotFoundException();
 
-        list.Name = request.Name;
+        list.Name = request.Name ?? list.Name;
         await dbContext.SaveChangesAsync(ct);
         return new UpdateTodoListResponse(list.Id);
     }
@@ -37,6 +37,6 @@ public class UpdateTodoListRequestValidator : AbstractValidator<UpdateTodoListRe
 {
     public UpdateTodoListRequestValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(200).When(x => x.Name is not null);
     }
 }

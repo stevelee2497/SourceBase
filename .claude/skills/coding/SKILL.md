@@ -82,6 +82,8 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 - DI wiring: `AddApplication()` in `SourceBase.Application/DependencyInjection.cs`; `AddInfrastructure()` in `SourceBase.Infrastructure/DependencyInjection.cs`.
 - Interfaces belong in `SourceBase.Application/Shared/Interfaces/`; implementations in `SourceBase.Infrastructure/Implementations/`.
 - Pagination: define `OrderBy` enums per feature and use `PagingRequest` base class. Apply `.PaginateAsync()` on `IQueryable`.
+- **Update endpoints use `PATCH` with partial update semantics.** All request fields are nullable; only provided (non-null) fields are applied. Handler uses null-coalescing: `entity.Field = request.Field ?? entity.Field`. Validator rules are guarded with `.When(x => x.Field is not null)`. Sending `null` keeps the existing value — it does not clear a field.
+- **DB-level validation (e.g. existence checks) belongs in the validator**, not the handler. Inject `IDbContext` and `ICurrentUser` into the validator constructor and use `MustAsync`; guard with `.When` for optional fields.
 
 ## Conventions
 

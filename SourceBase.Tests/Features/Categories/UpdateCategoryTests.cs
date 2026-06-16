@@ -17,7 +17,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var client = factory.CreateClient();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(Guid.NewGuid()), new
+        var response = await client.PatchAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(Guid.NewGuid()), new
         {
             name = $"Updated_{Guid.NewGuid():N}",
             icon = "✏️",
@@ -39,7 +39,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var updatedName = $"Updated_{Guid.NewGuid():N}";
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create!.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create!.Id), new
         {
             name = updatedName,
             icon = "🏷️",
@@ -57,24 +57,30 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         updated.Icon.Should().Be("🏷️");
     }
 
-    [Fact(DisplayName = "CATS-UPDATE-003: UpdateCategory_WithMissingName_ReturnsBadRequest")]
-    public async Task UpdateCategory_WithMissingName_ReturnsBadRequest()
+    [Fact(DisplayName = "CATS-UPDATE-003: UpdateCategory_WithOnlyIcon_ReturnsOkAndKeepsName")]
+    public async Task UpdateCategory_WithOnlyIcon_ReturnsOkAndKeepsName()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var originalName = $"Category_{Guid.NewGuid():N}";
 
-        var createResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
+        var createResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = originalName, type = "Expense", icon = "🏷️" });
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create!.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create!.Id), new
         {
-            icon = "🏷️",
+            icon = "✏️",
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var categoriesResponse = await client.GetAsync(GetCategoriesEndpoint.Route);
+        var categories = await categoriesResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var updated = categories!.Single(x => x.Id == create.Id);
+        updated.Name.Should().Be(originalName);
+        updated.Icon.Should().Be("✏️");
     }
 
     [Fact(DisplayName = "CATS-UPDATE-004: UpdateCategory_WithSystemCategory_ReturnsForbidden")]
@@ -89,7 +95,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var systemCategory = categories!.First(x => x.IsSystem);
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(systemCategory.Id), new
+        var response = await client.PatchAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(systemCategory.Id), new
         {
             name = $"System_{Guid.NewGuid():N}",
             icon = "🚫",
@@ -111,7 +117,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Act
-        var response = await otherClient.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create!.Id), new
+        var response = await otherClient.PatchAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(create!.Id), new
         {
             name = $"OtherUser_{Guid.NewGuid():N}",
             icon = "🚫",
@@ -128,7 +134,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         // Act
-        var response = await client.PutAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(Guid.NewGuid()), new
+        var response = await client.PatchAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(Guid.NewGuid()), new
         {
             name = $"Unknown_{Guid.NewGuid():N}",
             icon = "🏷️",
