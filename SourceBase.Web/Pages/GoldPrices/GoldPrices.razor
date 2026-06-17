@@ -70,10 +70,10 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recorded At</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Buy Price</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sell Price</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recorded At</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100">
@@ -88,12 +88,12 @@
                             @foreach (var item in _tableData.Items)
                             {
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3 text-sm text-gray-700">@item.RecordedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
                                     <td class="px-4 py-3">
                                         <span class="@GetSourceBadgeClass(item.Source) text-xs font-medium px-2 py-0.5 rounded-full">@item.Source</span>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-right font-mono text-gray-800">@item.BuyPrice.ToString("N0")</td>
                                     <td class="px-4 py-3 text-sm text-right font-mono text-gray-800">@item.SellPrice.ToString("N0")</td>
+                                    <td class="px-4 py-3 text-sm text-gray-700">@item.RecordedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
                                 </tr>
                             }
                         }
@@ -110,15 +110,16 @@
 @code {
     private PagingResponse<GoldPriceResponse>? _tableData;
     private List<GoldPriceResponse> _chartData = [];
-    private readonly string[] _sources = ["SJC", "PNJ", "GiaVang", "KimKhanhVietHung"];
+    private readonly string[] _sources = ["SJC", "PNJ", "GiaVang", "KimKhanhVietHung", "NgocThinh"];
     private bool _loading = true;
     private bool _loadingChart = true;
+    private bool _chartRendered = false;
     private string? _error;
     private string _sourceFilter = string.Empty;
     private string _dateFromStr = string.Empty;
     private string _dateToStr = string.Empty;
     private int _page = 1;
-    private const int _pageSize = 20;
+    private const int _pageSize = 5;
 
     protected override async Task OnInitializedAsync()
     {
@@ -127,8 +128,11 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!_loadingChart && _chartData.Count > 0)
+        if (!_loadingChart && _chartData.Count > 0 && !_chartRendered)
+        {
+            _chartRendered = true;
             await RenderChartAsync();
+        }
     }
 
     private async Task LoadTableDataAsync()
@@ -154,16 +158,15 @@
     private async Task RenderChartAsync()
     {
         var seriesMap = new Dictionary<string, List<object[]>>();
-        foreach (var src in _sources)
-        {
-            seriesMap[$"{src} Buy"] = [];
-            seriesMap[$"{src} Sell"] = [];
-        }
         foreach (var item in _chartData.OrderBy(x => x.RecordedAt))
         {
             var ts = item.RecordedAt.ToLocalTime().ToString("yyyy-MM-ddTHH:mm:ss");
-            seriesMap[$"{item.Source} Buy"].Add([ts, item.BuyPrice]);
-            seriesMap[$"{item.Source} Sell"].Add([ts, item.SellPrice]);
+            var buyKey = $"{item.Source} Buy";
+            var sellKey = $"{item.Source} Sell";
+            if (!seriesMap.ContainsKey(buyKey)) seriesMap[buyKey] = [];
+            if (!seriesMap.ContainsKey(sellKey)) seriesMap[sellKey] = [];
+            seriesMap[buyKey].Add([ts, item.BuyPrice]);
+            seriesMap[sellKey].Add([ts, item.SellPrice]);
         }
         var series = seriesMap
             .Where(kv => kv.Value.Count > 0)
@@ -217,6 +220,7 @@
         "PNJ" => "bg-amber-100 text-amber-700",
         "GiaVang" => "bg-green-100 text-green-700",
         "KimKhanhVietHung" => "bg-rose-100 text-rose-700",
+        "NgocThinh" => "bg-purple-100 text-purple-700",
         _ => "bg-gray-100 text-gray-700",
     };
 }
