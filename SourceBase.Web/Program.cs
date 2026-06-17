@@ -33,6 +33,7 @@ builder.Services.AddHttpClient("api", client => client.BaseAddress = new Uri(bui
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("api"));
 builder.Services.AddScoped<ApiHttpClient>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<UserTimeZoneService>();
 
 var appSettings = builder.Configuration.Get<AppSettings>() ?? new AppSettings();
 builder.Services.AddSingleton(appSettings);

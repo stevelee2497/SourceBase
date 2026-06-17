@@ -1,7 +1,9 @@
 @page "/gold-prices"
 @attribute [Authorize]
+@implements IDisposable
 @inject ApiHttpClient Api
 @inject IJSRuntime JS
+@inject UserTimeZoneService TimeZoneService
 
 @if (!string.IsNullOrEmpty(_error))
 {
@@ -93,7 +95,7 @@
                                     </td>
                                     <td class="px-4 py-3 text-sm text-right font-mono text-gray-800">@item.BuyPrice.ToString("N0")</td>
                                     <td class="px-4 py-3 text-sm text-right font-mono text-gray-800">@item.SellPrice.ToString("N0")</td>
-                                    <td class="px-4 py-3 text-sm text-gray-700">@item.RecordedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
+                                    <td class="px-4 py-3 text-sm text-gray-700">@TimeZoneService.ToLocalTime(item.RecordedAt).ToString("dd MMM yyyy HH:mm")</td>
                                 </tr>
                             }
                         }
@@ -123,6 +125,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        TimeZoneService.OnChange += OnTimeZoneChanged;
         await Task.WhenAll(LoadTableDataAsync(), LoadChartDataAsync());
     }
 
@@ -134,6 +137,15 @@
             await RenderChartAsync();
         }
     }
+
+    private void OnTimeZoneChanged()
+    {
+        if (_chartRendered)
+            _chartRendered = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => TimeZoneService.OnChange -= OnTimeZoneChanged;
 
     private async Task LoadTableDataAsync()
     {
@@ -160,7 +172,7 @@
         var seriesMap = new Dictionary<string, List<object[]>>();
         foreach (var item in _chartData.OrderBy(x => x.RecordedAt))
         {
-            var ts = item.RecordedAt.ToLocalTime().ToString("yyyy-MM-ddTHH:mm:ss");
+            var ts = TimeZoneService.ToLocalTime(item.RecordedAt).ToString("yyyy-MM-ddTHH:mm:ss");
             var buyKey = $"{item.Source} Buy";
             var sellKey = $"{item.Source} Sell";
             if (!seriesMap.ContainsKey(buyKey)) seriesMap[buyKey] = [];
