@@ -7,7 +7,7 @@ namespace SourceBase.Tests.Features.GoldPrices.Scrapers;
 
 public class SjcGoldPriceScraperTests
 {
-    private static readonly SjcGoldPriceScraper Scraper = new(null!, NullLogger<SjcGoldPriceScraper>.Instance);
+    private static readonly SjcGoldPriceScraper Scraper = new(NullLogger<SjcGoldPriceScraper>.Instance);
 
     [Fact(DisplayName = "SJC-SCRAPER-001: ParseAsync_WithValidXml_ReturnsParsedPrices")]
     public async Task ParseAsync_WithValidXml_ReturnsParsedPrices()

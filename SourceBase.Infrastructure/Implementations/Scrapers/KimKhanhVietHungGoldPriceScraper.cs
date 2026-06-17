@@ -5,17 +5,10 @@ using SourceBase.Domain.Entities;
 
 namespace SourceBase.Infrastructure.Implementations.Scrapers;
 
-public class KimKhanhVietHungGoldPriceScraper(IHttpClientFactory httpClientFactory, ILogger<KimKhanhVietHungGoldPriceScraper> logger) : IGoldPriceScraper
+public class KimKhanhVietHungGoldPriceScraper(ILogger<KimKhanhVietHungGoldPriceScraper> logger) : IGoldPriceScraper
 {
-    private const string Url = "https://kimkhanhviethung.vn/tra-cuu-gia-vang.html";
-
     public GoldSource Source => GoldSource.KimKhanhVietHung;
-
-    public async Task<string> ScrapeAsync(CancellationToken ct)
-    {
-        var client = httpClientFactory.CreateClient("GoldScraper");
-        return await client.GetStringAsync(Url, ct);
-    }
+    public string Url => "https://kimkhanhviethung.vn/tra-cuu-gia-vang.html";
 
     public Task<(decimal BuyPrice, decimal SellPrice)?> ParseAsync(string html, CancellationToken ct)
     {

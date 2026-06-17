@@ -7,7 +7,7 @@ namespace SourceBase.Tests.Features.GoldPrices.Scrapers;
 
 public class KimKhanhVietHungGoldPriceScraperTests
 {
-    private static readonly KimKhanhVietHungGoldPriceScraper Scraper = new(null!, NullLogger<KimKhanhVietHungGoldPriceScraper>.Instance);
+    private static readonly KimKhanhVietHungGoldPriceScraper Scraper = new(NullLogger<KimKhanhVietHungGoldPriceScraper>.Instance);
 
     [Fact(DisplayName = "KIMKHANH-SCRAPER-001: ParseAsync_WithValidHtml_ReturnsParsedPrices")]
     public async Task ParseAsync_WithValidHtml_ReturnsParsedPrices()

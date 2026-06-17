@@ -7,7 +7,7 @@ namespace SourceBase.Tests.Features.GoldPrices.Scrapers;
 
 public class PnjGoldPriceScraperTests
 {
-    private static readonly PnjGoldPriceScraper Scraper = new(null!, NullLogger<PnjGoldPriceScraper>.Instance);
+    private static readonly PnjGoldPriceScraper Scraper = new(NullLogger<PnjGoldPriceScraper>.Instance);
 
     [Fact(DisplayName = "PNJ-SCRAPER-001: ParseAsync_WithValidHtml_ReturnsParsedPrices")]
     public async Task ParseAsync_WithValidHtml_ReturnsParsedPrices()

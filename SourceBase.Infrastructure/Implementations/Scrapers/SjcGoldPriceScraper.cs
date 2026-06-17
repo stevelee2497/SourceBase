@@ -5,17 +5,10 @@ using SourceBase.Domain.Entities;
 
 namespace SourceBase.Infrastructure.Implementations.Scrapers;
 
-public class SjcGoldPriceScraper(IHttpClientFactory httpClientFactory, ILogger<SjcGoldPriceScraper> logger) : IGoldPriceScraper
+public class SjcGoldPriceScraper(ILogger<SjcGoldPriceScraper> logger) : IGoldPriceScraper
 {
-    private const string Url = "https://sjc.com.vn/xml/tygiavang.xml";
-
     public GoldSource Source => GoldSource.SJC;
-
-    public async Task<string> ScrapeAsync(CancellationToken ct)
-    {
-        var client = httpClientFactory.CreateClient("GoldScraper");
-        return await client.GetStringAsync(Url, ct);
-    }
+    public string Url => "https://sjc.com.vn/xml/tygiavang.xml";
 
     public Task<(decimal BuyPrice, decimal SellPrice)?> ParseAsync(string html, CancellationToken ct)
     {

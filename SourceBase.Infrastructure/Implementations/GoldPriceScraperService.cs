@@ -8,6 +8,7 @@ namespace SourceBase.Infrastructure.Implementations;
 
 public class GoldPriceScraperService(
     IServiceScopeFactory scopeFactory,
+    IHttpClientFactory httpClientFactory,
     IEnumerable<IGoldPriceScraper> scrapers,
     ILogger<GoldPriceScraperService> logger) : BackgroundService
 {
@@ -23,11 +24,12 @@ public class GoldPriceScraperService(
 
     private async Task RunScrapersAsync(CancellationToken ct)
     {
+        var http = httpClientFactory.CreateClient("GoldScraper");
         foreach (var scraper in scrapers)
         {
             try
             {
-                var html = await scraper.ScrapeAsync(ct);
+                var html = await http.GetStringAsync(scraper.Url, ct);
                 var result = await scraper.ParseAsync(html, ct);
                 if (result is null)
                 {
