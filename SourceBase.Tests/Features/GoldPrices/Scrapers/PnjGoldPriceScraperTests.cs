@@ -9,56 +9,43 @@ public class PnjGoldPriceScraperTests
 {
     private static readonly PnjGoldPriceScraper Scraper = new(NullLogger<PnjGoldPriceScraper>.Instance);
 
-    [Fact(DisplayName = "PNJ-SCRAPER-001: ParseAsync_WithValidHtml_ReturnsParsedPrices")]
-    public async Task ParseAsync_WithValidHtml_ReturnsParsedPrices()
+    [Fact(DisplayName = "PNJ-SCRAPER-001: ParseAsync_WithRealApiResponse_ReturnsN24KPrices")]
+    public async Task ParseAsync_WithRealApiResponse_ReturnsN24KPrices()
     {
         // Arrange
-        var html = """
-            <html><body>
-            <table>
-              <tr><th>Loại vàng</th><th>Mua vào</th><th>Bán ra</th></tr>
-              <tr><td>Nhẫn Tròn 9999</td><td>1.900.000</td><td>1.950.000</td></tr>
-              <tr><td>PNJ 1 Lượng</td><td>75.000.000</td><td>76.000.000</td></tr>
-            </table>
-            </body></html>
-            """;
+        var json = await File.ReadAllTextAsync(
+            Path.Combine(AppContext.BaseDirectory, "Features/GoldPrices/Scrapers/data/pnj.json"));
 
         // Act
-        var result = await Scraper.ParseAsync(html, CancellationToken.None);
+        var result = await Scraper.ParseAsync(json, CancellationToken.None);
 
-        // Assert
+        // Assert — giamua: 14880 × 1000, giaban: 15180 × 1000
         result.Should().NotBeNull();
-        result!.Value.BuyPrice.Should().Be(1_900_000m);
-        result!.Value.SellPrice.Should().Be(1_950_000m);
+        result!.Value.BuyPrice.Should().Be(14_880_000m);
+        result!.Value.SellPrice.Should().Be(15_180_000m);
     }
 
-    [Fact(DisplayName = "PNJ-SCRAPER-002: ParseAsync_WithNoMatchingRow_ReturnsNull")]
-    public async Task ParseAsync_WithNoMatchingRow_ReturnsNull()
+    [Fact(DisplayName = "PNJ-SCRAPER-002: ParseAsync_WithMissingN24K_ReturnsNull")]
+    public async Task ParseAsync_WithMissingN24K_ReturnsNull()
     {
         // Arrange
-        var html = """
-            <html><body>
-            <table>
-              <tr><td>SJC 1 Lượng</td><td>75.000.000</td><td>76.000.000</td></tr>
-            </table>
-            </body></html>
-            """;
+        var json = """{"data":[{"masp":"SJC","tensp":"Vàng miếng SJC 999.9","giaban":15180,"giamua":14980}]}""";
 
         // Act
-        var result = await Scraper.ParseAsync(html, CancellationToken.None);
+        var result = await Scraper.ParseAsync(json, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();
     }
 
-    [Fact(DisplayName = "PNJ-SCRAPER-003: ParseAsync_WithNoTable_ReturnsNull")]
-    public async Task ParseAsync_WithNoTable_ReturnsNull()
+    [Fact(DisplayName = "PNJ-SCRAPER-003: ParseAsync_WithMissingDataArray_ReturnsNull")]
+    public async Task ParseAsync_WithMissingDataArray_ReturnsNull()
     {
         // Arrange
-        var html = "<html><body><p>No table here</p></body></html>";
+        var json = """{"chinhanh":"hochiminh"}""";
 
         // Act
-        var result = await Scraper.ParseAsync(html, CancellationToken.None);
+        var result = await Scraper.ParseAsync(json, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();
