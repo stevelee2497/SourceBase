@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Features.Notifications;
@@ -22,10 +22,10 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
         var response = await client.GetAsync(GetNotificationsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
-        body!.Items.Should().NotBeNull();
-        body.Total.Should().BeGreaterThanOrEqualTo(0);
+        body!.Items.ShouldNotBeNull();
+        body.Total.ShouldBeGreaterThanOrEqualTo(0);
     }
 
     [Fact(DisplayName = "NOTIF-GET-002: GetNotifications_WithExistingNotifications_ReturnsNotifications")]
@@ -47,9 +47,9 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
         var response = await client.GetAsync(GetNotificationsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
-        body!.Items.Should().Contain(n => n.Title == "Test Title" && n.Message == "Test Message");
+        body!.Items.ShouldContain(n => n.Title == "Test Title" && n.Message == "Test Message");
     }
 
     [Fact(DisplayName = "NOTIF-GET-003: GetNotifications_WithUnreadOnlyFilter_ReturnsOnlyUnread")]
@@ -74,9 +74,9 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
         var response = await client.GetAsync($"{GetNotificationsEndpoint.Route}?unreadOnly=true");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
-        body!.Items.Should().OnlyContain(n => !n.IsRead);
+        body!.Items.ShouldAllBe(n => !n.IsRead);
     }
 
     [Fact(DisplayName = "NOTIF-GET-004: GetNotifications_WithPagination_ReturnsCorrectPage")]
@@ -99,11 +99,11 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
         var response = await client.GetAsync($"{GetNotificationsEndpoint.Route}?page=1&limit=2");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
-        body!.Items.Should().HaveCount(2);
-        body.Limit.Should().Be(2);
-        body.Page.Should().Be(1);
+        body!.Items.Count.ShouldBe(2);
+        body.Limit.ShouldBe(2);
+        body.Page.ShouldBe(1);
     }
 
     [Fact(DisplayName = "NOTIF-GET-005: GetNotifications_WithoutAuth_ReturnsUnauthorized")]
@@ -116,6 +116,6 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
         var response = await client.GetAsync(GetNotificationsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }

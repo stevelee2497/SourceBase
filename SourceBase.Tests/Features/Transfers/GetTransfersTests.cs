@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Transfers;
 using SourceBase.Application.Features.Wallets;
 using SourceBase.Application.Shared;
@@ -21,7 +21,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync(GetTransfersEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TRANSFER-GET-002: GetTransfers_WithOwnedTransfers_ReturnsOk")]
@@ -36,17 +36,17 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var transferResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet!.Id, toWalletId = toWallet!.Id, amount = 15m, date = "2025-04-11", note = $"Transfer_{Guid.NewGuid():N}" });
-        transferResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        transferResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transfer = await transferResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
 
         // Act
         var response = await client.GetAsync($"{GetTransfersEndpoint.Route}?limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransferResponse>>();
-        body!.Items.Should().Contain(x => x.Id == transfer!.Id);
-        body.Total.Should().Be(1);
+        body!.Items.ShouldContain(x => x.Id == transfer!.Id);
+        body.Total.ShouldBe(1);
     }
 
     [Fact(DisplayName = "TRANSFER-GET-003: GetTransfers_ReturnsTransferDetails")]
@@ -56,30 +56,30 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var fromWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"FromWallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
-        fromWalletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        fromWalletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var fromWallet = await fromWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var toWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"ToWallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💳" });
-        toWalletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        toWalletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var note = $"Transfer_{Guid.NewGuid():N}";
         var transferResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet!.Id, toWalletId = toWallet!.Id, amount = 20m, date = "2025-04-12", note });
-        transferResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        transferResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transfer = await transferResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
 
         // Act
         var response = await client.GetAsync($"{GetTransfersEndpoint.Route}?limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransferResponse>>();
         var item = body!.Items.Single(x => x.Id == transfer!.Id);
-        item.FromWalletId.Should().Be(fromWallet.Id);
-        item.ToWalletId.Should().Be(toWallet.Id);
-        item.Amount.Should().Be(20m);
-        item.Date.Should().Be(new DateOnly(2025, 4, 12));
-        item.Note.Should().Be(note);
+        item.FromWalletId.ShouldBe(fromWallet.Id);
+        item.ToWalletId.ShouldBe(toWallet.Id);
+        item.Amount.ShouldBe(20m);
+        item.Date.ShouldBe(new DateOnly(2025, 4, 12));
+        item.Note.ShouldBe(note);
     }
 
     [Fact(DisplayName = "TRANSFER-GET-004: GetTransfers_WithMultipleUsers_ReturnsOnlyCurrentUsersTransfers")]
@@ -100,7 +100,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var otherTo = await otherToResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var ownTransferResponse = await ownerClient.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = ownerFrom!.Id, toWalletId = ownerTo!.Id, amount = 15m, date = "2025-04-13", note = $"Transfer_{Guid.NewGuid():N}" });
-        ownTransferResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        ownTransferResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var ownTransfer = await ownTransferResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
 
         await otherClient.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = otherFrom!.Id, toWalletId = otherTo!.Id, amount = 20m, date = "2025-04-13", note = $"Transfer_{Guid.NewGuid():N}" });
@@ -109,9 +109,9 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await ownerClient.GetAsync($"{GetTransfersEndpoint.Route}?limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransferResponse>>();
-        body!.Items.Should().ContainSingle(x => x.Id == ownTransfer!.Id);
+        body!.Items.ShouldContain(x => x.Id == ownTransfer!.Id);
     }
 
     [Fact(DisplayName = "TRANSFER-GET-005: GetTransfers_WithWalletFilter_ReturnsMatchingTransfers")]
@@ -128,7 +128,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var walletC = await walletCResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var matchingResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = walletA!.Id, toWalletId = walletB!.Id, amount = 10m, date = "2025-04-14", note = $"Transfer_{Guid.NewGuid():N}" });
-        matchingResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        matchingResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var matching = await matchingResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
         await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = walletB.Id, toWalletId = walletC!.Id, amount = 12m, date = "2025-04-15", note = $"Transfer_{Guid.NewGuid():N}" });
 
@@ -136,9 +136,9 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync($"{GetTransfersEndpoint.Route}?walletId={walletA.Id}&limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransferResponse>>();
-        body!.Items.Should().ContainSingle(x => x.Id == matching!.Id);
+        body!.Items.ShouldContain(x => x.Id == matching!.Id);
     }
 
     [Fact(DisplayName = "TRANSFER-GET-006: GetTransfers_WithDateRange_ReturnsTransfersWithinRange")]
@@ -154,7 +154,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
 
         await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet!.Id, toWalletId = toWallet!.Id, amount = 10m, date = "2025-04-01", note = $"Transfer_{Guid.NewGuid():N}" });
         var inRangeResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet.Id, toWalletId = toWallet.Id, amount = 15m, date = "2025-04-15", note = $"Transfer_{Guid.NewGuid():N}" });
-        inRangeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        inRangeResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var inRange = await inRangeResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
         await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet.Id, toWalletId = toWallet.Id, amount = 20m, date = "2025-05-01", note = $"Transfer_{Guid.NewGuid():N}" });
 
@@ -162,9 +162,9 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync($"{GetTransfersEndpoint.Route}?dateFrom=2025-04-10&dateTo=2025-04-20&limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransferResponse>>();
-        body!.Items.Should().ContainSingle(x => x.Id == inRange!.Id);
+        body!.Items.ShouldContain(x => x.Id == inRange!.Id);
     }
 
     [Fact(DisplayName = "TRANSFER-GET-007: GetTransfers_WithPagination_ReturnsCorrectSubset")]
@@ -180,7 +180,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
 
         await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet!.Id, toWalletId = toWallet!.Id, amount = 10m, date = "2025-04-01", note = $"Transfer_{Guid.NewGuid():N}" });
         var secondResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet.Id, toWalletId = toWallet.Id, amount = 20m, date = "2025-04-02", note = $"Transfer_{Guid.NewGuid():N}" });
-        secondResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        secondResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var second = await secondResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
         await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet.Id, toWalletId = toWallet.Id, amount = 30m, date = "2025-04-03", note = $"Transfer_{Guid.NewGuid():N}" });
 
@@ -188,11 +188,11 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync($"{GetTransfersEndpoint.Route}?page=2&limit=1");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransferResponse>>();
-        body!.Total.Should().Be(3);
-        body.Items.Should().ContainSingle();
-        body.Items[0].Id.Should().Be(second!.Id);
+        body!.Total.ShouldBe(3);
+        body.Items.Count.ShouldBe(1);
+        body.Items[0].Id.ShouldBe(second!.Id);
     }
 
     [Fact(DisplayName = "TRANSFER-GET-008: GetTransfers_WithNoTransfers_ReturnsEmptyList")]
@@ -205,9 +205,9 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync($"{GetTransfersEndpoint.Route}?limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransferResponse>>();
-        body!.Items.Should().BeEmpty();
-        body.Total.Should().Be(0);
+        body!.Items.ShouldBeEmpty();
+        body.Total.ShouldBe(0);
     }
 }

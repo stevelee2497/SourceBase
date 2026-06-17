@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Icons;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -26,7 +26,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "ICONS-UPDATE-002: UpdateIcon_WithValidRequest_ReturnsOk")]
@@ -54,9 +54,9 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<UpdateIconResponse>();
-        body!.Id.Should().Be(created.Id);
+        body!.Id.ShouldBe(created.Id);
     }
 
     [Fact(DisplayName = "ICONS-UPDATE-003: UpdateIcon_PersistsChanges")]
@@ -88,11 +88,11 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
 
         // Assert
         var updated = icons!.FirstOrDefault(i => i.Id == created.Id);
-        updated.Should().NotBeNull();
-        updated!.Value.Should().Be("🐺");
-        updated.Name.Should().Be("Wolf_Updated");
-        updated.Group.Should().Be("Category");
-        updated.SortOrder.Should().Be(99);
+        updated.ShouldNotBeNull();
+        updated!.Value.ShouldBe("🐺");
+        updated.Name.ShouldBe("Wolf_Updated");
+        updated.Group.ShouldBe("Category");
+        updated.SortOrder.ShouldBe(99);
     }
 
     [Fact(DisplayName = "ICONS-UPDATE-004: UpdateIcon_WithUnknownId_ReturnsNotFound")]
@@ -111,7 +111,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "ICONS-UPDATE-005: UpdateIcon_OnSystemIcon_ReturnsForbidden")]
@@ -134,7 +134,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "ICONS-UPDATE-006: UpdateIcon_WithEmptyValue_ReturnsBadRequest")]
@@ -162,7 +162,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ICONS-UPDATE-007: UpdateIcon_WithEmptyId_ReturnsBadRequest")]
@@ -178,6 +178,6 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Data;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -19,7 +19,7 @@ public class GetStatsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetStatsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "DATA-STATS-002: GetStats_AsAuthenticatedUser_ReturnsOk")]
@@ -32,13 +32,13 @@ public class GetStatsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetStatsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetStatsResponse>();
-        body.Should().NotBeNull();
-        body!.UserCount.Should().BeGreaterThan(0);
-        body.TotalTodoItems.Should().BeGreaterThanOrEqualTo(0);
-        body.CompletedTodoItems.Should().BeGreaterThanOrEqualTo(0);
-        body.TotalTodoLists.Should().BeGreaterThanOrEqualTo(0);
+        body.ShouldNotBeNull();
+        body!.UserCount.ShouldBeGreaterThan(0);
+        body.TotalTodoItems.ShouldBeGreaterThanOrEqualTo(0);
+        body.CompletedTodoItems.ShouldBeGreaterThanOrEqualTo(0);
+        body.TotalTodoLists.ShouldBeGreaterThanOrEqualTo(0);
     }
 
     [Fact(DisplayName = "DATA-STATS-003: GetStats_CompletedTodoItems_DoesNotExceedTotal")]
@@ -51,8 +51,8 @@ public class GetStatsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetStatsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetStatsResponse>();
-        body!.CompletedTodoItems.Should().BeLessThanOrEqualTo(body.TotalTodoItems);
+        body!.CompletedTodoItems.ShouldBeLessThanOrEqualTo(body.TotalTodoItems);
     }
 }

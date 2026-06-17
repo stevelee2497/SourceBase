@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Tests.Infrastructure;
@@ -32,22 +32,22 @@ public class ForgotPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<ForgotPasswordResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
         var updatedUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Email == email));
-        updatedUser.OtpCode.Should().NotBeNullOrEmpty();
-        updatedUser.OtpCode.Should().NotBe(originalCode);
-        updatedUser.OtpCodeExpiresOn.Should().BeAfter(factory.FakeDateTime.UtcNow);
+        updatedUser.OtpCode.ShouldNotBeNullOrEmpty();
+        updatedUser.OtpCode.ShouldNotBe(originalCode);
+        updatedUser.OtpCodeExpiresOn!.Value.ShouldBeGreaterThan(factory.FakeDateTime.UtcNow);
 
         var latestEmail = await factory.WithDbContextAsync(db => db.Emails
             .Where(x => x.To == email)
             .OrderByDescending(x => x.SentOn)
             .FirstOrDefaultAsync());
 
-        latestEmail.Should().NotBeNull();
-        latestEmail!.Subject.Should().Be("Reset Password");
-        latestEmail.Body.Should().NotBeNullOrWhiteSpace();
+        latestEmail.ShouldNotBeNull();
+        latestEmail!.Subject.ShouldBe("Reset Password");
+        latestEmail.Body.ShouldNotBeNullOrWhiteSpace();
     }
 
 
@@ -64,7 +64,7 @@ public class ForgotPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
 
@@ -81,6 +81,6 @@ public class ForgotPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

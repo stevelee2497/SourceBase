@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Roles;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -20,7 +20,7 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteRoleEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "ROLES-DELETE-002: DeleteRole_WithNonAdminUser_ReturnsForbidden")]
@@ -41,7 +41,7 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await nonAdminClient.DeleteAsync(DeleteRoleEndpoint.Route.WithId(createBody!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "ROLES-DELETE-003: DeleteRole_WithValidData_ReturnsOk")]
@@ -60,13 +60,13 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteRoleEndpoint.Route.WithId(createBody!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DeleteRoleResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
 
         var rolesResponse = await client.GetAsync(GetRolesEndpoint.Route);
         var roles = await rolesResponse.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
-        roles!.Items.Should().NotContain(x => x.Id == createBody.Id);
+        roles!.Items.ShouldNotContain(x => x.Id == createBody.Id);
     }
 
     [Fact(DisplayName = "ROLES-DELETE-004: DeleteRole_WithAdminRole_ReturnsBadRequest")]
@@ -82,7 +82,7 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteRoleEndpoint.Route.WithId(adminRole.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ROLES-DELETE-005: DeleteRole_WithUnknownId_ReturnsBadRequest")]
@@ -95,6 +95,6 @@ public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteRoleEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

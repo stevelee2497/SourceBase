@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Tests.Infrastructure;
@@ -45,20 +45,20 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<ResetPasswordResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
 
         var dbUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Email == email));
-        dbUser.OtpCode.Should().BeNull();
-        dbUser.OtpCodeExpiresOn.Should().BeNull();
+        dbUser.OtpCode.ShouldBeNull();
+        dbUser.OtpCodeExpiresOn.ShouldBeNull();
 
         var oldPasswordResponse = await client.PostAsJsonAsync(LoginEndpoint.Route, new
         {
             email,
             password = oldPassword,
         });
-        oldPasswordResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        oldPasswordResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "RESET-PWD-002: ResetPassword_AfterReset_CanLoginWithNewPassword")]
@@ -101,7 +101,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Fact(DisplayName = "RESET-PWD-003: ResetPassword_WithInvalidCode_ReturnsBadRequest")]
@@ -132,7 +132,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "RESET-PWD-004: ResetPassword_WithExpiredCode_ReturnsBadRequest")]
@@ -169,7 +169,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "RESET-PWD-005: ResetPassword_WithUnknownEmail_ReturnsNotFound")]
@@ -187,7 +187,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "RESET-PWD-006: ResetPassword_AfterReset_EmailIsConfirmedAndLoginWithNewPassword")]
@@ -217,16 +217,16 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         });
 
         // Assert
-        resetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        resetResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var dbUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Email == email));
-        dbUser.EmailConfirmed.Should().BeTrue();
+        dbUser.EmailConfirmed.ShouldBeTrue();
 
         var loginResponse = await client.PostAsJsonAsync(LoginEndpoint.Route, new
         {
             email,
             password = newPassword,
         });
-        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        loginResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 }

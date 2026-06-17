@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Users;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -20,7 +20,7 @@ public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetUsersEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "USERS-GET-002: GetUsers_WithNonAdminUser_ReturnsForbidden")]
@@ -33,7 +33,7 @@ public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await nonAdminClient.GetAsync(GetUsersEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "USERS-GET-003: GetUsers_WithAdminUser_ReturnsCreatedUsers")]
@@ -56,10 +56,10 @@ public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetUsersEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
-        body.Should().NotBeNull();
-        body!.Items.Should().Contain(x => x.Id == createBody!.Id && x.Email == managedEmail && x.Roles.Contains("User"));
+        body.ShouldNotBeNull();
+        body!.Items.ShouldContain(x => x.Id == createBody!.Id && x.Email == managedEmail && x.Roles.Contains("User"));
     }
 
     [Fact(DisplayName = "USERS-GET-004: GetUsers_WithPagingAndOrdering_ReturnsRequestedPage")]
@@ -89,9 +89,9 @@ public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 
         // Assert
         var users = await response.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
-        users!.Page.Should().Be(1);
-        users.Limit.Should().Be(1);
-        users.Items.Should().ContainSingle();
-        users.Items.Single().Id.Should().Be(expectedBody!.Id);
+        users!.Page.ShouldBe(1);
+        users.Limit.ShouldBe(1);
+        users.Items.Count.ShouldBe(1);
+        users.Items.Single().Id.ShouldBe(expectedBody!.Id);
     }
 }

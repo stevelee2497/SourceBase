@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using Microsoft.Extensions.Logging.Abstractions;
 using SourceBase.Infrastructure.Implementations.Scrapers;
 using Xunit;
@@ -20,9 +20,9 @@ public class GiaVangGoldPriceScraperTests
         var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
         // Assert — 137.837.364 VNĐ / 10 chỉ per cây = 13.783.736
-        result.Should().NotBeNull();
-        result!.Value.BuyPrice.Should().Be(13_783_736m);
-        result!.Value.SellPrice.Should().Be(13_783_736m);
+        result.ShouldNotBeNull();
+        result!.Value.BuyPrice.ShouldBe(13_783_736m);
+        result!.Value.SellPrice.ShouldBe(13_783_736m);
     }
 
     [Fact(DisplayName = "GIAVANG-SCRAPER-002: ParseAsync_WithMissingPriceElement_ReturnsNull")]
@@ -35,6 +35,6 @@ public class GiaVangGoldPriceScraperTests
         var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 }

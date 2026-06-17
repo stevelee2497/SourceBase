@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.TimeSheets;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -20,7 +20,7 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.DeleteAsync(DeleteTimeSheetEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TIMESHEET-DELETE-002: DeleteTimeSheet_ExistingEntry_ReturnsOk")]
@@ -39,12 +39,12 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.DeleteAsync(DeleteTimeSheetEndpoint.Route.WithId(createBody!.Ids[0]));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DeleteTimeSheetResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
 
         var getResponse = await client.GetAsync(GetTimeSheetEndpoint.Route.WithId(createBody.Ids[0]));
-        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        getResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "TIMESHEET-DELETE-003: DeleteTimeSheet_WithNonExistentId_ReturnsNotFound")]
@@ -57,7 +57,7 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.DeleteAsync(DeleteTimeSheetEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "TIMESHEET-DELETE-004: DeleteTimeSheet_WithOtherUsersEntry_ReturnsNotFound")]
@@ -77,6 +77,6 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await strangerClient.DeleteAsync(DeleteTimeSheetEndpoint.Route.WithId(createBody!.Ids[0]));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }

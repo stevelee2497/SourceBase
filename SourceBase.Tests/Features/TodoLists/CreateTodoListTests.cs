@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.TodoLists;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -20,7 +20,7 @@ public class CreateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.PostAsJsonAsync(CreateTodoListEndpoint.Route, new { name = "My List" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TODOLISTS-CREATE-002: CreateTodoList_WithValidData_ReturnsOk")]
@@ -33,9 +33,9 @@ public class CreateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.PostAsJsonAsync(CreateTodoListEndpoint.Route, new { name = "Work Tasks" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateTodoListResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
     }
 
     [Fact(DisplayName = "TODOLISTS-CREATE-003: CreateTodoList_WithMissingName_ReturnsBadRequest")]
@@ -48,7 +48,7 @@ public class CreateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.PostAsJsonAsync(CreateTodoListEndpoint.Route, new { name = "" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TODOLISTS-CREATE-004: CreateTodoList_BelongsToAuthenticatedUser")]
@@ -63,10 +63,10 @@ public class CreateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var body = await response.Content.ReadFromJsonAsync<CreateTodoListResponse>();
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var listsResponse = await client.GetAsync($"{GetTodoListsEndpoint.Route}?limit=100");
         var lists = await listsResponse.Content.ReadFromJsonAsync<PagingResponse<TodoListResponse>>();
         var list = lists!.Items.Single(x => x.Id == body!.Id);
-        list.CreatedBy.Should().NotBeNullOrEmpty();
+        list.CreatedBy.ShouldNotBeNullOrEmpty();
     }
 }

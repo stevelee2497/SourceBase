@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Categories;
 using SourceBase.Application.Features.Transactions;
@@ -23,7 +23,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.GetAsync(GetTransactionsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-002: GetTransactions_WithOwnedTransactions_ReturnsOk")]
@@ -33,7 +33,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var catResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -41,17 +41,17 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var incomeCategoryId = categories!.First(x => x.IsSystem).Id;
 
         var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 20m, type = "Income", date = "2025-01-10", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         // Act
         var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        body!.Items.Should().Contain(x => x.Id == transaction!.Id);
-        body.Total.Should().Be(1);
+        body!.Items.ShouldContain(x => x.Id == transaction!.Id);
+        body.Total.ShouldBe(1);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-003: GetTransactions_WithMultipleUsers_ReturnsOnlyCurrentUsersTransactions")]
@@ -83,9 +83,9 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await ownerClient.GetAsync($"{GetTransactionsEndpoint.Route}?limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        body!.Items.Should().ContainSingle(x => x.Id == ownTransaction!.Id);
+        body!.Items.ShouldContain(x => x.Id == ownTransaction!.Id);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-004: GetTransactions_WithWalletFilter_ReturnsMatchingTransactions")]
@@ -111,9 +111,9 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={walletA.Id}&limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        body!.Items.Should().ContainSingle(x => x.Id == transactionA!.Id && x.WalletId == walletA.Id);
+        body!.Items.ShouldContain(x => x.Id == transactionA!.Id && x.WalletId == walletA.Id);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-005: GetTransactions_WithIncomeTypeFilter_ReturnsOnlyIncomeTransactions")]
@@ -140,10 +140,10 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?type=Income&limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        body!.Items.Should().NotBeEmpty();
-        body.Items.Should().OnlyContain(x => x.Type == TransactionType.Income);
+        body!.Items.ShouldNotBeEmpty();
+        body.Items.ShouldAllBe(x => x.Type == TransactionType.Income);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-006: GetTransactions_WithExpenseTypeFilter_ReturnsOnlyExpenseTransactions")]
@@ -170,10 +170,10 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?type=Expense&limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        body!.Items.Should().NotBeEmpty();
-        body.Items.Should().OnlyContain(x => x.Type == TransactionType.Expense);
+        body!.Items.ShouldNotBeEmpty();
+        body.Items.ShouldAllBe(x => x.Type == TransactionType.Expense);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-007: GetTransactions_WithDateRangeFilter_ReturnsTransactionsWithinRange")]
@@ -198,9 +198,9 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?dateFrom=2025-01-10&dateTo=2025-01-20&limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        body!.Items.Should().ContainSingle(x => x.Id == inRange!.Id);
+        body!.Items.ShouldContain(x => x.Id == inRange!.Id);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-008: GetTransactions_WithCategoryFilter_ReturnsMatchingTransactions")]
@@ -213,15 +213,15 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var firstCatResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
-        firstCatResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        firstCatResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var firstCategory = await firstCatResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         var secondCatResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
-        secondCatResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        secondCatResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var secondCategory = await secondCatResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         var matchingTxnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 10m, type = "Expense", date = "2025-01-16", note = $"Txn_{Guid.NewGuid():N}", categoryId = firstCategory!.Id });
-        matchingTxnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        matchingTxnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var matching = await matchingTxnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
         await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet.Id, amount = 5m, type = "Expense", date = "2025-01-16", note = $"Txn_{Guid.NewGuid():N}", categoryId = secondCategory!.Id });
 
@@ -229,9 +229,9 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?categoryId={firstCategory.Id}&limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        body!.Items.Should().ContainSingle(x => x.Id == matching!.Id && x.CategoryId == firstCategory.Id);
+        body!.Items.ShouldContain(x => x.Id == matching!.Id && x.CategoryId == firstCategory.Id);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-010: GetTransactions_WithSingleWalletIdsFilter_ReturnsMatchingTransactions")]
@@ -257,9 +257,9 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletIds={walletA.Id}&limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        body!.Items.Should().ContainSingle(x => x.Id == transactionA!.Id && x.WalletId == walletA.Id);
+        body!.Items.ShouldContain(x => x.Id == transactionA!.Id && x.WalletId == walletA.Id);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-011: GetTransactions_WithMultipleWalletIdsFilter_ReturnsTransactionsFromAllSpecifiedWallets")]
@@ -289,12 +289,12 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletIds={walletA.Id}&walletIds={walletB.Id}&limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        body!.Total.Should().Be(2);
-        body.Items.Should().Contain(x => x.Id == transactionA!.Id && x.WalletId == walletA.Id);
-        body.Items.Should().Contain(x => x.Id == transactionB!.Id && x.WalletId == walletB.Id);
-        body.Items.Should().NotContain(x => x.WalletId == walletC!.Id);
+        body!.Total.ShouldBe(2);
+        body.Items.ShouldContain(x => x.Id == transactionA!.Id && x.WalletId == walletA.Id);
+        body.Items.ShouldContain(x => x.Id == transactionB!.Id && x.WalletId == walletB.Id);
+        body.Items.ShouldNotContain(x => x.WalletId == walletC!.Id);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-012: GetTransactions_WithWalletIdsFilterCombinedWithTypeFilter_ReturnsMatchingTransactions")]
@@ -325,10 +325,10 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletIds={walletA.Id}&type=Income&limit=20");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        body!.Items.Should().ContainSingle(x => x.Id == incomeTxn!.Id);
-        body.Items.Should().OnlyContain(x => x.WalletId == walletA.Id && x.Type == TransactionType.Income);
+        body!.Items.ShouldContain(x => x.Id == incomeTxn!.Id);
+        body.Items.ShouldAllBe(x => x.WalletId == walletA.Id && x.Type == TransactionType.Income);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-009: GetTransactions_WithPagination_ReturnsCorrectSubset")]
@@ -353,10 +353,10 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?page=2&limit=1");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        body!.Total.Should().Be(3);
-        body.Items.Should().ContainSingle();
-        body.Items[0].Id.Should().Be(second!.Id);
+        body!.Total.ShouldBe(3);
+        body.Items.Count.ShouldBe(1);
+        body.Items[0].Id.ShouldBe(second!.Id);
     }
 }

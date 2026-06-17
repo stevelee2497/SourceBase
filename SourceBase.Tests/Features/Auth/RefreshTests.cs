@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -29,15 +29,15 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        refreshResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var refreshBody = await refreshResponse.Content.ReadFromJsonAsync<LoginResponse>();
-        refreshBody.Should().NotBeNull();
+        refreshBody.ShouldNotBeNull();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", refreshBody!.AccessToken);
 
         var getInfoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
-        getInfoResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        getInfoResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await getInfoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
-        body!.Roles.Should().Contain("Admin");
+        body!.Roles.ShouldContain("Admin");
     }
 
     [Fact(DisplayName = "REFRESH-002: RefreshToken_WithInvalidToken_ReturnsUnauthorized")]
@@ -53,7 +53,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "REFRESH-003: RefreshToken_AfterLogout_ReturnsUnauthorized")]
@@ -92,7 +92,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "REFRESH-005: RefreshToken_AfterPasswordReset_ReturnsUnauthorized")]
@@ -133,7 +133,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "REFRESH-006: RefreshToken_NewTokenFromRefreshResponse_CanRefreshAgain")]
@@ -171,10 +171,10 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        secondRefreshResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        secondRefreshResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var secondRefreshBody = await secondRefreshResponse.Content.ReadFromJsonAsync<LoginResponse>();
-        secondRefreshBody.Should().NotBeNull();
-        secondRefreshBody!.AccessToken.Should().NotBeNullOrEmpty();
+        secondRefreshBody.ShouldNotBeNull();
+        secondRefreshBody!.AccessToken.ShouldNotBeNullOrEmpty();
     }
 
     [Fact(DisplayName = "REFRESH-004: RefreshToken_WithMissingToken_ReturnsBadRequest")]
@@ -187,6 +187,6 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.PostAsJsonAsync(RefreshEndpoint.Route, new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

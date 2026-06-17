@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Users;
 using SourceBase.Application.Shared;
@@ -21,7 +21,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         var response = await client.PostAsJsonAsync(ResetUserPasswordEndpoint.Route.WithId(Guid.NewGuid()), new { newPassword = "Test@1234!" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "USERS-RESET-PWD-002: ResetUserPassword_AsNonAdmin_ReturnsForbidden")]
@@ -34,7 +34,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         var response = await nonAdminClient.PostAsJsonAsync(ResetUserPasswordEndpoint.Route.WithId(Guid.NewGuid()), new { newPassword = "Test@1234!" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "USERS-RESET-PWD-003: ResetUserPassword_WithNonExistentUser_ReturnsNotFound")]
@@ -47,7 +47,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         var response = await adminClient.PostAsJsonAsync(ResetUserPasswordEndpoint.Route.WithId(Guid.NewGuid()), new { newPassword = "NewPass@1234!" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "USERS-RESET-PWD-004: ResetUserPassword_WithValidData_ReturnsOk")]
@@ -69,9 +69,9 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         var response = await adminClient.PostAsJsonAsync(ResetUserPasswordEndpoint.Route.WithId(created!.Id), new { newPassword = "NewPass@1234!" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<ResetUserPasswordResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
     }
 
     [Fact(DisplayName = "USERS-RESET-PWD-005: ResetUserPassword_SendsEmailWithNewPassword")]
@@ -98,9 +98,9 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
             .Where(x => x.To == userEmail)
             .OrderByDescending(x => x.SentOn)
             .FirstOrDefaultAsync());
-        latestEmail.Should().NotBeNull();
-        latestEmail!.Subject.Should().Be("Your password has been reset");
-        latestEmail.Body.Should().Contain(newPassword);
+        latestEmail.ShouldNotBeNull();
+        latestEmail!.Subject.ShouldBe("Your password has been reset");
+        latestEmail.Body.ShouldContain(newPassword);
     }
 
     [Fact(DisplayName = "USERS-RESET-PWD-006: ResetUserPassword_WithTooShortPassword_ReturnsBadRequest")]
@@ -121,6 +121,6 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         var response = await adminClient.PostAsJsonAsync(ResetUserPasswordEndpoint.Route.WithId(created!.Id), new { newPassword = "abc" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

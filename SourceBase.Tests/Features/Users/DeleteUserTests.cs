@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Features.Users;
 using SourceBase.Application.Shared;
@@ -21,7 +21,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteUserEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "USERS-DELETE-002: DeleteUser_WithNonAdminUser_ReturnsForbidden")]
@@ -44,7 +44,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await nonAdminClient.DeleteAsync(DeleteUserEndpoint.Route.WithId(createBody!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "USERS-DELETE-003: DeleteUser_WithExistingUser_ReturnsOk")]
@@ -65,13 +65,13 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteUserEndpoint.Route.WithId(createBody!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DeleteUserResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
 
         var usersResponse = await client.GetAsync(GetUsersEndpoint.Route);
         var users = await usersResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
-        users!.Items.Should().NotContain(x => x.Id == createBody.Id);
+        users!.Items.ShouldNotContain(x => x.Id == createBody.Id);
     }
 
     [Fact(DisplayName = "USERS-DELETE-004: DeleteUser_WithUnknownUser_ReturnsNotFound")]
@@ -84,7 +84,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteUserEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "USERS-DELETE-005: DeleteUser_WithDeletedUser_RevokesExistingToken")]
@@ -104,6 +104,6 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await targetClient.GetAsync(GetUserInfoEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }

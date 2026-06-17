@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using Microsoft.Extensions.Logging.Abstractions;
 using SourceBase.Infrastructure.Implementations.Scrapers;
 using Xunit;
@@ -20,9 +20,9 @@ public class SjcGoldPriceScraperTests
         var result = await Scraper.ParseAsync(json, CancellationToken.None);
 
         // Assert — giamua: 14980 × 1000, giaban: 15180 × 1000
-        result.Should().NotBeNull();
-        result!.Value.BuyPrice.Should().Be(14_980_000m);
-        result!.Value.SellPrice.Should().Be(15_180_000m);
+        result.ShouldNotBeNull();
+        result!.Value.BuyPrice.ShouldBe(14_980_000m);
+        result!.Value.SellPrice.ShouldBe(15_180_000m);
     }
 
     [Fact(DisplayName = "SJC-SCRAPER-002: ParseAsync_WithMissingSjc_ReturnsNull")]
@@ -35,7 +35,7 @@ public class SjcGoldPriceScraperTests
         var result = await Scraper.ParseAsync(json, CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 
     [Fact(DisplayName = "SJC-SCRAPER-003: ParseAsync_WithMissingDataArray_ReturnsNull")]
@@ -48,6 +48,6 @@ public class SjcGoldPriceScraperTests
         var result = await Scraper.ParseAsync(json, CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 }

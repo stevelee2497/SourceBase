@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Categories;
 using SourceBase.Application.Features.Transactions;
 using SourceBase.Application.Features.Transfers;
@@ -23,7 +23,7 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var response = await client.DeleteAsync(DeleteTransactionEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TXN-DELETE-002: DeleteTransaction_WithIncomeTransaction_RecomputesWalletBalance")]
@@ -40,17 +40,17 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var incomeCategoryId = categories!.First(x => x.IsSystem).Id;
 
         var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 25m, type = "Income", date = "2025-01-30", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         // Act
         var response = await client.DeleteAsync(DeleteTransactionEndpoint.Route.WithId(transaction!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var walletBody = await client.GetAsync(GetWalletEndpoint.Route.WithId(wallet.Id));
         var walletData = await walletBody.Content.ReadFromJsonAsync<WalletResponse>();
-        walletData!.Balance.Should().Be(100m);
+        walletData!.Balance.ShouldBe(100m);
     }
 
     [Fact(DisplayName = "TXN-DELETE-003: DeleteTransaction_WithExpenseTransaction_RecomputesWalletBalance")]
@@ -67,17 +67,17 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var expenseCategoryId = categories!.First(x => x.IsSystem).Id;
 
         var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 25m, type = "Expense", date = "2025-01-31", note = $"Txn_{Guid.NewGuid():N}", categoryId = expenseCategoryId });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         // Act
         var response = await client.DeleteAsync(DeleteTransactionEndpoint.Route.WithId(transaction!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var walletBody = await client.GetAsync(GetWalletEndpoint.Route.WithId(wallet.Id));
         var walletData = await walletBody.Content.ReadFromJsonAsync<WalletResponse>();
-        walletData!.Balance.Should().Be(100m);
+        walletData!.Balance.ShouldBe(100m);
     }
 
     [Fact(DisplayName = "TXN-DELETE-004: DeleteTransaction_WithTransferTransaction_ReturnsBadRequest")]
@@ -92,7 +92,7 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var transferResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet!.Id, toWalletId = toWallet!.Id, amount = 30m, date = "2025-02-01", note = $"Transfer_{Guid.NewGuid():N}" });
-        transferResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        transferResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transfer = await transferResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
 
         var transferTransactionId = (await (await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={fromWallet!.Id}&limit=100")).Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>())!.Items.Single(x => x.IsTransfer).Id;
@@ -101,9 +101,9 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var response = await client.DeleteAsync(DeleteTransactionEndpoint.Route.WithId(transferTransactionId));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Transfer transactions cannot be deleted directly");
+        content.ShouldContain("Transfer transactions cannot be deleted directly");
     }
 
     [Fact(DisplayName = "TXN-DELETE-005: DeleteTransaction_WithUnknownId_ReturnsNotFound")]
@@ -116,7 +116,7 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var response = await client.DeleteAsync(DeleteTransactionEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "TXN-DELETE-006: DeleteTransaction_WithOtherUsersTransaction_ReturnsNotFound")]
@@ -134,13 +134,13 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var incomeCategoryId = categories!.First(x => x.IsSystem).Id;
 
         var txnResponse = await ownerClient.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 25m, type = "Income", date = "2025-02-02", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         // Act
         var response = await otherClient.DeleteAsync(DeleteTransactionEndpoint.Route.WithId(transaction!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Icons;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -20,7 +20,7 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteIconEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "ICONS-DELETE-002: DeleteIcon_WithValidId_ReturnsSuccess")]
@@ -42,9 +42,9 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteIconEndpoint.Route.WithId(created!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DeleteIconResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
     }
 
     [Fact(DisplayName = "ICONS-DELETE-003: DeleteIcon_RemovedFromGetIcons")]
@@ -69,7 +69,7 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         var allResponse = await client.GetAsync(GetIconsEndpoint.Route);
         var icons = await allResponse.Content.ReadFromJsonAsync<List<IconResponse>>();
-        icons.Should().NotContain(i => i.Id == created.Id);
+        icons!.ShouldNotContain(i => i.Id == created.Id);
     }
 
     [Fact(DisplayName = "ICONS-DELETE-004: DeleteIcon_WithUnknownId_ReturnsNotFound")]
@@ -82,7 +82,7 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteIconEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "ICONS-DELETE-005: DeleteIcon_OnSystemIcon_ReturnsForbidden")]
@@ -99,6 +99,6 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         var response = await client.DeleteAsync(DeleteIconEndpoint.Route.WithId(systemIcon.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 }

@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using Microsoft.Extensions.Logging.Abstractions;
 using SourceBase.Infrastructure.Implementations.Scrapers;
 using Xunit;
@@ -20,9 +20,9 @@ public class NgocThinhGoldPriceScraperTests
         var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
         // Assert — headerindex2: 14.030.000, headerindex3: 14.160.000
-        result.Should().NotBeNull();
-        result!.Value.BuyPrice.Should().Be(14_030_000m);
-        result!.Value.SellPrice.Should().Be(14_160_000m);
+        result.ShouldNotBeNull();
+        result!.Value.BuyPrice.ShouldBe(14_030_000m);
+        result!.Value.SellPrice.ShouldBe(14_160_000m);
     }
 
     [Fact(DisplayName = "NGOCTHINH-SCRAPER-002: ParseAsync_WithMissing9999Row_ReturnsNull")]
@@ -35,7 +35,7 @@ public class NgocThinhGoldPriceScraperTests
         var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 
     [Fact(DisplayName = "NGOCTHINH-SCRAPER-003: ParseAsync_WithEmptyHtml_ReturnsNull")]
@@ -45,6 +45,6 @@ public class NgocThinhGoldPriceScraperTests
         var result = await Scraper.ParseAsync("<html><body></body></html>", CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 }

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Todos;
 using SourceBase.Application.Shared;
@@ -26,7 +26,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TODOS-UPDATE-002: UpdateTodo_WithValidData_ReturnsOk")]
@@ -51,14 +51,14 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<UpdateTodoResponse>();
-        body!.Id.Should().Be(createBody.Id);
+        body!.Id.ShouldBe(createBody.Id);
 
         var getResponse = await client.GetAsync(GetTodoEndpoint.Route.WithId(createBody.Id));
         var updated = await getResponse.Content.ReadFromJsonAsync<GetTodoResponse>();
-        updated!.Title.Should().Be("Updated Title");
-        updated.Status.Should().Be(TodoItemStatus.Completed);
+        updated!.Title.ShouldBe("Updated Title");
+        updated.Status.ShouldBe(TodoItemStatus.Completed);
     }
 
     [Fact(DisplayName = "TODOS-UPDATE-003: UpdateTodo_WithEmptyTitle_ReturnsBadRequest")]
@@ -81,7 +81,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TODOS-UPDATE-004: UpdateTodo_WithNonExistentId_ReturnsNotFound")]
@@ -99,7 +99,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "TODOS-UPDATE-005: UpdateTodo_WithOtherUsersTodo_ReturnsNotFound")]
@@ -126,7 +126,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "TODOS-UPDATE-006: UpdateTodo_WithEmptyId_ReturnsBadRequest")]
@@ -142,6 +142,6 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

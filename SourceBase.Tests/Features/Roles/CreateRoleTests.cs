@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Roles;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -24,7 +24,7 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "ROLES-CREATE-002: CreateRole_WithNonAdminUser_ReturnsForbidden")]
@@ -41,7 +41,7 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "ROLES-CREATE-003: CreateRole_WithValidData_ReturnsOk")]
@@ -59,13 +59,13 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateRoleResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
 
         var rolesResponse = await client.GetAsync(GetRolesEndpoint.Route);
         var roles = await rolesResponse.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
-        roles!.Items.Should().ContainSingle(x => x.Name == roleName && x.Description == "Created in integration test");
+        roles!.Items.ShouldContain(x => x.Name == roleName && x.Description == "Created in integration test");
     }
 
     [Fact(DisplayName = "ROLES-CREATE-004: CreateRole_WithDuplicateNameIgnoringCase_ReturnsBadRequest")]
@@ -89,7 +89,7 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ROLES-CREATE-005: CreateRole_WithWhitespaceAroundName_TrimsBeforePersisting")]
@@ -107,9 +107,9 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var rolesResponse = await client.GetAsync(GetRolesEndpoint.Route);
         var roles = await rolesResponse.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
-        roles!.Items.Should().Contain(x => x.Name == trimmedName);
+        roles!.Items.ShouldContain(x => x.Name == trimmedName);
     }
 }

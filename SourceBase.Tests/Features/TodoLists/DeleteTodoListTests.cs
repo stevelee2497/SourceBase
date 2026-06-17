@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.TodoLists;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -20,7 +20,7 @@ public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.DeleteAsync(DeleteTodoListEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TODOLISTS-DELETE-002: DeleteTodoList_WithValidId_ReturnsOk")]
@@ -35,9 +35,9 @@ public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.DeleteAsync(DeleteTodoListEndpoint.Route.WithId(created!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DeleteTodoListResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
     }
 
     [Fact(DisplayName = "TODOLISTS-DELETE-003: DeleteTodoList_OwnedByAnotherUser_ReturnsNotFound")]
@@ -54,6 +54,6 @@ public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await otherClient.DeleteAsync(DeleteTodoListEndpoint.Route.WithId(created!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }

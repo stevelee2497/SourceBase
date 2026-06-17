@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Categories;
 using SourceBase.Tests.Infrastructure;
@@ -24,7 +24,7 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "CATS-CREATE-002: CreateCategory_WithValidData_ReturnsOkAndId")]
@@ -42,9 +42,9 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateCategoryResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
     }
 
     [Fact(DisplayName = "CATS-CREATE-003: CreateCategory_WithMissingName_ReturnsBadRequest")]
@@ -60,7 +60,7 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "CATS-CREATE-004: CreateCategory_WithMissingType_ReturnsBadRequest")]
@@ -76,7 +76,7 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "CATS-CREATE-005: CreateCategory_WithInvalidType_ReturnsBadRequest")]
@@ -93,7 +93,7 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "CATS-CREATE-006: CreateCategory_WithAuthenticatedUser_SetsOwnershipAndNonSystem")]
@@ -105,13 +105,13 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
 
         // Act
         var createResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Income", icon = "🏷️" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Assert
         var catResponse = await client.GetAsync(GetCategoriesEndpoint.Route);
         var categories = await catResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
         var category = categories!.Single(x => x.Id == create!.Id);
-        category.IsSystem.Should().BeFalse();
+        category.IsSystem.ShouldBeFalse();
     }
 }

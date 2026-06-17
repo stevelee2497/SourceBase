@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Features.TodoLists;
 using SourceBase.Tests.Infrastructure;
@@ -25,7 +25,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "UPDATE-INFO-002: UpdateUserInfo_WithValidData_ReturnsOk")]
@@ -43,9 +43,9 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<UpdateUserInfoResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
     }
 
     [Fact(DisplayName = "UPDATE-INFO-003: UpdateUserInfo_ChangesReflectedInGetUserInfo")]
@@ -67,12 +67,12 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
 
         // Assert
         var response = await client.GetAsync(GetUserInfoEndpoint.Route);
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
-        body.Should().NotBeNull();
-        body!.FirstName.Should().Be(firstName);
-        body.LastName.Should().Be(lastName);
-        body.PhoneNumber.Should().Be(phoneNumber);
+        body.ShouldNotBeNull();
+        body!.FirstName.ShouldBe(firstName);
+        body.LastName.ShouldBe(lastName);
+        body.PhoneNumber.ShouldBe(phoneNumber);
     }
 
     [Fact(DisplayName = "UPDATE-INFO-005: UpdateUserInfo_WithValidTodoListId_SetsDefault")]
@@ -90,9 +90,9 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var info = await client.GetFromJsonAsync<GetUserInfoResponse>(GetUserInfoEndpoint.Route);
-        info!.DefaultTodoListId.Should().Be(list.Id);
+        info!.DefaultTodoListId.ShouldBe(list.Id);
     }
 
     [Fact(DisplayName = "UPDATE-INFO-006: UpdateUserInfo_WithNullTodoListId_DoesNotClearDefault")]
@@ -111,9 +111,9 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var info = await client.GetFromJsonAsync<GetUserInfoResponse>(GetUserInfoEndpoint.Route);
-        info!.DefaultTodoListId.Should().Be(list.Id);
+        info!.DefaultTodoListId.ShouldBe(list.Id);
     }
 
     [Fact(DisplayName = "UPDATE-INFO-007: UpdateUserInfo_PartialUpdate_DoesNotOverwriteOmittedFields")]
@@ -127,10 +127,10 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.PatchAsJsonAsync(UpdateUserInfoEndpoint.Route, new { firstName = "PartialFirst" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var info = await client.GetFromJsonAsync<GetUserInfoResponse>(GetUserInfoEndpoint.Route);
-        info!.FirstName.Should().Be("PartialFirst");
-        info.PhoneNumber.Should().Be("0111222333");
+        info!.FirstName.ShouldBe("PartialFirst");
+        info.PhoneNumber.ShouldBe("0111222333");
     }
 
     [Fact(DisplayName = "UPDATE-INFO-004: UpdateUserInfo_WithPhoneNumberTooLong_ReturnsBadRequest")]
@@ -148,6 +148,6 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Categories;
 using SourceBase.Application.Features.Transactions;
 using SourceBase.Application.Features.Wallets;
@@ -22,7 +22,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var response = await client.GetAsync(GetWalletEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "WALLETS-GET-002: GetWallet_WithOwnedWalletId_ReturnsWalletData")]
@@ -32,7 +32,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Travel_{Guid.NewGuid():N}", initialBalance = 200m, currency = "GBP", icon = "✈️" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var incomeCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -45,12 +45,12 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var response = await client.GetAsync(GetWalletEndpoint.Route.WithId(create.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<WalletResponse>();
-        body!.Id.Should().Be(create.Id);
-        body.Currency.Should().Be("GBP");
-        body.Icon.Should().Be("✈️");
-        body.Balance.Should().Be(250m);
+        body!.Id.ShouldBe(create.Id);
+        body.Currency.ShouldBe("GBP");
+        body.Icon.ShouldBe("✈️");
+        body.Balance.ShouldBe(250m);
     }
 
     [Fact(DisplayName = "WALLETS-GET-003: GetWallet_WithUnknownId_ReturnsNotFound")]
@@ -63,7 +63,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var response = await client.GetAsync(GetWalletEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "WALLETS-GET-004: GetWallet_WithOtherUsersWallet_ReturnsNotFound")]
@@ -74,14 +74,14 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var otherClient = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await ownerClient.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
         var response = await otherClient.GetAsync(GetWalletEndpoint.Route.WithId(create!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "WALLETS-GET-005: GetWallet_BalanceReflectsMultipleTransactions")]
@@ -91,7 +91,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var incomeCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -110,8 +110,8 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var response = await client.GetAsync(GetWalletEndpoint.Route.WithId(create.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<WalletResponse>();
-        body!.Balance.Should().Be(140m); // 100 + 50 - 30 + 20
+        body!.Balance.ShouldBe(140m); // 100 + 50 - 30 + 20
     }
 }

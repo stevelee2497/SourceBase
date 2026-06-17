@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.TodoLists;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -20,7 +20,7 @@ public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync(GetTodoListsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TODOLISTS-GET-002: GetTodoLists_ReturnsOk")]
@@ -33,10 +33,10 @@ public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync(GetTodoListsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TodoListResponse>>();
-        body.Should().NotBeNull();
-        body!.Items.Should().NotBeNull();
+        body.ShouldNotBeNull();
+        body!.Items.ShouldNotBeNull();
     }
 
     [Fact(DisplayName = "TODOLISTS-GET-003: GetTodoLists_ReturnsOnlyCurrentUserLists")]
@@ -56,6 +56,6 @@ public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var bodyB = await responseB.Content.ReadFromJsonAsync<PagingResponse<TodoListResponse>>();
 
         // Assert
-        bodyB!.Items.Should().NotContain(x => x.Name == listName);
+        bodyB!.Items.ShouldNotContain(x => x.Name == listName);
     }
 }

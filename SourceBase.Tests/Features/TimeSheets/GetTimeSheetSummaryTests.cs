@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.TimeSheets;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -19,7 +19,7 @@ public class GetTimeSheetSummaryTests(WebAppFactory factory) : IClassFixture<Web
         var response = await client.GetAsync($"{GetTimeSheetSummaryEndpoint.Route}?year=2025&month=6");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TIMESHEET-SUMMARY-002: GetTimeSheetSummary_WithValidMonthAndEntries_ReturnsAggregates")]
@@ -42,17 +42,17 @@ public class GetTimeSheetSummaryTests(WebAppFactory factory) : IClassFixture<Web
         var response = await client.GetAsync($"{GetTimeSheetSummaryEndpoint.Route}?year=2025&month=6");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetTimeSheetSummaryResponse>();
-        body!.Days.Should().HaveCount(2);
+        body!.Days.Count.ShouldBe(2);
 
         var june5 = body.Days.Single(d => d.Date == new DateOnly(2025, 6, 5));
-        june5.TotalHours.Should().Be(7.5m);
-        june5.Projects.Should().BeEquivalentTo(["Alpha", "Beta"]);
+        june5.TotalHours.ShouldBe(7.5m);
+        june5.Projects.ShouldBe(["Alpha", "Beta"]);
 
         var june10 = body.Days.Single(d => d.Date == new DateOnly(2025, 6, 10));
-        june10.TotalHours.Should().Be(8m);
-        june10.Projects.Should().BeEquivalentTo(["Alpha"]);
+        june10.TotalHours.ShouldBe(8m);
+        june10.Projects.ShouldBe(["Alpha"]);
     }
 
     [Fact(DisplayName = "TIMESHEET-SUMMARY-003: GetTimeSheetSummary_WithEmptyMonth_ReturnsEmptyList")]
@@ -65,9 +65,9 @@ public class GetTimeSheetSummaryTests(WebAppFactory factory) : IClassFixture<Web
         var response = await client.GetAsync($"{GetTimeSheetSummaryEndpoint.Route}?year=2099&month=12");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetTimeSheetSummaryResponse>();
-        body!.Days.Should().BeEmpty();
+        body!.Days.ShouldBeEmpty();
     }
 
     [Fact(DisplayName = "TIMESHEET-SUMMARY-004: GetTimeSheetSummary_WithInvalidMonth_ReturnsBadRequest")]
@@ -80,7 +80,7 @@ public class GetTimeSheetSummaryTests(WebAppFactory factory) : IClassFixture<Web
         var response = await client.GetAsync($"{GetTimeSheetSummaryEndpoint.Route}?year=2025&month=13");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TIMESHEET-SUMMARY-005: GetTimeSheetSummary_OnlyReturnsCurrentUsersData")]
@@ -103,11 +103,11 @@ public class GetTimeSheetSummaryTests(WebAppFactory factory) : IClassFixture<Web
         var response = await firstClient.GetAsync($"{GetTimeSheetSummaryEndpoint.Route}?year=2025&month=6");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetTimeSheetSummaryResponse>();
         var june3 = body!.Days.FirstOrDefault(d => d.Date == new DateOnly(2025, 6, 3));
-        june3.Should().NotBeNull();
-        june3!.Projects.Should().Contain("MyWork");
-        june3.Projects.Should().NotContain("OtherWork");
+        june3.ShouldNotBeNull();
+        june3!.Projects.ShouldContain("MyWork");
+        june3.Projects.ShouldNotContain("OtherWork");
     }
 }

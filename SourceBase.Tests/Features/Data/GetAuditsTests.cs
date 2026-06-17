@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Features.Data;
 using SourceBase.Application.Features.Roles;
@@ -23,7 +23,7 @@ public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var response = await client.GetAsync(GetAuditsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "DATA-AUDITS-002: GetAudits_WithNonAdminUser_ReturnsForbidden")]
@@ -36,7 +36,7 @@ public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var response = await client.GetAsync(GetAuditsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "DATA-AUDITS-003: GetAudits_WithAdminUser_ReturnsAuditHistory")]
@@ -62,10 +62,10 @@ public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var response = await adminClient.GetAsync(GetAuditsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<AuditHistoryResponse>>();
-        body.Should().NotBeNull();
-        body!.Items.Should().Contain(x =>
+        body.ShouldNotBeNull();
+        body!.Items.ShouldContain(x =>
             x.EntityId == createTodoBody!.Id.ToString() &&
             x.Author == actorInfo!.UserName &&
             x.Action == "Added" &&
@@ -94,9 +94,9 @@ public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         var response = await adminClient.GetAsync(GetAuditsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<AuditHistoryResponse>>();
-        body.Should().NotBeNull();
-        body!.Items.Should().BeInDescendingOrder(x => x.ActionOn);
+        body.ShouldNotBeNull();
+        body!.Items.Select(x => x.ActionOn).ShouldBeInOrder(SortDirection.Descending);
     }
 }

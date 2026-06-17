@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Categories;
 using SourceBase.Application.Features.Transactions;
 using SourceBase.Application.Features.Wallets;
@@ -29,7 +29,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TXN-CREATE-002: CreateTransaction_WithIncome_UpdatesWalletBalance")]
@@ -39,7 +39,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var catResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -58,13 +58,13 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateTransactionResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
 
         var walletBody = await client.GetAsync(GetWalletEndpoint.Route.WithId(wallet.Id));
         var walletData = await walletBody.Content.ReadFromJsonAsync<WalletResponse>();
-        walletData!.Balance.Should().Be(125m);
+        walletData!.Balance.ShouldBe(125m);
     }
 
     [Fact(DisplayName = "TXN-CREATE-003: CreateTransaction_WithExpense_UpdatesWalletBalance")]
@@ -74,7 +74,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var catResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Expense");
@@ -93,13 +93,13 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateTransactionResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
 
         var walletBody = await client.GetAsync(GetWalletEndpoint.Route.WithId(wallet.Id));
         var walletData = await walletBody.Content.ReadFromJsonAsync<WalletResponse>();
-        walletData!.Balance.Should().Be(70m);
+        walletData!.Balance.ShouldBe(70m);
     }
 
     [Fact(DisplayName = "TXN-CREATE-004: CreateTransaction_WithMissingWalletId_ReturnsBadRequest")]
@@ -122,7 +122,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TXN-CREATE-005: CreateTransaction_WithMissingAmount_ReturnsBadRequest")]
@@ -132,7 +132,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var catResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -149,7 +149,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TXN-CREATE-006: CreateTransaction_WithZeroOrNegativeAmount_ReturnsBadRequest")]
@@ -159,7 +159,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var catResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -185,8 +185,8 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        zeroResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        negativeResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        zeroResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        negativeResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TXN-CREATE-007: CreateTransaction_WithMissingDate_ReturnsBadRequest")]
@@ -196,7 +196,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var catResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -213,7 +213,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TXN-CREATE-008: CreateTransaction_WithMissingType_ReturnsBadRequest")]
@@ -223,7 +223,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var catResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -240,7 +240,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TXN-CREATE-009: CreateTransaction_WithOtherUsersWallet_ReturnsBadRequest")]
@@ -251,7 +251,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var otherClient = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await otherClient.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var otherWallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var catResponse = await ownerClient.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -269,7 +269,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TXN-CREATE-010: CreateTransaction_WithOtherUsersCategory_ReturnsBadRequest")]
@@ -280,11 +280,11 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var otherClient = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await ownerClient.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var otherCatResponse = await otherClient.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
-        otherCatResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        otherCatResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var otherCategory = await otherCatResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Act
@@ -298,7 +298,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TXN-CREATE-011: CreateTransaction_WithoutCategory_ReturnsBadRequest")]
@@ -308,7 +308,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
@@ -322,6 +322,6 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

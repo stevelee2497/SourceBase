@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.TimeSheets;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -20,7 +20,7 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync(GetTimeSheetsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TIMESHEET-GET-ALL-002: GetTimeSheets_Authenticated_ReturnsOk")]
@@ -33,10 +33,10 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync(GetTimeSheetsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<GetTimeSheetResponse>>();
-        body.Should().NotBeNull();
-        body!.Items.Should().NotBeNull();
+        body.ShouldNotBeNull();
+        body!.Items.ShouldNotBeNull();
     }
 
     [Fact(DisplayName = "TIMESHEET-GET-ALL-003: GetTimeSheets_WithYearAndMonthFilter_ReturnsMatchingItems")]
@@ -60,10 +60,10 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync($"{GetTimeSheetsEndpoint.Route}?year=2025&month=6");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<GetTimeSheetResponse>>();
-        body!.Items.Should().ContainSingle(x => x.Id == matchingBody!.Ids[0]);
-        body.Items.Should().NotContain(x => x.Project == "JulyProject");
+        body!.Items.ShouldContain(x => x.Id == matchingBody!.Ids[0]);
+        body.Items.ShouldNotContain(x => x.Project == "JulyProject");
     }
 
     [Fact(DisplayName = "TIMESHEET-GET-ALL-004: GetTimeSheets_WithDateFilter_ReturnsMatchingItems")]
@@ -87,10 +87,10 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync($"{GetTimeSheetsEndpoint.Route}?date=2025-06-10");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<GetTimeSheetResponse>>();
-        body!.Items.Should().ContainSingle(x => x.Id == matchingBody!.Ids[0]);
-        body.Items.Should().NotContain(x => x.Project == "OtherDayProject");
+        body!.Items.ShouldContain(x => x.Id == matchingBody!.Ids[0]);
+        body.Items.ShouldNotContain(x => x.Project == "OtherDayProject");
     }
 
     [Fact(DisplayName = "TIMESHEET-GET-ALL-005: GetTimeSheets_WithMultipleUsers_ReturnsOnlyCurrentUsersItems")]
@@ -115,9 +115,9 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await firstClient.GetAsync(GetTimeSheetsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<GetTimeSheetResponse>>();
-        body!.Items.Should().Contain(x => x.Id == ownBody!.Ids[0]);
-        body.Items.Should().NotContain(x => x.Project == "OtherProject");
+        body!.Items.ShouldContain(x => x.Id == ownBody!.Ids[0]);
+        body.Items.ShouldNotContain(x => x.Project == "OtherProject");
     }
 }

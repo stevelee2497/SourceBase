@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -33,16 +33,16 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<ConfirmEmailResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
 
         var token = await factory.GetAccessTokenAsync(client, email, "Test@1234!");
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         var infoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
         var info = await infoResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
-        info!.EmailConfirmed.Should().BeTrue();
-        info.Roles.Should().Contain("User");
+        info!.EmailConfirmed.ShouldBeTrue();
+        info.Roles.ShouldContain("User");
     }
 
 
@@ -68,7 +68,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
 
@@ -96,7 +96,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
 
@@ -114,7 +114,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
 
@@ -132,6 +132,6 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

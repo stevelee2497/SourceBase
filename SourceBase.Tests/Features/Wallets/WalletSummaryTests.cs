@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Categories;
 using SourceBase.Application.Features.Transactions;
 using SourceBase.Application.Features.Wallets;
@@ -21,7 +21,7 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync(GetWalletSummaryEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "WALLETS-SUMMARY-002: GetWalletSummary_WithWalletBalances_ReturnsCorrectTotalBalance")]
@@ -31,11 +31,11 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var client = await factory.CreateAuthorizedClient($"wallet_summary_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var firstWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💼" });
-        firstWalletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        firstWalletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var firstWallet = await firstWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var secondWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💼" });
-        secondWalletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        secondWalletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var secondWallet = await secondWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var incomeCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -53,9 +53,9 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync(GetWalletSummaryEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetWalletSummaryResponse>();
-        body!.TotalBalance.Should().Be(165m);
+        body!.TotalBalance.ShouldBe(165m);
     }
 
     [Fact(DisplayName = "WALLETS-SUMMARY-003: GetWalletSummary_WithCurrentMonthTransactions_ReturnsMonthlyTotals")]
@@ -65,7 +65,7 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var client = await factory.CreateAuthorizedClient($"wallet_summary_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💼" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var incomeCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -84,10 +84,10 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync(GetWalletSummaryEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetWalletSummaryResponse>();
-        body!.MonthlyIncome.Should().Be(100m);
-        body.MonthlyExpense.Should().Be(40m);
+        body!.MonthlyIncome.ShouldBe(100m);
+        body.MonthlyExpense.ShouldBe(40m);
     }
 
     [Fact(DisplayName = "WALLETS-SUMMARY-004: GetWalletSummary_WithMoreThanFiveTransactions_ReturnsAtMostFiveRecentTransactions")]
@@ -97,7 +97,7 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var client = await factory.CreateAuthorizedClient($"wallet_summary_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💼" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var incomeCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -108,7 +108,7 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         for (var day = 1; day <= 6; day++)
         {
             var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 10m + day, type = "Income", date = $"2025-06-{day:00}", note = $"Recent_{day}", categoryId = incomeCategoryId });
-            txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
             var txn = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
             createdTransactionIds.Add(txn!.Id);
         }
@@ -117,11 +117,11 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync(GetWalletSummaryEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetWalletSummaryResponse>();
-        body!.RecentTransactions.Should().HaveCount(5);
-        body.RecentTransactions.Should().NotContain(x => x.Id == createdTransactionIds[0]);
-        body.RecentTransactions.Select(x => x.Id).Should().BeEquivalentTo(createdTransactionIds.Skip(1));
+        body!.RecentTransactions.Count.ShouldBe(5);
+        body.RecentTransactions.ShouldNotContain(x => x.Id == createdTransactionIds[0]);
+        body.RecentTransactions.Select(x => x.Id).ShouldBe(createdTransactionIds.Skip(1), ignoreOrder: true);
     }
 
     [Fact(DisplayName = "WALLETS-SUMMARY-005: GetWalletSummary_WithNoWallets_ReturnsZerosAndEmptyRecentTransactions")]
@@ -134,12 +134,12 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync(GetWalletSummaryEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetWalletSummaryResponse>();
-        body!.TotalBalance.Should().Be(0m);
-        body.MonthlyIncome.Should().Be(0m);
-        body.MonthlyExpense.Should().Be(0m);
-        body.RecentTransactions.Should().BeEmpty();
+        body!.TotalBalance.ShouldBe(0m);
+        body.MonthlyIncome.ShouldBe(0m);
+        body.MonthlyExpense.ShouldBe(0m);
+        body.RecentTransactions.ShouldBeEmpty();
     }
 }
 

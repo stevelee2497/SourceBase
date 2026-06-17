@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Icons;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -19,7 +19,7 @@ public class GetIconsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetIconsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "ICONS-GET-002: GetIcons_WithToken_ReturnsAllSeededIcons")]
@@ -32,9 +32,10 @@ public class GetIconsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetIconsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<List<IconResponse>>();
-        body.Should().NotBeNullOrEmpty();
+        body.ShouldNotBeNull();
+        body!.ShouldNotBeEmpty();
     }
 
     [Fact(DisplayName = "ICONS-GET-003: GetIcons_WithGroupFilter_ReturnsGroupAndGeneralIcons")]
@@ -47,12 +48,13 @@ public class GetIconsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync($"{GetIconsEndpoint.Route}?group=Wallet");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<List<IconResponse>>();
-        body.Should().NotBeNullOrEmpty();
-        body!.Should().AllSatisfy(i => i.Group.Should().BeOneOf("Wallet", "General"));
-        body.Should().Contain(i => i.Group == "Wallet");
-        body.Should().Contain(i => i.Group == "General");
+        body.ShouldNotBeNull();
+        body!.ShouldNotBeEmpty();
+        body.ShouldAllBe(i => i.Group == "Wallet" || i.Group == "General");
+        body.ShouldContain(i => i.Group == "Wallet");
+        body.ShouldContain(i => i.Group == "General");
     }
 
     [Fact(DisplayName = "ICONS-GET-004: GetIcons_WithInvalidGroup_ReturnsAllIcons")]
@@ -67,9 +69,9 @@ public class GetIconsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync($"{GetIconsEndpoint.Route}?group=NotAGroup");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<List<IconResponse>>();
-        body!.Count.Should().Be(allIcons!.Count);
+        body!.Count.ShouldBe(allIcons!.Count);
     }
 
     [Fact(DisplayName = "ICONS-GET-005: GetIcons_ResultsOrderedBySortOrder")]
@@ -82,9 +84,9 @@ public class GetIconsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync($"{GetIconsEndpoint.Route}?group=Wallet");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<List<IconResponse>>();
         var walletIcons = body!.Where(i => i.Group == "Wallet").ToList();
-        walletIcons.Should().BeInAscendingOrder(i => i.SortOrder);
+        walletIcons.Select(i => i.SortOrder).ShouldBeInOrder();
     }
 }

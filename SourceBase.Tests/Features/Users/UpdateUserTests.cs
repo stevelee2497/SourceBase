@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Features.Users;
@@ -28,7 +28,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "USERS-UPDATE-002: UpdateUser_WithNonAdminUser_ReturnsForbidden")]
@@ -58,7 +58,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "USERS-UPDATE-003: UpdateUser_WithValidData_ReturnsOk")]
@@ -88,18 +88,18 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<UpdateUserResponse>();
-        body!.Id.Should().Be(createBody.Id);
+        body!.Id.ShouldBe(createBody.Id);
 
         var usersResponse = await client.GetAsync(GetUsersEndpoint.Route);
         var users = await usersResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
         var updatedUser = users!.Items.Single(x => x.Id == createBody.Id);
-        updatedUser.UserName.Should().Be(managedUserName);
-        updatedUser.Email.Should().Be(updatedEmail);
-        updatedUser.EmailConfirmed.Should().BeFalse();
-        updatedUser.Roles.Should().Contain("Admin");
-        updatedUser.Roles.Should().Contain("User");
+        updatedUser.UserName.ShouldBe(managedUserName);
+        updatedUser.Email.ShouldBe(updatedEmail);
+        updatedUser.EmailConfirmed.ShouldBeFalse();
+        updatedUser.Roles.ShouldContain("Admin");
+        updatedUser.Roles.ShouldContain("User");
     }
 
     [Fact(DisplayName = "USERS-UPDATE-004: UpdateUser_WithUnknownRole_ReturnsBadRequest")]
@@ -126,7 +126,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "USERS-UPDATE-005: UpdateUser_WithDuplicateEmailIgnoringCase_ReturnsBadRequest")]
@@ -163,7 +163,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "USERS-UPDATE-006: UpdateUser_WithEmailChange_RequiresReconfirmationAndIssuesOtp")]
@@ -191,24 +191,24 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var usersResponse = await adminClient.GetAsync($"{GetUsersEndpoint.Route}?limit=100");
         var users = await usersResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
         var user = users!.Items.Single(x => x.Id == createBody.Id);
-        user.Email.Should().Be(updatedEmail);
-        user.EmailConfirmed.Should().BeFalse();
+        user.Email.ShouldBe(updatedEmail);
+        user.EmailConfirmed.ShouldBeFalse();
         var userEntity = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Id == createBody.Id));
-        userEntity.OtpCode.Should().NotBeNullOrEmpty();
-        userEntity.OtpCodeExpiresOn.Should().NotBeNull();
+        userEntity.OtpCode.ShouldNotBeNullOrEmpty();
+        userEntity.OtpCodeExpiresOn.ShouldNotBeNull();
 
         var latestEmail = await factory.WithDbContextAsync(db => db.Emails
             .Where(x => x.To == updatedEmail)
             .OrderByDescending(x => x.SentOn)
             .FirstOrDefaultAsync());
-        latestEmail.Should().NotBeNull();
-        latestEmail!.Subject.Should().Be("Confirm your email");
-        latestEmail.Body.Should().NotBeNullOrWhiteSpace();
+        latestEmail.ShouldNotBeNull();
+        latestEmail!.Subject.ShouldBe("Confirm your email");
+        latestEmail.Body.ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact(DisplayName = "USERS-UPDATE-007: UpdateUser_WithRoleChange_InvalidatesUsersExistingToken")]
@@ -231,9 +231,9 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var getInfoResponse = await targetClient.GetAsync(GetUserInfoEndpoint.Route);
-        getInfoResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        getInfoResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "USERS-UPDATE-008: UpdateUser_WithEmptyId_ReturnsBadRequest")]
@@ -252,6 +252,6 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }
