@@ -28,13 +28,7 @@ public class KimKhanhVietHungGoldPriceScraper(ILogger<KimKhanhVietHungGoldPriceS
             if (cells is null || cells.Count < 3) continue;
 
             var name = cells[0].InnerText.Trim();
-            var isRing = name.Contains("Nhẫn", StringComparison.OrdinalIgnoreCase) ||
-                         name.Contains("nhan", StringComparison.OrdinalIgnoreCase);
-            var isChi = name.Contains("1 Chỉ", StringComparison.OrdinalIgnoreCase) ||
-                        name.Contains("1 chi", StringComparison.OrdinalIgnoreCase) ||
-                        name.Contains("9999", StringComparison.OrdinalIgnoreCase);
-
-            if (!isRing || !isChi) continue;
+            if (!name.Contains("999.9", StringComparison.OrdinalIgnoreCase)) continue;
 
             var buyRaw = cells[1].InnerText.Trim();
             var sellRaw = cells[2].InnerText.Trim();
@@ -48,7 +42,7 @@ public class KimKhanhVietHungGoldPriceScraper(ILogger<KimKhanhVietHungGoldPriceS
             return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>((buy, sell));
         }
 
-        logger.LogWarning("KimKhanhVietHung: could not find nhẫn tròn 1 chỉ row");
+        logger.LogWarning("KimKhanhVietHung: could not find Vàng 999.9 row");
         return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
     }
 
@@ -56,7 +50,7 @@ public class KimKhanhVietHungGoldPriceScraper(ILogger<KimKhanhVietHungGoldPriceS
     {
         value = 0;
         if (string.IsNullOrWhiteSpace(raw)) return false;
-        var normalized = raw.Replace(".", "").Replace(",", "").Trim();
+        var normalized = raw.Replace(".", "").Replace(",", "").Replace("đ", "").Trim();
         return decimal.TryParse(normalized, out value) && value > 0;
     }
 }

@@ -9,27 +9,20 @@ public class KimKhanhVietHungGoldPriceScraperTests
 {
     private static readonly KimKhanhVietHungGoldPriceScraper Scraper = new(NullLogger<KimKhanhVietHungGoldPriceScraper>.Instance);
 
-    [Fact(DisplayName = "KIMKHANH-SCRAPER-001: ParseAsync_WithValidHtml_ReturnsParsedPrices")]
-    public async Task ParseAsync_WithValidHtml_ReturnsParsedPrices()
+    [Fact(DisplayName = "KIMKHANH-SCRAPER-001: ParseAsync_WithRealPageHtml_ReturnsVang999Prices")]
+    public async Task ParseAsync_WithRealPageHtml_ReturnsVang999Prices()
     {
         // Arrange
-        var html = """
-            <html><body>
-            <table>
-              <tr><th>Loại vàng</th><th>Mua vào</th><th>Bán ra</th></tr>
-              <tr><td>Nhẫn tròn 9999 - 1 Chỉ</td><td>1.900.000</td><td>1.950.000</td></tr>
-              <tr><td>Vàng miếng SJC 1 Lượng</td><td>75.000.000</td><td>76.000.000</td></tr>
-            </table>
-            </body></html>
-            """;
+        var html = await File.ReadAllTextAsync(
+            Path.Combine(AppContext.BaseDirectory, "Features/GoldPrices/Scrapers/data/kkvh.html"));
 
         // Act
         var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Value.BuyPrice.Should().Be(1_900_000m);
-        result!.Value.SellPrice.Should().Be(1_950_000m);
+        result!.Value.BuyPrice.Should().Be(14_250_000m);
+        result!.Value.SellPrice.Should().Be(14_450_000m);
     }
 
     [Fact(DisplayName = "KIMKHANH-SCRAPER-002: ParseAsync_WithNoMatchingRow_ReturnsNull")]
@@ -39,7 +32,7 @@ public class KimKhanhVietHungGoldPriceScraperTests
         var html = """
             <html><body>
             <table>
-              <tr><td>Vàng miếng SJC 1 Lượng</td><td>75.000.000</td><td>76.000.000</td></tr>
+              <tr><td>Vàng Nhẫn Khâu 98</td><td>13.910.000<sup>đ</sup></td><td>14.110.000<sup>đ</sup></td><td>0<sup>đ</sup></td></tr>
             </table>
             </body></html>
             """;
