@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Categories;
 using SourceBase.Application.Features.Transactions;
 using SourceBase.Application.Features.Wallets;
@@ -26,7 +26,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "WALLETS-UPDATE-002: UpdateWallet_WithValidData_ReturnsOk")]
@@ -36,7 +36,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
         var updatedName = $"Updated_{Guid.NewGuid():N}";
 
@@ -48,14 +48,14 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<UpdateWalletResponse>();
-        body!.Id.Should().Be(create.Id);
+        body!.Id.ShouldBe(create.Id);
 
         var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create.Id));
         var wallet = await walletResponse.Content.ReadFromJsonAsync<WalletResponse>();
-        wallet!.Name.Should().Be(updatedName);
-        wallet.Icon.Should().Be("🏦");
+        wallet!.Name.ShouldBe(updatedName);
+        wallet.Icon.ShouldBe("🏦");
     }
 
     [Fact(DisplayName = "WALLETS-UPDATE-003: UpdateWallet_WithOnlyIcon_ReturnsOkAndKeepsName")]
@@ -66,7 +66,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var originalName = $"Wallet_{Guid.NewGuid():N}";
 
         var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = originalName, initialBalance = 0m, currency = "USD", icon = "💳" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
@@ -76,11 +76,11 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create.Id));
         var wallet = await walletResponse.Content.ReadFromJsonAsync<WalletResponse>();
-        wallet!.Name.Should().Be(originalName);
-        wallet.Icon.Should().Be("🏦");
+        wallet!.Name.ShouldBe(originalName);
+        wallet.Icon.ShouldBe("🏦");
     }
 
     [Fact(DisplayName = "WALLETS-UPDATE-004: UpdateWallet_WithOtherUsersWallet_ReturnsNotFound")]
@@ -91,7 +91,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var otherClient = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await ownerClient.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
@@ -102,7 +102,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "WALLETS-UPDATE-005: UpdateWallet_WithUnknownId_ReturnsNotFound")]
@@ -119,7 +119,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "WALLETS-UPDATE-006: UpdateWallet_DoesNotChangeComputedBalance")]
@@ -129,7 +129,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var incomeCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -149,11 +149,11 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        updateResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var afterResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create.Id));
         var after = await afterResponse.Content.ReadFromJsonAsync<WalletResponse>();
-        after!.Balance.Should().Be(before!.Balance);
-        after.Balance.Should().Be(125m);
+        after!.Balance.ShouldBe(before!.Balance);
+        after.Balance.ShouldBe(125m);
     }
 
     [Fact(DisplayName = "WALLETS-UPDATE-007: UpdateWallet_WithNullIcon_KeepsExistingIcon")]
@@ -164,7 +164,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var newName = $"Wallet_{Guid.NewGuid():N}";
 
         var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
@@ -175,11 +175,11 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create.Id));
         var wallet = await walletResponse.Content.ReadFromJsonAsync<WalletResponse>();
-        wallet!.Name.Should().Be(newName);
-        wallet.Icon.Should().Be("💳");
+        wallet!.Name.ShouldBe(newName);
+        wallet.Icon.ShouldBe("💳");
     }
 
     [Fact(DisplayName = "WALLETS-UPDATE-008: UpdateWallet_WithEmptyId_ReturnsBadRequest")]
@@ -195,6 +195,6 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

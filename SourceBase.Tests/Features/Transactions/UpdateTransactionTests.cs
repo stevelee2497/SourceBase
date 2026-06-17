@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Categories;
 using SourceBase.Application.Features.Transactions;
@@ -30,7 +30,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TXN-UPDATE-002: UpdateTransaction_WithValidData_ReturnsOk")]
@@ -51,7 +51,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var updatedCategory = expenseCategories!.First(x => x.IsSystem);
 
         var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 20m, type = "Income", date = "2025-01-23", note = "Original note", categoryId = originalCategory.Id });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         // Act
@@ -65,17 +65,17 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<UpdateTransactionResponse>();
-        body!.Id.Should().Be(transaction.Id);
+        body!.Id.ShouldBe(transaction.Id);
 
         var transactionResponse = await client.GetAsync(GetTransactionEndpoint.Route.WithId(transaction.Id));
         var updated = await transactionResponse.Content.ReadFromJsonAsync<TransactionResponse>();
-        updated!.Amount.Should().Be(55m);
-        updated.Type.Should().Be(TransactionType.Expense);
-        updated.Date.Should().Be(new DateOnly(2025, 2, 2));
-        updated.Note.Should().Be("Updated note");
-        updated.CategoryId.Should().Be(updatedCategory.Id);
+        updated!.Amount.ShouldBe(55m);
+        updated.Type.ShouldBe(TransactionType.Expense);
+        updated.Date.ShouldBe(new DateOnly(2025, 2, 2));
+        updated.Note.ShouldBe("Updated note");
+        updated.CategoryId.ShouldBe(updatedCategory.Id);
     }
 
     [Fact(DisplayName = "TXN-UPDATE-003: UpdateTransaction_WhenAmountChanges_RecomputesWalletBalance")]
@@ -92,7 +92,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var category = categories!.First(x => x.IsSystem);
 
         var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 10m, type = "Income", date = "2025-01-24", note = $"Txn_{Guid.NewGuid():N}", categoryId = category.Id });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         // Act
@@ -106,10 +106,10 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var walletBody = await client.GetAsync(GetWalletEndpoint.Route.WithId(wallet.Id));
         var walletData = await walletBody.Content.ReadFromJsonAsync<WalletResponse>();
-        walletData!.Balance.Should().Be(140m);
+        walletData!.Balance.ShouldBe(140m);
     }
 
     [Fact(DisplayName = "TXN-UPDATE-004: UpdateTransaction_WhenTypeChanges_RecomputesWalletBalance")]
@@ -130,7 +130,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var expenseCategory = expenseCategories!.First(x => x.IsSystem);
 
         var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 30m, type = "Income", date = "2025-01-25", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategory.Id });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         // Act
@@ -144,10 +144,10 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var walletBody = await client.GetAsync(GetWalletEndpoint.Route.WithId(wallet.Id));
         var walletData = await walletBody.Content.ReadFromJsonAsync<WalletResponse>();
-        walletData!.Balance.Should().Be(70m);
+        walletData!.Balance.ShouldBe(70m);
     }
 
     [Fact(DisplayName = "TXN-UPDATE-005: UpdateTransaction_WithZeroOrNegativeAmount_ReturnsBadRequest")]
@@ -164,7 +164,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var category = categories!.First(x => x.IsSystem);
 
         var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 30m, type = "Income", date = "2025-01-26", note = $"Txn_{Guid.NewGuid():N}", categoryId = category.Id });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         // Act
@@ -186,8 +186,8 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        zeroResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        negativeResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        zeroResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        negativeResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TXN-UPDATE-006: UpdateTransaction_WithUnknownId_ReturnsNotFound")]
@@ -210,7 +210,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "TXN-UPDATE-007: UpdateTransaction_WithOtherUsersTransaction_ReturnsNotFound")]
@@ -228,7 +228,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var incomeCategoryId = categories!.First(x => x.IsSystem).Id;
 
         var txnResponse = await ownerClient.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 20m, type = "Income", date = "2025-01-28", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         var otherCatResponse = await otherClient.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -245,7 +245,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "TXN-UPDATE-008: UpdateTransaction_WithTransferTransaction_ReturnsBadRequest")]
@@ -260,7 +260,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var transferResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet!.Id, toWalletId = toWallet!.Id, amount = 30m, date = "2025-01-29", note = $"Transfer_{Guid.NewGuid():N}" });
-        transferResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        transferResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transfer = await transferResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
 
         var transferTransactionId = (await (await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={fromWallet!.Id}&limit=100")).Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>())!.Items.Single(x => x.IsTransfer).Id;
@@ -280,9 +280,9 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Transfer transactions cannot be edited directly");
+        content.ShouldContain("Transfer transactions cannot be edited directly");
     }
 
     [Fact(DisplayName = "TXN-UPDATE-009: UpdateTransaction_WithWalletId_MovesTransactionAndRecalculatesBalances")]
@@ -301,7 +301,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var category = categories!.First(x => x.IsSystem);
 
         var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = walletA!.Id, amount = 30m, type = "Income", date = "2025-03-01", note = $"Txn_{Guid.NewGuid():N}", categoryId = category.Id });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         // Act
@@ -311,19 +311,19 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var walletABody = await client.GetAsync(GetWalletEndpoint.Route.WithId(walletA.Id));
         var walletAData = await walletABody.Content.ReadFromJsonAsync<WalletResponse>();
-        walletAData!.Balance.Should().Be(100m);
+        walletAData!.Balance.ShouldBe(100m);
 
         var walletBBody = await client.GetAsync(GetWalletEndpoint.Route.WithId(walletB.Id));
         var walletBData = await walletBBody.Content.ReadFromJsonAsync<WalletResponse>();
-        walletBData!.Balance.Should().Be(80m);
+        walletBData!.Balance.ShouldBe(80m);
 
         var txnDetailResponse = await client.GetAsync(GetTransactionEndpoint.Route.WithId(transaction.Id));
         var txnDetail = await txnDetailResponse.Content.ReadFromJsonAsync<TransactionResponse>();
-        txnDetail!.WalletId.Should().Be(walletB.Id);
+        txnDetail!.WalletId.ShouldBe(walletB.Id);
     }
 
     [Fact(DisplayName = "TXN-UPDATE-010: UpdateTransaction_WithInvalidWalletId_ReturnsBadRequest")]
@@ -340,7 +340,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var category = categories!.First(x => x.IsSystem);
 
         var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 20m, type = "Income", date = "2025-03-02", note = $"Txn_{Guid.NewGuid():N}", categoryId = category.Id });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         // Act
@@ -350,7 +350,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TXN-UPDATE-011: UpdateTransaction_WithOtherUsersWalletId_ReturnsBadRequest")]
@@ -371,7 +371,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         var category = categories!.First(x => x.IsSystem);
 
         var txnResponse = await ownerClient.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = ownerWallet!.Id, amount = 20m, type = "Income", date = "2025-03-03", note = $"Txn_{Guid.NewGuid():N}", categoryId = category.Id });
-        txnResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        txnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transaction = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
 
         // Act
@@ -381,7 +381,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TXN-UPDATE-012: UpdateTransaction_WithEmptyId_ReturnsBadRequest")]
@@ -397,6 +397,6 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Categories;
 using SourceBase.Application.Features.Transactions;
 using SourceBase.Application.Features.Wallets;
@@ -22,7 +22,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.DeleteAsync(DeleteWalletEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "WALLETS-DELETE-002: DeleteWallet_WithOwnedWallet_ReturnsOk")]
@@ -32,19 +32,19 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
         var response = await client.DeleteAsync(DeleteWalletEndpoint.Route.WithId(create!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DeleteWalletResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
 
         var getResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create.Id));
-        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        getResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "WALLETS-DELETE-003: DeleteWallet_WithOtherUsersWallet_ReturnsNotFound")]
@@ -55,14 +55,14 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var otherClient = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await ownerClient.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
         var response = await otherClient.DeleteAsync(DeleteWalletEndpoint.Route.WithId(create!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "WALLETS-DELETE-004: DeleteWallet_WithUnknownId_ReturnsNotFound")]
@@ -75,7 +75,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.DeleteAsync(DeleteWalletEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "WALLETS-DELETE-005: DeleteWallet_RemovesAssociatedTransactions")]
@@ -85,7 +85,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var incomeCatResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
@@ -103,13 +103,13 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.DeleteAsync(DeleteWalletEndpoint.Route.WithId(create.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create!.Id));
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 
         var txnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={create.Id}&limit=100");
         var txns = await txnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        txns!.Total.Should().Be(0);
+        txns!.Total.ShouldBe(0);
     }
 
     [Fact(DisplayName = "WALLETS-DELETE-006: DeleteWallet_DeletedWalletExcludedFromList")]
@@ -119,7 +119,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var client = await factory.CreateAuthorizedClient($"wallet_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         await client.DeleteAsync(DeleteWalletEndpoint.Route.WithId(create!.Id));
@@ -128,8 +128,8 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync(GetWalletsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetWalletsResponse>();
-        body!.Wallets.Should().NotContain(x => x.Id == create.Id);
+        body!.Wallets.ShouldNotContain(x => x.Id == create.Id);
     }
 }

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Wallets;
 using SourceBase.Application.Shared;
@@ -26,7 +26,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "WALLETS-CREATE-002: CreateWallet_WithValidData_ReturnsOkAndId")]
@@ -45,9 +45,9 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateWalletResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
     }
 
     [Fact(DisplayName = "WALLETS-CREATE-003: CreateWallet_WithMissingName_ReturnsBadRequest")]
@@ -64,7 +64,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "WALLETS-CREATE-004: CreateWallet_WithMissingCurrency_ReturnsBadRequest")]
@@ -81,7 +81,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "WALLETS-CREATE-005: CreateWallet_WithNegativeInitialBalance_ReturnsOk")]
@@ -98,16 +98,16 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
             currency = "USD",
             icon = "💳",
         });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create!.Id));
 
         // Assert
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<WalletResponse>();
-        wallet!.Balance.Should().Be(-25m);
-        wallet.InitialBalance.Should().Be(-25m);
+        wallet!.Balance.ShouldBe(-25m);
+        wallet.InitialBalance.ShouldBe(-25m);
     }
 
     [Fact(DisplayName = "WALLETS-CREATE-006: CreateWallet_WithoutTransactions_HasBalanceEqualToInitialBalance")]
@@ -124,16 +124,16 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
             currency = "EUR",
             icon = "💳",
         });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create!.Id));
 
         // Assert
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<WalletResponse>();
-        wallet!.Balance.Should().Be(123.45m);
-        wallet.Currency.Should().Be("EUR");
+        wallet!.Balance.ShouldBe(123.45m);
+        wallet.Currency.ShouldBe("EUR");
     }
 
     [Fact(DisplayName = "WALLETS-CREATE-007: CreateWallet_WithAuthenticatedUser_SetsWalletOwnership")]
@@ -151,7 +151,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
             currency = "USD",
             icon = "💳",
         });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Assert
@@ -160,7 +160,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
             Wallet = await db.Wallets.SingleAsync(x => x.Id == create!.Id),
             UserId = await db.Users.Where(x => x.Email == email).Select(x => x.Id).SingleAsync()
         });
-        data.Wallet.UserId.Should().Be(data.UserId);
+        data.Wallet.UserId.ShouldBe(data.UserId);
     }
 
     [Fact(DisplayName = "WALLETS-CREATE-008: CreateWallet_WithZeroInitialBalance_HasBalanceOfZero")]
@@ -177,16 +177,16 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
             currency = "USD",
             icon = "💳",
         });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create!.Id));
 
         // Assert
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<WalletResponse>();
-        wallet!.Balance.Should().Be(0m);
-        wallet.InitialBalance.Should().Be(0m);
+        wallet!.Balance.ShouldBe(0m);
+        wallet.InitialBalance.ShouldBe(0m);
     }
 
     [Fact(DisplayName = "WALLETS-CREATE-009: CreateWallet_WithNoIcon_StillCreatesWallet")]
@@ -202,15 +202,15 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
             initialBalance = 50m,
             currency = "USD",
         });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create!.Id));
 
         // Assert
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<WalletResponse>();
-        wallet!.Id.Should().Be(create.Id);
-        wallet.Balance.Should().Be(50m);
+        wallet!.Id.ShouldBe(create.Id);
+        wallet.Balance.ShouldBe(50m);
     }
 }

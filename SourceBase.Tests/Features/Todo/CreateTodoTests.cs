@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Features.TodoLists;
 using SourceBase.Application.Features.Todos;
@@ -27,7 +27,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TODOS-CREATE-002: CreateTodo_WithValidData_ReturnsOk")]
@@ -45,9 +45,9 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
     }
 
     [Fact(DisplayName = "TODOS-CREATE-003: CreateTodo_WithValidData_SetsCreatedByToAuthenticatedUserName")]
@@ -70,14 +70,14 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
 
         var todoResponse = await client.GetAsync(GetTodoEndpoint.Route.WithId(body.Id));
         var todo = await todoResponse.Content.ReadFromJsonAsync<GetTodoResponse>();
-        todo!.CreatedBy.Should().Be(userInfo!.UserName);
-        todo.UserId.Should().Be(userInfo.Id);
+        todo!.CreatedBy.ShouldBe(userInfo!.UserName);
+        todo.UserId.ShouldBe(userInfo.Id);
     }
 
     [Fact(DisplayName = "TODOS-CREATE-004: CreateTodo_WithMissingTitle_ReturnsBadRequest")]
@@ -94,7 +94,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TODOS-CREATE-005: CreateTodo_WithMissingDate_ReturnsBadRequest")]
@@ -111,7 +111,7 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TODOS-CREATE-006: CreateTodo_WithValidTodoListId_ReturnsOk")]
@@ -132,11 +132,11 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateTodoResponse>();
         var todoResponse = await client.GetAsync(GetTodoEndpoint.Route.WithId(body!.Id));
         var todo = await todoResponse.Content.ReadFromJsonAsync<GetTodoResponse>();
-        todo!.TodoListId.Should().Be(list.Id);
+        todo!.TodoListId.ShouldBe(list.Id);
     }
 
     [Fact(DisplayName = "TODOS-CREATE-007: CreateTodo_WithInvalidTodoListId_ReturnsBadRequest")]
@@ -155,6 +155,6 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

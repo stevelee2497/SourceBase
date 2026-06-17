@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Todos;
 using SourceBase.Application.Shared;
@@ -21,7 +21,7 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetTodoEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TODOS-GET-002: GetTodo_AfterCreate_ReturnsCorrectData")]
@@ -41,12 +41,12 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetTodoEndpoint.Route.WithId(createBody!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetTodoResponse>();
-        body.Should().NotBeNull();
-        body!.Title.Should().Be("Fetch Me");
-        body.Status.Should().Be(TodoItemStatus.Open);
-        body.Date.Should().Be(new DateOnly(2025, 7, 15));
+        body.ShouldNotBeNull();
+        body!.Title.ShouldBe("Fetch Me");
+        body.Status.ShouldBe(TodoItemStatus.Open);
+        body.Date.ShouldBe(new DateOnly(2025, 7, 15));
     }
 
     [Fact(DisplayName = "TODOS-GET-003: GetTodo_NonExistentId_ReturnsNotFound")]
@@ -59,7 +59,7 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetTodoEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "TODOS-GET-004: GetTodo_WithOtherUsersTodo_ReturnsNotFound")]
@@ -81,6 +81,6 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await strangerClient.GetAsync(GetTodoEndpoint.Route.WithId(createBody!.Id));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }

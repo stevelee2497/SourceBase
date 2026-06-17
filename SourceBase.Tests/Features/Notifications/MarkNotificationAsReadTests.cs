@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Features.Notifications;
@@ -32,14 +32,14 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
         var response = await client.PutAsJsonAsync(MarkNotificationAsReadEndpoint.Route.Replace("{id}", notifId.ToString()), new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<MarkNotificationAsReadResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
 
         var notificationsResponse = await client.GetAsync($"{GetNotificationsEndpoint.Route}?limit=100");
         var notifications = await notificationsResponse.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
         var notif = notifications!.Items.Single(n => n.Id == notifId);
-        notif.IsRead.Should().BeTrue();
+        notif.IsRead.ShouldBeTrue();
     }
 
     [Fact(DisplayName = "NOTIF-MARK-READ-002: MarkNotificationAsRead_WithNonExistentId_ReturnsNotFound")]
@@ -52,7 +52,7 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
         var response = await client.PutAsJsonAsync(MarkNotificationAsReadEndpoint.Route.Replace("{id}", Guid.NewGuid().ToString()), new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "NOTIF-MARK-READ-003: MarkNotificationAsRead_WithOtherUsersNotification_ReturnsNotFound")]
@@ -74,7 +74,7 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
         var response = await adminClient.PutAsJsonAsync(MarkNotificationAsReadEndpoint.Route.Replace("{id}", notifId.ToString()), new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "NOTIF-MARK-READ-004: MarkNotificationAsRead_AlreadyRead_StillReturnsOk")]
@@ -97,9 +97,9 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
         var response = await client.PutAsJsonAsync(MarkNotificationAsReadEndpoint.Route.Replace("{id}", notifId.ToString()), new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<MarkNotificationAsReadResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
     }
 
     [Fact(DisplayName = "NOTIF-MARK-READ-005: MarkNotificationAsRead_WithoutAuth_ReturnsUnauthorized")]
@@ -112,6 +112,6 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
         var response = await client.PutAsJsonAsync(MarkNotificationAsReadEndpoint.Route.Replace("{id}", Guid.NewGuid().ToString()), new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }

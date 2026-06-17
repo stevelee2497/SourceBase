@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Auth;
@@ -35,13 +35,13 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
         var response = await client.DeleteAsync(ClearAllNotificationsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<ClearAllNotificationsResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
 
         var notificationsResponse = await client.GetAsync(GetNotificationsEndpoint.Route);
         var notifications = await notificationsResponse.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
-        notifications!.Total.Should().Be(0);
+        notifications!.Total.ShouldBe(0);
     }
 
     [Fact(DisplayName = "NOTIF-CLEAR-002: ClearAllNotifications_WithNoNotifications_ReturnsOk")]
@@ -54,9 +54,9 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
         var response = await client.DeleteAsync(ClearAllNotificationsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<ClearAllNotificationsResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
     }
 
     [Fact(DisplayName = "NOTIF-CLEAR-003: ClearAllNotifications_DoesNotAffectOtherUsersNotifications")]
@@ -79,7 +79,7 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
         // Assert
         var otherUserCount = await factory.WithDbContextAsync(db =>
             db.Notifications.CountAsync(n => n.UserId == otherUserId));
-        otherUserCount.Should().Be(1);
+        otherUserCount.ShouldBe(1);
     }
 
     [Fact(DisplayName = "NOTIF-CLEAR-004: ClearAllNotifications_WithoutAuth_ReturnsUnauthorized")]
@@ -92,6 +92,6 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
         var response = await client.DeleteAsync(ClearAllNotificationsEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }

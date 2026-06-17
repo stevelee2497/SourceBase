@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using Microsoft.Extensions.Logging.Abstractions;
 using SourceBase.Infrastructure.Implementations.Scrapers;
 using Xunit;
@@ -20,9 +20,9 @@ public class KimKhanhVietHungGoldPriceScraperTests
         var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Value.BuyPrice.Should().Be(14_250_000m);
-        result!.Value.SellPrice.Should().Be(14_450_000m);
+        result.ShouldNotBeNull();
+        result!.Value.BuyPrice.ShouldBe(14_250_000m);
+        result!.Value.SellPrice.ShouldBe(14_450_000m);
     }
 
     [Fact(DisplayName = "KIMKHANH-SCRAPER-002: ParseAsync_WithNoMatchingRow_ReturnsNull")]
@@ -41,7 +41,7 @@ public class KimKhanhVietHungGoldPriceScraperTests
         var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 
     [Fact(DisplayName = "KIMKHANH-SCRAPER-003: ParseAsync_WithNoTable_ReturnsNull")]
@@ -54,6 +54,6 @@ public class KimKhanhVietHungGoldPriceScraperTests
         var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 }

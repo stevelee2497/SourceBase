@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Icons;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -25,7 +25,7 @@ public class CreateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "ICONS-CREATE-002: CreateIcon_WithValidRequest_ReturnsId")]
@@ -44,9 +44,9 @@ public class CreateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateIconResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
     }
 
     [Fact(DisplayName = "ICONS-CREATE-003: CreateIcon_WithEmptyValue_ReturnsBadRequest")]
@@ -65,7 +65,7 @@ public class CreateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ICONS-CREATE-004: CreateIcon_WithEmptyName_ReturnsBadRequest")]
@@ -84,7 +84,7 @@ public class CreateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ICONS-CREATE-005: CreateIcon_WithValueTooLong_OK")]
@@ -103,7 +103,7 @@ public class CreateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Fact(DisplayName = "ICONS-CREATE-006: CreateIcon_WithNameTooLong_ReturnsBadRequest")]
@@ -122,7 +122,7 @@ public class CreateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ICONS-CREATE-007: CreateIcon_AppearsInGetIcons")]
@@ -139,13 +139,13 @@ public class CreateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
             group = "General",
             sortOrder = 999,
         });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Act
         var response = await client.GetAsync(GetIconsEndpoint.Route);
 
         // Assert
         var icons = await response.Content.ReadFromJsonAsync<List<IconResponse>>();
-        icons.Should().Contain(i => i.Name == uniqueName);
+        icons!.ShouldContain(i => i.Name == uniqueName);
     }
 }

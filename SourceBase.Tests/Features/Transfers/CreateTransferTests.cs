@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Transactions;
 using SourceBase.Application.Features.Transfers;
@@ -29,7 +29,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-002: CreateTransfer_WithValidData_UpdatesBothWalletBalances")]
@@ -39,11 +39,11 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var fromWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
-        fromWalletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        fromWalletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var fromWallet = await fromWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var toWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD", icon = "💳" });
-        toWalletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        toWalletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
@@ -57,17 +57,17 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateTransferResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
 
         var fromWalletBody = await client.GetAsync(GetWalletEndpoint.Route.WithId(fromWallet.Id));
         var fromWalletData = await fromWalletBody.Content.ReadFromJsonAsync<WalletResponse>();
-        fromWalletData!.Balance.Should().Be(70m);
+        fromWalletData!.Balance.ShouldBe(70m);
 
         var toWalletBody = await client.GetAsync(GetWalletEndpoint.Route.WithId(toWallet.Id));
         var toWalletData = await toWalletBody.Content.ReadFromJsonAsync<WalletResponse>();
-        toWalletData!.Balance.Should().Be(80m);
+        toWalletData!.Balance.ShouldBe(80m);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-003: CreateTransfer_WithSameWallets_ReturnsBadRequest")]
@@ -77,7 +77,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var client = await factory.CreateAuthorizedClient($"transfer_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
-        walletResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        walletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         // Act
@@ -90,7 +90,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-004: CreateTransfer_WithOtherUsersFromWallet_ReturnsBadRequest")]
@@ -116,7 +116,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-005: CreateTransfer_WithOtherUsersToWallet_ReturnsBadRequest")]
@@ -142,7 +142,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-006: CreateTransfer_WithZeroOrNegativeAmount_ReturnsBadRequest")]
@@ -173,8 +173,8 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        zeroResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        negativeResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        zeroResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        negativeResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-007: CreateTransfer_WithMissingDate_ReturnsBadRequest")]
@@ -197,7 +197,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-008: CreateTransfer_CreatesLinkedTransferTransactions")]
@@ -212,17 +212,17 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var toWallet = await toWalletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
 
         var transferResponse = await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = fromWallet!.Id, toWalletId = toWallet!.Id, amount = 35m, date = "2025-04-07", note = $"Transfer_{Guid.NewGuid():N}" });
-        transferResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        transferResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transfer = await transferResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
 
         // Assert
         var fromTxnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={fromWallet!.Id}&limit=100");
         var fromTxns = await fromTxnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        fromTxns!.Items.Should().ContainSingle(x => x.Type == TransactionType.Expense && x.IsTransfer);
+        fromTxns!.Items.ShouldContain(x => x.Type == TransactionType.Expense && x.IsTransfer);
 
         var toTxnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={toWallet!.Id}&limit=100");
         var toTxns = await toTxnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
-        toTxns!.Items.Should().ContainSingle(x => x.Type == TransactionType.Income && x.IsTransfer);
+        toTxns!.Items.ShouldContain(x => x.Type == TransactionType.Income && x.IsTransfer);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-009: CreateTransfer_WithMissingFromWallet_ReturnsBadRequest")]
@@ -243,7 +243,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-010: CreateTransfer_WithUnknownFromWallet_ReturnsBadRequest")]
@@ -265,7 +265,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TRANSFER-CREATE-011: CreateTransfer_WithUnknownToWallet_ReturnsBadRequest")]
@@ -287,6 +287,6 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

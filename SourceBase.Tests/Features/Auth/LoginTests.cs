@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -23,11 +23,11 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
-        body.Should().NotBeNull();
-        body!.AccessToken.Should().NotBeNullOrEmpty();
-        body.RefreshToken.Should().NotBeNullOrEmpty();
+        body.ShouldNotBeNull();
+        body!.AccessToken.ShouldNotBeNullOrEmpty();
+        body.RefreshToken.ShouldNotBeNullOrEmpty();
     }
 
     [Fact(DisplayName = "LOGIN-002: Login_WithWrongPassword_ReturnsUnauthorized")]
@@ -44,7 +44,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "LOGIN-003: Login_WithUnknownEmail_ReturnsUnauthorized")]
@@ -61,7 +61,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "LOGIN-004: Login_WithUnconfirmedEmail_ReturnsUnauthorized")]
@@ -86,7 +86,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "LOGIN-005: Login_AfterEmailConfirmed_ReturnsOkAndAccessToken")]
@@ -117,10 +117,10 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
-        body.Should().NotBeNull();
-        body!.AccessToken.Should().NotBeNullOrEmpty();
+        body.ShouldNotBeNull();
+        body!.AccessToken.ShouldNotBeNullOrEmpty();
     }
 
     [Fact(DisplayName = "LOGIN-006: Login_WithMissingPassword_ReturnsBadRequest")]
@@ -133,7 +133,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.PostAsJsonAsync(LoginEndpoint.Route, new { email = WebAppFactory.AdminEmail });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "LOGIN-007: Login_ExpiresIn_ReflectsConfiguredAccessTokenLifetime")]
@@ -150,8 +150,8 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
-        body!.ExpiresIn.Should().Be(60 * 60); // 60 minutes configured → 3600 seconds
+        body!.ExpiresIn.ShouldBe(60 * 60); // 60 minutes configured → 3600 seconds
     }
 }

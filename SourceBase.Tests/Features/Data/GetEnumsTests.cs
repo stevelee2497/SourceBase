@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Data;
 using SourceBase.Application.Features.Roles;
@@ -24,13 +24,13 @@ public class GetEnumsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetEnumsResponse>();
-        body.Should().NotBeNull();
-        body!.Data.Should().HaveCount(1);
-        body.Data[AvailableEnums.TodoItemStatus].Should().Contain(x => x.Name == TodoItemStatus.Open.ToString());
-        body.Data[AvailableEnums.TodoItemStatus].Should().Contain(x => x.Name == TodoItemStatus.Completed.ToString());
-        body.Data[AvailableEnums.TodoItemStatus].Should().Contain(x => x.Name == TodoItemStatus.Archived.ToString());
+        body.ShouldNotBeNull();
+        body!.Data.Count.ShouldBe(1);
+        body.Data[AvailableEnums.TodoItemStatus].ShouldContain(x => x.Name == TodoItemStatus.Open.ToString());
+        body.Data[AvailableEnums.TodoItemStatus].ShouldContain(x => x.Name == TodoItemStatus.Completed.ToString());
+        body.Data[AvailableEnums.TodoItemStatus].ShouldContain(x => x.Name == TodoItemStatus.Archived.ToString());
     }
 
     [Fact(DisplayName = "DATA-ENUMS-002: GetEnums_WithRolesRequested_ReturnsRolesFromDatabase")]
@@ -54,11 +54,11 @@ public class GetEnumsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetEnumsResponse>();
-        body.Should().NotBeNull();
-        body!.Data.Should().HaveCount(1);
-        body.Data[AvailableEnums.Roles].Should().Contain(x => x.Name == roleName && x.Description == "Dynamic role");
+        body.ShouldNotBeNull();
+        body!.Data.Count.ShouldBe(1);
+        body.Data[AvailableEnums.Roles].ShouldContain(x => x.Name == roleName && x.Description == "Dynamic role");
     }
 
     [Fact(DisplayName = "DATA-ENUMS-003: GetEnums_WithEmptyEnums_ReturnsBadRequest")]
@@ -74,6 +74,6 @@ public class GetEnumsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

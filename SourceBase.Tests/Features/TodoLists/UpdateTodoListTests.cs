@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.TodoLists;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -20,7 +20,7 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.PatchAsJsonAsync(UpdateTodoListEndpoint.Route.WithId(Guid.NewGuid()), new { name = "Updated" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TODOLISTS-UPDATE-002: UpdateTodoList_WithValidData_ReturnsOk")]
@@ -35,9 +35,9 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.PatchAsJsonAsync(UpdateTodoListEndpoint.Route.WithId(created!.Id), new { name = "Updated Name" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<UpdateTodoListResponse>();
-        body!.Id.Should().Be(created.Id);
+        body!.Id.ShouldBe(created.Id);
     }
 
     [Fact(DisplayName = "TODOLISTS-UPDATE-003: UpdateTodoList_OwnedByAnotherUser_ReturnsNotFound")]
@@ -54,7 +54,7 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await otherClient.PatchAsJsonAsync(UpdateTodoListEndpoint.Route.WithId(created!.Id), new { name = "Hijacked" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "TODOLISTS-UPDATE-004: UpdateTodoList_WithEmptyId_ReturnsBadRequest")]
@@ -67,6 +67,6 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var response = await client.PatchAsJsonAsync(UpdateTodoListEndpoint.Route.WithId(Guid.Empty), new { name = "Test" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

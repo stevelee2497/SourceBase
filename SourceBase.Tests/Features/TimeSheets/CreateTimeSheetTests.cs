@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Notifications;
 using SourceBase.Application.Features.TimeSheets;
 using SourceBase.Application.Shared;
@@ -24,7 +24,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TIMESHEET-CREATE-002: CreateTimeSheet_WithValidData_ReturnsOk")]
@@ -40,10 +40,10 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateTimeSheetResponse>();
-        body!.Ids.Should().HaveCount(1);
-        body.Ids[0].Should().NotBeEmpty();
+        body!.Ids.Count.ShouldBe(1);
+        body.Ids[0].ShouldNotBe(Guid.Empty);
     }
 
     [Fact(DisplayName = "TIMESHEET-CREATE-003: CreateTimeSheet_WithExistingDateAndProject_UpdatesHours")]
@@ -66,12 +66,12 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         var secondBody = await secondResponse.Content.ReadFromJsonAsync<CreateTimeSheetResponse>();
 
         // Assert
-        secondResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        secondBody!.Ids[0].Should().Be(firstBody!.Ids[0]);
+        secondResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        secondBody!.Ids[0].ShouldBe(firstBody!.Ids[0]);
 
         var tsResponse = await client.GetAsync(GetTimeSheetEndpoint.Route.WithId(firstBody.Ids[0]));
         var ts = await tsResponse.Content.ReadFromJsonAsync<GetTimeSheetResponse>();
-        ts!.Hours.Should().Be(8);
+        ts!.Hours.ShouldBe(8);
     }
 
     [Fact(DisplayName = "TIMESHEET-CREATE-004: CreateTimeSheet_WithMultipleItems_CreatesAll")]
@@ -91,9 +91,9 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateTimeSheetResponse>();
-        body!.Ids.Should().HaveCount(2);
+        body!.Ids.Count.ShouldBe(2);
     }
 
     [Fact(DisplayName = "TIMESHEET-CREATE-005: CreateTimeSheet_WithMissingProject_ReturnsBadRequest")]
@@ -109,7 +109,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TIMESHEET-CREATE-006: CreateTimeSheet_WithZeroHours_ReturnsBadRequest")]
@@ -125,7 +125,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TIMESHEET-CREATE-007: CreateTimeSheet_WithHoursExceeding8_ReturnsBadRequest")]
@@ -141,7 +141,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TIMESHEET-CREATE-008: CreateTimeSheet_WithEmptyItems_ReturnsBadRequest")]
@@ -157,7 +157,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "TIMESHEET-CREATE-009: CreateTimeSheet_UpsertDoesNotOverwriteOtherUsersEntry")]
@@ -179,12 +179,12 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var ownerTimesheets = await ownerClient.GetAsync($"{GetTimeSheetsEndpoint.Route}?date=2025-09-01&limit=100");
         var ownerBody = await ownerTimesheets.Content.ReadFromJsonAsync<PagingResponse<GetTimeSheetResponse>>();
         var strangerTimesheets = await strangerClient.GetAsync($"{GetTimeSheetsEndpoint.Route}?date=2025-09-01&limit=100");
         var strangerBody = await strangerTimesheets.Content.ReadFromJsonAsync<PagingResponse<GetTimeSheetResponse>>();
-        (ownerBody!.Items.Count(x => x.Project == "SharedName") + strangerBody!.Items.Count(x => x.Project == "SharedName")).Should().Be(2);
+        (ownerBody!.Items.Count(x => x.Project == "SharedName") + strangerBody!.Items.Count(x => x.Project == "SharedName")).ShouldBe(2);
     }
 
     [Fact(DisplayName = "TIMESHEET-CREATE-010: CreateTimeSheet_WithValidData_CreatesNotificationForUser")]
@@ -204,8 +204,8 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         var notificationsResponse = await client.GetAsync($"{GetNotificationsEndpoint.Route}?limit=1");
         var notifications = await notificationsResponse.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
         var notification = notifications!.Items.FirstOrDefault();
-        notification.Should().NotBeNull();
-        notification!.Title.Should().Be("Time Sheets Submitted");
-        notification.Message.Should().Be("Your time sheets have been submitted successfully.");
+        notification.ShouldNotBeNull();
+        notification!.Title.ShouldBe("Time Sheets Submitted");
+        notification.Message.ShouldBe("Your time sheets have been submitted successfully.");
     }
 }

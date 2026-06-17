@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.TodoLists;
 using SourceBase.Application.Features.Todos;
 using SourceBase.Application.Shared;
@@ -21,7 +21,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetTodosEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TODOS-GET-ALL-002: GetTodos_Authenticated_ReturnsOk")]
@@ -34,10 +34,10 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync(GetTodosEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
-        body.Should().NotBeNull();
-        body!.Items.Should().NotBeNull();
+        body.ShouldNotBeNull();
+        body!.Items.ShouldNotBeNull();
     }
 
     [Fact(DisplayName = "TODOS-GET-ALL-003: GetTodos_WithMultipleUsers_ReturnsOnlyCurrentUsersItems")]
@@ -65,10 +65,10 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await firstClient.GetAsync(GetTodosEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var todos = await response.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
-        todos!.Items.Should().ContainSingle(x => x.Id == ownTodoBody!.Id);
-        todos.Items.Should().NotContain(x => x.Title == "Other Todo");
+        todos!.Items.ShouldContain(x => x.Id == ownTodoBody!.Id);
+        todos.Items.ShouldNotContain(x => x.Title == "Other Todo");
     }
 
     [Fact(DisplayName = "TODOS-GET-ALL-004: GetTodos_WithStatusAndDateFilters_ReturnsMatchingItems")]
@@ -101,9 +101,9 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync($"{GetTodosEndpoint.Route}?status=Completed&date=2025-02-01");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var todos = await response.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
-        todos!.Items.Should().ContainSingle(x => x.Id == matchingTodoBody!.Id);
+        todos!.Items.ShouldContain(x => x.Id == matchingTodoBody!.Id);
     }
 
     [Fact(DisplayName = "TODOS-GET-ALL-005: GetTodos_WithPagingAndOrdering_ReturnsRequestedPage")]
@@ -130,12 +130,12 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync($"{GetTodosEndpoint.Route}?orderBy=Title&order=Desc&page=1&limit=1");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var todos = await response.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
-        todos!.Page.Should().Be(1);
-        todos.Limit.Should().Be(1);
-        todos.Items.Should().ContainSingle();
-        todos.Items.Single().Id.Should().Be(expectedTodoBody!.Id);
+        todos!.Page.ShouldBe(1);
+        todos.Limit.ShouldBe(1);
+        todos.Items.Count.ShouldBe(1);
+        todos.Items.Single().Id.ShouldBe(expectedTodoBody!.Id);
     }
 
     [Fact(DisplayName = "TODOS-GET-ALL-006: GetTodos_FilteredByTodoListId_ReturnsMatchingItems")]
@@ -167,9 +167,9 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.GetAsync($"{GetTodosEndpoint.Route}?todoListId={list.Id}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var todos = await response.Content.ReadFromJsonAsync<PagingResponse<GetTodoResponse>>();
-        todos!.Items.Should().ContainSingle(x => x.Id == inListBody!.Id);
-        todos.Items.Should().NotContain(x => x.Title == "No List Todo");
+        todos!.Items.ShouldContain(x => x.Id == inListBody!.Id);
+        todos.Items.ShouldNotContain(x => x.Title == "No List Todo");
     }
 }

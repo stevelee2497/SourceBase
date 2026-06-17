@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Categories;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -24,7 +24,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "CATS-UPDATE-002: UpdateCategory_WithValidData_ReturnsOk")]
@@ -34,7 +34,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
         var updatedName = $"Updated_{Guid.NewGuid():N}";
 
@@ -46,15 +46,15 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<UpdateCategoryResponse>();
-        body!.Id.Should().Be(create.Id);
+        body!.Id.ShouldBe(create.Id);
 
         var categoriesResponse = await client.GetAsync(GetCategoriesEndpoint.Route);
         var categories = await categoriesResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
         var updated = categories!.Single(x => x.Id == create.Id);
-        updated.Name.Should().Be(updatedName);
-        updated.Icon.Should().Be("🏷️");
+        updated.Name.ShouldBe(updatedName);
+        updated.Icon.ShouldBe("🏷️");
     }
 
     [Fact(DisplayName = "CATS-UPDATE-003: UpdateCategory_WithOnlyIcon_ReturnsOkAndKeepsName")]
@@ -65,7 +65,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var originalName = $"Category_{Guid.NewGuid():N}";
 
         var createResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = originalName, type = "Expense", icon = "🏷️" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Act
@@ -75,12 +75,12 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var categoriesResponse = await client.GetAsync(GetCategoriesEndpoint.Route);
         var categories = await categoriesResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
         var updated = categories!.Single(x => x.Id == create.Id);
-        updated.Name.Should().Be(originalName);
-        updated.Icon.Should().Be("✏️");
+        updated.Name.ShouldBe(originalName);
+        updated.Icon.ShouldBe("✏️");
     }
 
     [Fact(DisplayName = "CATS-UPDATE-004: UpdateCategory_WithSystemCategory_ReturnsForbidden")]
@@ -90,7 +90,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var catListResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Expense");
-        catListResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        catListResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var categories = await catListResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
         var systemCategory = categories!.First(x => x.IsSystem);
 
@@ -102,7 +102,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "CATS-UPDATE-005: UpdateCategory_WithOtherUsersCategory_ReturnsNotFound")]
@@ -113,7 +113,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var otherClient = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
         var createResponse = await ownerClient.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Income", icon = "🏷️" });
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var create = await createResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
 
         // Act
@@ -124,7 +124,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "CATS-UPDATE-006: UpdateCategory_WithUnknownId_ReturnsNotFound")]
@@ -141,7 +141,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "CATS-UPDATE-007: UpdateCategory_WithEmptyId_ReturnsBadRequest")]
@@ -157,6 +157,6 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

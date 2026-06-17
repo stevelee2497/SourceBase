@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Tests.Infrastructure;
@@ -27,22 +27,22 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<RegisterResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
 
         var user = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Id == body.Id));
-        user.EmailConfirmed.Should().BeFalse();
-        user.OtpCode.Should().NotBeNullOrEmpty();
-        user.OtpCodeExpiresOn.Should().NotBeNull();
+        user.EmailConfirmed.ShouldBeFalse();
+        user.OtpCode.ShouldNotBeNullOrEmpty();
+        user.OtpCodeExpiresOn.ShouldNotBeNull();
         var latestEmail = await factory.WithDbContextAsync(db => db.Emails
             .Where(x => x.To == email)
             .OrderByDescending(x => x.SentOn)
             .FirstOrDefaultAsync());
 
-        latestEmail.Should().NotBeNull();
-        latestEmail!.Subject.Should().Be("Confirm your email");
-        latestEmail.Body.Should().NotBeNullOrWhiteSpace();
+        latestEmail.ShouldNotBeNull();
+        latestEmail!.Subject.ShouldBe("Confirm your email");
+        latestEmail.Body.ShouldNotBeNullOrWhiteSpace();
     }
 
 
@@ -63,9 +63,9 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var user = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Email == trimmedEmail));
-        user.UserName.Should().Be(trimmedUserName);
+        user.UserName.ShouldBe(trimmedUserName);
     }
 
 
@@ -98,7 +98,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
 
@@ -125,7 +125,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
 
@@ -144,7 +144,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
 
@@ -163,6 +163,6 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

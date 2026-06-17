@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -20,13 +20,13 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         var response = await client.GetAsync(GetUserInfoEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
-        body.Should().NotBeNull();
-        body!.Id.Should().NotBeEmpty();
-        body.UserName.Should().Be(WebAppFactory.AdminEmail);
-        body.Email.Should().Be(WebAppFactory.AdminEmail);
-        body.Roles.Should().Contain("Admin");
+        body.ShouldNotBeNull();
+        body!.Id.ShouldNotBe(Guid.Empty);
+        body.UserName.ShouldBe(WebAppFactory.AdminEmail);
+        body.Email.ShouldBe(WebAppFactory.AdminEmail);
+        body.Roles.ShouldContain("Admin");
     }
 
     [Fact(DisplayName = "GET-INFO-002: GetUserInfo_WithDistinctUserNameAndEmail_ReturnsMatchingClaims")]
@@ -61,12 +61,12 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         var response = await client.GetAsync(GetUserInfoEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
-        body.Should().NotBeNull();
-        body!.UserName.Should().Be(userName);
-        body.Email.Should().Be(email);
-        body.Roles.Should().Contain("User");
+        body.ShouldNotBeNull();
+        body!.UserName.ShouldBe(userName);
+        body.Email.ShouldBe(email);
+        body.Roles.ShouldContain("User");
     }
 
     [Fact(DisplayName = "GET-INFO-004: GetUserInfo_ReturnsEmailConfirmedTrue_ForConfirmedUser")]
@@ -96,10 +96,10 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         var response = await client.GetAsync(GetUserInfoEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetUserInfoResponse>();
-        body.Should().NotBeNull();
-        body!.EmailConfirmed.Should().BeTrue();
+        body.ShouldNotBeNull();
+        body!.EmailConfirmed.ShouldBeTrue();
     }
 
     [Fact(DisplayName = "GET-INFO-003: GetUserInfo_WithoutToken_ReturnsUnauthorized")]
@@ -112,6 +112,6 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         var response = await client.GetAsync(GetUserInfoEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }

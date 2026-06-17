@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.GoldPrices;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -20,7 +20,7 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync(GetGoldPricesEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "GOLDPRICE-GET-ALL-002: GetGoldPrices_WithNoFilter_ReturnsPaginatedList")]
@@ -43,10 +43,10 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync(GetGoldPricesEndpoint.Route);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<GoldPriceResponse>>();
-        body!.Items.Should().NotBeNull();
-        body.Total.Should().BeGreaterThanOrEqualTo(1);
+        body!.Items.ShouldNotBeNull();
+        body.Total.ShouldBeGreaterThanOrEqualTo(1);
     }
 
     [Fact(DisplayName = "GOLDPRICE-GET-ALL-003: GetGoldPrices_FilterBySource_ReturnsOnlyMatchingSource")]
@@ -62,10 +62,10 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync($"{GetGoldPricesEndpoint.Route}?source=SJC&limit=50");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<GoldPriceResponse>>();
-        body!.Items.Should().NotBeEmpty();
-        body.Items.Should().OnlyContain(x => x.Source.ToString() == "SJC");
+        body!.Items.ShouldNotBeEmpty();
+        body.Items.ShouldAllBe(x => x.Source.ToString() == "SJC");
     }
 
     [Fact(DisplayName = "GOLDPRICE-GET-ALL-004: GetGoldPrices_FilterByDateRange_ReturnsMatchingRange")]
@@ -85,10 +85,10 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync($"{GetGoldPricesEndpoint.Route}?dateFrom={Uri.EscapeDataString(dateFrom)}&dateTo={Uri.EscapeDataString(dateTo)}&limit=50");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<GoldPriceResponse>>();
-        body!.Items.Should().NotContain(x => x.RecordedAt == oldDate);
-        body.Items.Should().Contain(x => x.RecordedAt == recentDate);
+        body!.Items.ShouldNotContain(x => x.RecordedAt == oldDate);
+        body.Items.ShouldContain(x => x.RecordedAt == recentDate);
     }
 
     [Fact(DisplayName = "GOLDPRICE-GET-ALL-005: GetGoldPrices_WithPagination_ReturnsCorrectPage")]
@@ -116,11 +116,11 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync($"{GetGoldPricesEndpoint.Route}?page=2&limit=2&order=Asc&orderBy=BuyPrice&dateFrom={Uri.EscapeDataString(baseTime.ToString("o"))}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<GoldPriceResponse>>();
-        body!.Items.Count.Should().Be(2);
-        body.Total.Should().BeGreaterThanOrEqualTo(5);
-        body.Page.Should().Be(2);
+        body!.Items.Count.ShouldBe(2);
+        body.Total.ShouldBeGreaterThanOrEqualTo(5);
+        body.Page.ShouldBe(2);
     }
 
     [Fact(DisplayName = "GOLDPRICE-GET-ALL-006: GetGoldPrices_DefaultOrder_ReturnsNewestFirst")]
@@ -137,11 +137,11 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var response = await client.GetAsync($"{GetGoldPricesEndpoint.Route}?limit=50&orderBy=RecordedAt&order=Desc");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<GoldPriceResponse>>();
-        body!.Items.Should().HaveCountGreaterThanOrEqualTo(2);
+        body!.Items.Count.ShouldBeGreaterThanOrEqualTo(2);
         var laterIdx = body.Items.FindIndex(x => x.RecordedAt == later);
         var earlierIdx = body.Items.FindIndex(x => x.RecordedAt == earlier);
-        laterIdx.Should().BeLessThan(earlierIdx);
+        laterIdx.ShouldBeLessThan(earlierIdx);
     }
 }

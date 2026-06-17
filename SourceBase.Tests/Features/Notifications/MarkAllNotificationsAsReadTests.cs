@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Auth;
@@ -35,13 +35,13 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
         var response = await client.PutAsJsonAsync(MarkAllNotificationsAsReadEndpoint.Route, new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<MarkAllNotificationsAsReadResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
 
         var unreadResponse = await client.GetAsync($"{GetNotificationsEndpoint.Route}?unreadOnly=true");
         var unreadNotifications = await unreadResponse.Content.ReadFromJsonAsync<PagingResponse<NotificationItem>>();
-        unreadNotifications!.Total.Should().Be(0);
+        unreadNotifications!.Total.ShouldBe(0);
     }
 
     [Fact(DisplayName = "NOTIF-MARK-ALL-READ-002: MarkAllNotificationsAsRead_WithNoNotifications_ReturnsOk")]
@@ -54,9 +54,9 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
         var response = await client.PutAsJsonAsync(MarkAllNotificationsAsReadEndpoint.Route, new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<MarkAllNotificationsAsReadResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
     }
 
     [Fact(DisplayName = "NOTIF-MARK-ALL-READ-003: MarkAllNotificationsAsRead_DoesNotAffectOtherUsersNotifications")]
@@ -79,7 +79,7 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
         // Assert
         var otherUserUnread = await factory.WithDbContextAsync(db =>
             db.Notifications.CountAsync(n => n.UserId == otherUserId && !n.IsRead));
-        otherUserUnread.Should().Be(1);
+        otherUserUnread.ShouldBe(1);
     }
 
     [Fact(DisplayName = "NOTIF-MARK-ALL-READ-004: MarkAllNotificationsAsRead_WithoutAuth_ReturnsUnauthorized")]
@@ -92,6 +92,6 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
         var response = await client.PutAsJsonAsync(MarkAllNotificationsAsReadEndpoint.Route, new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }

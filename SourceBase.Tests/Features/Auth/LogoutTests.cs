@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -20,9 +20,9 @@ public class LogoutTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.PostAsync(LogoutEndpoint.Route, null);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var getInfoResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
-        getInfoResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        getInfoResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "LOGOUT-002: Logout_WithoutToken_ReturnsUnauthorized")]
@@ -35,7 +35,7 @@ public class LogoutTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var response = await client.PostAsync(LogoutEndpoint.Route, null);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "LOGOUT-003: Logout_WithValidToken_InvalidatesRefreshToken")]
@@ -74,6 +74,6 @@ public class LogoutTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }

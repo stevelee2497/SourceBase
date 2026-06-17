@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Users;
 using SourceBase.Application.Shared;
@@ -27,7 +27,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "USERS-CREATE-002: CreateUser_WithNonAdminUser_ReturnsForbidden")]
@@ -46,7 +46,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "USERS-CREATE-003: CreateUser_WithValidData_ReturnsOk")]
@@ -70,27 +70,27 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateUserResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Id.ShouldNotBe(Guid.Empty);
 
         var usersResponse = await client.GetAsync(GetUsersEndpoint.Route);
         var users = await usersResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
-        users!.Items.Should().ContainSingle(x => x.Id == body.Id && x.UserName == userName && x.Email == email && x.Roles.Contains("User"));
+        users!.Items.ShouldContain(x => x.Id == body.Id && x.UserName == userName && x.Email == email && x.Roles.Contains("User"));
 
         var createdUserFromApi = users.Items.Single(x => x.Id == body.Id);
-        createdUserFromApi.EmailConfirmed.Should().BeFalse();
+        createdUserFromApi.EmailConfirmed.ShouldBeFalse();
         var createdUser = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Id == body.Id));
-        createdUser.OtpCode.Should().NotBeNullOrEmpty();
-        createdUser.OtpCodeExpiresOn.Should().NotBeNull();
+        createdUser.OtpCode.ShouldNotBeNullOrEmpty();
+        createdUser.OtpCodeExpiresOn.ShouldNotBeNull();
 
         var latestEmail = await factory.WithDbContextAsync(db => db.Emails
             .Where(x => x.To == email)
             .OrderByDescending(x => x.SentOn)
             .FirstOrDefaultAsync());
-        latestEmail.Should().NotBeNull();
-        latestEmail!.Subject.Should().Be("Confirm your email");
-        latestEmail.Body.Should().NotBeNullOrWhiteSpace();
+        latestEmail.ShouldNotBeNull();
+        latestEmail!.Subject.ShouldBe("Confirm your email");
+        latestEmail.Body.ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact(DisplayName = "USERS-CREATE-004: CreateUser_WithUnknownRole_ReturnsBadRequest")]
@@ -109,7 +109,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "USERS-CREATE-005: CreateUser_WithMixedValidAndInvalidRoles_ReturnsBadRequest")]
@@ -128,7 +128,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "USERS-CREATE-006: CreateUser_WithDuplicateEmailIgnoringCase_ReturnsBadRequest")]
@@ -156,7 +156,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "USERS-CREATE-007: CreateUser_WithRolesContainingWhitespace_StoresNormalizedDistinctRoles")]
@@ -175,13 +175,13 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateUserResponse>();
 
         var usersResponse = await client.GetAsync(GetUsersEndpoint.Route);
         var users = await usersResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
         var createdUser = users!.Items.Single(x => x.Id == body!.Id);
-        createdUser.Roles.Should().Equal("User");
+        createdUser.Roles.ShouldBe(new[] { "User" });
     }
 
     [Fact(DisplayName = "USERS-CREATE-008: CreateUser_WithValidData_CreatesNotificationForAllAdmins")]
@@ -212,9 +212,9 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
                 .Where(n => n.UserId == adminId)
                 .OrderByDescending(n => n.CreatedOn)
                 .FirstOrDefaultAsync());
-            notification.Should().NotBeNull();
-            notification!.Title.Should().Be("New User Registered");
-            notification.Message.Should().Contain(newEmail);
+            notification.ShouldNotBeNull();
+            notification!.Title.ShouldBe("New User Registered");
+            notification.Message.ShouldContain(newEmail);
         }
     }
 }

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Roles;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -24,7 +24,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "ROLES-UPDATE-002: UpdateRole_WithNonAdminUser_ReturnsForbidden")]
@@ -49,7 +49,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "ROLES-UPDATE-003: UpdateRole_WithValidData_ReturnsOk")]
@@ -74,13 +74,13 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<UpdateRoleResponse>();
-        body!.Id.Should().Be(createBody.Id);
+        body!.Id.ShouldBe(createBody.Id);
 
         var rolesResponse = await client.GetAsync($"{GetRolesEndpoint.Route}?limit=100");
         var roles = await rolesResponse.Content.ReadFromJsonAsync<PagingResponse<RoleResponse>>();
-        roles!.Items.Should().Contain(x => x.Id == createBody.Id && x.Name == updatedRoleName && x.Description == "After update");
+        roles!.Items.ShouldContain(x => x.Id == createBody.Id && x.Name == updatedRoleName && x.Description == "After update");
     }
 
     [Fact(DisplayName = "ROLES-UPDATE-004: UpdateRole_WithDuplicateNameIgnoringCase_ReturnsBadRequest")]
@@ -109,7 +109,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ROLES-UPDATE-005: UpdateRole_WithAdminRole_ReturnsBadRequest")]
@@ -129,7 +129,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ROLES-UPDATE-006: UpdateRole_WithSameNameOnSameRole_ReturnsOk")]
@@ -153,7 +153,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Fact(DisplayName = "ROLES-UPDATE-007: UpdateRole_WithEmptyId_ReturnsBadRequest")]
@@ -169,6 +169,6 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.GoldPrices;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -25,7 +25,7 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "GOLDPRICE-CREATE-002: CreateGoldPrice_WithValidSjcData_ReturnsOkAndIds")]
@@ -44,9 +44,10 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateGoldPriceResponse>();
-        body!.Ids.Should().ContainSingle().Which.Should().NotBeEmpty();
+        body!.Ids.Count.ShouldBe(1);
+        body!.Ids[0].ShouldNotBe(Guid.Empty);
     }
 
     [Fact(DisplayName = "GOLDPRICE-CREATE-003: CreateGoldPrice_WithMissingSource_ReturnsBadRequest")]
@@ -65,7 +66,7 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "GOLDPRICE-CREATE-004: CreateGoldPrice_WithZeroBuyPrice_ReturnsBadRequest")]
@@ -84,7 +85,7 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "GOLDPRICE-CREATE-005: CreateGoldPrice_WithNegativeSellPrice_ReturnsBadRequest")]
@@ -103,7 +104,7 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "GOLDPRICE-CREATE-006: CreateGoldPrice_WithAllFourSources_ReturnsOkWithFourIds")]
@@ -126,8 +127,9 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateGoldPriceResponse>();
-        body!.Ids.Should().HaveCount(4).And.OnlyContain(id => id != Guid.Empty);
+        body!.Ids.Count.ShouldBe(4);
+        body!.Ids.ShouldAllBe(id => id != Guid.Empty);
     }
 }

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Features.Users;
 using SourceBase.Application.Shared;
@@ -21,7 +21,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         var response = await client.PostAsJsonAsync(ConfirmUserEmailEndpoint.Route.WithId(Guid.NewGuid()), new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "USERS-CONFIRM-EMAIL-002: ConfirmUserEmail_AsNonAdmin_ReturnsForbidden")]
@@ -34,7 +34,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         var response = await nonAdminClient.PostAsJsonAsync(ConfirmUserEmailEndpoint.Route.WithId(Guid.NewGuid()), new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact(DisplayName = "USERS-CONFIRM-EMAIL-003: ConfirmUserEmail_WithNonExistentUser_ReturnsNotFound")]
@@ -47,7 +47,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         var response = await adminClient.PostAsJsonAsync(ConfirmUserEmailEndpoint.Route.WithId(Guid.NewGuid()), new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "USERS-CONFIRM-EMAIL-004: ConfirmUserEmail_WithValidUser_ReturnsOk")]
@@ -69,9 +69,9 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         var response = await adminClient.PostAsJsonAsync(ConfirmUserEmailEndpoint.Route.WithId(created!.Id), new { });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<ConfirmUserEmailResponse>();
-        body!.Success.Should().BeTrue();
+        body!.Success.ShouldBeTrue();
     }
 
     [Fact(DisplayName = "USERS-CONFIRM-EMAIL-005: ConfirmUserEmail_SetsEmailConfirmedTrue")]
@@ -91,7 +91,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
 
         var usersBeforeResponse = await adminClient.GetAsync($"{GetUsersEndpoint.Route}?limit=100");
         var usersBefore = await usersBeforeResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
-        usersBefore!.Items.Single(x => x.Id == created!.Id).EmailConfirmed.Should().BeFalse();
+        usersBefore!.Items.Single(x => x.Id == created!.Id).EmailConfirmed.ShouldBeFalse();
 
         // Act
         await adminClient.PostAsJsonAsync($"users/{created!.Id}/confirm-email", new { });
@@ -99,9 +99,9 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         // Assert
         var usersAfterResponse = await adminClient.GetAsync($"{GetUsersEndpoint.Route}?limit=100");
         var usersAfter = await usersAfterResponse.Content.ReadFromJsonAsync<PagingResponse<UserResponse>>();
-        usersAfter!.Items.Single(x => x.Id == created.Id).EmailConfirmed.Should().BeTrue();
+        usersAfter!.Items.Single(x => x.Id == created.Id).EmailConfirmed.ShouldBeTrue();
         var afterEntity = await factory.WithDbContextAsync(db => db.Users.SingleAsync(x => x.Id == created.Id));
-        afterEntity.OtpCode.Should().BeNull();
-        afterEntity.OtpCodeExpiresOn.Should().BeNull();
+        afterEntity.OtpCode.ShouldBeNull();
+        afterEntity.OtpCodeExpiresOn.ShouldBeNull();
     }
 }

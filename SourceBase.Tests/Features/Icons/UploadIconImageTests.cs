@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.Icons;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -19,7 +19,7 @@ public class UploadIconImageTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.PostAsJsonAsync(UploadIconImageEndpoint.Route, new { fileName = "icon.png" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "ICONS-UPLOAD-002: UploadIconImage_WithEmptyFileName_ReturnsBadRequest")]
@@ -32,7 +32,7 @@ public class UploadIconImageTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.PostAsJsonAsync(UploadIconImageEndpoint.Route, new { fileName = "" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ICONS-UPLOAD-003: UploadIconImage_WithUnsupportedExtension_ReturnsBadRequest")]
@@ -45,7 +45,7 @@ public class UploadIconImageTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.PostAsJsonAsync(UploadIconImageEndpoint.Route, new { fileName = "icon.bmp" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact(DisplayName = "ICONS-UPLOAD-004: UploadIconImage_WithNoExtension_ReturnsBadRequest")]
@@ -58,6 +58,6 @@ public class UploadIconImageTests(WebAppFactory factory) : IClassFixture<WebAppF
         var response = await client.PostAsJsonAsync(UploadIconImageEndpoint.Route, new { fileName = "iconfile" });
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

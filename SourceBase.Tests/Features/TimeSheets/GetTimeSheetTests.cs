@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
+using Shouldly;
 using SourceBase.Application.Features.TimeSheets;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -20,7 +20,7 @@ public class GetTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync(GetTimeSheetEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "TIMESHEET-GET-002: GetTimeSheet_WithValidId_ReturnsCorrectData")]
@@ -39,12 +39,12 @@ public class GetTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync(GetTimeSheetEndpoint.Route.WithId(createBody!.Ids[0]));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<GetTimeSheetResponse>();
-        body!.Id.Should().Be(createBody.Ids[0]);
-        body.Project.Should().Be("ProjectX");
-        body.Hours.Should().Be(7.5m);
-        body.Date.Should().Be(new DateOnly(2025, 6, 20));
+        body!.Id.ShouldBe(createBody.Ids[0]);
+        body.Project.ShouldBe("ProjectX");
+        body.Hours.ShouldBe(7.5m);
+        body.Date.ShouldBe(new DateOnly(2025, 6, 20));
     }
 
     [Fact(DisplayName = "TIMESHEET-GET-003: GetTimeSheet_WithNonExistentId_ReturnsNotFound")]
@@ -57,7 +57,7 @@ public class GetTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await client.GetAsync(GetTimeSheetEndpoint.Route.WithId(Guid.NewGuid()));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact(DisplayName = "TIMESHEET-GET-004: GetTimeSheet_WithOtherUsersId_ReturnsNotFound")]
@@ -77,6 +77,6 @@ public class GetTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var response = await strangerClient.GetAsync(GetTimeSheetEndpoint.Route.WithId(createBody!.Ids[0]));
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }
