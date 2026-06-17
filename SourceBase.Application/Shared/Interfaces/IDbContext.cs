@@ -30,5 +30,7 @@ public interface IDbContext
 
     DbSet<IconEntity> Icons { get; set; }
 
+    DbSet<GoldPriceEntity> GoldPrices { get; set; }
+
     Task<int> SaveChangesAsync(CancellationToken ct);
 }

@@ -36,6 +36,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<IconEntity> Icons { get; set; }
 
+    public DbSet<GoldPriceEntity> GoldPrices { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser, dateTime));
@@ -65,6 +67,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasMany(u => u.Roles)
             .WithMany(r => r.Users)
             .UsingEntity(j => j.ToTable("UserRoles"));
+
+        modelBuilder.Entity<GoldPriceEntity>()
+            .HasIndex(x => new { x.Source, x.RecordedAt })
+            .IsUnique();
 
     }
 
