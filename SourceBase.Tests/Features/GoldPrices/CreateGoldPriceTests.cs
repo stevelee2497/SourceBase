@@ -18,18 +18,18 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         // Act
         var response = await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
         {
-            source = "SJC",
-            buyPrice = 1_900_000m,
-            sellPrice = 1_950_000m,
-            recordedAt = DateTime.UtcNow,
+            items = new[]
+            {
+                new { source = "SJC", buyPrice = 1_900_000m, sellPrice = 1_950_000m, recordedAt = DateTime.UtcNow },
+            },
         });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-CREATE-002: CreateGoldPrice_WithValidSjcData_ReturnsOkAndId")]
-    public async Task CreateGoldPrice_WithValidSjcData_ReturnsOkAndId()
+    [Fact(DisplayName = "GOLDPRICE-CREATE-002: CreateGoldPrice_WithValidSjcData_ReturnsOkAndIds")]
+    public async Task CreateGoldPrice_WithValidSjcData_ReturnsOkAndIds()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
@@ -37,16 +37,16 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         // Act
         var response = await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
         {
-            source = "SJC",
-            buyPrice = 1_900_000m,
-            sellPrice = 1_950_000m,
-            recordedAt = DateTime.UtcNow,
+            items = new[]
+            {
+                new { source = "SJC", buyPrice = 1_900_000m, sellPrice = 1_950_000m, recordedAt = DateTime.UtcNow },
+            },
         });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<CreateGoldPriceResponse>();
-        body!.Id.Should().NotBeEmpty();
+        body!.Ids.Should().ContainSingle().Which.Should().NotBeEmpty();
     }
 
     [Fact(DisplayName = "GOLDPRICE-CREATE-003: CreateGoldPrice_WithMissingSource_ReturnsBadRequest")]
@@ -58,9 +58,10 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         // Act
         var response = await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
         {
-            buyPrice = 1_900_000m,
-            sellPrice = 1_950_000m,
-            recordedAt = DateTime.UtcNow,
+            items = new[]
+            {
+                new { buyPrice = 1_900_000m, sellPrice = 1_950_000m, recordedAt = DateTime.UtcNow },
+            },
         });
 
         // Assert
@@ -76,10 +77,10 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         // Act
         var response = await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
         {
-            source = "SJC",
-            buyPrice = 0m,
-            sellPrice = 1_950_000m,
-            recordedAt = DateTime.UtcNow,
+            items = new[]
+            {
+                new { source = "SJC", buyPrice = 0m, sellPrice = 1_950_000m, recordedAt = DateTime.UtcNow },
+            },
         });
 
         // Assert
@@ -95,36 +96,38 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         // Act
         var response = await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
         {
-            source = "SJC",
-            buyPrice = 1_900_000m,
-            sellPrice = -1m,
-            recordedAt = DateTime.UtcNow,
+            items = new[]
+            {
+                new { source = "SJC", buyPrice = 1_900_000m, sellPrice = -1m, recordedAt = DateTime.UtcNow },
+            },
         });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-CREATE-006: CreateGoldPrice_WithAllFourSources_ReturnsOk")]
-    public async Task CreateGoldPrice_WithAllFourSources_ReturnsOk()
+    [Fact(DisplayName = "GOLDPRICE-CREATE-006: CreateGoldPrice_WithAllFourSources_ReturnsOkWithFourIds")]
+    public async Task CreateGoldPrice_WithAllFourSources_ReturnsOkWithFourIds()
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient();
-        var sources = new[] { "SJC", "PNJ", "GiaVang", "KimKhanhVietHung" };
+        var now = DateTime.UtcNow;
 
-        foreach (var source in sources)
+        // Act
+        var response = await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
         {
-            // Act
-            var response = await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
+            items = new[]
             {
-                source,
-                buyPrice = 1_900_000m,
-                sellPrice = 1_950_000m,
-                recordedAt = DateTime.UtcNow.AddHours(-Array.IndexOf(sources, source)),
-            });
+                new { source = "SJC", buyPrice = 1_900_000m, sellPrice = 1_950_000m, recordedAt = now },
+                new { source = "PNJ", buyPrice = 1_880_000m, sellPrice = 1_930_000m, recordedAt = now.AddHours(-1) },
+                new { source = "GiaVang", buyPrice = 1_860_000m, sellPrice = 1_910_000m, recordedAt = now.AddHours(-2) },
+                new { source = "KimKhanhVietHung", buyPrice = 1_840_000m, sellPrice = 1_890_000m, recordedAt = now.AddHours(-3) },
+            },
+        });
 
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK, $"source '{source}' should be valid");
-        }
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<CreateGoldPriceResponse>();
+        body!.Ids.Should().HaveCount(4).And.OnlyContain(id => id != Guid.Empty);
     }
 }

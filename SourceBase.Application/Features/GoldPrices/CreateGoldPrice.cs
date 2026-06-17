@@ -4,9 +4,11 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.GoldPrices;
 
-public record CreateGoldPriceRequest(GoldSource? Source, decimal? BuyPrice, decimal? SellPrice, DateTime? RecordedAt);
+public record CreateGoldPriceItem(GoldSource? Source, decimal? BuyPrice, decimal? SellPrice, DateTime? RecordedAt);
 
-public record CreateGoldPriceResponse(Guid Id);
+public record CreateGoldPriceRequest(List<CreateGoldPriceItem>? Items);
+
+public record CreateGoldPriceResponse(List<Guid> Ids);
 
 public class CreateGoldPriceEndpoint : IEndpoint
 {
@@ -21,16 +23,17 @@ public class CreateGoldPriceHandler(IDbContext dbContext) : IRequestHandler<Crea
 {
     public async Task<CreateGoldPriceResponse> Handle(CreateGoldPriceRequest request, CancellationToken ct)
     {
-        var entity = new GoldPriceEntity
+        var entities = request.Items!.Select(item => new GoldPriceEntity
         {
-            Source = request.Source!.Value,
-            BuyPrice = request.BuyPrice!.Value,
-            SellPrice = request.SellPrice!.Value,
-            RecordedAt = request.RecordedAt!.Value,
-        };
-        dbContext.GoldPrices.Add(entity);
+            Source = item.Source!.Value,
+            BuyPrice = item.BuyPrice!.Value,
+            SellPrice = item.SellPrice!.Value,
+            RecordedAt = item.RecordedAt!.Value,
+        }).ToList();
+
+        dbContext.GoldPrices.AddRange(entities);
         await dbContext.SaveChangesAsync(ct);
-        return new CreateGoldPriceResponse(entity.Id);
+        return new CreateGoldPriceResponse(entities.Select(e => e.Id).ToList());
     }
 }
 
@@ -38,9 +41,13 @@ public class CreateGoldPriceRequestValidator : AbstractValidator<CreateGoldPrice
 {
     public CreateGoldPriceRequestValidator()
     {
-        RuleFor(x => x.Source).NotNull().IsInEnum();
-        RuleFor(x => x.BuyPrice).NotNull().GreaterThan(0);
-        RuleFor(x => x.SellPrice).NotNull().GreaterThan(0);
-        RuleFor(x => x.RecordedAt).NotNull();
+        RuleFor(x => x.Items).NotNull().NotEmpty();
+        RuleForEach(x => x.Items).ChildRules(item =>
+        {
+            item.RuleFor(x => x.Source).NotNull().IsInEnum();
+            item.RuleFor(x => x.BuyPrice).NotNull().GreaterThan(0);
+            item.RuleFor(x => x.SellPrice).NotNull().GreaterThan(0);
+            item.RuleFor(x => x.RecordedAt).NotNull();
+        });
     }
 }
