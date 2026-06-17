@@ -27,7 +27,8 @@ public class GoldPriceScraperService(
         {
             try
             {
-                var result = await scraper.ScrapeAsync(ct);
+                var html = await scraper.ScrapeAsync(ct);
+                var result = await scraper.ParseAsync(html, ct);
                 if (result is null)
                 {
                     logger.LogWarning("Scraper returned no result for source {Source}", scraper.Source);

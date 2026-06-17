@@ -11,11 +11,14 @@ public class KimKhanhVietHungGoldPriceScraper(IHttpClientFactory httpClientFacto
 
     public GoldSource Source => GoldSource.KimKhanhVietHung;
 
-    public async Task<(decimal BuyPrice, decimal SellPrice)?> ScrapeAsync(CancellationToken ct)
+    public async Task<string> ScrapeAsync(CancellationToken ct)
     {
         var client = httpClientFactory.CreateClient("GoldScraper");
-        var html = await client.GetStringAsync(Url, ct);
+        return await client.GetStringAsync(Url, ct);
+    }
 
+    public Task<(decimal BuyPrice, decimal SellPrice)?> ParseAsync(string html, CancellationToken ct)
+    {
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
 
@@ -23,7 +26,7 @@ public class KimKhanhVietHungGoldPriceScraper(IHttpClientFactory httpClientFacto
         if (rows is null)
         {
             logger.LogWarning("KimKhanhVietHung: no table rows found — page may be JS-rendered");
-            return null;
+            return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
         }
 
         foreach (var row in rows)
@@ -46,14 +49,14 @@ public class KimKhanhVietHungGoldPriceScraper(IHttpClientFactory httpClientFacto
             if (!TryParseVnd(buyRaw, out var buy) || !TryParseVnd(sellRaw, out var sell))
             {
                 logger.LogWarning("KimKhanhVietHung: failed to parse buy={Buy} sell={Sell}", buyRaw, sellRaw);
-                return null;
+                return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
             }
 
-            return (buy, sell);
+            return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>((buy, sell));
         }
 
         logger.LogWarning("KimKhanhVietHung: could not find nhẫn tròn 1 chỉ row");
-        return null;
+        return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
     }
 
     private static bool TryParseVnd(string? raw, out decimal value)

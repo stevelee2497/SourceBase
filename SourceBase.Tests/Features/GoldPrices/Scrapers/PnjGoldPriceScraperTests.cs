@@ -1,40 +1,30 @@
-using System.Net;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using SourceBase.Infrastructure.Implementations.Scrapers;
-using SourceBase.Tests.Infrastructure;
 using Xunit;
 
 namespace SourceBase.Tests.Features.GoldPrices.Scrapers;
 
 public class PnjGoldPriceScraperTests
 {
-    private const string ValidHtml = """
-        <html><body>
-        <table>
-          <tr><th>Loại vàng</th><th>Mua vào</th><th>Bán ra</th></tr>
-          <tr><td>Nhẫn Tròn 9999</td><td>1.900.000</td><td>1.950.000</td></tr>
-          <tr><td>PNJ 1 Lượng</td><td>75.000.000</td><td>76.000.000</td></tr>
-        </table>
-        </body></html>
-        """;
+    private static readonly PnjGoldPriceScraper Scraper = new(null!, NullLogger<PnjGoldPriceScraper>.Instance);
 
-    private const string NoMatchHtml = """
-        <html><body>
-        <table>
-          <tr><td>SJC 1 Lượng</td><td>75.000.000</td><td>76.000.000</td></tr>
-        </table>
-        </body></html>
-        """;
-
-    [Fact(DisplayName = "PNJ-SCRAPER-001: ScrapeAsync_WithValidHtml_ReturnsParsedPrices")]
-    public async Task ScrapeAsync_WithValidHtml_ReturnsParsedPrices()
+    [Fact(DisplayName = "PNJ-SCRAPER-001: ParseAsync_WithValidHtml_ReturnsParsedPrices")]
+    public async Task ParseAsync_WithValidHtml_ReturnsParsedPrices()
     {
         // Arrange
-        var scraper = CreateScraperWithResponse(HttpStatusCode.OK, ValidHtml);
+        var html = """
+            <html><body>
+            <table>
+              <tr><th>Loại vàng</th><th>Mua vào</th><th>Bán ra</th></tr>
+              <tr><td>Nhẫn Tròn 9999</td><td>1.900.000</td><td>1.950.000</td></tr>
+              <tr><td>PNJ 1 Lượng</td><td>75.000.000</td><td>76.000.000</td></tr>
+            </table>
+            </body></html>
+            """;
 
         // Act
-        var result = await scraper.ScrapeAsync(CancellationToken.None);
+        var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -42,36 +32,35 @@ public class PnjGoldPriceScraperTests
         result!.Value.SellPrice.Should().Be(1_950_000m);
     }
 
-    [Fact(DisplayName = "PNJ-SCRAPER-002: ScrapeAsync_WithNoMatchingRow_ReturnsNull")]
-    public async Task ScrapeAsync_WithNoMatchingRow_ReturnsNull()
+    [Fact(DisplayName = "PNJ-SCRAPER-002: ParseAsync_WithNoMatchingRow_ReturnsNull")]
+    public async Task ParseAsync_WithNoMatchingRow_ReturnsNull()
     {
         // Arrange
-        var scraper = CreateScraperWithResponse(HttpStatusCode.OK, NoMatchHtml);
+        var html = """
+            <html><body>
+            <table>
+              <tr><td>SJC 1 Lượng</td><td>75.000.000</td><td>76.000.000</td></tr>
+            </table>
+            </body></html>
+            """;
 
         // Act
-        var result = await scraper.ScrapeAsync(CancellationToken.None);
+        var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();
     }
 
-    [Fact(DisplayName = "PNJ-SCRAPER-003: ScrapeAsync_WithNoTable_ReturnsNull")]
-    public async Task ScrapeAsync_WithNoTable_ReturnsNull()
+    [Fact(DisplayName = "PNJ-SCRAPER-003: ParseAsync_WithNoTable_ReturnsNull")]
+    public async Task ParseAsync_WithNoTable_ReturnsNull()
     {
         // Arrange
-        var scraper = CreateScraperWithResponse(HttpStatusCode.OK, "<html><body><p>No table here</p></body></html>");
+        var html = "<html><body><p>No table here</p></body></html>";
 
         // Act
-        var result = await scraper.ScrapeAsync(CancellationToken.None);
+        var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();
-    }
-
-    private static PnjGoldPriceScraper CreateScraperWithResponse(HttpStatusCode status, string content)
-    {
-        var handler = new FakeHttpMessageHandler(status, content);
-        var factory = new FakeHttpClientFactory(new HttpClient(handler) { BaseAddress = new Uri("https://www.pnj.com.vn") });
-        return new PnjGoldPriceScraper(factory, NullLogger<PnjGoldPriceScraper>.Instance);
     }
 }

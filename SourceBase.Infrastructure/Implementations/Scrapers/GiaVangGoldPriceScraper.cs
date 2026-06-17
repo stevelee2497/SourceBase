@@ -14,29 +14,31 @@ public class GiaVangGoldPriceScraper(IHttpClientFactory httpClientFactory, ILogg
 
     public GoldSource Source => GoldSource.GiaVang;
 
-    public async Task<(decimal BuyPrice, decimal SellPrice)?> ScrapeAsync(CancellationToken ct)
+    public async Task<string> ScrapeAsync(CancellationToken ct)
     {
         var client = httpClientFactory.CreateClient("GoldScraper");
-        var html = await client.GetStringAsync(Url, ct);
+        return await client.GetStringAsync(Url, ct);
+    }
 
-        var doc = new HtmlDocument();
-        doc.LoadHtml(html);
-
-        // Find USD spot price — giavang.org/the-gioi shows a table with gold prices
-        var spotNode = doc.DocumentNode.SelectSingleNode("//span[contains(@class,'price-xau')]") ??
-                       doc.DocumentNode.SelectSingleNode("//*[contains(@class,'gold-price') and contains(@class,'usd')]");
-
-        decimal spotUsd;
-        if (spotNode is null || !TryParseDecimal(spotNode.InnerText, out spotUsd))
-        {
-            logger.LogWarning("GiaVang: could not parse USD spot price from page");
-            return null;
-        }
-
+    public async Task<(decimal BuyPrice, decimal SellPrice)?> ParseAsync(string html, CancellationToken ct)
+    {
+        var client = httpClientFactory.CreateClient("GoldScraper");
         var usdVnd = await FetchUsdVndRateAsync(client, ct);
         if (usdVnd <= 0)
         {
             logger.LogWarning("GiaVang: could not fetch USD/VND exchange rate");
+            return null;
+        }
+
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+
+        var spotNode = doc.DocumentNode.SelectSingleNode("//span[contains(@class,'price-xau')]") ??
+                       doc.DocumentNode.SelectSingleNode("//*[contains(@class,'gold-price') and contains(@class,'usd')]");
+
+        if (spotNode is null || !TryParseDecimal(spotNode.InnerText, out var spotUsd))
+        {
+            logger.LogWarning("GiaVang: could not parse USD spot price from page");
             return null;
         }
 
@@ -49,7 +51,6 @@ public class GiaVangGoldPriceScraper(IHttpClientFactory httpClientFactory, ILogg
         try
         {
             var json = await client.GetStringAsync(ExchangeRateUrl, ct);
-            // Response: { "rates": { "VND": 25000 } }
             using var doc = System.Text.Json.JsonDocument.Parse(json);
             if (doc.RootElement.TryGetProperty("rates", out var rates) &&
                 rates.TryGetProperty("VND", out var vnd))

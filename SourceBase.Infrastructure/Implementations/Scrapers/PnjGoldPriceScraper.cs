@@ -11,11 +11,14 @@ public class PnjGoldPriceScraper(IHttpClientFactory httpClientFactory, ILogger<P
 
     public GoldSource Source => GoldSource.PNJ;
 
-    public async Task<(decimal BuyPrice, decimal SellPrice)?> ScrapeAsync(CancellationToken ct)
+    public async Task<string> ScrapeAsync(CancellationToken ct)
     {
         var client = httpClientFactory.CreateClient("GoldScraper");
-        var html = await client.GetStringAsync(Url, ct);
+        return await client.GetStringAsync(Url, ct);
+    }
 
+    public Task<(decimal BuyPrice, decimal SellPrice)?> ParseAsync(string html, CancellationToken ct)
+    {
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
 
@@ -23,7 +26,7 @@ public class PnjGoldPriceScraper(IHttpClientFactory httpClientFactory, ILogger<P
         if (rows is null)
         {
             logger.LogWarning("PNJ: no table rows found");
-            return null;
+            return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
         }
 
         foreach (var row in rows)
@@ -42,14 +45,14 @@ public class PnjGoldPriceScraper(IHttpClientFactory httpClientFactory, ILogger<P
             if (!TryParseVnd(buyRaw, out var buy) || !TryParseVnd(sellRaw, out var sell))
             {
                 logger.LogWarning("PNJ: failed to parse buy={Buy} sell={Sell}", buyRaw, sellRaw);
-                return null;
+                return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
             }
 
-            return (buy, sell);
+            return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>((buy, sell));
         }
 
         logger.LogWarning("PNJ: could not find nhẫn tròn 9999 row");
-        return null;
+        return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
     }
 
     private static bool TryParseVnd(string? raw, out decimal value)

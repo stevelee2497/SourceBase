@@ -3,5 +3,6 @@ namespace SourceBase.Application.Shared.Interfaces;
 public interface IGoldPriceScraper
 {
     GoldSource Source { get; }
-    Task<(decimal BuyPrice, decimal SellPrice)?> ScrapeAsync(CancellationToken ct);
+    Task<string> ScrapeAsync(CancellationToken ct);
+    Task<(decimal BuyPrice, decimal SellPrice)?> ParseAsync(string html, CancellationToken ct);
 }

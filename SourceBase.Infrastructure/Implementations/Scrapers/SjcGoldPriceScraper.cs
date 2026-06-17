@@ -11,12 +11,15 @@ public class SjcGoldPriceScraper(IHttpClientFactory httpClientFactory, ILogger<S
 
     public GoldSource Source => GoldSource.SJC;
 
-    public async Task<(decimal BuyPrice, decimal SellPrice)?> ScrapeAsync(CancellationToken ct)
+    public async Task<string> ScrapeAsync(CancellationToken ct)
     {
         var client = httpClientFactory.CreateClient("GoldScraper");
-        var xml = await client.GetStringAsync(Url, ct);
+        return await client.GetStringAsync(Url, ct);
+    }
 
-        var doc = XDocument.Parse(xml);
+    public Task<(decimal BuyPrice, decimal SellPrice)?> ParseAsync(string html, CancellationToken ct)
+    {
+        var doc = XDocument.Parse(html);
         var item = doc.Descendants("item")
             .FirstOrDefault(e =>
             {
@@ -28,7 +31,7 @@ public class SjcGoldPriceScraper(IHttpClientFactory httpClientFactory, ILogger<S
         if (item is null)
         {
             logger.LogWarning("SJC: could not find nhẫn tròn 9999 row in XML");
-            return null;
+            return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
         }
 
         var buyRaw = (string?)item.Attribute("gia_mua");
@@ -37,10 +40,10 @@ public class SjcGoldPriceScraper(IHttpClientFactory httpClientFactory, ILogger<S
         if (!TryParseVnd(buyRaw, out var buy) || !TryParseVnd(sellRaw, out var sell))
         {
             logger.LogWarning("SJC: failed to parse buy={Buy} sell={Sell}", buyRaw, sellRaw);
-            return null;
+            return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
         }
 
-        return (buy, sell);
+        return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>((buy, sell));
     }
 
     private static bool TryParseVnd(string? raw, out decimal value)
