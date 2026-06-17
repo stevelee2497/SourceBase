@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.GoldPrices;
@@ -23,17 +24,37 @@ public class CreateGoldPriceHandler(IDbContext dbContext) : IRequestHandler<Crea
 {
     public async Task<CreateGoldPriceResponse> Handle(CreateGoldPriceRequest request, CancellationToken ct)
     {
-        var entities = request.Items!.Select(item => new GoldPriceEntity
-        {
-            Source = item.Source!.Value,
-            BuyPrice = item.BuyPrice!.Value,
-            SellPrice = item.SellPrice!.Value,
-            RecordedAt = item.RecordedAt!.Value,
-        }).ToList();
+        var ids = new List<Guid>();
 
-        dbContext.GoldPrices.AddRange(entities);
+        foreach (var item in request.Items!)
+        {
+            var dt = item.RecordedAt!.Value;
+            var recordedAt = new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, 0, 0, dt.Kind);
+
+            var existing = await dbContext.GoldPrices.FirstOrDefaultAsync(x => x.Source == item.Source!.Value && x.RecordedAt == recordedAt, ct);
+
+            if (existing is not null)
+            {
+                existing.BuyPrice = item.BuyPrice!.Value;
+                existing.SellPrice = item.SellPrice!.Value;
+                ids.Add(existing.Id);
+            }
+            else
+            {
+                var entity = new GoldPriceEntity
+                {
+                    Source = item.Source!.Value,
+                    BuyPrice = item.BuyPrice!.Value,
+                    SellPrice = item.SellPrice!.Value,
+                    RecordedAt = recordedAt,
+                };
+                dbContext.GoldPrices.Add(entity);
+                ids.Add(entity.Id);
+            }
+        }
+
         await dbContext.SaveChangesAsync(ct);
-        return new CreateGoldPriceResponse(entities.Select(e => e.Id).ToList());
+        return new CreateGoldPriceResponse(ids);
     }
 }
 
