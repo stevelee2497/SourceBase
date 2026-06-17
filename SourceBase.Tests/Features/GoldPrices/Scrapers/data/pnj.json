@@ -1,0 +1,132 @@
+{
+    "data": [
+        {
+            "masp": "SJC",
+            "tensp": "Vàng miếng SJC 999.9",
+            "giaban": 15180,
+            "giamua": 14980
+        },
+        {
+            "masp": "N24K",
+            "tensp": "Nhẫn Trơn PNJ 999.9",
+            "giaban": 15180,
+            "giamua": 14880
+        },
+        {
+            "masp": "KB",
+            "tensp": "Vàng Kim Bảo 999.9",
+            "giaban": 15180,
+            "giamua": 14880
+        },
+        {
+            "masp": "TL",
+            "tensp": "Vàng Phúc Lộc Tài 999.9",
+            "giaban": 15180,
+            "giamua": 14880
+        },
+        {
+            "masp": "PNJ",
+            "tensp": "Vàng PNJ - Phượng Hoàng",
+            "giaban": 15180,
+            "giamua": 14880
+        },
+        {
+            "masp": "24K",
+            "tensp": "Vàng nữ trang 999.9",
+            "giaban": 15070,
+            "giamua": 14670
+        },
+        {
+            "masp": "999",
+            "tensp": "Vàng nữ trang 999",
+            "giaban": 15055,
+            "giamua": 14655
+        },
+        {
+            "masp": "9920",
+            "tensp": "Vàng nữ trang 9920",
+            "giaban": 14949,
+            "giamua": 14329
+        },
+        {
+            "masp": "99",
+            "tensp": "Vàng nữ trang 99",
+            "giaban": 14919,
+            "giamua": 14299
+        },
+        {
+            "masp": "22K",
+            "tensp": "Vàng 916 (22K)",
+            "giaban": 13804,
+            "giamua": 13184
+        },
+        {
+            "masp": "75",
+            "tensp": "Vàng 750 (18K)",
+            "giaban": 11303,
+            "giamua": 10313
+        },
+        {
+            "masp": "68",
+            "tensp": "Vàng 680 (16.3K)",
+            "giaban": 10248,
+            "giamua": 9258
+        },
+        {
+            "masp": "65",
+            "tensp": "Vàng 650 (15.6K)",
+            "giaban": 9796,
+            "giamua": 8806
+        },
+        {
+            "masp": "61",
+            "tensp": "Vàng 610 (14.6K)",
+            "giaban": 9193,
+            "giamua": 8203
+        },
+        {
+            "masp": "58.5",
+            "tensp": "Vàng 585 (14K)",
+            "giaban": 8816,
+            "giamua": 7826
+        },
+        {
+            "masp": "41",
+            "tensp": "Vàng 416 (10K)",
+            "giaban": 6269,
+            "giamua": 5279
+        },
+        {
+            "masp": "37.5",
+            "tensp": "Vàng 375 (9K)",
+            "giaban": 5651,
+            "giamua": 4661
+        },
+        {
+            "masp": "33",
+            "tensp": "Vàng 333 (8K)",
+            "giaban": 5018,
+            "giamua": 4028
+        },
+        {
+            "masp": "RAW_9999",
+            "tensp": "Vàng nguyên liệu mua ngoài 99.99",
+            "giaban": "",
+            "giamua": 14000,
+            "note": "(*)",
+            "color_note": "#003468"
+        },
+        {
+            "masp": "RAW_9900",
+            "tensp": "Vàng nguyên liệu mua ngoài 99",
+            "giaban": "",
+            "giamua": 13636,
+            "note": "(*)",
+            "color_note": "#003468"
+        }
+    ],
+    "chinhanh": "hochiminh",
+    "updateDate": "17/06/2026 09:10:37",
+    "note": "(*) Áp dụng cho các trang sức ngoài PNJ. Áp dụng cho các Cửa hàng có thu mua nguyên liệu theo nhu cầu của PNJ. Giá mua vào của các tuổi vàng khác được quy đổi theo tỷ lệ từ tuổi vàng 99.99 (liên hệ tư vấn viên để được tư vấn thêm)",
+    "color_note": "#003468"
+}

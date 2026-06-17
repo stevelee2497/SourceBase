@@ -377,6 +377,17 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
 
     public Task<ErrorResponse?> ClearAllNotificationsAsync() =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, "/api/notifications"));
+
+    // ── Gold Prices ───────────────────────────────────────────────────────────
+
+    public Task<(PagingResponse<GoldPriceResponse>? data, ErrorResponse? error)> GetGoldPricesAsync(int page = 1, int limit = 20, string? source = null, string? dateFrom = null, string? dateTo = null)
+    {
+        var url = $"/api/gold-prices?page={page}&limit={limit}&order=Desc&orderBy=RecordedAt";
+        if (!string.IsNullOrWhiteSpace(source)) url += $"&source={Uri.EscapeDataString(source)}";
+        if (!string.IsNullOrWhiteSpace(dateFrom)) url += $"&dateFrom={Uri.EscapeDataString(dateFrom)}";
+        if (!string.IsNullOrWhiteSpace(dateTo)) url += $"&dateTo={Uri.EscapeDataString(dateTo)}";
+        return ExecuteAsync<PagingResponse<GoldPriceResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
+    }
 }
 
 public sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
@@ -408,3 +419,4 @@ public sealed record NotificationResponse(Guid Id, string Title, string Message,
 public sealed record GetNotificationsResponse(List<NotificationResponse> Items, int Page, int Limit, int Total);
 public sealed record IconResponse(Guid Id, string Value, string Name, string Group, int SortOrder, bool IsSystem);
 public sealed record IconUploadUrlResponse(string UploadUrl, string IconUrl, string ContentType);
+public sealed record GoldPriceResponse(Guid Id, string Source, decimal BuyPrice, decimal SellPrice, DateTime RecordedAt);
