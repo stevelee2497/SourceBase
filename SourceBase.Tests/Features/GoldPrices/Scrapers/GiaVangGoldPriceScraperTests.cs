@@ -9,24 +9,20 @@ public class GiaVangGoldPriceScraperTests
 {
     private static readonly GiaVangGoldPriceScraper Scraper = new(NullLogger<GiaVangGoldPriceScraper>.Instance);
 
-    [Fact(DisplayName = "GIAVANG-SCRAPER-001: ParseAsync_WithValidVndPrice_ReturnsParsedPrices")]
-    public async Task ParseAsync_WithValidVndPrice_ReturnsParsedPrices()
+    [Fact(DisplayName = "GIAVANG-SCRAPER-001: ParseAsync_WithRealPageHtml_ReturnsPricePerChi")]
+    public async Task ParseAsync_WithRealPageHtml_ReturnsPricePerChi()
     {
         // Arrange
-        // TODO: update selector class to match the actual element on https://giavang.org/the-gioi
-        var html = """
-            <html><body>
-            <span class="price-xau-vnd">7.099.117</span>
-            </body></html>
-            """;
+        var html = await File.ReadAllTextAsync(
+            Path.Combine(AppContext.BaseDirectory, "Features/GoldPrices/Scrapers/data/giavang.html"));
 
         // Act
         var result = await Scraper.ParseAsync(html, CancellationToken.None);
 
-        // Assert
+        // Assert — 137.837.364 VNĐ / 10 chỉ per cây = 13.783.736
         result.Should().NotBeNull();
-        result!.Value.BuyPrice.Should().Be(7_099_117m);
-        result!.Value.SellPrice.Should().Be(7_099_117m);
+        result!.Value.BuyPrice.Should().Be(13_783_736m);
+        result!.Value.SellPrice.Should().Be(13_783_736m);
     }
 
     [Fact(DisplayName = "GIAVANG-SCRAPER-002: ParseAsync_WithMissingPriceElement_ReturnsNull")]
