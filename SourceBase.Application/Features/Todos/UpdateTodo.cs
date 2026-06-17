@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Todos;
 
-public record UpdateTodoRequest([property: SwaggerIgnore] Guid Id, DateOnly? Date, string? Title, TodoItemStatus? Status);
+public record UpdateTodoRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, DateOnly? Date, string? Title, TodoItemStatus? Status);
 
 public record UpdateTodoResponse(Guid Id);
 
@@ -15,7 +15,7 @@ public class UpdateTodoEndpoint : IEndpoint
     public const string Route = "todos/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPatch(Route, (Guid id, [FromBody] UpdateTodoRequest body, UpdateTodoHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, ([FromBody] UpdateTodoRequest body, UpdateTodoHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .WithTags("Todos");
 }
 
@@ -48,6 +48,7 @@ public class UpdateTodoRequestValidator : AbstractValidator<UpdateTodoRequest>
 {
     public UpdateTodoRequestValidator()
     {
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Title).NotEmpty().When(x => x.Title is not null);
     }
 }

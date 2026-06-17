@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Notifications;
 
-public record MarkNotificationAsReadRequest([property: SwaggerIgnore] Guid Id);
+public record MarkNotificationAsReadRequest([property: SwaggerIgnore][property: FromRoute] Guid Id);
 
 public record MarkNotificationAsReadResponse(bool Success);
 

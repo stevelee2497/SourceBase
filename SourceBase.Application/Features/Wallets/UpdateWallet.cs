@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Wallets;
 
-public record UpdateWalletRequest([property: SwaggerIgnore] Guid Id, string? Name, string? Icon);
+public record UpdateWalletRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string? Name, string? Icon);
 
 public record UpdateWalletResponse(Guid Id);
 
@@ -15,7 +15,7 @@ public class UpdateWalletEndpoint : IEndpoint
     public const string Route = "wallets/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPatch(Route, (Guid id, [FromBody] UpdateWalletRequest body, UpdateWalletHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, ([FromBody] UpdateWalletRequest body, UpdateWalletHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .WithTags("Wallets");
 }
 
@@ -39,6 +39,7 @@ public class UpdateWalletRequestValidator : AbstractValidator<UpdateWalletReques
 {
     public UpdateWalletRequestValidator()
     {
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(100).When(x => x.Name is not null);
     }
 }

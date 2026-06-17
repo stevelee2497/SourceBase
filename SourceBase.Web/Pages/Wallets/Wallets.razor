@@ -121,9 +121,13 @@ else
                         {
                             <img src="@wallet.Icon" class="w-6 h-6 object-contain" alt="wallet icon" />
                         }
+                        else if (wallet.Icon?.TrimStart().StartsWith("<") == true)
+                        {
+                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">@((MarkupString)wallet.Icon)</svg>
+                        }
                         else
                         {
-                            @((MarkupString)(string.IsNullOrWhiteSpace(wallet.Icon) ? "👛" : wallet.Icon))
+                            @(string.IsNullOrWhiteSpace(wallet.Icon) ? "👛" : wallet.Icon)
                         }
                     </span>
                     <span class="text-xs @(isSelected ? "text-indigo-600 font-semibold" : "text-gray-400")">@wallet.Currency</span>
@@ -387,6 +391,13 @@ else
                     <label class="form-label">Category *</label>
                     <SelectInput @bind-Value="_transactionCategoryId" Options="TransactionCategoryOptions" />
                 </div>
+                @if (_editingTransaction is not null)
+                {
+                    <div>
+                        <label class="form-label">Wallet</label>
+                        <SelectInput @bind-Value="_transactionWalletId" Options="TransactionWalletOptions" />
+                    </div>
+                }
             </div>
             <div class="flex justify-end gap-3 mt-5">
                 <button class="btn-secondary" @onclick="CloseTransactionForm">Cancel</button>
@@ -491,6 +502,7 @@ else
     private DateOnly _transactionDate = DateOnly.FromDateTime(DateTime.Today);
     private string _transactionNote = string.Empty;
     private string _transactionCategoryId = string.Empty;
+    private string _transactionWalletId = string.Empty;
     private string? _transactionFormError;
     private bool _savingTransaction;
 
@@ -514,9 +526,10 @@ else
     private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != _selectedWalletIds.FirstOrDefault()).ToList();
 
     private static readonly IReadOnlyList<SelectOption> TransactionTypeOptions = [new("Income", "🪴 Income"), new("Expense", "💸 Expense")];
-    private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name}")).Prepend(new SelectOption("", "All categories")).ToList();
-    private IReadOnlyList<SelectOption> TransactionCategoryOptions => FilteredTransactionCategories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name}")).Prepend(new SelectOption("", "Select category")).ToList();
-    private IReadOnlyList<SelectOption> TransferWalletOptions => TransferTargets.Select(w => new SelectOption(w.Id.ToString(), $"{WalletIcon(w.Icon)} {w.Name} ({w.Currency})")).Prepend(new SelectOption("", "Select wallet")).ToList();
+    private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).Prepend(new SelectOption("", "All categories")).ToList();
+    private IReadOnlyList<SelectOption> TransactionCategoryOptions => FilteredTransactionCategories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).Prepend(new SelectOption("", "Select category")).ToList();
+    private IReadOnlyList<SelectOption> TransferWalletOptions => TransferTargets.Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).Prepend(new SelectOption("", "Select wallet")).ToList();
+    private IReadOnlyList<SelectOption> TransactionWalletOptions => _wallets.Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -732,6 +745,7 @@ else
         _transactionDate = ParseDate(transaction.Date);
         _transactionNote = transaction.Note ?? string.Empty;
         _transactionCategoryId = transaction.CategoryId?.ToString() ?? string.Empty;
+        _transactionWalletId = transaction.WalletId.ToString();
         _transactionFormError = null;
         _showTransactionForm = true;
     };
@@ -753,7 +767,7 @@ else
         _savingTransaction = true;
         var error = _editingTransaction is null
             ? await Api.CreateTransactionAsync(_selectedWalletIds.First(), _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId)
-            : await Api.UpdateTransactionAsync(_editingTransaction.Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId);
+            : await Api.UpdateTransactionAsync(_editingTransaction.Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId, ParseGuid(_transactionWalletId));
 
         if (error is not null) { _transactionFormError = error.Message ?? "Failed to save transaction."; _savingTransaction = false; return; }
 
@@ -832,8 +846,6 @@ else
 
     // ── Formatting helpers ──
 
-    private static string WalletIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "👛" : icon;
-    private static string CategoryIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "🏷️" : icon;
     private static string FormatAmount(decimal amount) => amount.ToString("N0");
     private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N0}" : $"-{amount:N0}";
     private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600" : "text-red-600";

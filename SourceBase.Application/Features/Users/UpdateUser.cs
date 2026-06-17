@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Users;
 
-public record UpdateUserRequest([property: SwaggerIgnore] Guid Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, string[]? Roles);
+public record UpdateUserRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, string[]? Roles);
 
 public record UpdateUserResponse(Guid Id);
 
@@ -17,7 +17,7 @@ public class UpdateUserEndpoint : IEndpoint
     public const string Route = "users/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPut(Route, (Guid id, [FromBody] UpdateUserRequest body, UpdateUserHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPut(Route, ([FromBody] UpdateUserRequest body, UpdateUserHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Users");
 }
@@ -51,6 +51,13 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, I
 
         var rolesChanged = false;
         var normalizedRoles = request.Roles?.Normalize();
+        if (normalizedRoles is not null && normalizedRoles.Length > 0)
+        {
+            var count = await dbContext.Roles.CountAsync(r => r.Name != null && normalizedRoles.Contains(r.Name), ct);
+            if (count != normalizedRoles.Length)
+                throw new BadRequestException("One or more specified roles do not exist.");
+        }
+
         if (normalizedRoles is not null)
         {
             var existingRoles = user.Roles
@@ -97,21 +104,13 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, I
 
 public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
 {
-    public UpdateUserRequestValidator(IDbContext dbContext)
+    public UpdateUserRequestValidator()
     {
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.FirstName).MaximumLength(100).When(x => x.FirstName is not null);
         RuleFor(x => x.LastName).MaximumLength(100).When(x => x.LastName is not null);
         RuleFor(x => x.PhoneNumber).MaximumLength(20).When(x => x.PhoneNumber is not null);
         RuleForEach(x => x.Roles).NotEmpty().MaximumLength(256);
-        RuleFor(x => x.Roles)
-            .MustAsync(async (roles, ct) =>
-            {
-                var normalized = roles!.Normalize();
-                var count = await dbContext.Roles.CountAsync(r => r.Name != null && normalized.Contains(r.Name), ct);
-                return count == normalized.Length;
-            })
-            .WithMessage("One or more specified roles do not exist.")
-            .When(x => x.Roles is not null && x.Roles.Length > 0);
     }
 }

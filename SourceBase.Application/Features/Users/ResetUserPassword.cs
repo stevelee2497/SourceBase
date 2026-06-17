@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Users;
 
-public record ResetUserPasswordRequest([property: SwaggerIgnore] Guid Id, string NewPassword);
+public record ResetUserPasswordRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string NewPassword);
 
 public record ResetUserPasswordResponse(bool Success);
 
@@ -17,7 +17,7 @@ public class ResetUserPasswordEndpoint : IEndpoint
     public const string Route = "users/{id:guid}/reset-password";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost(Route, (Guid id, [FromBody] ResetUserPasswordRequest body, ResetUserPasswordHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPost(Route, ([FromBody] ResetUserPasswordRequest body, ResetUserPasswordHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Users");
 }

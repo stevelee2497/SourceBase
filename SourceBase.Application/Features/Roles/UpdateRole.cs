@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Roles;
 
-public record UpdateRoleRequest([property: SwaggerIgnore] Guid Id, string? Name, string? Description);
+public record UpdateRoleRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, string? Name, string? Description);
 
 public record UpdateRoleResponse(Guid Id);
 
@@ -17,7 +17,7 @@ public class UpdateRoleEndpoint : IEndpoint
     public const string Route = "roles/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPatch(Route, (Guid id, [FromBody] UpdateRoleRequest body, UpdateRoleHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, ([FromBody] UpdateRoleRequest body, UpdateRoleHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin })
         .WithTags("Roles");
 }
@@ -51,6 +51,7 @@ public class UpdateRoleRequestValidator : AbstractValidator<UpdateRoleRequest>
 {
     public UpdateRoleRequestValidator()
     {
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(256).When(x => x.Name is not null);
         RuleFor(x => x.Description).NotEmpty().MaximumLength(500).When(x => x.Description is not null);
     }

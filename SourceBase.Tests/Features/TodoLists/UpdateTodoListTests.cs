@@ -56,4 +56,17 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact(DisplayName = "TODOLISTS-UPDATE-004: UpdateTodoList_WithEmptyId_ReturnsBadRequest")]
+    public async Task UpdateTodoList_WithEmptyId_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PatchAsJsonAsync(UpdateTodoListEndpoint.Route.WithId(Guid.Empty), new { name = "Test" });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

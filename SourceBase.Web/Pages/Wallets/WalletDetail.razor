@@ -309,10 +309,10 @@ else
     private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != Id).ToList();
 
     private static readonly IReadOnlyList<SelectOption> TransactionTypeOptions = [new("Income", "Income"), new("Expense", "Expense")];
-    private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name} ({c.Type})")).Prepend(new SelectOption("", "All categories")).ToList();
-    private IReadOnlyList<SelectOption> TransactionCategoryOptions => FilteredTransactionCategories.Select(c => new SelectOption(c.Id.ToString(), $"{CategoryIcon(c.Icon)} {c.Name}")).Prepend(new SelectOption("", "Select category")).ToList();
-    private IReadOnlyList<SelectOption> TransferWalletOptions => TransferTargets.Select(w => new SelectOption(w.Id.ToString(), $"{WalletIcon(w.Icon)} {w.Name} ({w.Currency})")).Prepend(new SelectOption("", "Select wallet")).ToList();
-    private IReadOnlyList<SelectOption> EditWalletOptions => _wallets.Select(w => new SelectOption(w.Id.ToString(), $"{WalletIcon(w.Icon)} {w.Name} ({w.Currency})")).Prepend(new SelectOption("", "Select wallet")).ToList();
+    private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), $"{c.Name} ({c.Type})", c.Icon)).Prepend(new SelectOption("", "All categories")).ToList();
+    private IReadOnlyList<SelectOption> TransactionCategoryOptions => FilteredTransactionCategories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).Prepend(new SelectOption("", "Select category")).ToList();
+    private IReadOnlyList<SelectOption> TransferWalletOptions => TransferTargets.Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).Prepend(new SelectOption("", "Select wallet")).ToList();
+    private IReadOnlyList<SelectOption> EditWalletOptions => _wallets.Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).Prepend(new SelectOption("", "Select wallet")).ToList();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -620,10 +620,6 @@ else
         : string.IsNullOrWhiteSpace(transaction.CategoryName) ? "Uncategorized" : transaction.CategoryName!;
 
     private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MMM yyyy") : value;
-
-    private static string WalletIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "👛" : icon;
-
-    private static string CategoryIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "🏷️" : icon;
 
     private string TypeFilterClass(string type) => _typeFilter == type ? "btn-primary btn-sm" : "btn-secondary btn-sm";
 

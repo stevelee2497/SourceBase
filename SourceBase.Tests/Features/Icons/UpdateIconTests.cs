@@ -164,4 +164,20 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    [Fact(DisplayName = "ICONS-UPDATE-007: UpdateIcon_WithEmptyId_ReturnsBadRequest")]
+    public async Task UpdateIcon_WithEmptyId_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PatchAsJsonAsync(UpdateIconEndpoint.Route.WithId(Guid.Empty), new
+        {
+            value = "🦊",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Transfers;
@@ -22,6 +23,12 @@ public class CreateTransferHandler(IDbContext dbContext, ICurrentUser currentUse
 {
     public async Task<CreateTransferResponse> Handle(CreateTransferRequest request, CancellationToken ct)
     {
+        var fromWalletExists = await dbContext.Wallets.AnyAsync(w => w.Id == request.FromWalletId && w.UserId == currentUser.UserId, ct);
+        if (!fromWalletExists) throw new BadRequestException("Source wallet not found.");
+
+        var toWalletExists = await dbContext.Wallets.AnyAsync(w => w.Id == request.ToWalletId && w.UserId == currentUser.UserId, ct);
+        if (!toWalletExists) throw new BadRequestException("Destination wallet not found.");
+
         var fromTransaction = new TransactionEntity
         {
             WalletId = request.FromWalletId,
@@ -67,19 +74,15 @@ public class CreateTransferHandler(IDbContext dbContext, ICurrentUser currentUse
 
 public class CreateTransferRequestValidator : AbstractValidator<CreateTransferRequest>
 {
-    public CreateTransferRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
+    public CreateTransferRequestValidator()
     {
         RuleFor(x => x.FromWalletId)
             .NotEmpty()
-            .Must(x => x != Guid.Empty)
-            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id && w.UserId == currentUser.UserId, ct))
-            .WithMessage("Source wallet not found.");
+            .Must(x => x != Guid.Empty);
 
         RuleFor(x => x.ToWalletId)
             .NotEmpty()
             .Must(x => x != Guid.Empty)
-            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id && w.UserId == currentUser.UserId, ct))
-            .WithMessage("Destination wallet not found.")
             .When(x => x.ToWalletId != Guid.Empty);
 
         RuleFor(x => x.ToWalletId)

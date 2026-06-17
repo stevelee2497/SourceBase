@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SourceBase.Application.Features.Transactions;
 
-public record UpdateTransactionRequest([property: SwaggerIgnore] Guid Id, Guid? WalletId, decimal? Amount, TransactionType? Type, DateOnly? Date, string? Note, Guid? CategoryId);
+public record UpdateTransactionRequest([property: SwaggerIgnore][property: FromRoute] Guid Id, Guid? WalletId, decimal? Amount, TransactionType? Type, DateOnly? Date, string? Note, Guid? CategoryId);
 
 public record UpdateTransactionResponse(Guid Id);
 
@@ -17,7 +17,7 @@ public class UpdateTransactionEndpoint : IEndpoint
     public const string Route = "transactions/{id:guid}";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPatch(Route, (Guid id, [FromBody] UpdateTransactionRequest body, UpdateTransactionHandler handler, CancellationToken ct) => handler.Handle(body with { Id = id }, ct))
+        .MapPatch(Route, ([FromBody] UpdateTransactionRequest body, UpdateTransactionHandler handler, CancellationToken ct) => handler.Handle(body, ct))
         .WithTags("Transactions");
 }
 
@@ -30,6 +30,18 @@ public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser current
             throw new NotFoundException();
         if (transaction.IsTransfer)
             throw new Shared.ValidationException("Transfer transactions cannot be edited directly. Delete the transfer instead.");
+
+        if (request.WalletId is not null)
+        {
+            var walletExists = await dbContext.Wallets.AnyAsync(w => w.Id == request.WalletId.Value && w.UserId == currentUser.UserId, ct);
+            if (!walletExists) throw new BadRequestException("Wallet not found.");
+        }
+
+        if (request.CategoryId is not null)
+        {
+            var categoryExists = await dbContext.Categories.AnyAsync(c => c.Id == request.CategoryId.Value && (c.IsSystem || c.UserId == currentUser.UserId), ct);
+            if (!categoryExists) throw new BadRequestException("Category not found.");
+        }
 
         transaction.WalletId = request.WalletId ?? transaction.WalletId;
         transaction.Amount = request.Amount ?? transaction.Amount;
@@ -45,18 +57,9 @@ public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser current
 
 public class UpdateTransactionRequestValidator : AbstractValidator<UpdateTransactionRequest>
 {
-    public UpdateTransactionRequestValidator(IDbContext dbContext, ICurrentUser currentUser)
+    public UpdateTransactionRequestValidator()
     {
-        RuleFor(x => x.WalletId)
-            .MustAsync((id, ct) => dbContext.Wallets.AnyAsync(w => w.Id == id!.Value && w.UserId == currentUser.UserId, ct))
-            .WithMessage("Wallet not found.")
-            .When(x => x.WalletId is not null);
-
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Amount).GreaterThan(0).When(x => x.Amount is not null);
-
-        RuleFor(x => x.CategoryId)
-            .MustAsync((id, ct) => dbContext.Categories.AnyAsync(c => c.Id == id!.Value && (c.IsSystem || c.UserId == currentUser.UserId), ct))
-            .WithMessage("Category not found.")
-            .When(x => x.CategoryId is not null);
     }
 }

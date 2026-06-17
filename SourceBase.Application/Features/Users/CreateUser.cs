@@ -25,6 +25,20 @@ public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityP
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken ct)
     {
+        if (await dbContext.Users.AnyAsync(u => u.UserName == request.UserName, ct))
+            throw new BadRequestException("Username is already taken.");
+
+        if (await dbContext.Users.AnyAsync(u => u.Email == request.Email, ct))
+            throw new BadRequestException("Email is already taken.");
+
+        var normalizedRoles = request.Roles?.Normalize();
+        if (normalizedRoles is not null && normalizedRoles.Length > 0)
+        {
+            var count = await dbContext.Roles.CountAsync(r => r.Name != null && normalizedRoles.Contains(r.Name), ct);
+            if (count != normalizedRoles.Length)
+                throw new BadRequestException("One or more specified roles do not exist.");
+        }
+
         var (confirmationCode, expiresOn) = otpHelper.Generate();
         var user = new UserEntity
         {
@@ -39,7 +53,6 @@ public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityP
             SecurityStamp = Guid.NewGuid().ToString(),
         };
 
-        var normalizedRoles = request.Roles?.Normalize();
         if (normalizedRoles is not null)
         {
             var roles = await dbContext.Roles
@@ -75,30 +88,13 @@ public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityP
 
 public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 {
-    public CreateUserRequestValidator(IDbContext dbContext)
+    public CreateUserRequestValidator()
     {
         RuleFor(x => x.UserName).NotEmpty().MaximumLength(256);
-        RuleFor(x => x.UserName)
-            .MustAsync(async (name, ct) => !await dbContext.Users.AnyAsync(u => u.UserName == name, ct))
-            .WithMessage("Username is already taken.")
-            .When(x => !string.IsNullOrEmpty(x.UserName));
-        RuleFor(x => x.Email)
-            .MustAsync(async (email, ct) => !await dbContext.Users.AnyAsync(u => u.Email == email, ct))
-            .WithMessage("Email is already taken.")
-            .When(x => !string.IsNullOrEmpty(x.Email));
         RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
         RuleFor(x => x.FirstName).MaximumLength(100).When(x => x.FirstName is not null);
         RuleFor(x => x.LastName).MaximumLength(100).When(x => x.LastName is not null);
         RuleFor(x => x.PhoneNumber).MaximumLength(20).When(x => x.PhoneNumber is not null);
         RuleForEach(x => x.Roles).NotEmpty().MaximumLength(256);
-        RuleFor(x => x.Roles)
-            .MustAsync(async (roles, ct) =>
-            {
-                var normalized = roles!.Normalize();
-                var count = await dbContext.Roles.CountAsync(r => r.Name != null && normalized.Contains(r.Name), ct);
-                return count == normalized.Length;
-            })
-            .WithMessage("One or more specified roles do not exist.")
-            .When(x => x.Roles is not null && x.Roles.Length > 0);
     }
 }

@@ -155,4 +155,20 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    [Fact(DisplayName = "ROLES-UPDATE-007: UpdateRole_WithEmptyId_ReturnsBadRequest")]
+    public async Task UpdateRole_WithEmptyId_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient();
+
+        // Act
+        var response = await client.PatchAsJsonAsync(UpdateRoleEndpoint.Route.WithId(Guid.Empty), new
+        {
+            name = $"Role_{Guid.NewGuid():N}",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

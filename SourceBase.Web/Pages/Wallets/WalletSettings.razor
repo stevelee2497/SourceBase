@@ -35,7 +35,18 @@ else
         {
             <div class="card">
                 <div class="flex items-center gap-3 mb-4">
-                    <span class="text-2xl">@WalletIcon(wallet.Icon)</span>
+                    @if (wallet.Icon?.StartsWith("http") == true)
+                    {
+                        <img src="@wallet.Icon" class="w-8 h-8 object-contain" alt="wallet icon" />
+                    }
+                    else if (wallet.Icon?.TrimStart().StartsWith("<") == true)
+                    {
+                        <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor">@((MarkupString)wallet.Icon)</svg>
+                    }
+                    else
+                    {
+                        <span class="text-2xl">@(string.IsNullOrWhiteSpace(wallet.Icon) ? "👛" : wallet.Icon)</span>
+                    }
                     <div>
                         <div class="font-semibold text-gray-900">@wallet.Name</div>
                         <div class="text-sm text-gray-500">Balance: @wallet.Balance.ToString("N0") @wallet.Currency</div>
@@ -125,5 +136,4 @@ else
         }
     };
 
-    private static string WalletIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "👛" : icon;
 }

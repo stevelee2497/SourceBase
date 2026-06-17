@@ -143,4 +143,20 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact(DisplayName = "CATS-UPDATE-007: UpdateCategory_WithEmptyId_ReturnsBadRequest")]
+    public async Task UpdateCategory_WithEmptyId_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"category_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        // Act
+        var response = await client.PatchAsJsonAsync(UpdateCategoryEndpoint.Route.WithId(Guid.Empty), new
+        {
+            name = "Test",
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

@@ -76,7 +76,7 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 - Pagination: Define OrderBy enums per feature (e.g. `TransactionOrderBy`) and use `PagingRequest` base class for common paging params (`Page`, `Limit`, `Order`, `OrderBy`). Using `.PaginateAsync()` extension method on IQueryable applies sorting and pagination based on those params.
 - Use primary constructors for handlers and services to keep code concise and avoid boilerplate.
 - **Update endpoints use `PATCH` with partial update semantics.** All request fields are nullable; only provided (non-null) fields are applied. Handler uses null-coalescing: `entity.Field = request.Field ?? entity.Field`. Validator rules are guarded with `.When(x => x.Field is not null)`. Sending `null` means "keep existing" — it does not clear a field.
-- **DB-level validation (e.g. existence checks) belongs in the validator**, not the handler. Inject `IDbContext` and `ICurrentUser` into the validator constructor and use `MustAsync`; guard with `.When` when the field is optional.
+- **DB-level validation (e.g. existence checks) belongs in the handler**, not the validator. Use `AnyAsync`/`CountAsync` and throw `BadRequestException` for failed checks; guard with `if (field is not null)` for optional fields.
 
 ## Conventions
 
