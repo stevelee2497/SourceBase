@@ -10,6 +10,7 @@ using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Domain.Entities;
 using SourceBase.Infrastructure.DbContexts;
 using SourceBase.Infrastructure.Implementations;
+using SourceBase.Infrastructure.Implementations.Scrapers;
 using StackExchange.Redis;
 
 namespace SourceBase.Infrastructure;
@@ -69,6 +70,17 @@ public static class DependencyInjection
         services.AddScoped<IStorageService, CloudflareR2StorageService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IOtpHelper, OtpHelper>();
+
+        services.AddHttpClient("GoldScraper", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(15);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; SourceBase/1.0)");
+        });
+        services.AddScoped<IGoldPriceScraper, SjcGoldPriceScraper>();
+        services.AddScoped<IGoldPriceScraper, PnjGoldPriceScraper>();
+        services.AddScoped<IGoldPriceScraper, GiaVangGoldPriceScraper>();
+        services.AddScoped<IGoldPriceScraper, KimKhanhVietHungGoldPriceScraper>();
+        services.AddHostedService<GoldPriceScraperService>();
     }
 
     public static void EnsureDatabaseMigrated(this WebApplication app)
