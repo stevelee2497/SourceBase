@@ -76,10 +76,11 @@ public static class DependencyInjection
             client.Timeout = TimeSpan.FromSeconds(15);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; SourceBase/1.0)");
         });
-        services.AddScoped<IGoldPriceScraper, SjcGoldPriceScraper>();
-        services.AddScoped<IGoldPriceScraper, PnjGoldPriceScraper>();
-        services.AddScoped<IGoldPriceScraper, GiaVangGoldPriceScraper>();
-        services.AddScoped<IGoldPriceScraper, KimKhanhVietHungGoldPriceScraper>();
+        services.AddSingleton<IGoldPriceScraper, SjcGoldPriceScraper>();
+        services.AddSingleton<IGoldPriceScraper, PnjGoldPriceScraper>();
+        services.AddSingleton<IGoldPriceScraper, GiaVangGoldPriceScraper>();
+        services.AddSingleton<IGoldPriceScraper, KimKhanhVietHungGoldPriceScraper>();
+        services.AddSingleton<IGoldPriceScraper, NgocThinhGoldPriceScraper>();
         services.AddHostedService<GoldPriceScraperService>();
     }
 

@@ -40,7 +40,7 @@ window.renderGoldPriceChart = function (elementId, seriesData) {
         stroke: { curve: 'smooth', width: 2 },
         legend: { position: 'top' },
         tooltip: { x: { format: 'dd MMM HH:mm' }, y: { formatter: function (v) { return v.toLocaleString('vi-VN') + ' ₫'; } } },
-        colors: ['#6366f1', '#818cf8', '#f59e0b', '#fbbf24', '#10b981', '#34d399', '#f43f5e', '#fb7185'],
+        colors: ['#6366f1', '#818cf8', '#f59e0b', '#fbbf24', '#10b981', '#34d399', '#f43f5e', '#fb7185', '#a855f7', '#c084fc'],
     };
     window.goldPriceChart = new ApexCharts(el, options);
     window.goldPriceChart.render();
