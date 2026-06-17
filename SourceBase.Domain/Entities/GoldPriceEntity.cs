@@ -19,5 +19,6 @@ public enum GoldSource
     SJC,
     PNJ,
     GiaVang,
-    KimKhanhVietHung
+    KimKhanhVietHung,
+    NgocThinh
 }

@@ -1,5 +1,5 @@
-using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Domain.Entities;
 
@@ -8,42 +8,21 @@ namespace SourceBase.Infrastructure.Implementations.Scrapers;
 public class SjcGoldPriceScraper(ILogger<SjcGoldPriceScraper> logger) : IGoldPriceScraper
 {
     public GoldSource Source => GoldSource.SJC;
-    public string Url => "https://sjc.com.vn/xml/tygiavang.xml";
 
-    public Task<(decimal BuyPrice, decimal SellPrice)?> ParseAsync(string html, CancellationToken ct)
+    public string Url => "https://edge-cf-api.pnj.io/ecom-frontend/v1/get-gold-price?zone=00";
+
+    public Task<(decimal BuyPrice, decimal SellPrice)?> ParseAsync(string jsonData, CancellationToken ct)
     {
-        var doc = XDocument.Parse(html);
-        var item = doc.Descendants("item")
-            .FirstOrDefault(e =>
-            {
-                var name = (string?)e.Attribute("ten_vang") ?? string.Empty;
-                return name.Contains("Nhẫn", StringComparison.OrdinalIgnoreCase) &&
-                       (name.Contains("99,99", StringComparison.OrdinalIgnoreCase) || name.Contains("9999", StringComparison.OrdinalIgnoreCase));
-            });
-
-        if (item is null)
+        var response = jsonData.Deserialize<PnjGoldPriceResponse>();
+        if (response is null || response.Data is null || response.Data.Count == 0)
         {
-            logger.LogWarning("SJC: could not find nhẫn tròn 9999 row in XML");
+            logger.LogWarning("PNJ: empty or invalid response");
             return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
         }
 
-        var buyRaw = (string?)item.Attribute("gia_mua");
-        var sellRaw = (string?)item.Attribute("gia_ban");
-
-        if (!TryParseVnd(buyRaw, out var buy) || !TryParseVnd(sellRaw, out var sell))
-        {
-            logger.LogWarning("SJC: failed to parse buy={Buy} sell={Sell}", buyRaw, sellRaw);
-            return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
-        }
-
-        return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>((buy, sell));
-    }
-
-    private static bool TryParseVnd(string? raw, out decimal value)
-    {
-        value = 0;
-        if (string.IsNullOrWhiteSpace(raw)) return false;
-        var normalized = raw.Replace(".", "").Replace(",", "").Trim();
-        return decimal.TryParse(normalized, out value) && value > 0;
+        var item = response.Data.FirstOrDefault(i => i.Masp.Equals("SJC", StringComparison.OrdinalIgnoreCase));
+        return item is null || item.Giamua is null || item.Giaban is null
+            ? Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null)
+            : Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>((item.Giamua.Value * 1000, item.Giaban.Value * 1000));
     }
 }

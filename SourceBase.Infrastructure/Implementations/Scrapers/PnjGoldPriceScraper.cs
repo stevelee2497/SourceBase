@@ -1,5 +1,7 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Domain.Entities;
 
@@ -13,30 +15,40 @@ public class PnjGoldPriceScraper(ILogger<PnjGoldPriceScraper> logger) : IGoldPri
 
     public Task<(decimal BuyPrice, decimal SellPrice)?> ParseAsync(string jsonData, CancellationToken ct)
     {
-        using var doc = JsonDocument.Parse(jsonData);
-        if (!doc.RootElement.TryGetProperty("data", out var data))
+        var response = jsonData.Deserialize<PnjGoldPriceResponse>();
+        if (response is null || response.Data is null || response.Data.Count == 0)
         {
-            logger.LogWarning("PNJ: missing 'data' array in response");
+            logger.LogWarning("PNJ: empty or invalid response");
             return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
         }
 
-        foreach (var item in data.EnumerateArray())
-        {
-            var masp = item.TryGetProperty("masp", out var maspEl) ? maspEl.GetString() : null;
-            if (masp != "N24K") continue;
+        var item = response.Data.FirstOrDefault(i => i.Masp.Equals("N24K", StringComparison.OrdinalIgnoreCase));
+        return item is null || item.Giamua is null || item.Giaban is null
+            ? Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null)
+            : Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>((item.Giamua.Value * 1000, item.Giaban.Value * 1000));
+    }
+}
 
-            if (!item.TryGetProperty("giamua", out var giaMua) || giaMua.ValueKind != JsonValueKind.Number ||
-                !item.TryGetProperty("giaban", out var giaBan) || giaBan.ValueKind != JsonValueKind.Number)
-            {
-                logger.LogWarning("PNJ: failed to read prices for masp '{Masp}'", masp);
-                return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
-            }
+public record PnjGoldPriceResponse(List<PnjGoldPriceItem> Data);
 
-            return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(
-                (giaMua.GetDecimal() * 1000, giaBan.GetDecimal() * 1000));
-        }
+public record PnjGoldPriceItem(
+    string Masp,
+    [property: JsonConverter(typeof(PnjDecimalConverter))] decimal? Giamua,
+    [property: JsonConverter(typeof(PnjDecimalConverter))] decimal? Giaban);
 
-        logger.LogWarning("PNJ: could not find masp '{Masp}' in response", "N24K");
-        return Task.FromResult<(decimal BuyPrice, decimal SellPrice)?>(null);
+// Some entries use "" instead of a number for unavailable prices.
+public class PnjDecimalConverter : JsonConverter<decimal?>
+{
+    public override decimal? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => reader.TokenType switch
+    {
+        JsonTokenType.Number => reader.GetDecimal(),
+        JsonTokenType.String => decimal.TryParse(reader.GetString(), out var v) ? v : null,
+        _ => null
+    };
+
+    public override void Write(Utf8JsonWriter writer, decimal? value, JsonSerializerOptions options)
+    {
+        if (value.HasValue) writer.WriteNumberValue(value.Value);
+        else writer.WriteNullValue();
     }
 }
