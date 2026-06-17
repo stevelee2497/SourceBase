@@ -24,6 +24,14 @@ window.initOtpPaste = function (container, dotNetRef) {
 
 window.goldPriceChart = null;
 
+window.getBrowserTimeZone = function () {
+    var tz = localStorage.getItem('userTimeZone');
+    if (tz) return tz;
+    tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    localStorage.setItem('userTimeZone', tz);
+    return tz;
+};
+
 window.renderGoldPriceChart = function (elementId, seriesData) {
     var el = document.getElementById(elementId);
     if (!el) return;

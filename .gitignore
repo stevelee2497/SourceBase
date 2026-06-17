@@ -403,15 +403,12 @@ FodyWeavers.xsd
 app.db*
 
 http-client.env.json
-appsettings.Development.json
+appsettings.*.json
 
-graphify-out
-
-.env
 
 run.sh
-
-user-plan-*.md
+plans
+graphify-out
 
 app.min.css
 .bash_profile
@@ -422,5 +419,5 @@ app.min.css
 .profile
 .zshrc
 .zprofile
-.claude/plans
 .ripgreprc
+.env

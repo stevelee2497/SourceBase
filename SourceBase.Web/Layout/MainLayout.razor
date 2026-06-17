@@ -3,6 +3,8 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthProvider
 @inject AppSettings AppSettings
+@inject IJSRuntime JS
+@inject UserTimeZoneService TimeZoneService
 @inherits LayoutComponentBase
 @implements IDisposable
 
@@ -117,6 +119,15 @@
             _displayName = $"{userInfo.FirstName} {userInfo.LastName}".Trim();
         StateHasChanged();
     });
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var tzId = await JS.InvokeAsync<string>("getBrowserTimeZone");
+            TimeZoneService.SetTimeZone(tzId);
+        }
+    }
 
     public void Dispose()
     {
