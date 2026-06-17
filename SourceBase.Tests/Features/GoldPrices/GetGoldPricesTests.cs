@@ -30,10 +30,13 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var client = await factory.CreateAuthorizedClient();
         await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
         {
-            source = "SJC",
-            buyPrice = 1_900_000m,
-            sellPrice = 1_950_000m,
-            recordedAt = DateTime.UtcNow,
+            items = new[] { new
+            {
+                source = "SJC",
+                buyPrice = 1_900_000m,
+                sellPrice = 1_950_000m,
+                recordedAt = DateTime.UtcNow,
+            } }
         });
 
         // Act
@@ -52,8 +55,8 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         // Arrange
         var client = await factory.CreateAuthorizedClient($"goldprice_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
         var recordedAt = DateTime.UtcNow;
-        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { source = "SJC", buyPrice = 1_900_000m, sellPrice = 1_950_000m, recordedAt });
-        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { source = "PNJ", buyPrice = 1_880_000m, sellPrice = 1_930_000m, recordedAt = recordedAt.AddSeconds(1) });
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { items = new[] { new { source = "SJC", buyPrice = 1_900_000m, sellPrice = 1_950_000m, recordedAt } } });
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { items = new[] { new { source = "PNJ", buyPrice = 1_880_000m, sellPrice = 1_930_000m, recordedAt = recordedAt.AddSeconds(1) } } });
 
         // Act
         var response = await client.GetAsync($"{GetGoldPricesEndpoint.Route}?source=SJC&limit=50");
@@ -72,8 +75,8 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var client = await factory.CreateAuthorizedClient($"goldprice_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
         var oldDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var recentDate = new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc);
-        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { source = "SJC", buyPrice = 1_800_000m, sellPrice = 1_850_000m, recordedAt = oldDate });
-        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { source = "PNJ", buyPrice = 1_900_000m, sellPrice = 1_950_000m, recordedAt = recentDate });
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { items = new[] { new { source = "SJC", buyPrice = 1_800_000m, sellPrice = 1_850_000m, recordedAt = oldDate } } });
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { items = new[] { new { source = "PNJ", buyPrice = 1_900_000m, sellPrice = 1_950_000m, recordedAt = recentDate } } });
 
         var dateFrom = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc).ToString("o");
         var dateTo = new DateTime(2027, 1, 1, 0, 0, 0, DateTimeKind.Utc).ToString("o");
@@ -99,10 +102,13 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         {
             await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
             {
-                source = sources[i],
-                buyPrice = 1_900_000m + i,
-                sellPrice = 1_950_000m + i,
-                recordedAt = baseTime.AddHours(i),
+                items = new[] { new
+                {
+                    source = sources[i],
+                    buyPrice = 1_900_000m + i,
+                    sellPrice = 1_950_000m + i,
+                    recordedAt = baseTime.AddHours(i),
+                } }
             });
         }
 
@@ -124,8 +130,8 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var client = await factory.CreateAuthorizedClient($"goldprice_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
         var earlier = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var later = new DateTime(2023, 6, 1, 0, 0, 0, DateTimeKind.Utc);
-        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { source = "SJC", buyPrice = 1_800_000m, sellPrice = 1_850_000m, recordedAt = earlier });
-        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { source = "PNJ", buyPrice = 1_900_000m, sellPrice = 1_950_000m, recordedAt = later });
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { items = new[] { new { source = "SJC", buyPrice = 1_800_000m, sellPrice = 1_850_000m, recordedAt = earlier } } });
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new { items = new[] { new { source = "PNJ", buyPrice = 1_900_000m, sellPrice = 1_950_000m, recordedAt = later } } });
 
         // Act
         var response = await client.GetAsync($"{GetGoldPricesEndpoint.Route}?limit=50&orderBy=RecordedAt&order=Desc");
