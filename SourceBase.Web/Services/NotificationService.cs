@@ -29,6 +29,12 @@ public class NotificationService(BlazorAuthStateProvider auth, IConfiguration co
         if (string.IsNullOrWhiteSpace(auth.AccessToken))
             return;
 
+        if (_connection is not null)
+        {
+            await _connection.DisposeAsync();
+            _connection = null;
+        }
+
         _connection = new HubConnectionBuilder()
             .WithUrl(_hubUrl, options =>
             {
@@ -61,7 +67,12 @@ public class NotificationService(BlazorAuthStateProvider auth, IConfiguration co
             if (todo is not null) OnTodoCreated?.Invoke(todo);
         });
 
-        await _connection.StartAsync();
+        try
+        {
+            await _connection.StartAsync();
+        }
+        catch (TaskCanceledException) { }
+        catch (OperationCanceledException) { }
     }
 
     public async Task StopAsync()
