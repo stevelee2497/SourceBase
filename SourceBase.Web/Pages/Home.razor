@@ -232,7 +232,7 @@
     private bool _todosLoading = true;
     private bool _redisOnline;
 
-    private static readonly string[] GoldSources = ["SJC", "PNJ", "GiaVang", "KimKhanhVietHung", "NgocThinh"];
+    private static readonly string[] GoldSources = ["SJC", "PNJ", "KimKhanhVietHung", "NgocThinh", "GiaVang"];
     private Dictionary<string, GoldPriceResponse?> _goldPrices = new();
     private bool _goldPricesLoading = true;
 
@@ -268,9 +268,9 @@
 
     private static string GetGoldSourceDisplayName(string source) => source switch
     {
-        "GiaVang" => "Gia Vang The Gioi",
-        "KimKhanhVietHung" => "Kim Khanh VH",
-        "NgocThinh" => "Ngoc Thinh",
+        "GiaVang" => "Giá vàng thế giới",
+        "KimKhanhVietHung" => "KKVH",
+        "NgocThinh" => "Ngọc Thịnh",
         _ => source,
     };
 
