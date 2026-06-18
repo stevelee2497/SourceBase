@@ -1,12 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SourceBase.Application.Features.GoldPrices;
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Domain.Entities;
 
 namespace SourceBase.Infrastructure.Implementations;
 
 public class GoldPriceScraperService(
+    AppSettings appSettings,
     IServiceScopeFactory scopeFactory,
     IHttpClientFactory httpClientFactory,
     IEnumerable<IGoldPriceScraper> scrapers,
@@ -14,7 +16,13 @@ public class GoldPriceScraperService(
 {
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
-        using var timer = new PeriodicTimer(TimeSpan.FromHours(1));
+        if (!appSettings.BackgroundJobSettings.Enabled)
+        {
+            logger.LogInformation("Background jobs are disabled. GoldPriceScraperService will not run.");
+            return;
+        }
+
+        using var timer = new PeriodicTimer(appSettings.BackgroundJobSettings.GoldPriceScrapingInterval);
         do
         {
             await RunScrapersAsync(ct);
@@ -25,6 +33,7 @@ public class GoldPriceScraperService(
     private async Task RunScrapersAsync(CancellationToken ct)
     {
         var http = httpClientFactory.CreateClient("GoldScraper");
+        var goldPrices = new List<CreateGoldPriceItem>();
         foreach (var scraper in scrapers)
         {
             try
@@ -37,16 +46,7 @@ public class GoldPriceScraperService(
                     continue;
                 }
 
-                using var scope = scopeFactory.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<IDbContext>();
-                db.GoldPrices.Add(new GoldPriceEntity
-                {
-                    Source = scraper.Source,
-                    BuyPrice = result.Value.BuyPrice,
-                    SellPrice = result.Value.SellPrice,
-                    RecordedAt = DateTime.UtcNow,
-                });
-                await db.SaveChangesAsync(ct);
+                goldPrices.Add(new CreateGoldPriceItem(scraper.Source, result.Value.BuyPrice, result.Value.SellPrice, DateTime.UtcNow));
 
                 logger.LogInformation("Scraped {Source}: buy={Buy} sell={Sell}", scraper.Source, result.Value.BuyPrice, result.Value.SellPrice);
             }
@@ -55,5 +55,8 @@ public class GoldPriceScraperService(
                 logger.LogWarning(ex, "Scraper failed for source {Source}", scraper.Source);
             }
         }
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var handler = scope.ServiceProvider.GetRequiredService<CreateGoldPriceHandler>();
+        await handler.Handle(new CreateGoldPriceRequest(goldPrices), ct);
     }
 }
