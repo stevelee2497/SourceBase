@@ -32,7 +32,7 @@ window.getBrowserTimeZone = function () {
     return tz;
 };
 
-window.renderGoldPriceChart = function (elementId, seriesData) {
+window.renderGoldPriceChart = function (elementId, seriesData, colors, dashArray) {
     var el = document.getElementById(elementId);
     if (!el) return;
     if (window.goldPriceChart) {
@@ -45,10 +45,10 @@ window.renderGoldPriceChart = function (elementId, seriesData) {
         series: seriesData,
         xaxis: { type: 'datetime', labels: { datetimeUTC: false } },
         yaxis: { labels: { formatter: function (v) { return (v / 1000000).toFixed(2) + 'M'; } } },
-        stroke: { curve: 'smooth', width: 2 },
+        stroke: { curve: 'smooth', width: 2, dashArray: dashArray || [] },
         legend: { position: 'top' },
         tooltip: { x: { format: 'dd MMM HH:mm' }, y: { formatter: function (v) { return v.toLocaleString('vi-VN') + ' ₫'; } } },
-        colors: ['#6366f1', '#818cf8', '#f59e0b', '#fbbf24', '#10b981', '#34d399', '#f43f5e', '#fb7185', '#a855f7', '#c084fc'],
+        colors: (colors && colors.length > 0) ? colors : ['#6366f1', '#818cf8', '#f59e0b', '#fbbf24', '#10b981', '#34d399', '#f43f5e', '#fb7185', '#a855f7', '#c084fc'],
     };
     window.goldPriceChart = new ApexCharts(el, options);
     window.goldPriceChart.render();

@@ -18,34 +18,15 @@
         <p class="text-xs text-gray-400">Nhẫn tròn 9999 · 1 chỉ · VND</p>
     </div>
 
-    <!-- Filters -->
-    <div class="card p-4">
-        <div class="flex flex-wrap gap-3 items-end">
-            <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-500">Source</label>
-                <select class="input-field text-sm h-9 min-w-36" value="@_sourceFilter" @onchange="OnSourceChanged">
-                    <option value="">All Sources</option>
-                    @foreach (var src in _sources)
-                    {
-                        <option value="@src">@src</option>
-                    }
-                </select>
-            </div>
-            <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-500">From</label>
-                <input type="date" class="input-field text-sm h-9" value="@_dateFromStr" @onchange="OnDateFromChanged" />
-            </div>
-            <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-500">To</label>
-                <input type="date" class="input-field text-sm h-9" value="@_dateToStr" @onchange="OnDateToChanged" />
-            </div>
-            <button class="btn-secondary btn-sm h-9" @onclick="ResetFiltersAsync">Clear</button>
-        </div>
-    </div>
-
     <!-- Chart -->
     <div class="card p-4">
-        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Price Trend (last 7 days)</h3>
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Price Trend</h3>
+            <div class="flex items-center gap-2">
+                <SelectInput @bind-Value="_chartRange" @bind-Value:after="OnChartRangeChangedAsync" Options="ChartRangeOptions" Class="w-36" />
+                <SelectInput @bind-Value="_chartSeries" @bind-Value:after="OnChartSeriesChangedAsync" Options="ChartSeriesOptions" Class="w-32" />
+            </div>
+        </div>
         @if (_loadingChart)
         {
             <LoadingSpinner />
@@ -58,6 +39,25 @@
         {
             <div id="gold-price-chart" class="w-full"></div>
         }
+    </div>
+
+    <!-- Filters -->
+    <div class="card p-4">
+        <div class="flex flex-wrap gap-3 items-end">
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-500">Source</label>
+                <SelectInput @bind-Value="_sourceFilter" @bind-Value:after="ApplyFiltersAsync" Options="SourceOptions" Class="min-w-36" />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-500">From</label>
+                <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input text-sm h-9" />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-500">To</label>
+                <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input text-sm h-9" />
+            </div>
+            <button class="btn-secondary btn-sm h-9" @onclick="ResetFiltersAsync">Clear</button>
+        </div>
     </div>
 
     <!-- Table -->
@@ -112,16 +112,49 @@
 @code {
     private PagingResponse<GoldPriceResponse>? _tableData;
     private List<GoldPriceResponse> _chartData = [];
-    private readonly string[] _sources = ["SJC", "PNJ", "GiaVang", "KimKhanhVietHung", "NgocThinh"];
     private bool _loading = true;
     private bool _loadingChart = true;
     private bool _chartRendered = false;
     private string? _error;
     private string _sourceFilter = string.Empty;
-    private string _dateFromStr = string.Empty;
-    private string _dateToStr = string.Empty;
+    private DateOnly? _dateFrom;
+    private DateOnly? _dateTo;
     private int _page = 1;
     private const int _pageSize = 5;
+    private string _chartRange = "7";
+    private string _chartSeries = "both";
+
+    private static readonly Dictionary<string, string> _sourceColors = new()
+    {
+        ["SJC"]              = "#6366f1",
+        ["PNJ"]              = "#f59e0b",
+        ["GiaVang"]          = "#10b981",
+        ["KimKhanhVietHung"] = "#f43f5e",
+        ["NgocThinh"]        = "#a855f7",
+    };
+    private const string _defaultSourceColor = "#6b7280";
+
+    private static readonly IReadOnlyList<SelectOption> SourceOptions =
+        new[] { "", "SJC", "PNJ", "GiaVang", "KimKhanhVietHung", "NgocThinh" }
+            .Select(s => new SelectOption(s, string.IsNullOrEmpty(s) ? "All Sources" : s))
+            .ToList();
+
+    private static readonly IReadOnlyList<SelectOption> ChartRangeOptions =
+    [
+        new("1",   "Last 24h"),
+        new("7",   "Last 7 days"),
+        new("30",  "Last 30 days"),
+        new("90",  "Last 90 days"),
+        new("180", "Last 6 months"),
+        new("365", "Last 1 year"),
+    ];
+
+    private static readonly IReadOnlyList<SelectOption> ChartSeriesOptions =
+    [
+        new("both", "Buy & Sell"),
+        new("buy",  "Buy only"),
+        new("sell", "Sell only"),
+    ];
 
     protected override async Task OnInitializedAsync()
     {
@@ -150,9 +183,10 @@
     private async Task LoadTableDataAsync()
     {
         _loading = true;
-        var dateFrom = string.IsNullOrWhiteSpace(_dateFromStr) ? null : _dateFromStr + "T00:00:00Z";
-        var dateTo = string.IsNullOrWhiteSpace(_dateToStr) ? null : _dateToStr + "T23:59:59Z";
-        var (data, error) = await Api.GetGoldPricesAsync(_page, _pageSize, string.IsNullOrEmpty(_sourceFilter) ? null : _sourceFilter, dateFrom, dateTo);
+        var dateFrom = _dateFrom.HasValue ? _dateFrom.Value.ToString("yyyy-MM-dd") + "T00:00:00Z" : null;
+        var dateTo   = _dateTo.HasValue   ? _dateTo.Value.ToString("yyyy-MM-dd")   + "T23:59:59Z" : null;
+        var (data, error) = await Api.GetGoldPricesAsync(_page, _pageSize,
+            string.IsNullOrEmpty(_sourceFilter) ? null : _sourceFilter, dateFrom, dateTo);
         _tableData = data;
         _error = error?.Message;
         _loading = false;
@@ -161,30 +195,44 @@
     private async Task LoadChartDataAsync()
     {
         _loadingChart = true;
-        var sevenDaysAgo = DateTime.UtcNow.AddDays(-7).ToString("yyyy-MM-dd") + "T00:00:00Z";
-        var (data, _) = await Api.GetGoldPricesAsync(1, 500, null, sevenDaysAgo, null);
+        var days = int.TryParse(_chartRange, out var d) ? d : 7;
+        var dateFrom = days == 1
+            ? DateTime.UtcNow.AddHours(-24).ToString("yyyy-MM-ddTHH:mm:ssZ")
+            : DateTime.UtcNow.AddDays(-days).ToString("yyyy-MM-dd") + "T00:00:00Z";
+        var (data, _) = await Api.GetGoldPricesAsync(1, 500, null, dateFrom, null);
         _chartData = data?.Items ?? [];
         _loadingChart = false;
     }
 
     private async Task RenderChartAsync()
     {
-        var seriesMap = new Dictionary<string, List<object[]>>();
+        var seriesMap    = new Dictionary<string, List<object[]>>();
+        var seriesColors = new Dictionary<string, string>();
+        var seriesDashes = new Dictionary<string, int>();
+
         foreach (var item in _chartData.OrderBy(x => x.RecordedAt))
         {
-            var ts = TimeZoneService.ToLocalTime(item.RecordedAt).ToString("yyyy-MM-ddTHH:mm:ss");
-            var buyKey = $"{item.Source} Buy";
+            var ts    = TimeZoneService.ToLocalTime(item.RecordedAt).ToString("yyyy-MM-ddTHH:mm:ss");
+            var color = _sourceColors.GetValueOrDefault(item.Source, _defaultSourceColor);
+            var buyKey  = $"{item.Source} Buy";
             var sellKey = $"{item.Source} Sell";
-            if (!seriesMap.ContainsKey(buyKey)) seriesMap[buyKey] = [];
-            if (!seriesMap.ContainsKey(sellKey)) seriesMap[sellKey] = [];
-            seriesMap[buyKey].Add([ts, item.BuyPrice]);
-            seriesMap[sellKey].Add([ts, item.SellPrice]);
+            if (_chartSeries != "sell")
+            {
+                if (!seriesMap.ContainsKey(buyKey)) { seriesMap[buyKey] = []; seriesColors[buyKey] = color; seriesDashes[buyKey] = 0; }
+                seriesMap[buyKey].Add([ts, item.BuyPrice]);
+            }
+            if (_chartSeries != "buy")
+            {
+                if (!seriesMap.ContainsKey(sellKey)) { seriesMap[sellKey] = []; seriesColors[sellKey] = color; seriesDashes[sellKey] = 6; }
+                seriesMap[sellKey].Add([ts, item.SellPrice]);
+            }
         }
-        var series = seriesMap
-            .Where(kv => kv.Value.Count > 0)
-            .Select(kv => new { name = kv.Key, data = kv.Value })
-            .ToArray();
-        await JS.InvokeVoidAsync("renderGoldPriceChart", "gold-price-chart", series);
+
+        var keys   = seriesMap.Keys.Where(k => seriesMap[k].Count > 0).ToArray();
+        var series = keys.Select(k => new { name = k, data = seriesMap[k] }).ToArray();
+        var colors = keys.Select(k => seriesColors[k]).ToArray();
+        var dashes = keys.Select(k => seriesDashes[k]).ToArray();
+        await JS.InvokeVoidAsync("renderGoldPriceChart", "gold-price-chart", series, colors, dashes);
     }
 
     private async Task ApplyFiltersAsync()
@@ -196,28 +244,22 @@
     private async Task ResetFiltersAsync()
     {
         _sourceFilter = string.Empty;
-        _dateFromStr = string.Empty;
-        _dateToStr = string.Empty;
+        _dateFrom = null;
+        _dateTo = null;
         _page = 1;
         await LoadTableDataAsync();
     }
 
-    private void OnSourceChanged(ChangeEventArgs e)
+    private async Task OnChartRangeChangedAsync()
     {
-        _sourceFilter = e.Value?.ToString() ?? string.Empty;
-        _ = ApplyFiltersAsync();
+        _chartRendered = false;
+        await LoadChartDataAsync();
     }
 
-    private void OnDateFromChanged(ChangeEventArgs e)
+    private async Task OnChartSeriesChangedAsync()
     {
-        _dateFromStr = e.Value?.ToString() ?? string.Empty;
-        _ = ApplyFiltersAsync();
-    }
-
-    private void OnDateToChanged(ChangeEventArgs e)
-    {
-        _dateToStr = e.Value?.ToString() ?? string.Empty;
-        _ = ApplyFiltersAsync();
+        _chartRendered = true;
+        await RenderChartAsync();
     }
 
     private async Task ChangePage(int page)
