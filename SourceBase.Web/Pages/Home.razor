@@ -76,6 +76,33 @@
     </div>
 </div>
 
+<!-- Gold price status row -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+    @foreach (var source in GoldSources)
+    {
+        var record = _goldPrices.GetValueOrDefault(source);
+        var live = IsGoldPriceLive(record);
+        <div class="card flex flex-col gap-1 @GetGoldSourceCardClass(source)">
+            <div class="flex items-center justify-between gap-1">
+                <span class="text-md font-semibold truncate @GetGoldSourceBadgeClass(source)">@GetGoldSourceDisplayName(source)</span>
+            </div>
+            @if (_goldPricesLoading)
+            {
+                <div class="text-sm text-gray-400">Loading…</div>
+            }
+            else if (record is null)
+            {
+                <div class="text-sm text-gray-400">No data</div>
+            }
+            else
+            {
+                <div class="text-2xl font-bold text-indigo-600">@FormatAmount(@record.SellPrice)</div>
+                <span class="text-xs @(live ? "text-green-700" : "text-red-700")">@(live ? "Live" : "Stale")</span>
+            }
+        </div>
+    }
+</div>
+
 <!-- Main content: two columns -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
@@ -138,6 +165,10 @@
                             <span class="text-gray-500">@FormatAmount(wallet?.Balance ?? 0)</span>
                         </div>
                     }
+                </div>
+                <div class="flex items-center justify-center gap-1.5 pt-1 border-t border-gray-100">
+                    <span class="text-sm text-gray-500 mt-3">Total</span>
+                    <span class="text-sm font-semibold text-gray-800 mt-3">@FormatAmount(_wallets.TotalBalance)</span>
                 </div>
             </div>
         }
@@ -205,6 +236,10 @@
     private bool _todosLoading = true;
     private bool _redisOnline;
 
+    private static readonly string[] GoldSources = ["SJC", "PNJ", "KimKhanhVietHung", "NgocThinh", "GiaVang"];
+    private Dictionary<string, GoldPriceResponse?> _goldPrices = new();
+    private bool _goldPricesLoading = true;
+
     private bool _allLogged;
     private string _logTimeDetail = string.Empty;
 
@@ -213,13 +248,55 @@
     private record PieSlice(string Name, double Fraction, string Color);
 
     protected override async Task OnInitializedAsync() =>
-        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadWalletSummaryAsync(), LoadTimesheetAsync(), LoadDefaultTodosAsync(), LoadRedisStatusAsync());
+        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadWalletSummaryAsync(), LoadTimesheetAsync(), LoadDefaultTodosAsync(), LoadRedisStatusAsync(), LoadGoldPricesAsync());
 
     private async Task LoadRedisStatusAsync()
     {
         var (data, _) = await Api.GetRedisStatusAsync();
         _redisOnline = data?.IsOnline ?? false;
     }
+
+    private async Task LoadGoldPricesAsync()
+    {
+        _goldPricesLoading = true;
+        var tasks = GoldSources.Select(s => Api.GetGoldPricesAsync(page: 1, limit: 1, source: s));
+        var results = await Task.WhenAll(tasks);
+        _goldPrices = GoldSources
+            .Zip(results, (s, r) => (Source: s, Record: r.data?.Items.FirstOrDefault()))
+            .ToDictionary(x => x.Source, x => x.Record);
+        _goldPricesLoading = false;
+    }
+
+    private static bool IsGoldPriceLive(GoldPriceResponse? record) =>
+        record is not null && (DateTime.UtcNow - record.RecordedAt).TotalHours < 2;
+
+    private static string GetGoldSourceDisplayName(string source) => source switch
+    {
+        "GiaVang" => "Giá vàng thế giới",
+        "KimKhanhVietHung" => "KKVH",
+        "NgocThinh" => "Ngọc Thịnh",
+        _ => source,
+    };
+
+    private static string GetGoldSourceBadgeClass(string source) => source switch
+    {
+        "SJC" => "text-indigo-700",
+        "PNJ" => "text-amber-700",
+        "GiaVang" => "text-green-700",
+        "KimKhanhVietHung" => "text-rose-700",
+        "NgocThinh" => "text-purple-700",
+        _ => "text-gray-700",
+    };
+
+    private static string GetGoldSourceCardClass(string source) => source switch
+    {
+        "SJC" => "bg-indigo-50",
+        "PNJ" => "bg-amber-50",
+        "GiaVang" => "bg-green-50",
+        "KimKhanhVietHung" => "bg-rose-50",
+        "NgocThinh" => "bg-purple-50",
+        _ => "",
+    };
 
     private async Task LoadStatsAsync()
     {

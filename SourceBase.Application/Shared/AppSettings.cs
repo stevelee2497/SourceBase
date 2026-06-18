@@ -11,6 +11,7 @@ public class AppSettings
     public string SendGridApiKey { get; set; } = null!;
     public string SendGridAccountOwner { get; set; } = null!;
     public R2Settings R2 { get; set; } = new();
+    public BackgroundJobSettings BackgroundJobSettings { get; set; } = new();
 }
 
 public class R2Settings
@@ -21,4 +22,10 @@ public class R2Settings
     public string PublicUrl { get; set; } = string.Empty;
     public string ServiceURL { get; set; } = string.Empty;
     public int ExpiryMinutes { get; set; } = 10;
+}
+
+public class BackgroundJobSettings
+{
+    public bool Enabled { get; set; } = true;
+    public TimeSpan GoldPriceScrapingInterval { get; set; } = TimeSpan.FromHours(1);
 }
