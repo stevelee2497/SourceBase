@@ -12,12 +12,6 @@
 
 <div class="flex flex-col gap-6">
 
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Gold Prices</h2>
-        <p class="text-xs text-gray-400">Nhẫn tròn 9999 · 1 chỉ · VND</p>
-    </div>
-
     <!-- Chart -->
     <div class="card p-4">
         <div class="flex items-center justify-between mb-3">
@@ -126,11 +120,11 @@
 
     private static readonly Dictionary<string, string> _sourceColors = new()
     {
-        ["SJC"]              = "#6366f1",
-        ["PNJ"]              = "#f59e0b",
-        ["GiaVang"]          = "#10b981",
+        ["SJC"] = "#6366f1",
+        ["PNJ"] = "#f59e0b",
+        ["GiaVang"] = "#10b981",
         ["KimKhanhVietHung"] = "#f43f5e",
-        ["NgocThinh"]        = "#a855f7",
+        ["NgocThinh"] = "#a855f7",
     };
     private const string _defaultSourceColor = "#6b7280";
 
@@ -141,10 +135,10 @@
 
     private static readonly IReadOnlyList<SelectOption> ChartRangeOptions =
     [
-        new("1",   "Last 24h"),
-        new("7",   "Last 7 days"),
-        new("30",  "Last 30 days"),
-        new("90",  "Last 90 days"),
+        new("1", "Last 24h"),
+        new("7", "Last 7 days"),
+        new("30", "Last 30 days"),
+        new("90", "Last 90 days"),
         new("180", "Last 6 months"),
         new("365", "Last 1 year"),
     ];
@@ -152,7 +146,7 @@
     private static readonly IReadOnlyList<SelectOption> ChartSeriesOptions =
     [
         new("both", "Buy & Sell"),
-        new("buy",  "Buy only"),
+        new("buy", "Buy only"),
         new("sell", "Sell only"),
     ];
 
@@ -184,7 +178,7 @@
     {
         _loading = true;
         var dateFrom = _dateFrom.HasValue ? _dateFrom.Value.ToString("yyyy-MM-dd") + "T00:00:00Z" : null;
-        var dateTo   = _dateTo.HasValue   ? _dateTo.Value.ToString("yyyy-MM-dd")   + "T23:59:59Z" : null;
+        var dateTo = _dateTo.HasValue ? _dateTo.Value.ToString("yyyy-MM-dd") + "T23:59:59Z" : null;
         var (data, error) = await Api.GetGoldPricesAsync(_page, _pageSize,
             string.IsNullOrEmpty(_sourceFilter) ? null : _sourceFilter, dateFrom, dateTo);
         _tableData = data;
@@ -206,15 +200,15 @@
 
     private async Task RenderChartAsync()
     {
-        var seriesMap    = new Dictionary<string, List<object[]>>();
+        var seriesMap = new Dictionary<string, List<object[]>>();
         var seriesColors = new Dictionary<string, string>();
         var seriesDashes = new Dictionary<string, int>();
 
         foreach (var item in _chartData.OrderBy(x => x.RecordedAt))
         {
-            var ts    = TimeZoneService.ToLocalTime(item.RecordedAt).ToString("yyyy-MM-ddTHH:mm:ss");
+            var ts = TimeZoneService.ToLocalTime(item.RecordedAt).ToString("yyyy-MM-ddTHH:mm:ss");
             var color = _sourceColors.GetValueOrDefault(item.Source, _defaultSourceColor);
-            var buyKey  = $"{item.Source} Buy";
+            var buyKey = $"{item.Source} Buy";
             var sellKey = $"{item.Source} Sell";
             if (_chartSeries != "sell")
             {
@@ -228,7 +222,7 @@
             }
         }
 
-        var keys   = seriesMap.Keys.Where(k => seriesMap[k].Count > 0).ToArray();
+        var keys = seriesMap.Keys.Where(k => seriesMap[k].Count > 0).ToArray();
         var series = keys.Select(k => new { name = k, data = seriesMap[k] }).ToArray();
         var colors = keys.Select(k => seriesColors[k]).ToArray();
         var dashes = keys.Select(k => seriesDashes[k]).ToArray();
