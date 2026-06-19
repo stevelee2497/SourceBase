@@ -16,7 +16,7 @@ else
     <!-- Top summary row: Total Balance + Pie Chart + Add Wallet -->
     <div class="flex flex-col lg:flex-row gap-4 mb-6">
         <!-- Total Balance card (clickable to deselect all wallets) -->
-        <div class="card shrink-0 lg:w-72 bg-indigo-600 text-white cursor-pointer transition-all @(_selectedWalletIds.Count == 0 ? "ring-4 ring-white/40" : "hover:opacity-90")" @onclick="SelectAllWallets">
+        <div class="card shrink-0 lg:w-72 bg-linear-to-r from-indigo-600 to-indigo-500 text-white cursor-pointer transition-all @(_selectedWalletIds.Count == 0 ? "ring-4 ring-white/40" : "hover:opacity-90")" @onclick="SelectAllWallets">
             <div class="text-sm font-medium text-indigo-100 mb-8">Total Balance</div>
             <div class="text-3xl sm:text-4xl font-bold">@FormatAmount(_totalBalance)</div>
         </div>
