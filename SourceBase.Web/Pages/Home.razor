@@ -14,7 +14,7 @@
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 
     <!-- Log time status -->
-    <div class="card flex flex-col gap-2">
+    <div class="card flex flex-col gap-2 p-3 md:p-5">
         <div class="text-sm font-medium text-gray-500">Log Time Status</div>
         @if (_timesheetLoading)
         {
@@ -32,7 +32,7 @@
 
     <!-- Total users (admin only) -->
     <AuthorizeView Roles="Admin">
-        <div class="card flex flex-col gap-1">
+        <div class="card flex flex-col gap-1 p-3 md:p-5">
             <div class="text-sm font-medium text-gray-500">Total Users</div>
             <div class="text-3xl font-bold text-indigo-600">@(_stats?.UserCount ?? 0)</div>
             <a href="/users" class="text-xs text-indigo-500 hover:text-indigo-700">Manage →</a>
@@ -40,7 +40,7 @@
     </AuthorizeView>
 
     <!-- Total balance -->
-    <div class="card flex flex-col gap-1">
+    <div class="card flex flex-col gap-1 p-3 md:p-5">
         <div class="text-sm font-medium text-gray-500">Total Balance</div>
         @if (_walletsLoading)
         {
@@ -54,7 +54,7 @@
     </div>
 
     <!-- Monthly income / expense -->
-    <div class="card flex flex-col gap-2">
+    <div class="card flex flex-col gap-2 p-3 md:p-5">
         <div class="text-sm font-medium text-gray-500">This Month</div>
         @if (_walletSummaryLoading)
         {
