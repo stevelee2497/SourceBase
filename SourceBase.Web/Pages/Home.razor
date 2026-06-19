@@ -248,8 +248,11 @@
 
     private record PieSlice(string Name, double Fraction, string Color);
 
-    protected override async Task OnInitializedAsync() =>
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
         await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadWalletSummaryAsync(), LoadTimesheetAsync(), LoadDefaultTodosAsync(), LoadRedisStatusAsync(), LoadGoldPricesAsync());
+    }
 
     private async Task LoadRedisStatusAsync()
     {
