@@ -12,14 +12,6 @@ builder.Host.UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configurati
 
 builder.AddServiceDefaults();
 
-var redisConnection = builder.Configuration.GetConnectionString("RedisConnection");
-if (!string.IsNullOrWhiteSpace(redisConnection))
-{
-    var redis = ConnectionMultiplexer.Connect(redisConnection);
-    builder.Services.AddDataProtection()
-        .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
-        .SetApplicationName("SourceBase.Web");
-}
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
@@ -37,6 +29,18 @@ builder.Services.AddScoped<UserTimeZoneService>();
 
 var appSettings = builder.Configuration.Get<AppSettings>() ?? new AppSettings();
 builder.Services.AddSingleton(appSettings);
+
+if (appSettings.RedisEnabled)
+{
+    var redisConnection = builder.Configuration.GetConnectionString("RedisConnection");
+    if (!string.IsNullOrWhiteSpace(redisConnection))
+    {
+        var redis = ConnectionMultiplexer.Connect(redisConnection);
+        builder.Services.AddDataProtection()
+            .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
+            .SetApplicationName("SourceBase.Web");
+    }
+}
 
 var app = builder.Build();
 

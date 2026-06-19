@@ -11,6 +11,7 @@ public class AppSettings
     public string SendGridApiKey { get; set; } = null!;
     public string SendGridAccountOwner { get; set; } = null!;
     public R2Settings R2 { get; set; } = new();
+    public bool RedisEnabled { get; set; }
     public BackgroundJobSettings BackgroundJobSettings { get; set; } = new();
 }
 
