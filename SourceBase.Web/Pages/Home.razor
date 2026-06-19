@@ -11,7 +11,7 @@
 </div>
 
 <!-- Overview row -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
 
     <!-- Log time status -->
     <div class="card flex flex-col gap-2 p-3 md:p-5">
@@ -76,7 +76,7 @@
 </div>
 
 <!-- Gold price status row -->
-<div class="grid grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+<div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-4 md:mb-6">
     @foreach (var source in GoldSources)
     {
         var record = _goldPrices.GetValueOrDefault(source);
@@ -104,10 +104,10 @@
 </div>
 
 <!-- Main content: two columns -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
 
     <!-- Left: Wallets distribution -->
-    <div class="card flex flex-col gap-4">
+    <div class="card flex flex-col gap-2 md:gap-4 !p-3 md:!p-6">
         <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold text-gray-800">Wallets Distribution</h2>
             <a href="/wallets" class="text-xs text-indigo-500 hover:text-indigo-700">View Wallets →</a>
@@ -175,7 +175,7 @@
     </div>
 
     <!-- Right: Default todo list -->
-    <div class="card flex flex-col gap-4">
+    <div class="card flex flex-col gap-2 md:gap-4 !p-3 md:!p-6">
         <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold text-gray-800">Your Todo List</h2>
             <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">View all →</a>
