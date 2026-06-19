@@ -77,14 +77,14 @@
 </div>
 
 <!-- Gold price status row -->
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+<div class="grid grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
     @foreach (var source in GoldSources)
     {
         var record = _goldPrices.GetValueOrDefault(source);
         var live = IsGoldPriceLive(record);
-        <div class="card flex flex-col gap-1 @GetGoldSourceCardClass(source)">
+        <div class="card p-3 md:p-5 flex flex-col gap-1 @GetGoldSourceCardClass(source)">
             <div class="flex items-center justify-between gap-1">
-                <span class="text-md font-semibold truncate @GetGoldSourceBadgeClass(source)">@GetGoldSourceDisplayName(source)</span>
+                <span class="text-sm md:text-base font-bold truncate @GetGoldSourceBadgeClass(source)">@GetGoldSourceDisplayName(source)</span>
             </div>
             @if (_goldPricesLoading)
             {
@@ -96,8 +96,8 @@
             }
             else
             {
-                <div class="text-md md:text-2xl font-bold text-indigo-600">@FormatAmount(@record.SellPrice)</div>
-                <span class="text-xs @(live ? "text-green-700" : "text-red-700")">@(live ? "Live" : "Stale")</span>
+                <div class="text-md md:text-2xl font-bold text-emerald-600">@FormatAmount(@record.SellPrice)</div>
+                <span class="text-[10px] @(live ? "text-green-700" : "text-red-700")">@(live ? "Live" : "Stale")</span>
             }
         </div>
     }
@@ -272,7 +272,7 @@
 
     private static string GetGoldSourceDisplayName(string source) => source switch
     {
-        "GiaVang" => "Giá vàng thế giới",
+        "GiaVang" => "Thế giới",
         "KimKhanhVietHung" => "KKVH",
         "NgocThinh" => "Ngọc Thịnh",
         _ => source,
