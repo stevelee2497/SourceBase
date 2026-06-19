@@ -3,6 +3,7 @@ namespace SourceBase.Web;
 public class AppSettings
 {
     public List<PageConfig> Pages { get; set; } = [];
+    public bool RedisEnabled { get; set; }
 };
 
 public class PageConfig

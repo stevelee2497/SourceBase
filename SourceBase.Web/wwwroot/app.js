@@ -22,6 +22,17 @@ window.initOtpPaste = function (container, dotNetRef) {
     });
 };
 
+window.loadApexCharts = function () {
+    return new Promise(function (resolve, reject) {
+        if (window.ApexCharts) { resolve(); return; }
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/apexcharts';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+    });
+};
+
 window.goldPriceChart = null;
 
 window.getBrowserTimeZone = function () {

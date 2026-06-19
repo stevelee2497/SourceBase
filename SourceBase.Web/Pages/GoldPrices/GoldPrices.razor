@@ -158,6 +158,11 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("loadApexCharts");
+        }
+
         if (!_loadingChart && _chartData.Count > 0 && !_chartRendered)
         {
             _chartRendered = true;

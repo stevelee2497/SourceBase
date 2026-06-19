@@ -22,14 +22,18 @@ public static class DependencyInjection
         var appSettings = configuration.GetSection("AppSettings").Get<AppSettings>()!;
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-        var redisConnection = configuration.GetConnectionString("RedisConnection");
-        if (!string.IsNullOrWhiteSpace(redisConnection))
+        if (appSettings.RedisEnabled)
         {
-            var redis = ConnectionMultiplexer.Connect(redisConnection);
-            services.AddDataProtection()
-                .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
-                .SetApplicationName("SourceBase.Api");
+            var redisConnection = configuration.GetConnectionString("RedisConnection");
+            if (!string.IsNullOrWhiteSpace(redisConnection))
+            {
+                var redis = ConnectionMultiplexer.Connect(redisConnection);
+                services.AddDataProtection()
+                    .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
+                    .SetApplicationName("SourceBase.Api");
+            }
         }
+
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.UseNpgsql(connectionString, o => o.MigrationsAssembly("SourceBase.Infrastructure"))

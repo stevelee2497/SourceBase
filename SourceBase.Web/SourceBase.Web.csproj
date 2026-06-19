@@ -11,18 +11,27 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" />
-	  <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
-	  <PackageReference Include="Serilog.AspNetCore" />
-	  <PackageReference Include="Serilog.Sinks.File" />
+		<PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+		<PackageReference Include="Serilog.AspNetCore" />
+		<PackageReference Include="Serilog.Sinks.File" />
 	</ItemGroup>
 
-	<Target Name="NpmInstall" BeforeTargets="BuildTailwind" Condition="!Exists('$(MSBuildProjectDirectory)\node_modules')">
+	<Target Name="NpmInstall" BeforeTargets="BuildTailwind"
+		Condition="!Exists('$(MSBuildProjectDirectory)\node_modules')">
 		<Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)" />
 	</Target>
 
 	<Target Name="BuildTailwind" BeforeTargets="Build">
-		<Exec Command="npx @tailwindcss/cli -i ./wwwroot/app.css -o ./wwwroot/app.min.css --minify" WorkingDirectory="$(MSBuildProjectDirectory)" />
+		<Exec Command="npx @tailwindcss/cli -i ./wwwroot/app.css -o ./wwwroot/app.min.css --minify"
+			WorkingDirectory="$(MSBuildProjectDirectory)" />
+	</Target>
+
+	<Target Name="StartTailwindWatch" AfterTargets="Build" Condition="'$(DOTNET_WATCH)' == '1'">
+		<Exec
+			Command="[ -f obj/tw.pid ] &amp;&amp; kill -0 $$(cat obj/tw.pid) 2>/dev/null || (npx @tailwindcss/cli -i ./wwwroot/app.css -o ./wwwroot/app.min.css --watch &amp; echo $$! > obj/tw.pid)"
+			WorkingDirectory="$(MSBuildProjectDirectory)"
+			IgnoreExitCode="true" />
 	</Target>
 
 </Project>

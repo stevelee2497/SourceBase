@@ -14,7 +14,7 @@
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 
     <!-- Log time status -->
-    <div class="card flex flex-col gap-2">
+    <div class="card flex flex-col gap-2 p-3 md:p-5">
         <div class="text-sm font-medium text-gray-500">Log Time Status</div>
         @if (_timesheetLoading)
         {
@@ -22,25 +22,25 @@
         }
         else
         {
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 justify-center">
                 <div class="w-3 h-3 rounded-full shrink-0 @(_allLogged ? "bg-green-500" : "bg-red-500")"></div>
                 <span class="text-base md:text-lg font-semibold @(_allLogged ? "text-green-700" : "text-red-700")">@(_allLogged ? "Logged" : "Not logged")</span>
             </div>
-            <div class="text-xs text-gray-400">@_logTimeDetail</div>
+            <div class="text-xs text-right text-gray-400">@_logTimeDetail</div>
         }
     </div>
 
     <!-- Total users (admin only) -->
     <AuthorizeView Roles="Admin">
-        <div class="card flex flex-col gap-1">
+        <div class="card flex flex-col gap-1 p-3 md:p-5">
             <div class="text-sm font-medium text-gray-500">Total Users</div>
-            <div class="text-3xl font-bold text-indigo-600">@(_stats?.UserCount ?? 0)</div>
-            <a href="/users" class="text-xs text-indigo-500 hover:text-indigo-700">Manage →</a>
+            <div class="text-3xl font-bold text-center text-indigo-600">@(_stats?.UserCount ?? 0)</div>
+            <a href="/users" class="text-xs text-right text-indigo-500 hover:text-indigo-700">Manage</a>
         </div>
     </AuthorizeView>
 
     <!-- Total balance -->
-    <div class="card flex flex-col gap-1">
+    <div class="card flex flex-col gap-1 p-3 md:p-5">
         <div class="text-sm font-medium text-gray-500">Total Balance</div>
         @if (_walletsLoading)
         {
@@ -48,13 +48,12 @@
         }
         else
         {
-            <div class="text-md md:text-lg font-bold text-indigo-600">@FormatAmount(_wallets?.TotalBalance ?? 0)</div>
-            <div class="text-xs text-gray-400">Across all wallets</div>
+            <div class="text-md md:text-lg text-center font-bold text-indigo-600 mt-1">@FormatAmount(_wallets?.TotalBalance ?? 0)</div>
         }
     </div>
 
     <!-- Monthly income / expense -->
-    <div class="card flex flex-col gap-2">
+    <div class="card flex flex-col gap-2 p-3 md:p-5">
         <div class="text-sm font-medium text-gray-500">This Month</div>
         @if (_walletSummaryLoading)
         {
@@ -82,9 +81,10 @@
     {
         var record = _goldPrices.GetValueOrDefault(source);
         var live = IsGoldPriceLive(record);
-        <div class="card p-3 md:p-5 flex flex-col gap-1 @GetGoldSourceCardClass(source)">
+        <div class="card p-2 md:p-5 flex flex-col gap-1 @GetGoldSourceCardClass(source)">
             <div class="flex items-center justify-between gap-1">
                 <span class="text-sm md:text-base font-bold truncate @GetGoldSourceBadgeClass(source)">@GetGoldSourceDisplayName(source)</span>
+                <span class="text-[10px] text-right @(live ? "text-green-700" : "text-red-700")">@(live ? "🟢" : "🔴")</span>
             </div>
             @if (_goldPricesLoading)
             {
@@ -96,8 +96,8 @@
             }
             else
             {
-                <div class="text-md md:text-2xl font-bold text-emerald-600">@FormatAmount(@record.SellPrice)</div>
-                <span class="text-[10px] @(live ? "text-green-700" : "text-red-700")">@(live ? "Live" : "Stale")</span>
+                <div class="text-sm md:text-2xl text-center font-bold text-emerald-600">@FormatAmount(@record.SellPrice)</div>
+                <div class="text-[11px] md:text-md font-semibold text-right text-red-600">@FormatAmount(@record.BuyPrice)</div>
             }
         </div>
     }
@@ -247,8 +247,11 @@
 
     private record PieSlice(string Name, double Fraction, string Color);
 
-    protected override async Task OnInitializedAsync() =>
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
         await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadWalletSummaryAsync(), LoadTimesheetAsync(), LoadDefaultTodosAsync(), LoadRedisStatusAsync(), LoadGoldPricesAsync());
+    }
 
     private async Task LoadRedisStatusAsync()
     {
