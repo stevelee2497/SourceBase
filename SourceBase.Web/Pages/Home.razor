@@ -3,18 +3,11 @@
 @inject BlazorAuthStateProvider Auth
 @inject ApiHttpClient Api
 
-<!-- Redis cache status badge -->
-<div class="flex justify-end mb-2">
-    <span class="badge @(_redisOnline ? "badge-green" : "badge-red")">
-        Cache @(_redisOnline ? "Online" : "Offline")
-    </span>
-</div>
-
 <!-- Overview row -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-2 md:mb-4">
 
     <!-- Log time status -->
-    <div class="card flex flex-col gap-2 p-3 md:p-5">
+    <div class="card flex flex-col gap-2 p-2 md:p-4">
         <div class="text-sm font-medium text-gray-500">Log Time Status</div>
         @if (_timesheetLoading)
         {
@@ -32,7 +25,7 @@
 
     <!-- Total users (admin only) -->
     <AuthorizeView Roles="Admin">
-        <div class="card flex flex-col gap-1 p-3 md:p-5">
+        <div class="card flex flex-col gap-2 p-2 md:p-4">
             <div class="text-sm font-medium text-gray-500">Total Users</div>
             <div class="text-3xl font-bold text-center text-indigo-600">@(_stats?.UserCount ?? 0)</div>
             <a href="/users" class="text-xs text-right text-indigo-500 hover:text-indigo-700">Manage</a>
@@ -40,7 +33,7 @@
     </AuthorizeView>
 
     <!-- Total balance -->
-    <div class="card flex flex-col gap-1 p-3 md:p-5">
+    <div class="card flex flex-col gap-2 p-2 md:p-4">
         <div class="text-sm font-medium text-gray-500">Total Balance</div>
         @if (_walletsLoading)
         {
@@ -53,7 +46,7 @@
     </div>
 
     <!-- Monthly income / expense -->
-    <div class="card flex flex-col gap-2 p-3 md:p-5">
+    <div class="card flex flex-col gap-2 p-2 md:p-4">
         <div class="text-sm font-medium text-gray-500">This Month</div>
         @if (_walletSummaryLoading)
         {
@@ -76,12 +69,12 @@
 </div>
 
 <!-- Gold price status row -->
-<div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-4 md:mb-6">
+<div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
     @foreach (var source in GoldSources)
     {
         var record = _goldPrices.GetValueOrDefault(source);
         var live = IsGoldPriceLive(record);
-        <div class="card p-2 md:p-5 flex flex-col gap-1 @GetGoldSourceCardClass(source)">
+        <div class="card p-2 md:p-4 flex flex-col gap-2 @GetGoldSourceCardClass(source)">
             <div class="flex items-center justify-between gap-1">
                 <span class="text-sm md:text-base font-bold truncate @GetGoldSourceBadgeClass(source)">@GetGoldSourceDisplayName(source)</span>
                 <span class="text-[10px] text-right @(live ? "text-green-700" : "text-red-700")">@(live ? "🟢" : "🔴")</span>
@@ -104,10 +97,10 @@
 </div>
 
 <!-- Main content: two columns -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4">
 
     <!-- Left: Wallets distribution -->
-    <div class="card flex flex-col gap-2 md:gap-4 !p-3 md:!p-6">
+    <div class="card flex flex-col gap-2 !p-2 md:!p-4">
         <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold text-gray-800">Wallets Distribution</h2>
             <a href="/wallets" class="text-xs text-indigo-500 hover:text-indigo-700">View Wallets →</a>
@@ -175,7 +168,7 @@
     </div>
 
     <!-- Right: Default todo list -->
-    <div class="card flex flex-col gap-2 md:gap-4 !p-3 md:!p-6">
+    <div class="card flex flex-col gap-2 !p-2 md:!p-4">
         <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold text-gray-800">Your Todo List</h2>
             <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">View all →</a>
