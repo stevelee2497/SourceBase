@@ -1,6 +1,6 @@
 ---
 name: fe
-description: 'Frontend Blazor components, Tailwind CSS layout patterns, and mobile-responsive design for SourceBase. Use when writing or reviewing Blazor components, UI layout, or responsive behavior — especially for mobile S (320px) and mobile M (375px) viewports.'
+description: 'Frontend Blazor components, Tailwind CSS layout patterns, and mobile-responsive design for SourceBase. Use when writing or reviewing Blazor components, UI layout, or responsive behavior — especially for mobile S (320px) viewports.'
 trigger: /fe
 ---
 
@@ -36,21 +36,20 @@ private void CancelDelete() { _showDelete = false; _deleting = null; }
 
 Tailwind v4 default breakpoints (min-width, mobile-first):
 
-| Prefix   | Width   | Targets                                         |
-| -------- | ------- | ----------------------------------------------- |
-| _(none)_ | 0px+    | Mobile S (320px), Mobile M (375px), all screens |
-| `sm:`    | 640px+  | Tablet and up                                   |
-| `md:`    | 768px+  | Desktop and up                                  |
-| `lg:`    | 1024px+ | Large desktop                                   |
+| Prefix   | Width   | Targets                       |
+| -------- | ------- | ----------------------------- |
+| _(none)_ | 0px+    | Mobile S (320px), all screens |
+| `sm:`    | 640px+  | Tablet and up                 |
+| `md:`    | 768px+  | Desktop and up                |
+| `lg:`    | 1024px+ | Large desktop                 |
 
-Mobile S = 320px, Mobile M = 375px — **both fall below `sm:` (640px)**, so they share the unprefixed base styles. Design the base (no-prefix) layer for 320px first, then progressively enhance with `sm:` and `md:`.
+Mobile S = 320px — **falls below `sm:` (640px)**, so it shares the unprefixed base styles. Design the base (no-prefix) layer for 320px first, then progressively enhance with `sm:` and `md:`.
 
 ## Mobile-First Layout Rules
 
 ### Viewport targets
 
 - **Mobile S (320px):** minimum supported width. Everything must fit without horizontal scroll.
-- **Mobile M (375px):** most common mobile size. Primary mobile design target.
 - **Tablet/desktop:** enhance with `sm:` / `md:` prefixes.
 
 ### Core principles
