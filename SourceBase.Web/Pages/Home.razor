@@ -168,7 +168,7 @@
     </div>
 
     <!-- Right: Default todo list -->
-    <div class="card flex flex-col gap-2 !p-2 md:!p-4">
+    <div class="card flex flex-col gap-2 p-2 md:p-4">
         <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold text-gray-800">Your Todo List</h2>
             <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">View all</a>
@@ -185,7 +185,7 @@
                 <a href="/todos" class="btn-primary btn-sm">Go to Todos to star a list</a>
             </div>
         }
-        else if (_defaultListName is not null)
+        else
         {
             @if (_defaultTodos.Count == 0)
             {
@@ -196,7 +196,7 @@
                 <div class="flex flex-col gap-2">
                     @foreach (var todo in _defaultTodos.Take(10))
                     {
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-3 ml-2">
                             <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 hover:border-green-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoDone(todo)" title="Mark complete">
                             </button>
                             <div class="flex-1 min-w-0">
@@ -221,8 +221,6 @@
     private GetWalletSummaryResponse? _walletSummary;
     private TimeSheetSummaryResponse? _timesheetSummary;
     private List<TodoItemResponse> _defaultTodos = [];
-    private string? _defaultListName;
-
     private bool _timesheetLoading = true;
     private bool _walletsLoading = true;
     private bool _walletSummaryLoading = true;
@@ -354,10 +352,7 @@
             return;
         }
 
-        var lists = await Api.GetTodoListsAsync(1, 100);
-        _defaultListName = lists.data?.Items.FirstOrDefault(l => l.Id == defaultId)?.Name;
-
-        var (data, _) = await Api.GetTodosAsync(1, 100, defaultId);
+        var (data, _) = await Api.GetTodosAsync(1, 100, defaultId, "Date", "Desc");
         _defaultTodos = data?.Items.Where(t => t.Status != "Completed").ToList() ?? [];
         _todosLoading = false;
     }
