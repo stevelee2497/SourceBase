@@ -253,11 +253,8 @@
     private async Task LoadGoldPricesAsync()
     {
         _goldPricesLoading = true;
-        var tasks = GoldSources.Select(s => Api.GetGoldPricesAsync(page: 1, limit: 1, source: s));
-        var results = await Task.WhenAll(tasks);
-        _goldPrices = GoldSources
-            .Zip(results, (s, r) => (Source: s, Record: r.data?.Items.FirstOrDefault()))
-            .ToDictionary(x => x.Source, x => x.Record);
+        var (result, _) = await Api.GetGoldPriceSummaryAsync();
+        _goldPrices = result?.Items.ToDictionary(r => r.Source, r => (GoldPriceResponse?)r) ?? new();
         _goldPricesLoading = false;
     }
 

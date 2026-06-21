@@ -388,6 +388,9 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
         if (!string.IsNullOrWhiteSpace(dateTo)) url += $"&dateTo={Uri.EscapeDataString(dateTo)}";
         return ExecuteAsync<PagingResponse<GoldPriceResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
     }
+
+    public Task<(GetGoldPriceSummaryResponse? data, ErrorResponse? error)> GetGoldPriceSummaryAsync() =>
+        ExecuteAsync<GetGoldPriceSummaryResponse>(() => AuthorizedRequest(HttpMethod.Get, "/api/gold-prices/summary"));
 }
 
 public sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
@@ -420,3 +423,4 @@ public sealed record GetNotificationsResponse(List<NotificationResponse> Items, 
 public sealed record IconResponse(Guid Id, string Value, string Name, string Group, int SortOrder, bool IsSystem);
 public sealed record IconUploadUrlResponse(string UploadUrl, string IconUrl, string ContentType);
 public sealed record GoldPriceResponse(Guid Id, string Source, decimal BuyPrice, decimal SellPrice, DateTime RecordedAt);
+public sealed record GetGoldPriceSummaryResponse(List<GoldPriceResponse> Items);
