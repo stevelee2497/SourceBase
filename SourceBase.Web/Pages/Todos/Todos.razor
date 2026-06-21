@@ -294,10 +294,10 @@
     private int _todosPage = 1;
     private int _todosTotal;
     private const int _todosPageSize = 100;
-    private string _sortBy = string.Empty;
-    private string _sortOrder = "Asc";
+    private string _sortBy = "Date";
+    private string _sortOrder = "Desc";
 
-    private static readonly IReadOnlyList<SelectOption> SortByOptions = [new("", "Default"), new("Date", "By Date"), new("Title", "By Name")];
+    private static readonly IReadOnlyList<SelectOption> SortByOptions = [new("Date", "Default"), new("Date", "By Date"), new("Title", "By Name")];
     private static readonly IReadOnlyList<SelectOption> TodoStatusOptions = [new("Open", "Open"), new("Completed", "Completed"), new("Archived", "Archived")];
 
     // Shared error
@@ -389,7 +389,7 @@
     private async Task LoadTodosAsync()
     {
         _loadingTodos = true;
-        var (data, _) = await Api.GetTodosAsync(_todosPage, _todosPageSize, _selectedListId, string.IsNullOrEmpty(_sortBy) ? null : _sortBy, string.IsNullOrEmpty(_sortBy) ? null : _sortOrder);
+        var (data, _) = await Api.GetTodosAsync(_todosPage, _todosPageSize, _selectedListId, _sortBy, _sortOrder);
         _todos = data?.Items ?? [];
         _todosTotal = data?.Total ?? 0;
         _loadingTodos = false;
