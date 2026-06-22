@@ -343,11 +343,10 @@
     private void HandleTodoUpdated(TodoItemResponse updated)
     {
         var index = _todos.FindIndex(t => t.Id == updated.Id);
-        if (index >= 0)
-        {
-            _todos[index] = updated;
-            InvokeAsync(StateHasChanged);
-        }
+        if (index < 0) return;
+        if (_todos[index] == updated) return; // already up to date (same browser optimistic update) — skip re-render
+        _todos[index] = updated;
+        InvokeAsync(StateHasChanged);
     }
 
     private void HandleTodoCreated(TodoItemResponse created)
@@ -410,12 +409,20 @@
     private Func<Task> ToggleTodoComplete(TodoItemResponse todo) => async () =>
     {
         var newStatus = todo.Status == "Completed" ? "Open" : "Completed";
+        var index = _todos.IndexOf(todo);
+
+        // Optimistic update — apply immediately so SignalR echo is a no-op
+        if (index >= 0)
+            _todos[index] = todo with { Status = newStatus };
+
         var dateStr = DateOnly.TryParse(todo.Date, out var d) ? d.ToString("yyyy-MM-dd") : todo.Date;
         var error = await Api.UpdateTodoAsync(todo.Id, todo.Title, dateStr, newStatus);
         if (error is not null)
+        {
+            // Revert on failure
+            if (index >= 0) _todos[index] = todo;
             _error = error.Message ?? "Failed to update todo.";
-        else
-            await LoadTodosAsync();
+        }
     };
 
     private Func<Task> SetDefaultList(Guid id) => async () =>
