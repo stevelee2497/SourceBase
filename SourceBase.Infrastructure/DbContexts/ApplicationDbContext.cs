@@ -56,7 +56,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
         {
-            modelBuilder.HasCollation("case_insensitive", locale: "und-x-icu", provider: "icu", deterministic: false);
+            modelBuilder.HasCollation("case_insensitive", locale: "und-u-ks-level2", provider: "icu", deterministic: false);
             modelBuilder.UseCollation("case_insensitive");
         }
 
