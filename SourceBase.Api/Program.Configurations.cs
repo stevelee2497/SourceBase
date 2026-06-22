@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json.Nodes;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -153,7 +152,7 @@ public static class ProgramConfigurations
             {
                 var settings = httpContext.RequestServices.GetRequiredService<AppSettings>().RateLimitSettings;
                 return RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: GetClientIp(httpContext),
+                    partitionKey: httpContext.GetClientIp(),
                     factory: _ => new FixedWindowRateLimiterOptions
                     {
                         PermitLimit = settings.GeneralPermitLimit,
@@ -167,7 +166,7 @@ public static class ProgramConfigurations
             {
                 var settings = httpContext.RequestServices.GetRequiredService<AppSettings>().RateLimitSettings;
                 return RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: GetClientIp(httpContext),
+                    partitionKey: httpContext.GetClientIp(),
                     factory: _ => new FixedWindowRateLimiterOptions
                     {
                         PermitLimit = settings.StrictPermitLimit,
@@ -201,18 +200,5 @@ public static class ProgramConfigurations
             options.KnownIPNetworks.Clear();
             options.KnownProxies.Clear();
         });
-    }
-
-    private static string GetClientIp(HttpContext context)
-    {
-        var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(forwardedFor))
-        {
-            var firstIp = forwardedFor.Split(',')[0].Trim();
-            if (IPAddress.TryParse(firstIp, out _))
-                return firstIp;
-        }
-
-        return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }
 }

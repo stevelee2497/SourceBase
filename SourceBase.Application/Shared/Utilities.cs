@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -75,4 +76,20 @@ public static class Utilities
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         Converters = { new JsonStringEnumConverter(), new TrimmingJsonConverter() }
     };
+
+    extension(HttpContext context)
+    {
+        public string? GetClientIp()
+        {
+            var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(forwardedFor))
+            {
+                var firstIp = forwardedFor.Split(',')[0].Trim();
+                if (IPAddress.TryParse(firstIp, out _))
+                    return firstIp;
+            }
+
+            return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        }
+    }
 }
