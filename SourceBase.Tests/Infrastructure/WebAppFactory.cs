@@ -87,6 +87,18 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         await base.DisposeAsync().AsTask();
     }
 
+    private int _clientCounter;
+
+    public new HttpClient CreateClient()
+    {
+        var client = base.CreateClient();
+        // Give each test client a unique IP so rate limit buckets are isolated per client
+        var n = Interlocked.Increment(ref _clientCounter);
+        var ip = $"10.{(n >> 16) & 0xFF}.{(n >> 8) & 0xFF}.{n & 0xFF}";
+        client.DefaultRequestHeaders.Add("X-Forwarded-For", ip);
+        return client;
+    }
+
     public async Task<HttpClient> CreateAuthorizedClient(string? email = null, string? password = null)
     {
         email ??= AdminEmail;

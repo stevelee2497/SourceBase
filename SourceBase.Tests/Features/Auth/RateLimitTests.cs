@@ -10,19 +10,11 @@ namespace SourceBase.Tests.Features.Auth;
 
 public class RateLimitTests(RateLimitWebAppFactory factory) : IClassFixture<RateLimitWebAppFactory>
 {
-    private HttpClient CreateClientWithUniqueIp()
-    {
-        var client = factory.CreateClient();
-        var ip = $"10.{Random.Shared.Next(1, 254)}.{Random.Shared.Next(1, 254)}.{Random.Shared.Next(1, 254)}";
-        client.DefaultRequestHeaders.Add("X-Forwarded-For", ip);
-        return client;
-    }
-
     [Fact(DisplayName = "RATE-LIMIT-001: Login_ExceedsStrictLimit_Returns429")]
     public async Task Login_ExceedsStrictLimit_Returns429()
     {
-        // Arrange
-        var client = CreateClientWithUniqueIp();
+        // Arrange — each CreateClient() call gets a unique IP so buckets don't bleed between tests
+        var client = factory.CreateClient();
         var payload = new { email = "bot@example.com", password = "wrong" };
 
         // Act — exhaust the strict limit bucket
@@ -39,7 +31,7 @@ public class RateLimitTests(RateLimitWebAppFactory factory) : IClassFixture<Rate
     public async Task Register_ExceedsStrictLimit_Returns429()
     {
         // Arrange
-        var client = CreateClientWithUniqueIp();
+        var client = factory.CreateClient();
 
         // Act — exhaust the strict limit bucket
         for (var i = 0; i < RateLimitWebAppFactory.StrictPermitLimit; i++)
@@ -65,7 +57,7 @@ public class RateLimitTests(RateLimitWebAppFactory factory) : IClassFixture<Rate
     public async Task ForgotPassword_ExceedsStrictLimit_Returns429()
     {
         // Arrange
-        var client = CreateClientWithUniqueIp();
+        var client = factory.CreateClient();
         var payload = new { email = "bot@example.com" };
 
         // Act — exhaust the strict limit bucket
@@ -82,7 +74,7 @@ public class RateLimitTests(RateLimitWebAppFactory factory) : IClassFixture<Rate
     public async Task RateLimitRejection_ReturnsJsonErrorFormat()
     {
         // Arrange
-        var client = CreateClientWithUniqueIp();
+        var client = factory.CreateClient();
         var payload = new { email = "bot@example.com", password = "wrong" };
 
         // Act — exhaust then trigger
