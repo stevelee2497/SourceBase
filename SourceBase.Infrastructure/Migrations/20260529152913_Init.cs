@@ -12,7 +12,7 @@ namespace SourceBase.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterDatabase()
-                .Annotation("Npgsql:CollationDefinition:case_insensitive", "und-x-icu,und-x-icu,icu,False");
+                .Annotation("Npgsql:CollationDefinition:case_insensitive", "und-u-ks-level2,und-u-ks-level2,icu,False");
 
             migrationBuilder.CreateTable(
                 name: "AuditHistories",

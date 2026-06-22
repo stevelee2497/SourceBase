@@ -48,6 +48,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
             configurationBuilder.Properties<string>().UseCollation("NOCASE");
+        else if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+            configurationBuilder.Properties<string>().UseCollation("case_insensitive");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -57,7 +59,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
         {
             modelBuilder.HasCollation("case_insensitive", locale: "und-u-ks-level2", provider: "icu", deterministic: false);
-            modelBuilder.UseCollation("case_insensitive");
         }
 
         // Convert all enums to strings in the database
