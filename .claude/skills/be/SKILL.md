@@ -17,7 +17,6 @@ This skill operates under the [Superpowers](https://github.com/obra/Superpowers)
 - **Write the spec to /docs/features first**. Before any code, capture the agreed design as a spec document in the docs/ folder (e.g. docs/features /<feature-name>.md): use case, request/response shape, validation rules, failure modes, and any DB/migration impact. This is the source of truth the implementation is reviewed against.
 - **Brainstorm before building.** For any non-trivial feature, don't jump to code. Tease out the spec first: what use case, what request/response shape, what validation rules, what failure modes. Present the design in small chunks for sign-off before implementing.
 - **YAGNI.** Build only the slice the current use case needs. No speculative interfaces, no "we might need this later" abstractions. One file per use case (request, response, endpoint, handler, validator) — nothing more.
--
 
 ### While coding (TDD)
 
@@ -36,7 +35,7 @@ This skill operates under the [Superpowers](https://github.com/obra/Superpowers)
 
 ### Principle summary
 
-Spec-first · True red/green TDD · YAGNI · Systematic over ad-hoc · Evidence over claims.
+- Spec-first · True red/green TDD · YAGNI · Systematic over ad-hoc · Evidence over claims.
 
 ## Commands
 

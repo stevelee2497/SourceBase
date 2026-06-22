@@ -17,6 +17,7 @@ public class RegisterEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app) => app
         .MapPost(Route, ([FromBody] RegisterRequest request, RegisterHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
+        .RequireRateLimiting(Constants.StrictRateLimitPolicy)
         .WithTags("Auth");
 }
 

@@ -1,4 +1,6 @@
+using System.Net;
 using System.Text.Json.Nodes;
+using System.Threading.RateLimiting;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
@@ -124,7 +126,7 @@ public static class ProgramConfigurations
 
     public static void MapMinimalApi(this WebApplication app)
     {
-        app.MapGroup("/api").RequireAuthorization().AddEndpointFilter<ValidationEndpointFilter>().MapEndpoints(app);
+        app.MapGroup("/api").RequireAuthorization().RequireRateLimiting(Constants.GeneralRateLimitPolicy).AddEndpointFilter<ValidationEndpointFilter>().MapEndpoints(app);
     }
 
     public static void MapEndpoints(this IEndpointRouteBuilder builder, WebApplication app)
@@ -140,5 +142,68 @@ public static class ProgramConfigurations
     public static void MapSignalR(this WebApplication app)
     {
         app.MapHub<NotificationHub>("/hubs/notifications");
+    }
+
+    public static void AddRateLimiting(this IServiceCollection services)
+    {
+        services.AddRateLimiter(options =>
+        {
+            options.AddPolicy(Constants.GeneralRateLimitPolicy, httpContext =>
+            {
+                var settings = httpContext.RequestServices.GetRequiredService<AppSettings>().RateLimitSettings;
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: GetClientIp(httpContext),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = settings.GeneralPermitLimit,
+                        Window = TimeSpan.FromSeconds(settings.GeneralWindowSeconds),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0,
+                    });
+            });
+
+            options.AddPolicy(Constants.StrictRateLimitPolicy, httpContext =>
+            {
+                var settings = httpContext.RequestServices.GetRequiredService<AppSettings>().RateLimitSettings;
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: GetClientIp(httpContext),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = settings.StrictPermitLimit,
+                        Window = TimeSpan.FromSeconds(settings.StrictWindowSeconds),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0,
+                    });
+            });
+
+            options.OnRejected = async (context, ct) =>
+            {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                    context.HttpContext.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
+
+                await context.HttpContext.Response.WriteAsJsonAsync(new
+                {
+                    TraceId = context.HttpContext.TraceIdentifier,
+                    Code = "RATE_LIMIT_EXCEEDED",
+                    Message = "Too many requests. Please try again later.",
+                    Errors = new { }
+                }, ct);
+            };
+        });
+    }
+
+    private static string GetClientIp(HttpContext context)
+    {
+        var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(forwardedFor))
+        {
+            var firstIp = forwardedFor.Split(',')[0].Trim();
+            if (IPAddress.TryParse(firstIp, out _))
+                return firstIp;
+        }
+
+        return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }
 }

@@ -17,6 +17,7 @@ public class ForgotPasswordEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app) => app
         .MapPost(Route, ([FromBody] ForgotPasswordRequest request, ForgotPasswordHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
+        .RequireRateLimiting(Constants.StrictRateLimitPolicy)
         .WithTags("Auth");
 }
 
