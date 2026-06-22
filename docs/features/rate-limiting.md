@@ -9,10 +9,10 @@ Protect the API from bot abuse, credential stuffing, and email-spam attacks by e
 
 ## Policies
 
-| Policy    | Permit Limit     | Window   | Endpoints |
-|-----------|-----------------|----------|-----------|
-| `general` | 100 requests    | 60 s     | All `/api` endpoints |
-| `strict`  | 10 requests     | 60 s     | `auth/login`, `auth/register`, `auth/forgotPassword`, `auth/confirmEmail`, `auth/resendConfirmationEmail`, `auth/resetPassword` |
+| Policy    | Permit Limit | Window | Endpoints                                                                                                                       |
+| --------- | ------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `general` | 100 requests | 60 s   | All `/api` endpoints                                                                                                            |
+| `strict`  | 10 requests  | 60 s   | `auth/login`, `auth/register`, `auth/forgotPassword`, `auth/confirmEmail`, `auth/resendConfirmationEmail`, `auth/resetPassword` |
 
 Both limits are configurable via `AppSettings:RateLimitSettings` in `appsettings.json`.
 
@@ -44,12 +44,12 @@ No changes to request shape. When a limit is exceeded:
 
 ## Failure Modes
 
-| Scenario | Behaviour |
-|---|---|
-| Client sends > `strict` limit requests in window | 429 with Retry-After |
-| Client sends > `general` limit requests in window | 429 with Retry-After |
-| Request behind proxy without `X-Forwarded-For` | Falls back to `RemoteIpAddress` |
-| `RemoteIpAddress` is null | Uses partition key `"unknown"` |
+| Scenario                                          | Behaviour                       |
+| ------------------------------------------------- | ------------------------------- |
+| Client sends > `strict` limit requests in window  | 429 with Retry-After            |
+| Client sends > `general` limit requests in window | 429 with Retry-After            |
+| Request behind proxy without `X-Forwarded-For`    | Falls back to `RemoteIpAddress` |
+| `RemoteIpAddress` is null                         | Uses partition key `"unknown"`  |
 
 ## Configuration
 
