@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Infrastructure.DbContexts;
+using Testcontainers.PostgreSql;
 using Xunit;
 
 
@@ -26,8 +27,14 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public FakeDateTimeProvider FakeDateTime { get; } = new();
 
+    private static readonly bool UsePostgres = string.Equals(Environment.GetEnvironmentVariable("USE_POSTGRES"), "true", StringComparison.OrdinalIgnoreCase);
+
+    // SQLite-only fields
     private SqliteConnection? anchorConnection;
-    private readonly string connectionString = $"Data Source=test_{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
+    private readonly string sqliteConnectionString = $"Data Source=test_{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
+
+    // PostgreSQL-only field
+    private PostgreSqlContainer? postgresContainer;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -52,21 +59,33 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
             });
 
-            // Replace the production PostgreSQL DbContext with SQLite in-memory for tests
             services.RemoveAll<IDbContextOptionsConfiguration<ApplicationDbContext>>();
 
             // Replace real DateTimeProvider with controllable fake
             services.RemoveAll<IDateTime>();
             services.AddSingleton<IDateTime>(FakeDateTime);
 
-
             var appConfig = ctx.Configuration;
-            services.AddDbContext<ApplicationDbContext>((_, options) =>
+
+            if (UsePostgres)
             {
-                options.UseSqlite(connectionString)
-                    .UseSeeding((context, _) => ApplicationDbContext.SeedData(context, appConfig))
-                    .UseAsyncSeeding(async (context, _, _) => ApplicationDbContext.SeedData(context, appConfig));
-            });
+                var connectionString = postgresContainer!.GetConnectionString();
+                services.AddDbContext<ApplicationDbContext>((_, options) =>
+                {
+                    options.UseNpgsql(connectionString, o => o.MigrationsAssembly("SourceBase.Infrastructure"))
+                        .UseSeeding((context, _) => ApplicationDbContext.SeedData(context, appConfig))
+                        .UseAsyncSeeding(async (context, _, _) => ApplicationDbContext.SeedData(context, appConfig));
+                });
+            }
+            else
+            {
+                services.AddDbContext<ApplicationDbContext>((_, options) =>
+                {
+                    options.UseSqlite(sqliteConnectionString)
+                        .UseSeeding((context, _) => ApplicationDbContext.SeedData(context, appConfig))
+                        .UseAsyncSeeding(async (context, _, _) => ApplicationDbContext.SeedData(context, appConfig));
+                });
+            }
         });
 
         ClientOptions.BaseAddress = new Uri("http://localhost/api/");
@@ -74,16 +93,33 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        anchorConnection = new SqliteConnection(connectionString);
-        await anchorConnection.OpenAsync();
-
-        await WithDbContextAsync(db => db.Database.EnsureCreatedAsync());
+        if (UsePostgres)
+        {
+            postgresContainer = new PostgreSqlBuilder("postgres:17-alpine")
+                .Build();
+            await postgresContainer.StartAsync();
+            await WithDbContextAsync(async db => { await db.Database.MigrateAsync(); return true; });
+        }
+        else
+        {
+            anchorConnection = new SqliteConnection(sqliteConnectionString);
+            await anchorConnection.OpenAsync();
+            await WithDbContextAsync(db => db.Database.EnsureCreatedAsync());
+        }
     }
 
     public new async Task DisposeAsync()
     {
-        if (anchorConnection != null)
-            await anchorConnection.DisposeAsync();
+        if (UsePostgres)
+        {
+            if (postgresContainer != null)
+                await postgresContainer.DisposeAsync();
+        }
+        else
+        {
+            if (anchorConnection != null)
+                await anchorConnection.DisposeAsync();
+        }
         await base.DisposeAsync().AsTask();
     }
 

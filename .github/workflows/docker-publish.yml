@@ -19,6 +19,8 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Run tests
+        env:
+          USE_POSTGRES: "true"
         run: dotnet test SourceBase.Tests --verbosity normal
 
   build-and-push:
