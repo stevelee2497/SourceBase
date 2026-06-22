@@ -17,6 +17,7 @@ public class ResetPasswordEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app) => app
         .MapPost(Route, ([FromBody] ResetPasswordRequest request, ResetPasswordHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
+        .RequireRateLimiting(Constants.StrictRateLimitPolicy)
         .WithTags("Auth");
 }
 

@@ -19,6 +19,7 @@ public class LoginEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app) => app
         .MapPost(Route, ([FromBody] LoginRequest request, LoginHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
+        .RequireRateLimiting(Constants.StrictRateLimitPolicy)
         .WithTags("Auth");
 }
 

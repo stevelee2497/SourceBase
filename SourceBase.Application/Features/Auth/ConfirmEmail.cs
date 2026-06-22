@@ -17,6 +17,7 @@ public class ConfirmEmailEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app) => app
         .MapPost(Route, ([FromBody] ConfirmEmailRequest request, ConfirmEmailHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .AllowAnonymous()
+        .RequireRateLimiting(Constants.StrictRateLimitPolicy)
         .WithTags("Auth");
 }
 

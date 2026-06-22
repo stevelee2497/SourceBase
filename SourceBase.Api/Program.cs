@@ -18,6 +18,7 @@ builder.Services.AddAppSettings(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCorsPolicies(builder.Configuration);
+builder.Services.AddRateLimiting();
 
 var app = builder.Build();
 
@@ -27,11 +28,13 @@ if (app.Environment.IsProduction())
     app.EnsureDatabaseMigrated();
 }
 
+app.UseForwardedHeaders();
 app.UseGlobalException();
 app.UseSeriLog();
 app.UseCors(Constants.CorsCustomPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCustomAuthorization();
