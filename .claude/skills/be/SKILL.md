@@ -8,6 +8,36 @@ trigger: /be
 
 Backend coding conventions and architecture for SourceBase.
 
+## Superpowers Workflow
+
+This skill operates under the [Superpowers](https://github.com/obra/Superpowers) methodology. Before writing backend code, follow these conventions — they are mandatory workflows, not suggestions.
+
+### Before coding (spec-first)
+
+- **Write the spec to /docs/features first**. Before any code, capture the agreed design as a spec document in the docs/ folder (e.g. docs/features /<feature-name>.md): use case, request/response shape, validation rules, failure modes, and any DB/migration impact. This is the source of truth the implementation is reviewed against.
+- **Brainstorm before building.** For any non-trivial feature, don't jump to code. Tease out the spec first: what use case, what request/response shape, what validation rules, what failure modes. Present the design in small chunks for sign-off before implementing.
+- **YAGNI.** Build only the slice the current use case needs. No speculative interfaces, no "we might need this later" abstractions. One file per use case (request, response, endpoint, handler, validator) — nothing more.
+-
+
+### While coding (TDD)
+
+- **Red → Green → Refactor, strictly.**
+  1. Write a failing test first (`dotnet test --filter "..."` — watch it fail).
+  2. Write the minimal handler/endpoint code to make it pass.
+  3. Refactor with tests green.
+- **Delete code written before its test.** If implementation exists without a failing test that drove it, remove it and restart the cycle.
+- Test the handler's behavior (happy path, validation failures, NotFound/Forbidden paths), not EF Core internals.
+
+### After coding (verify, don't claim)
+
+- **Evidence over claims.** Never declare a feature done because it "should work." Run `dotnet build` and `dotnet test` and confirm green. For DB changes, run both migration steps (`cmd-migration-add.sh` + `cmd-migration-update-db.sh`) and verify.
+- **Request review between tasks.** After a slice is green, review against the original spec before moving on. Critical mismatches block progress.
+- **Update the docs/features spec.** When the implementation diverges from the original spec (added fields, changed validation, new failure modes), update the corresponding documents so it stays the source of truth.
+
+### Principle summary
+
+Spec-first · True red/green TDD · YAGNI · Systematic over ad-hoc · Evidence over claims.
+
 ## Commands
 
 ```sh
