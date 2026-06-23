@@ -61,10 +61,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      - AppSettings__AdminEmail=${ADMIN_EMAIL}
-      - AppSettings__AdminPassword=${ADMIN_PASSWORD}
-      - AppSettings__SendGridApiKey=${SENDGRID_API_KEY}
-      - AppSettings__SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
+      - AdminEmail=${ADMIN_EMAIL}
+      - AdminPassword=${ADMIN_PASSWORD}
+      - SendGridApiKey=${SENDGRID_API_KEY}
+      - SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
       - ConnectionStrings__RedisConnection=redis:6379,password=${REDIS_PASSWORD}
       - AllowedSpecificOrigins__1=${WEB_URL}
     volumes:
