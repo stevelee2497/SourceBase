@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -22,7 +23,7 @@ public class UpdateUserEndpoint : IEndpoint
         .WithTags("Users");
 }
 
-public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, IOtpHelper otpHelper) : IRequestHandler<UpdateUserRequest, UpdateUserResponse>
+public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, IOtpHelper otpHelper, ICacheService cacheService) : IRequestHandler<UpdateUserRequest, UpdateUserResponse>
 {
     public async Task<UpdateUserResponse> Handle(UpdateUserRequest request, CancellationToken ct)
     {
@@ -97,6 +98,8 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, I
 
         if (emailChanged)
             await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>");
+
+        await cacheService.RemoveAsync(GetUserInfoHandler.CacheKey(user.Id), ct);
 
         return new UpdateUserResponse(user.Id);
     }
