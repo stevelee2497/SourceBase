@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.GoldPrices;
@@ -18,11 +19,9 @@ public class GetGoldPriceSummaryEndpoint : IEndpoint
 
 public class GetGoldPriceSummaryHandler(IDbContext dbContext, ICacheService cacheService) : IRequestHandler<GetGoldPriceSummaryRequest, GetGoldPriceSummaryResponse>
 {
-    public static string CacheKey => "gold-price-summary";
-
     public async Task<GetGoldPriceSummaryResponse> Handle(GetGoldPriceSummaryRequest request, CancellationToken ct)
     {
-        var cached = await cacheService.GetAsync<GetGoldPriceSummaryResponse>(CacheKey, ct);
+        var cached = await cacheService.GetAsync<GetGoldPriceSummaryResponse>(CacheKeys.GoldPriceSummary, ct);
         if (cached is not null) return cached;
 
         var items = await (
@@ -34,7 +33,7 @@ public class GetGoldPriceSummaryHandler(IDbContext dbContext, ICacheService cach
         ).ToListAsync(ct);
 
         var response = new GetGoldPriceSummaryResponse(items);
-        await cacheService.SetAsync(CacheKey, response, TimeSpan.FromMinutes(30), ct);
+        await cacheService.SetAsync(CacheKeys.GoldPriceSummary, response, TimeSpan.FromMinutes(30), ct);
         return response;
     }
 }

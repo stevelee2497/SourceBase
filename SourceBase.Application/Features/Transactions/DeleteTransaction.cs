@@ -1,4 +1,3 @@
-using SourceBase.Application.Features.Wallets;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
@@ -29,7 +28,7 @@ public class DeleteTransactionHandler(IDbContext dbContext, ICurrentUser current
 
         dbContext.Transactions.Remove(transaction);
         await dbContext.SaveChangesAsync(ct);
-        await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
+        await cacheService.RemoveAsync(CacheKeys.WalletSummary.WithId(currentUser.UserId), ct);
         return new DeleteTransactionResponse(true);
     }
 }

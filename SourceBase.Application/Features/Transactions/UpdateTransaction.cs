@@ -1,7 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Application.Features.Wallets;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -50,7 +49,7 @@ public class UpdateTransactionHandler(IDbContext dbContext, ICurrentUser current
         transaction.Note = request.Note ?? transaction.Note;
         transaction.CategoryId = request.CategoryId ?? transaction.CategoryId;
         await dbContext.SaveChangesAsync(ct);
-        await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
+        await cacheService.RemoveAsync(CacheKeys.WalletSummary.WithId(currentUser.UserId), ct);
         return new UpdateTransactionResponse(transaction.Id);
     }
 }

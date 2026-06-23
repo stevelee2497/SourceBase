@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Wallets;
@@ -31,7 +32,7 @@ public class CreateWalletHandler(IDbContext dbContext, ICurrentUser currentUser,
         };
         dbContext.Wallets.Add(wallet);
         await dbContext.SaveChangesAsync(ct);
-        await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
+        await cacheService.RemoveAsync(CacheKeys.WalletSummary.WithId(currentUser.UserId), ct);
         return new CreateWalletResponse(wallet.Id);
     }
 }

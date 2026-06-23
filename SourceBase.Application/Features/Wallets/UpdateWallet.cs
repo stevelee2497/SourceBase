@@ -30,7 +30,7 @@ public class UpdateWalletHandler(IDbContext dbContext, ICurrentUser currentUser,
         wallet.Name = request.Name ?? wallet.Name;
         wallet.Icon = request.Icon ?? wallet.Icon;
         await dbContext.SaveChangesAsync(ct);
-        await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
+        await cacheService.RemoveAsync(CacheKeys.WalletSummary.WithId(currentUser.UserId), ct);
         return new UpdateWalletResponse(wallet.Id);
     }
 }

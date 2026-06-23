@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Wallets;
@@ -20,11 +21,9 @@ public class GetWalletSummaryEndpoint : IEndpoint
 
 public class GetWalletSummaryHandler(IDbContext dbContext, ICurrentUser currentUser, IDateTime dateTime, ICacheService cacheService) : IRequestHandler<GetWalletSummaryRequest, GetWalletSummaryResponse>
 {
-    public static string CacheKey(Guid userId) => $"wallet-summary:{userId}";
-
     public async Task<GetWalletSummaryResponse> Handle(GetWalletSummaryRequest request, CancellationToken ct)
     {
-        var cached = await cacheService.GetAsync<GetWalletSummaryResponse>(CacheKey(currentUser.UserId), ct);
+        var cached = await cacheService.GetAsync<GetWalletSummaryResponse>(CacheKeys.WalletSummary.WithId(currentUser.UserId), ct);
         if (cached is not null) return cached;
 
         var today = DateOnly.FromDateTime(dateTime.UtcNow);
@@ -63,7 +62,7 @@ public class GetWalletSummaryHandler(IDbContext dbContext, ICurrentUser currentU
             .ToListAsync(ct);
 
         var result = new GetWalletSummaryResponse(walletBalances.Sum(), monthlyIncome, monthlyExpense, recentTransactions);
-        await cacheService.SetAsync(CacheKey(currentUser.UserId), result, TimeSpan.FromMinutes(5), ct);
+        await cacheService.SetAsync(CacheKeys.WalletSummary.WithId(currentUser.UserId), result, TimeSpan.FromMinutes(5), ct);
         return result;
     }
 }
