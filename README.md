@@ -150,28 +150,20 @@ All entities inherit `BaseAuditableEntity` (`Id: Guid`, `CreatedOn`, `CreatedBy`
 | FluentValidation               | Auto-wired — invalid requests return `400` before reaching handlers |
 | EF Core audit interceptor      | `CreatedOn / UpdatedOn / CreatedBy / UpdatedBy` set automatically   |
 | Strongly-typed `AppSettings`   | `IOptions<T>` pattern, injected as singleton                        |
-| Serilog + OpenTelemetry        | Structured logging forwarded to Aspire dashboard                    |
+| Serilog + OpenTelemetry        | Structured logging to console and file                              |
 | CORS                           | Configurable origins via `appsettings.json`                         |
-| .NET Aspire orchestration      | Dashboard for logs, traces, metrics at `http://localhost:15017`     |
 | Docker support                 | Multi-stage images, `docker compose up` for local dev               |
-
-## Observability & Aspire
-
-The project uses **.NET Aspire** for distributed application orchestration and observability:
-
-- **`SourceBase.ServiceDefaults`** — Shared OpenTelemetry configuration (metrics, traces, health checks, service discovery)
-- **`SourceBase.AppHost`** — Aspire orchestrator that manages the API and dashboard
-- **Local dashboard** — Real-time logs, traces, metrics, and resource monitoring at `http://localhost:15017`
-
-Logs and traces are forwarded to the dashboard via OpenTelemetry when `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
 
 ## Getting Started
 
-### Run the API standalone
+### Run the API
 
 ```sh
 # Run the API
 dotnet run --project SourceBase.Api
+
+# Run API + Web
+sh run.sh
 
 # Build solution
 dotnet build
@@ -182,16 +174,6 @@ sh cmd-migration-update-db.sh
 
 # Run tests
 dotnet test
-```
-
-### Run with Aspire orchestration (recommended for development)
-
-```sh
-# Start the AppHost (orchestrates API + dashboard)
-dotnet run --project SourceBase.AppHost
-
-# Dashboard available at: http://localhost:15017
-# Login with token from console output
 ```
 
 ### Docker

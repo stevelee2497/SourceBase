@@ -3,8 +3,8 @@
 ## Commands
 
 ```sh
-dotnet run --project SourceBase.AppHost   # Recommended: Aspire dashboard at :15017
-sh run.sh                                  # API + Web without Aspire
+dotnet run --project SourceBase.Api
+sh run.sh                                  # API + Web
 dotnet build
 dotnet test
 sh cmd-migration-add.sh <Name> && sh cmd-migration-update-db.sh

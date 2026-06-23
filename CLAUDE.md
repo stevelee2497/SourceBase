@@ -4,8 +4,7 @@
 
 ```sh
 # Development
-dotnet run --project SourceBase.AppHost   # Aspire dashboard at :15017 (logs/traces/metrics)
-sh run.sh                                  # API + Web without Aspire
+sh run.sh                                  # API + Web
 
 # Build & test
 dotnet build

@@ -12,8 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration));
 
-builder.AddServiceDefaults();
-
 
 builder.Services.AddResponseCompression(opts =>
 {
@@ -87,7 +85,6 @@ app.UseStaticFiles(new StaticFileOptions
 });
 app.UseAntiforgery();
 
-app.MapDefaultEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AllowAnonymous();
