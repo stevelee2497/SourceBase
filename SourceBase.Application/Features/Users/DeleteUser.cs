@@ -20,14 +20,14 @@ public class DeleteUserEndpoint : IEndpoint
         .WithTags("Users");
 }
 
-public class DeleteUserHandler(IDbContext dbContext) : IRequestHandler<DeleteUserRequest, DeleteUserResponse>
+public class DeleteUserHandler(IDbContext dbContext, ICacheService cacheService) : IRequestHandler<DeleteUserRequest, DeleteUserResponse>
 {
     public async Task<DeleteUserResponse> Handle(DeleteUserRequest request, CancellationToken ct)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == request.Id, ct) ?? throw new NotFoundException();
         dbContext.Users.Remove(user);
         await dbContext.SaveChangesAsync(ct);
-
+        await cacheService.RemoveAsync(CacheKeys.UserInfo.WithId(user.Id), ct);
         return new DeleteUserResponse(true);
     }
 }

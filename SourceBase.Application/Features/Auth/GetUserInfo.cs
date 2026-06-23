@@ -1,3 +1,4 @@
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Auth;
@@ -17,11 +18,9 @@ public class GetUserInfoEndpoint : IEndpoint
 
 public class GetUserInfoHandler(ICurrentUser currentUser, IDbContext dbContext, ICacheService cacheService) : IRequestHandler<GetUserInfoRequest, GetUserInfoResponse>
 {
-    public static string CacheKey(Guid userId) => $"user-info:{userId}";
-
     public async Task<GetUserInfoResponse> Handle(GetUserInfoRequest request, CancellationToken ct)
     {
-        var cached = await cacheService.GetAsync<GetUserInfoResponse>(CacheKey(currentUser.UserId), ct);
+        var cached = await cacheService.GetAsync<GetUserInfoResponse>(CacheKeys.UserInfo.WithId(currentUser.UserId), ct);
         if (cached is not null) return cached;
 
         var user = await dbContext.Users.FindAsync([currentUser.UserId], ct);
@@ -37,7 +36,7 @@ public class GetUserInfoHandler(ICurrentUser currentUser, IDbContext dbContext, 
             DefaultTodoListId: user.DefaultTodoListId,
             Roles: currentUser.Roles
         );
-        await cacheService.SetAsync(CacheKey(currentUser.UserId), result, TimeSpan.FromMinutes(30), ct);
+        await cacheService.SetAsync(CacheKeys.UserInfo.WithId(currentUser.UserId), result, TimeSpan.FromMinutes(30), ct);
         return result;
     }
 }

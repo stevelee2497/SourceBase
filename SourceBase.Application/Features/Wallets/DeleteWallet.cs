@@ -26,7 +26,7 @@ public class DeleteWalletHandler(IDbContext dbContext, ICurrentUser currentUser,
 
         dbContext.Wallets.Remove(wallet);
         await dbContext.SaveChangesAsync(ct);
-        await cacheService.RemoveAsync(GetWalletSummaryHandler.CacheKey(currentUser.UserId), ct);
+        await cacheService.RemoveAsync(CacheKeys.WalletSummary.WithId(currentUser.UserId), ct);
         return new DeleteWalletResponse(true);
     }
 }

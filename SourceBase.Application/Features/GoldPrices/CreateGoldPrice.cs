@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.GoldPrices;
@@ -54,7 +55,7 @@ public class CreateGoldPriceHandler(IDbContext dbContext, ICacheService cacheSer
         }
 
         await dbContext.SaveChangesAsync(ct);
-        await cacheService.RemoveAsync(GetGoldPriceSummaryHandler.CacheKey, ct);
+        await cacheService.RemoveAsync(CacheKeys.GoldPriceSummary, ct);
         return new CreateGoldPriceResponse(ids);
     }
 }

@@ -30,7 +30,7 @@ public class UpdateUserInfoHandler(IDbContext dbContext, ICurrentUser currentUse
         user.AvatarUrl = request.AvatarUrl ?? user.AvatarUrl;
         user.DefaultTodoListId = request.DefaultTodoListId ?? user.DefaultTodoListId;
         await dbContext.SaveChangesAsync(ct);
-        await cacheService.RemoveAsync(GetUserInfoHandler.CacheKey(currentUser.UserId), ct);
+        await cacheService.RemoveAsync(CacheKeys.UserInfo.WithId(currentUser.UserId), ct);
         return new UpdateUserInfoResponse(user.Id);
     }
 }

@@ -2,7 +2,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -57,10 +56,7 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, I
             var count = await dbContext.Roles.CountAsync(r => r.Name != null && normalizedRoles.Contains(r.Name), ct);
             if (count != normalizedRoles.Length)
                 throw new BadRequestException("One or more specified roles do not exist.");
-        }
 
-        if (normalizedRoles is not null)
-        {
             var existingRoles = user.Roles
                 .Where(role => !string.IsNullOrWhiteSpace(role.Name))
                 .ToDictionary(
@@ -99,7 +95,7 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, I
         if (emailChanged)
             await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>");
 
-        await cacheService.RemoveAsync(GetUserInfoHandler.CacheKey(user.Id), ct);
+        await cacheService.RemoveAsync(CacheKeys.UserInfo.WithId(user.Id), ct);
 
         return new UpdateUserResponse(user.Id);
     }
