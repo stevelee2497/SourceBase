@@ -6,13 +6,11 @@ using SourceBase.Application.Features.GoldPrices;
 using SourceBase.Domain.Entities;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
-using Xunit.Sdk;
 
 namespace SourceBase.Tests.Features.GoldPrices;
 
 public class GetGoldPriceSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    private static readonly bool UseRedis = string.Equals(Environment.GetEnvironmentVariable("USE_REDIS"), "true", StringComparison.OrdinalIgnoreCase);
     [Fact(DisplayName = "GOLDPRICE-GET-SUMMARY-001: GetGoldPriceSummary_WithoutToken_ReturnsUnauthorized")]
     public async Task GetGoldPriceSummary_WithoutToken_ReturnsUnauthorized()
     {
@@ -156,11 +154,9 @@ public class GetGoldPriceSummaryTests(WebAppFactory factory) : IClassFixture<Web
         pnj.SellPrice.ShouldBe(1_800_000m);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-GET-SUMMARY-007: GetGoldPriceSummary_CachesResult_ServesStaleDataBeforeCacheIsInvalidated")]
+    [RequiresRedisFact(DisplayName = "GOLDPRICE-GET-SUMMARY-007: GetGoldPriceSummary_CachesResult_ServesStaleDataBeforeCacheIsInvalidated")]
     public async Task GetGoldPriceSummary_CachesResult_ServesStaleDataBeforeCacheIsInvalidated()
     {
-        if (!UseRedis) throw SkipException.ForSkip("Requires Redis test container (USE_REDIS=true)");
-
         // Arrange — use a far-future timestamp to be the definitive latest for KimKhanhVietHung
         var client = await factory.CreateAuthorizedClient();
         var recordedAt = new DateTime(2097, 6, 1, 0, 0, 0, DateTimeKind.Utc);

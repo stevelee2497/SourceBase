@@ -6,13 +6,11 @@ using Shouldly;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
-using Xunit.Sdk;
 
 namespace SourceBase.Tests.Features.Auth;
 
 public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    private static readonly bool UseRedis = string.Equals(Environment.GetEnvironmentVariable("USE_REDIS"), "true", StringComparison.OrdinalIgnoreCase);
     [Fact(DisplayName = "GET-INFO-001: GetUserInfo_WithValidToken_ReturnsOk")]
     public async Task GetUserInfo_WithValidToken_ReturnsOk()
     {
@@ -118,11 +116,9 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "GET-INFO-005: GetUserInfo_CachesResult_ServesStaleDataBeforeCacheIsInvalidated")]
+    [RequiresRedisFact(DisplayName = "GET-INFO-005: GetUserInfo_CachesResult_ServesStaleDataBeforeCacheIsInvalidated")]
     public async Task GetUserInfo_CachesResult_ServesStaleDataBeforeCacheIsInvalidated()
     {
-        if (!UseRedis) throw SkipException.ForSkip("Requires Redis test container (USE_REDIS=true)");
-
         // Arrange — register and log in as a fresh user
         var client = factory.CreateClient();
         var email = $"cache_ui_{Guid.NewGuid():N}@test.com";

@@ -6,13 +6,11 @@ using SourceBase.Application.Features.Transactions;
 using SourceBase.Application.Features.Wallets;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
-using Xunit.Sdk;
 
 namespace SourceBase.Tests.Features.Wallets;
 
 public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    private static readonly bool UseRedis = string.Equals(Environment.GetEnvironmentVariable("USE_REDIS"), "true", StringComparison.OrdinalIgnoreCase);
     [Fact(DisplayName = "WALLETS-SUMMARY-001: GetWalletSummary_WithoutToken_ReturnsUnauthorized")]
     public async Task GetWalletSummary_WithoutToken_ReturnsUnauthorized()
     {
@@ -144,11 +142,9 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.RecentTransactions.ShouldBeEmpty();
     }
 
-    [Fact(DisplayName = "WALLETS-SUMMARY-006: GetWalletSummary_CachesResult_ServesStaleDataBeforeCacheIsInvalidated")]
+    [RequiresRedisFact(DisplayName = "WALLETS-SUMMARY-006: GetWalletSummary_CachesResult_ServesStaleDataBeforeCacheIsInvalidated")]
     public async Task GetWalletSummary_CachesResult_ServesStaleDataBeforeCacheIsInvalidated()
     {
-        if (!UseRedis) throw SkipException.ForSkip("Requires Redis test container (USE_REDIS=true)");
-
         // Arrange — fresh user so wallet-summary:{userId} key is isolated
         var client = await factory.CreateAuthorizedClient($"ws_cache_{Guid.NewGuid():N}@test.com", "Test@1234!");
 
