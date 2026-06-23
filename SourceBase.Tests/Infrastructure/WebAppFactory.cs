@@ -114,8 +114,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
         if (UsePostgres)
         {
-            postgresContainer = new PostgreSqlBuilder("postgres:17-alpine")
-                .Build();
+            postgresContainer = new PostgreSqlBuilder("postgres:17-alpine").Build();
             await postgresContainer.StartAsync();
             await WithDbContextAsync(async db => { await db.Database.MigrateAsync(); return true; });
         }
@@ -129,16 +128,12 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public new async Task DisposeAsync()
     {
-        if (UsePostgres)
-        {
-            if (postgresContainer != null)
-                await postgresContainer.DisposeAsync();
-        }
-        else
-        {
-            if (anchorConnection != null)
-                await anchorConnection.DisposeAsync();
-        }
+
+        if (postgresContainer != null)
+            await postgresContainer.DisposeAsync();
+
+        if (anchorConnection != null)
+            await anchorConnection.DisposeAsync();
 
         if (redisContainer != null)
             await redisContainer.DisposeAsync();
