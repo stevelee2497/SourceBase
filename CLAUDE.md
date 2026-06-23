@@ -76,6 +76,9 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 - Use primary constructors for handlers and services to keep code concise and avoid boilerplate.
 - **Update endpoints use `PATCH` with partial update semantics.** All request fields are nullable; only provided (non-null) fields are applied. Handler uses null-coalescing: `entity.Field = request.Field ?? entity.Field`. Validator rules are guarded with `.When(x => x.Field is not null)`. Sending `null` means "keep existing" — it does not clear a field.
 - **DB-level validation (e.g. existence checks) belongs in the handler**, not the validator. Use `AnyAsync`/`CountAsync` and throw `BadRequestException` for failed checks; guard with `if (field is not null)` for optional fields.
+- Avoid nested `if` statements; use early returns and guard clauses instead. Keep every method short and focused on a single responsibility.
+
+````csharp
 
 ## Conventions
 
@@ -128,7 +131,7 @@ public async Task CreateTodo_WithValidTodoListId_ReturnsOk()
     todo!.CreatedBy.Should().Be(userInfo!.UserName);
     todo.UserId.Should().Be(userInfo.Id);
 }
-```
+````
 
 - **Naming:** `MethodName_WithCondition_ReturnsExpected`
 - **Test case IDs:** `{FEATURE}-{ACTION}-{NNN}` in `DisplayName` (e.g. `TODOS-CREATE-001`)
