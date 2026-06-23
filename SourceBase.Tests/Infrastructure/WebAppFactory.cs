@@ -15,6 +15,7 @@ using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Infrastructure.DbContexts;
 using Testcontainers.PostgreSql;
+using Testcontainers.Redis;
 using Xunit;
 
 
@@ -28,6 +29,7 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
     public FakeDateTimeProvider FakeDateTime { get; } = new();
 
     private static readonly bool UsePostgres = string.Equals(Environment.GetEnvironmentVariable("USE_POSTGRES"), "true", StringComparison.OrdinalIgnoreCase);
+    private static readonly bool UseRedis = string.Equals(Environment.GetEnvironmentVariable("USE_REDIS"), "true", StringComparison.OrdinalIgnoreCase);
 
     // SQLite-only fields
     private SqliteConnection? anchorConnection;
@@ -36,6 +38,9 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
     // PostgreSQL-only field
     private PostgreSqlContainer? postgresContainer;
 
+    // Redis-only field
+    private RedisContainer? redisContainer;
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
@@ -43,11 +48,19 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
         builder.ConfigureAppConfiguration((_, config) =>
         {
-            config.AddInMemoryCollection(new Dictionary<string, string?>
+            var inMemory = new Dictionary<string, string?>
             {
                 ["AdminEmail"] = AdminEmail,
                 ["AdminPassword"] = AdminPassword,
-            });
+            };
+
+            if (UseRedis && redisContainer != null)
+            {
+                inMemory["ConnectionStrings:RedisConnection"] = redisContainer.GetConnectionString();
+                inMemory["RedisEnabled"] = "true";
+            }
+
+            config.AddInMemoryCollection(inMemory);
         });
 
         builder.ConfigureServices((ctx, services) =>
@@ -93,10 +106,15 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        if (UseRedis)
+        {
+            redisContainer = new RedisBuilder("redis:7-alpine").Build();
+            await redisContainer.StartAsync();
+        }
+
         if (UsePostgres)
         {
-            postgresContainer = new PostgreSqlBuilder("postgres:17-alpine")
-                .Build();
+            postgresContainer = new PostgreSqlBuilder("postgres:17-alpine").Build();
             await postgresContainer.StartAsync();
             await WithDbContextAsync(async db => { await db.Database.MigrateAsync(); return true; });
         }
@@ -110,16 +128,16 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public new async Task DisposeAsync()
     {
-        if (UsePostgres)
-        {
-            if (postgresContainer != null)
-                await postgresContainer.DisposeAsync();
-        }
-        else
-        {
-            if (anchorConnection != null)
-                await anchorConnection.DisposeAsync();
-        }
+
+        if (postgresContainer != null)
+            await postgresContainer.DisposeAsync();
+
+        if (anchorConnection != null)
+            await anchorConnection.DisposeAsync();
+
+        if (redisContainer != null)
+            await redisContainer.DisposeAsync();
+
         await base.DisposeAsync().AsTask();
     }
 
