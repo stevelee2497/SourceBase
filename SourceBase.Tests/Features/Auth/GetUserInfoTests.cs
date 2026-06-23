@@ -1,15 +1,18 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
 using Shouldly;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
+using Xunit.Sdk;
 
 namespace SourceBase.Tests.Features.Auth;
 
 public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    private static readonly bool UseRedis = string.Equals(Environment.GetEnvironmentVariable("USE_REDIS"), "true", StringComparison.OrdinalIgnoreCase);
     [Fact(DisplayName = "GET-INFO-001: GetUserInfo_WithValidToken_ReturnsOk")]
     public async Task GetUserInfo_WithValidToken_ReturnsOk()
     {
@@ -113,5 +116,44 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact(DisplayName = "GET-INFO-005: GetUserInfo_CachesResult_ServesStaleDataBeforeCacheIsInvalidated")]
+    public async Task GetUserInfo_CachesResult_ServesStaleDataBeforeCacheIsInvalidated()
+    {
+        if (!UseRedis) throw SkipException.ForSkip("Requires Redis test container (USE_REDIS=true)");
+
+        // Arrange — register and log in as a fresh user
+        var client = factory.CreateClient();
+        var email = $"cache_ui_{Guid.NewGuid():N}@test.com";
+        const string password = "Test@1234!";
+        await client.PostAsJsonAsync(RegisterEndpoint.Route, new { userName = $"cache_{Guid.NewGuid():N}", email, password });
+        await client.PostAsJsonAsync(ConfirmEmailEndpoint.Route, new { email, code = await factory.GetOtpCode(email) });
+        var loginBody = await (await client.PostAsJsonAsync(LoginEndpoint.Route, new { email, password })).Content.ReadFromJsonAsync<LoginResponse>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginBody!.AccessToken);
+
+        // Warm the cache — first GET populates user-info:{userId}
+        var firstResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var firstBody = await firstResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
+        firstBody.ShouldNotBeNull();
+
+        // Bypass the API and change FirstName directly in DB (no cache invalidation triggered)
+        await factory.WithDbContextAsync(async db =>
+        {
+            var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
+            user!.FirstName = "DirectlyModifiedShouldBeStale";
+            await db.SaveChangesAsync();
+            return true;
+        });
+
+        // Act — second GET should still return the cached (stale) value
+        var secondResponse = await client.GetAsync(GetUserInfoEndpoint.Route);
+
+        // Assert — Redis served the old cached value; the direct DB change is invisible
+        secondResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var secondBody = await secondResponse.Content.ReadFromJsonAsync<GetUserInfoResponse>();
+        secondBody!.FirstName.ShouldNotBe("DirectlyModifiedShouldBeStale");
+        secondBody.FirstName.ShouldBe(firstBody!.FirstName);
     }
 }

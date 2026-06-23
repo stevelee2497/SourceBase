@@ -6,11 +6,13 @@ using SourceBase.Application.Features.Transactions;
 using SourceBase.Application.Features.Wallets;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
+using Xunit.Sdk;
 
 namespace SourceBase.Tests.Features.Wallets;
 
 public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    private static readonly bool UseRedis = string.Equals(Environment.GetEnvironmentVariable("USE_REDIS"), "true", StringComparison.OrdinalIgnoreCase);
     [Fact(DisplayName = "WALLETS-SUMMARY-001: GetWalletSummary_WithoutToken_ReturnsUnauthorized")]
     public async Task GetWalletSummary_WithoutToken_ReturnsUnauthorized()
     {
@@ -140,6 +142,67 @@ public class WalletSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.MonthlyIncome.ShouldBe(0m);
         body.MonthlyExpense.ShouldBe(0m);
         body.RecentTransactions.ShouldBeEmpty();
+    }
+
+    [Fact(DisplayName = "WALLETS-SUMMARY-006: GetWalletSummary_CachesResult_ServesStaleDataBeforeCacheIsInvalidated")]
+    public async Task GetWalletSummary_CachesResult_ServesStaleDataBeforeCacheIsInvalidated()
+    {
+        if (!UseRedis) throw SkipException.ForSkip("Requires Redis test container (USE_REDIS=true)");
+
+        // Arrange — fresh user so wallet-summary:{userId} key is isolated
+        var client = await factory.CreateAuthorizedClient($"ws_cache_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var createResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD" });
+        var wallet = await createResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        // Warm the cache — first GET populates wallet-summary:{userId}
+        var firstResponse = await client.GetAsync(GetWalletSummaryEndpoint.Route);
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var firstBody = await firstResponse.Content.ReadFromJsonAsync<GetWalletSummaryResponse>();
+        firstBody!.TotalBalance.ShouldBe(100m);
+
+        // Bypass the API and change InitialBalance directly in DB (no cache invalidation triggered)
+        await factory.WithDbContextAsync(async db =>
+        {
+            var entity = await db.Wallets.FindAsync(wallet!.Id);
+            entity!.InitialBalance = 999m;
+            await db.SaveChangesAsync();
+            return true;
+        });
+
+        // Act — second GET should still return the cached (stale) value
+        var secondResponse = await client.GetAsync(GetWalletSummaryEndpoint.Route);
+
+        // Assert — Redis served the old cached balance; the direct DB change is invisible
+        secondResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var secondBody = await secondResponse.Content.ReadFromJsonAsync<GetWalletSummaryResponse>();
+        secondBody!.TotalBalance.ShouldBe(100m);
+        secondBody.TotalBalance.ShouldNotBe(999m);
+    }
+
+    [Fact(DisplayName = "WALLETS-SUMMARY-007: GetWalletSummary_AfterCreateWallet_CacheIsInvalidatedAndReturnsFreshBalance")]
+    public async Task GetWalletSummary_AfterCreateWallet_CacheIsInvalidatedAndReturnsFreshBalance()
+    {
+        // Arrange — fresh user so wallet-summary:{userId} key is isolated
+        var client = await factory.CreateAuthorizedClient($"ws_inv_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var firstWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD" });
+        firstWalletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Populate the cache
+        var cachedSummaryResponse = await client.GetAsync(GetWalletSummaryEndpoint.Route);
+        var cachedSummary = await cachedSummaryResponse.Content.ReadFromJsonAsync<GetWalletSummaryResponse>();
+        cachedSummary!.TotalBalance.ShouldBe(100m);
+
+        // Act — create a second wallet; this should invalidate wallet-summary:{userId}
+        var secondWalletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 50m, currency = "USD" });
+        secondWalletResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Assert — GET summary re-fetches from DB and reflects the new wallet
+        var freshResponse = await client.GetAsync(GetWalletSummaryEndpoint.Route);
+        freshResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var freshBody = await freshResponse.Content.ReadFromJsonAsync<GetWalletSummaryResponse>();
+        freshBody!.TotalBalance.ShouldBe(150m);
     }
 }
 

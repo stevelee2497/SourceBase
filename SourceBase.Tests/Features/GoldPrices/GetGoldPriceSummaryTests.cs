@@ -1,14 +1,18 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
 using Shouldly;
 using SourceBase.Application.Features.GoldPrices;
+using SourceBase.Domain.Entities;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
+using Xunit.Sdk;
 
 namespace SourceBase.Tests.Features.GoldPrices;
 
 public class GetGoldPriceSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
+    private static readonly bool UseRedis = string.Equals(Environment.GetEnvironmentVariable("USE_REDIS"), "true", StringComparison.OrdinalIgnoreCase);
     [Fact(DisplayName = "GOLDPRICE-GET-SUMMARY-001: GetGoldPriceSummary_WithoutToken_ReturnsUnauthorized")]
     public async Task GetGoldPriceSummary_WithoutToken_ReturnsUnauthorized()
     {
@@ -150,5 +154,78 @@ public class GetGoldPriceSummaryTests(WebAppFactory factory) : IClassFixture<Web
         var pnj = body.Items.First(x => x.Source.ToString() == "PNJ");
         pnj.BuyPrice.ShouldBe(1_700_000m);
         pnj.SellPrice.ShouldBe(1_800_000m);
+    }
+
+    [Fact(DisplayName = "GOLDPRICE-GET-SUMMARY-007: GetGoldPriceSummary_CachesResult_ServesStaleDataBeforeCacheIsInvalidated")]
+    public async Task GetGoldPriceSummary_CachesResult_ServesStaleDataBeforeCacheIsInvalidated()
+    {
+        if (!UseRedis) throw SkipException.ForSkip("Requires Redis test container (USE_REDIS=true)");
+
+        // Arrange — use a far-future timestamp to be the definitive latest for KimKhanhVietHung
+        var client = await factory.CreateAuthorizedClient();
+        var recordedAt = new DateTime(2097, 6, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        // Creating a gold price invokes RemoveAsync → cache is cold after this
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
+        {
+            items = new[] { new { source = "KimKhanhVietHung", buyPrice = 500_000m, sellPrice = 550_000m, recordedAt } },
+        });
+
+        // Warm the cache — GET populates gold-price-summary with KimKhanhVietHung at 500_000m
+        var firstResponse = await client.GetAsync(GetGoldPriceSummaryEndpoint.Route);
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var firstBody = await firstResponse.Content.ReadFromJsonAsync<GetGoldPriceSummaryResponse>();
+        firstBody!.Items.ShouldContain(x => x.Source == GoldSource.KimKhanhVietHung);
+        firstBody.Items.First(x => x.Source == GoldSource.KimKhanhVietHung).BuyPrice.ShouldBe(500_000m);
+
+        // Bypass the API and change BuyPrice directly in DB (no cache invalidation triggered)
+        await factory.WithDbContextAsync(async db =>
+        {
+            var entity = await db.GoldPrices.FirstOrDefaultAsync(x => x.Source == GoldSource.KimKhanhVietHung && x.RecordedAt == recordedAt);
+            entity!.BuyPrice = 999_999m;
+            await db.SaveChangesAsync();
+            return true;
+        });
+
+        // Act — second GET should still return the cached (stale) value
+        var secondResponse = await client.GetAsync(GetGoldPriceSummaryEndpoint.Route);
+
+        // Assert — Redis served the cached 500_000m; the direct DB change is invisible
+        secondResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var secondBody = await secondResponse.Content.ReadFromJsonAsync<GetGoldPriceSummaryResponse>();
+        secondBody!.Items.First(x => x.Source == GoldSource.KimKhanhVietHung).BuyPrice.ShouldBe(500_000m);
+        secondBody.Items.First(x => x.Source == GoldSource.KimKhanhVietHung).BuyPrice.ShouldNotBe(999_999m);
+    }
+
+    [Fact(DisplayName = "GOLDPRICE-GET-SUMMARY-008: GetGoldPriceSummary_AfterCreateGoldPrice_CacheIsInvalidatedAndReturnsFreshPrices")]
+    public async Task GetGoldPriceSummary_AfterCreateGoldPrice_CacheIsInvalidatedAndReturnsFreshPrices()
+    {
+        // Arrange — use a far-future base timestamp to be the definitive latest for GiaVang
+        var client = await factory.CreateAuthorizedClient();
+        var t1 = new DateTime(2098, 1, 1, 10, 0, 0, DateTimeKind.Utc);
+
+        // CreateGoldPrice invokes RemoveAsync so the cache is cold; then GET warms it
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
+        {
+            items = new[] { new { source = "GiaVang", buyPrice = 1_100_000m, sellPrice = 1_200_000m, recordedAt = t1 } },
+        });
+
+        var cachedResponse = await client.GetAsync(GetGoldPriceSummaryEndpoint.Route);
+        cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var cachedBody = await cachedResponse.Content.ReadFromJsonAsync<GetGoldPriceSummaryResponse>();
+        cachedBody!.Items.First(x => x.Source == GoldSource.GiaVang).BuyPrice.ShouldBe(1_100_000m);
+
+        // Act — create a newer GiaVang price; this should invalidate gold-price-summary
+        var t2 = new DateTime(2098, 1, 1, 11, 0, 0, DateTimeKind.Utc);
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
+        {
+            items = new[] { new { source = "GiaVang", buyPrice = 1_300_000m, sellPrice = 1_400_000m, recordedAt = t2 } },
+        });
+
+        // Assert — GET re-fetches from DB and returns the updated (newer) price
+        var freshResponse = await client.GetAsync(GetGoldPriceSummaryEndpoint.Route);
+        freshResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var freshBody = await freshResponse.Content.ReadFromJsonAsync<GetGoldPriceSummaryResponse>();
+        freshBody!.Items.First(x => x.Source == GoldSource.GiaVang).BuyPrice.ShouldBe(1_300_000m);
     }
 }
