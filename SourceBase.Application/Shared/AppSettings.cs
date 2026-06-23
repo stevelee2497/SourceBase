@@ -14,6 +14,7 @@ public class AppSettings
     public bool RedisEnabled { get; set; }
     public BackgroundJobSettings BackgroundJobSettings { get; set; } = new();
     public RateLimitSettings RateLimitSettings { get; set; } = new();
+    public string[] AllowedSpecificOrigins { get; set; } = [];
 }
 
 public class R2Settings

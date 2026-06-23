@@ -16,7 +16,7 @@ public static class ProgramConfigurations
 {
     public static void AddAppSettings(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
+        services.Configure<AppSettings>(configuration);
         services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<AppSettings>>().Value);
     }
 
@@ -35,7 +35,7 @@ public static class ProgramConfigurations
 
     public static void AddCorsPolicies(this IServiceCollection services, IConfiguration configuration)
     {
-        var corsSettings = configuration.GetSection(Constants.CorsCustomPolicy).Get<string[]>() ?? [];
+        var corsSettings = configuration.GetSection(nameof(AppSettings.AllowedSpecificOrigins)).Get<string[]>() ?? [];
         services.AddCors(options =>
         {
             options.AddPolicy(Constants.CorsDefaultPolicy, builder =>
