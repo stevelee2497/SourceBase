@@ -26,7 +26,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\SourceBase.Application\SourceBase.Application.csproj" />
 		<ProjectReference Include="..\SourceBase.Infrastructure\SourceBase.Infrastructure.csproj" />
-		<ProjectReference Include="..\SourceBase.ServiceDefaults\SourceBase.ServiceDefaults.csproj" />
 	</ItemGroup>
 
 </Project>

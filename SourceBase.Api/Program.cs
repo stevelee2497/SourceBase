@@ -7,7 +7,6 @@ using SourceBase.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.AddServiceDefaults();
 builder.AddSeriLog();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
@@ -40,6 +39,5 @@ app.UseSwaggerUI();
 app.UseCustomAuthorization();
 app.MapMinimalApi();
 app.MapSignalR();
-app.MapDefaultEndpoints();
 
 app.Run();

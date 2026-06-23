@@ -1,10 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<ItemGroup>
-		<ProjectReference Include="..\SourceBase.ServiceDefaults\SourceBase.ServiceDefaults.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Content Remove="node_modules\**" />
 		<None Remove="node_modules\**" />
 		<Watch Remove="node_modules\**" />
