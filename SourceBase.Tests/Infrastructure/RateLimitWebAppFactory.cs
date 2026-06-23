@@ -19,8 +19,8 @@ public class RateLimitWebAppFactory : WebAppFactory
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["AppSettings:RateLimitSettings:StrictPermitLimit"] = StrictPermitLimit.ToString(),
-                ["AppSettings:RateLimitSettings:GeneralPermitLimit"] = GeneralPermitLimit.ToString(),
+                ["RateLimitSettings:StrictPermitLimit"] = StrictPermitLimit.ToString(),
+                ["RateLimitSettings:GeneralPermitLimit"] = GeneralPermitLimit.ToString(),
             });
         });
     }

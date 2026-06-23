@@ -19,7 +19,7 @@ public static class DependencyInjection
 {
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var appSettings = configuration.GetSection("AppSettings").Get<AppSettings>()!;
+        var appSettings = configuration.Get<AppSettings>()!;
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         if (appSettings.RedisEnabled)

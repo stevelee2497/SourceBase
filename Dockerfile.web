@@ -12,7 +12,6 @@ RUN apt-get update && apt-get install -y curl && \
 WORKDIR /src
 COPY Directory.Packages.props .
 COPY Directory.Build.props .
-COPY SourceBase.ServiceDefaults/SourceBase.ServiceDefaults.csproj SourceBase.ServiceDefaults/
 COPY SourceBase.Web/SourceBase.Web.csproj SourceBase.Web/
 COPY SourceBase.Web/package.json SourceBase.Web/
 COPY SourceBase.Web/package-lock.json SourceBase.Web/

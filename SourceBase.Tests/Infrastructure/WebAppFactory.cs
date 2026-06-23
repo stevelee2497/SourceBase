@@ -45,8 +45,8 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["AppSettings:AdminEmail"] = AdminEmail,
-                ["AppSettings:AdminPassword"] = AdminPassword,
+                ["AdminEmail"] = AdminEmail,
+                ["AdminPassword"] = AdminPassword,
             });
         });
 

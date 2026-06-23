@@ -4,6 +4,7 @@ public class AppSettings
 {
     public List<PageConfig> Pages { get; set; } = [];
     public bool RedisEnabled { get; set; }
+    public string ApiBaseUrl { get; set; } = string.Empty;
 };
 
 public class PageConfig

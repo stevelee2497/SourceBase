@@ -102,7 +102,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public static void SeedData(DbContext context, IConfiguration configuration)
     {
-        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>() ?? throw new Exception("Unable to bind AppSettings");
+        var appSettings = configuration.Get<AppSettings>() ?? throw new Exception("Unable to bind AppSettings");
 
         foreach (var role in appSettings.Roles)
         {
