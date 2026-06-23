@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Serilog;
 using Serilog.Enrichers.Span;
-using Serilog.Sinks.OpenTelemetry;
 using SourceBase.Api.Middlewares;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
@@ -92,21 +91,6 @@ public static class ProgramConfigurations
             logConfig
                 .ReadFrom.Configuration(ctx.Configuration)
                 .Enrich.WithSpan();
-
-            var otlpEndpoint = ctx.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
-            if (!string.IsNullOrWhiteSpace(otlpEndpoint))
-            {
-                logConfig.WriteTo.OpenTelemetry(options =>
-                {
-                    options.Endpoint = otlpEndpoint;
-                    options.Protocol = OtlpProtocol.Grpc;
-                    options.ResourceAttributes = new Dictionary<string, object>
-                    {
-                        ["service.name"] = ctx.Configuration["OTEL_SERVICE_NAME"] ?? ctx.Configuration["ApplicationName"] ?? "SourceBase.Api",
-                        ["service.version"] = ctx.Configuration["OTEL_SERVICE_VERSION"] ?? "1.0.0",
-                    };
-                });
-            }
         });
     }
 
