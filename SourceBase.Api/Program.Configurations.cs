@@ -38,12 +38,7 @@ public static class ProgramConfigurations
         var corsSettings = configuration.GetSection(nameof(AppSettings.AllowedSpecificOrigins)).Get<string[]>() ?? [];
         services.AddCors(options =>
         {
-            options.AddPolicy(Constants.CorsDefaultPolicy, builder =>
-                builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader());
-
-            options.AddPolicy(Constants.CorsCustomPolicy, builder =>
+            options.AddPolicy(nameof(AppSettings.AllowedSpecificOrigins), builder =>
                 builder.WithOrigins(corsSettings)
                     .AllowAnyMethod()
                     .AllowAnyHeader());

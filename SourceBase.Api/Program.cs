@@ -30,7 +30,7 @@ if (app.Environment.IsProduction())
 app.UseForwardedHeaders();
 app.UseGlobalException();
 app.UseSeriLog();
-app.UseCors(Constants.CorsCustomPolicy);
+app.UseCors(nameof(AppSettings.AllowedSpecificOrigins));
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
