@@ -57,10 +57,7 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, I
             var count = await dbContext.Roles.CountAsync(r => r.Name != null && normalizedRoles.Contains(r.Name), ct);
             if (count != normalizedRoles.Length)
                 throw new BadRequestException("One or more specified roles do not exist.");
-        }
 
-        if (normalizedRoles is not null)
-        {
             var existingRoles = user.Roles
                 .Where(role => !string.IsNullOrWhiteSpace(role.Name))
                 .ToDictionary(
