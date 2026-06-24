@@ -35,14 +35,15 @@ Even if the VPS crashes seconds later, all events up to that point are in Better
 
 Every `429 Too Many Requests` response is logged as a `Warning` with structured fields:
 
-| Field        | Description                        |
-|--------------|------------------------------------|
-| `ClientIp`   | Attacker IP (from `X-Forwarded-For`) |
-| `RequestPath`| Endpoint being hammered            |
-| `UserAgent`  | Bot user agent string              |
-| `RetryAfter` | Seconds until the window resets    |
+| Field         | Description                          |
+| ------------- | ------------------------------------ |
+| `ClientIp`    | Attacker IP (from `X-Forwarded-For`) |
+| `RequestPath` | Endpoint being hammered              |
+| `UserAgent`   | Bot user agent string                |
+| `RetryAfter`  | Seconds until the window resets      |
 
 Example Betterstack query to find top attacking IPs:
+
 ```
 level:Warning ClientIp:* | group by ClientIp
 ```
@@ -61,9 +62,9 @@ by nature (periodic batching sink).
 
 ## Environment variables
 
-| Variable                   | Where                          | Source                |
-|----------------------------|--------------------------------|-----------------------|
-| `BetterStack__SourceToken` | API container, EmailWorker     | GitHub secret         |
+| Variable                 | Where                      | Source        |
+| ------------------------ | -------------------------- | ------------- |
+| `BetterStackSourceToken` | API container, EmailWorker | GitHub secret |
 
 ### GitHub Actions secret
 
@@ -75,9 +76,10 @@ Get the token from Betterstack: `Sources → your source → Source token`
 ## Adding a new service
 
 To ship logs from a new service to Betterstack:
+
 1. Add `BetterStack.Logs.Serilog` to the project (version in `Directory.Packages.props`).
-2. In the Serilog setup, read `configuration["BetterStack:SourceToken"]` and call
+2. In the Serilog setup, read `configuration["BetterStackSourceToken"]` and call
    `logConfig.WriteTo.BetterStack(token)` when non-empty.
-3. Add `- BetterStack__SourceToken=${BETTERSTACK_SOURCE_TOKEN}` to the service's env in
+3. Add `- BetterStackSourceToken=${BETTERSTACK_SOURCE_TOKEN}` to the service's env in
    `docker-compose.yml`.
 4. Add the secret variable to the `envs` list in `.github/workflows/docker-publish.yml`.
