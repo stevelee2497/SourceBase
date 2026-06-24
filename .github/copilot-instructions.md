@@ -25,6 +25,16 @@ SourceBase.Tests/           # Integration tests with xUnit + FluentAssertions + 
 - `/test` — test infrastructure and patterns
 - `/pr-reviewer` — PR review checklist
 
+## Skill auto-routing
+
+Automatically invoke the matching skill based on what you're working on — no need to be asked:
+
+- Touching `SourceBase.Domain`, `SourceBase.Application`, `SourceBase.Infrastructure`, or `SourceBase.Api` (entities, handlers, endpoints, validators, migrations, config) → use `/be`.
+- Touching `SourceBase.Web` (Blazor components, Tailwind, layout) → use `/fe`.
+- Touching `SourceBase.Tests` (integration tests, `WebApplicationFactory`, fixtures) → use `/test`.
+
+If a change spans multiple projects, load each relevant skill (e.g. a feature with API + Blazor UI uses `/be` and `/fe`). Invoke the skill before writing code, not after.
+
 ## Graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
