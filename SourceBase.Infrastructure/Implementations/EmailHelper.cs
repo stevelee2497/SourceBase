@@ -11,9 +11,10 @@ public class EmailHelper(IDbContext dbContext, IMessageQueuePublisher messageQue
     {
         logger.LogInformation("Queuing email to {To} with subject {Subject}", to, subject);
 
-        dbContext.Emails.Add(new EmailEntity { To = to, Subject = subject, Body = body, SentOn = DateTime.UtcNow });
+        var email = new EmailEntity { To = to, Subject = subject, Body = body, SentOn = DateTime.UtcNow };
+        dbContext.Emails.Add(email);
         await dbContext.SaveChangesAsync(default);
 
-        await messageQueuePublisher.PublishAsync(appSettings.RabbitMq.QueueName, new EmailMessage(to, subject, body));
+        await messageQueuePublisher.PublishAsync(appSettings.RabbitMq.QueueName, email);
     }
 }

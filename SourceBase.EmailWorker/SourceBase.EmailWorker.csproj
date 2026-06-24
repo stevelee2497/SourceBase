@@ -19,8 +19,4 @@
     <PackageReference Include="Serilog.Formatting.Compact" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SourceBase.Application\SourceBase.Application.csproj" />
-  </ItemGroup>
-
 </Project>

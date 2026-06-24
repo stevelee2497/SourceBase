@@ -1,5 +1,4 @@
 using Serilog;
-using SourceBase.Application.Shared;
 using SourceBase.EmailWorker;
 
 Log.Logger = new LoggerConfiguration()
