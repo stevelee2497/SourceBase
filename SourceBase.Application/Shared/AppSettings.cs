@@ -14,6 +14,7 @@ public class AppSettings
     public bool RedisEnabled { get; set; }
     public BackgroundJobSettings BackgroundJobSettings { get; set; } = new();
     public RateLimitSettings RateLimitSettings { get; set; } = new();
+    public RabbitMqSettings RabbitMq { get; set; } = new();
     public string[] AllowedSpecificOrigins { get; set; } = [];
 }
 
@@ -39,4 +40,13 @@ public class RateLimitSettings
     public int GeneralWindowSeconds { get; set; } = 60;
     public int StrictPermitLimit { get; set; } = 10;
     public int StrictWindowSeconds { get; set; } = 60;
+}
+
+public class RabbitMqSettings
+{
+    public string Host { get; set; } = "localhost";
+    public int Port { get; set; } = 5672;
+    public string UserName { get; set; } = "guest";
+    public string Password { get; set; } = "guest";
+    public string QueueName { get; set; } = "email";
 }

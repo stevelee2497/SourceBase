@@ -1,18 +1,8 @@
 # Source Base
 
+The final goal of this project is to learn fancy design patterns and architecture, and apply them to a real-world project.
+
 A .NET 10 API starter built on **Vertical Slice Architecture** and **REPR Pattern** — each feature lives in a single file, from the HTTP endpoint down to the database call. No layers, no abstractions for their own sake.
-
-## Documentation
-
-Feature documentation — user stories, detailed flows, and test case traceability:
-
-| Domain                          | Description                                                                      |
-| ------------------------------- | -------------------------------------------------------------------------------- |
-| [Auth](docs/features/auth.md)   | Login, Register, Email Confirmation, Password Reset, Token Refresh, User Profile |
-| [Users](docs/features/users.md) | Admin-managed user accounts — create, list, update, delete, password reset       |
-| [Roles](docs/features/roles.md) | Role management — create, list, update, delete                                   |
-| [Todos](docs/features/todos.md) | Todo lists and todo items — full CRUD, filters, paging                           |
-| [Data](docs/features/data.md)   | Audit history, enum definitions, application statistics                          |
 
 ## Architecture
 

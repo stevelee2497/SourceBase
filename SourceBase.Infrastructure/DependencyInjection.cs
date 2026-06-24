@@ -67,10 +67,11 @@ public static class DependencyInjection
         services.AddSignalR();
         services.AddSingleton<IDateTime, DateTimeProvider>();
         services.AddSingleton<ICacheService, RedisCacheService>();
+        services.AddSingleton<IMessageQueuePublisher, RabbitMqMessageQueuePublisher>();
         services.AddScoped<ISecurityProvider, SecurityProvider>();
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();
-        services.AddScoped<IEmailHelper, SendGridEmailHelper>();
+        services.AddScoped<IEmailHelper, EmailHelper>();
         services.AddScoped<IStorageService, CloudflareR2StorageService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IOtpHelper, OtpHelper>();
