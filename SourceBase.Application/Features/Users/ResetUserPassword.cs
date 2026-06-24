@@ -32,12 +32,11 @@ public class ResetUserPasswordHandler(IDbContext dbContext, ISecurityProvider se
         user.PasswordHash = securityProvider.HashPassword(user, request.NewPassword);
         user.SecurityStamp = Guid.NewGuid().ToString();
 
-        var subject = "Your password has been reset";
-        var body = $"Your account password has been reset by an administrator. Your new password is: <b>{request.NewPassword}</b><br/>Please change it after logging in.";
-        dbContext.Emails.Add(new EmailEntity(user.Email!, subject, body));
+        var email = new EmailEntity(user.Email!, "Your password has been reset", $"Your account password has been reset by an administrator. Your new password is: <b>{request.NewPassword}</b><br/>Please change it after logging in.");
+        dbContext.Emails.Add(email);
         await dbContext.SaveChangesAsync(ct);
 
-        await messageQueuePublisher.PublishAsync("email", new EmailMessage(user.Email!, subject, body), ct);
+        await messageQueuePublisher.PublishAsync("email", email, ct);
 
         return new ResetUserPasswordResponse(true);
     }

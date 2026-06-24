@@ -63,10 +63,12 @@ public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityP
         }
 
         dbContext.Users.Add(user);
-        dbContext.Emails.Add(new EmailEntity(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{confirmationCode}</b>"));
+
+        var email = new EmailEntity(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{confirmationCode}</b>");
+        dbContext.Emails.Add(email);
         await dbContext.SaveChangesAsync(ct);
 
-        await messageQueuePublisher.PublishAsync("email", new EmailMessage(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{confirmationCode}</b>"), ct);
+        await messageQueuePublisher.PublishAsync("email", email, ct);
 
         var adminUsers = await dbContext.Users
             .Where(u => u.Roles.Any(r => r.Name == AppRoles.Admin))

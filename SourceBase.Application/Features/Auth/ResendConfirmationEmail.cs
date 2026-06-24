@@ -32,10 +32,12 @@ public class ResendConfirmationEmailHandler(IDbContext dbContext, IMessageQueueP
         var (otp, expiresOn) = otpHelper.Generate();
         user.OtpCode = otp;
         user.OtpCodeExpiresOn = expiresOn;
-        dbContext.Emails.Add(new EmailEntity(request.Email, "Confirm your email", $"Your confirmation code is: <b>{otp}</b>"));
+
+        var email = new EmailEntity(request.Email, "Confirm your email", $"Your confirmation code is: <b>{otp}</b>");
+        dbContext.Emails.Add(email);
         await dbContext.SaveChangesAsync(ct);
 
-        await messageQueuePublisher.PublishAsync("email", new EmailMessage(request.Email, "Confirm your email", $"Your confirmation code is: <b>{otp}</b>"), ct);
+        await messageQueuePublisher.PublishAsync("email", email, ct);
         return new ResendConfirmationEmailResponse(true);
     }
 }

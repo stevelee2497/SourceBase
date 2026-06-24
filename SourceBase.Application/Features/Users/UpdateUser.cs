@@ -94,9 +94,10 @@ public class UpdateUserHandler(IDbContext dbContext, IMessageQueuePublisher mess
 
         if (emailChanged)
         {
-            dbContext.Emails.Add(new EmailEntity(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>"));
+            var email = new EmailEntity(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>");
+            dbContext.Emails.Add(email);
             await dbContext.SaveChangesAsync(ct);
-            await messageQueuePublisher.PublishAsync("email", new EmailMessage(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>"), ct);
+            await messageQueuePublisher.PublishAsync("email", email, ct);
         }
 
         await cacheService.RemoveAsync(CacheKeys.UserInfo.WithId(user.Id), ct);

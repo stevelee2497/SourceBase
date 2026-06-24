@@ -42,10 +42,12 @@ public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityPro
         };
 
         dbContext.Users.Add(user);
-        dbContext.Emails.Add(new EmailEntity(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>"));
+
+        var email = new EmailEntity(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>");
+        dbContext.Emails.Add(email);
         await dbContext.SaveChangesAsync(ct);
 
-        await messageQueuePublisher.PublishAsync("email", new EmailMessage(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>"), ct);
+        await messageQueuePublisher.PublishAsync("email", email, ct);
 
         return new RegisterResponse(user.Id);
     }
