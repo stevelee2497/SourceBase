@@ -89,6 +89,7 @@ services:
       - RabbitMq__Port=5672
       - RabbitMq__UserName=${RABBITMQ_USER}
       - RabbitMq__Password=${RABBITMQ_PASSWORD}
+      - BetterStack__SourceToken=${BETTERSTACK_SOURCE_TOKEN}
     volumes:
       - ./logs/api:/app/Logs
     ports:
@@ -118,6 +119,7 @@ services:
       - RabbitMq__Password=${RABBITMQ_PASSWORD}
       - SendGridApiKey=${SENDGRID_API_KEY}
       - SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
+      - BetterStack__SourceToken=${BETTERSTACK_SOURCE_TOKEN}
     volumes:
       - ./logs/email-worker:/app/Logs
     depends_on:

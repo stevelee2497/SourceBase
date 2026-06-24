@@ -22,6 +22,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Serilog.Sinks.OpenTelemetry" Version="4.2.0" />
+    <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0" />
+    <PackageVersion Include="BetterStack.Logs.Serilog" Version="1.2.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="FluentValidation" Version="12.1.1" />

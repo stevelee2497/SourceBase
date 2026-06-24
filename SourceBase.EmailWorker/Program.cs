@@ -9,10 +9,16 @@ try
 {
     var builder = Host.CreateApplicationBuilder(args);
 
-    builder.Services.AddSerilog((services, cfg) => cfg
-        .ReadFrom.Configuration(builder.Configuration)
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext());
+    builder.Services.AddSerilog((services, cfg) =>
+    {
+        cfg.ReadFrom.Configuration(builder.Configuration)
+           .ReadFrom.Services(services)
+           .Enrich.FromLogContext();
+
+        var token = builder.Configuration["BetterStack:SourceToken"];
+        if (!string.IsNullOrEmpty(token))
+            cfg.WriteTo.BetterStack(token);
+    });
 
     var appSettings = builder.Configuration.Get<AppSettings>()!;
     builder.Services.AddSingleton(appSettings);

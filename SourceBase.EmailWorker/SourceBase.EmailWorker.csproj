@@ -10,9 +10,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BetterStack.Logs.Serilog" />
     <PackageReference Include="RabbitMQ.Client" />
     <PackageReference Include="SendGrid" />
     <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Async" />
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Serilog.Enrichers.Environment" />
