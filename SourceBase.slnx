@@ -8,7 +8,6 @@
   <Project Path="SourceBase.Api/SourceBase.Api.csproj" />
   <Project Path="SourceBase.Application/SourceBase.Application.csproj" />
   <Project Path="SourceBase.Domain/SourceBase.Domain.csproj" />
-  <Project Path="SourceBase.EmailWorker/SourceBase.EmailWorker.csproj" />
   <Project Path="SourceBase.Infrastructure/SourceBase.Infrastructure.csproj" />
   <Project Path="SourceBase.Tests/SourceBase.Tests.csproj" />
   <Project Path="SourceBase.Web/SourceBase.Web.csproj" />

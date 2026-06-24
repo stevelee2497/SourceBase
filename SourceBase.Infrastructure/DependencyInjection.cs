@@ -75,6 +75,7 @@ public static class DependencyInjection
         services.AddScoped<IStorageService, CloudflareR2StorageService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IOtpHelper, OtpHelper>();
+        services.AddHostedService<EmailConsumerBackgroundService>();
 
         services.AddHttpClient("GoldScraper", client =>
         {

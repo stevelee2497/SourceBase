@@ -1,13 +1,17 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using SendGrid;
 using SendGrid.Helpers.Mail;
+using SourceBase.Application.Shared;
+using SourceBase.Domain.Entities;
 
-namespace SourceBase.EmailWorker;
+namespace SourceBase.Infrastructure.Implementations;
 
-public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumerService> logger) : BackgroundService
+public class EmailConsumerBackgroundService(AppSettings appSettings, ILogger<EmailConsumerBackgroundService> logger) : BackgroundService
 {
     private IConnection? _connection;
     private IChannel? _channel;
@@ -35,10 +39,8 @@ public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumer
             var body = Encoding.UTF8.GetString(ea.Body.Span);
             try
             {
-                logger.LogInformation("Received email message: {Body}", body);
-                var message = JsonSerializer.Deserialize<EmailMessage>(body) ?? throw new InvalidOperationException("Deserialized null email message");
-
-                await SendViaGridAsync(message, ct);
+                var email = JsonSerializer.Deserialize<EmailEntity>(body) ?? throw new InvalidOperationException("Deserialized null email message");
+                await SendViaGridAsync(email, ct);
                 await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
             }
             catch (Exception ex)
@@ -54,28 +56,28 @@ public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumer
         await Task.Delay(Timeout.Infinite, ct);
     }
 
-    private async Task SendViaGridAsync(EmailMessage message, CancellationToken ct)
+    private async Task SendViaGridAsync(EmailEntity email, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(appSettings.SendGridApiKey))
         {
-            logger.LogWarning("SendGrid API key is not configured. Email to {To} not dispatched.", message.To);
+            logger.LogWarning("SendGrid API key not configured. Email to {To} skipped.", email.To);
             return;
         }
 
         var client = new SendGridClient(appSettings.SendGridApiKey);
         var from = new EmailAddress(appSettings.SendGridAccountOwner);
-        var to = new EmailAddress(message.To);
-        var msg = MailHelper.CreateSingleEmail(from, to, message.Subject, message.Body, message.Body);
+        var to = new EmailAddress(email.To);
+        var msg = MailHelper.CreateSingleEmail(from, to, email.Subject, email.Body, email.Body);
         var response = await client.SendEmailAsync(msg, ct);
 
         if (response.IsSuccessStatusCode)
         {
-            logger.LogInformation("Email sent to {To} via SendGrid", message.To);
+            logger.LogInformation("Email sent to {To} via SendGrid", email.To);
             return;
         }
 
         var detail = await response.Body.ReadAsStringAsync(ct);
-        logger.LogError("SendGrid rejected email to {To}: {Status} — {Detail}", message.To, response.StatusCode, detail);
+        logger.LogError("SendGrid rejected email to {To}: {Status} — {Detail}", email.To, response.StatusCode, detail);
         throw new InvalidOperationException($"SendGrid error: {response.StatusCode}");
     }
 
@@ -85,23 +87,4 @@ public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumer
         if (_channel is not null) await _channel.DisposeAsync();
         if (_connection is not null) await _connection.DisposeAsync();
     }
-}
-
-public record EmailMessage(string To, string Subject, string Body);
-
-public class AppSettings
-{
-    public RabbitMqSettings RabbitMq { get; set; } = new();
-    public string SendGridApiKey { get; set; } = string.Empty;
-    public string SendGridAccountOwner { get; set; } = string.Empty;
-    public string BetterStackSourceToken { get; set; } = string.Empty;
-}
-
-public class RabbitMqSettings
-{
-    public string Host { get; set; } = "localhost";
-    public int Port { get; set; } = 5672;
-    public string UserName { get; set; } = "guest";
-    public string Password { get; set; } = "guest";
-    public string QueueName { get; set; } = "email";
 }
