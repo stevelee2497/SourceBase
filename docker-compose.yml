@@ -50,6 +50,26 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: sourcebase-rabbitmq
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
   sourcebase-api:
     image: ghcr.io/stevelee2497/sourcebase-api:latest
     build:
@@ -63,10 +83,12 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - AdminEmail=${ADMIN_EMAIL}
       - AdminPassword=${ADMIN_PASSWORD}
-      - SendGridApiKey=${SENDGRID_API_KEY}
-      - SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
       - ConnectionStrings__RedisConnection=redis:6379,password=${REDIS_PASSWORD}
       - AllowedSpecificOrigins__1=${WEB_URL}
+      - RabbitMq__Host=rabbitmq
+      - RabbitMq__Port=5672
+      - RabbitMq__UserName=${RABBITMQ_USER}
+      - RabbitMq__Password=${RABBITMQ_PASSWORD}
     volumes:
       - ./logs/api:/app/Logs
     ports:
@@ -75,6 +97,31 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - internal
+
+  sourcebase-email-worker:
+    image: ghcr.io/stevelee2497/sourcebase-email-worker:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.emailworker
+    container_name: sourcebase-email-worker
+    restart: always
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+      - RabbitMq__Host=rabbitmq
+      - RabbitMq__Port=5672
+      - RabbitMq__UserName=${RABBITMQ_USER}
+      - RabbitMq__Password=${RABBITMQ_PASSWORD}
+      - SendGridApiKey=${SENDGRID_API_KEY}
+      - SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
+    volumes:
+      - ./logs/email-worker:/app/Logs
+    depends_on:
+      rabbitmq:
         condition: service_healthy
     networks:
       - internal
@@ -134,6 +181,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  rabbitmq_data:
   caddy_data:
   caddy_config:
 
