@@ -14,17 +14,16 @@
 		<PackageReference Include="Serilog.Enrichers.Span" />
 		<PackageReference Include="Serilog.Formatting.Compact" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-		<PrivateAssets>all</PrivateAssets>
+			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
-		<PrivateAssets>all</PrivateAssets>
+			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\SourceBase.Application\SourceBase.Application.csproj" />
 		<ProjectReference Include="..\SourceBase.Infrastructure\SourceBase.Infrastructure.csproj" />
 	</ItemGroup>
 

@@ -25,7 +25,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SourceBase.Api\SourceBase.Api.csproj" />
-		<ProjectReference Include="..\SourceBase.Infrastructure\SourceBase.Infrastructure.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
