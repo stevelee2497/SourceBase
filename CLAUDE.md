@@ -24,7 +24,7 @@ SourceBase.Tests/           # Integration tests with xUnit + FluentAssertions + 
 
 - `/be` — backend: Clean Architecture, vertical slice features, API endpoints, handlers, entities, validators, conventions
 - `/fe` — frontend: Blazor components, Tailwind CSS v4, mobile-responsive layout (Mobile S 320px / Mobile M 375px)
-- `/testing` — test infrastructure and patterns
+- `/test` — test infrastructure and patterns
 - `/pr-reviewer` — PR review checklist
 
 ## Graphify
