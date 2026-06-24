@@ -21,7 +21,7 @@ public class ResendConfirmationEmailEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ResendConfirmationEmailHandler(IDbContext dbContext, IMessageQueuePublisher messageQueuePublisher, IOtpHelper otpHelper) : IRequestHandler<ResendConfirmationEmailRequest, ResendConfirmationEmailResponse>
+public class ResendConfirmationEmailHandler(IDbContext dbContext, IEmailHelper emailHelper, IOtpHelper otpHelper) : IRequestHandler<ResendConfirmationEmailRequest, ResendConfirmationEmailResponse>
 {
     public async Task<ResendConfirmationEmailResponse> Handle(ResendConfirmationEmailRequest request, CancellationToken ct)
     {
@@ -32,12 +32,9 @@ public class ResendConfirmationEmailHandler(IDbContext dbContext, IMessageQueueP
         var (otp, expiresOn) = otpHelper.Generate();
         user.OtpCode = otp;
         user.OtpCodeExpiresOn = expiresOn;
-
-        var email = new EmailEntity(request.Email, "Confirm your email", $"Your confirmation code is: <b>{otp}</b>");
-        dbContext.Emails.Add(email);
         await dbContext.SaveChangesAsync(ct);
 
-        await messageQueuePublisher.PublishAsync("email", email, ct);
+        await emailHelper.SendEmailAsync(request.Email, "Confirm your email", $"Your confirmation code is: <b>{otp}</b>");
         return new ResendConfirmationEmailResponse(true);
     }
 }

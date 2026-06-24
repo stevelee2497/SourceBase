@@ -21,7 +21,7 @@ public class RegisterEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityProvider, IMessageQueuePublisher messageQueuePublisher, IOtpHelper otpHelper) : IRequestHandler<RegisterRequest, RegisterResponse>
+public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityProvider, IEmailHelper emailHelper, IOtpHelper otpHelper) : IRequestHandler<RegisterRequest, RegisterResponse>
 {
     public async Task<RegisterResponse> Handle(RegisterRequest request, CancellationToken ct)
     {
@@ -42,12 +42,9 @@ public class RegisterHandler(IDbContext dbContext, ISecurityProvider securityPro
         };
 
         dbContext.Users.Add(user);
-
-        var email = new EmailEntity(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>");
-        dbContext.Emails.Add(email);
         await dbContext.SaveChangesAsync(ct);
 
-        await messageQueuePublisher.PublishAsync("email", email, ct);
+        await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>");
 
         return new RegisterResponse(user.Id);
     }

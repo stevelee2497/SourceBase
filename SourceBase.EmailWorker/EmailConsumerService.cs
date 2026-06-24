@@ -4,6 +4,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using SendGrid;
 using SendGrid.Helpers.Mail;
+using SourceBase.Application.Shared;
 
 namespace SourceBase.EmailWorker;
 
@@ -85,22 +86,4 @@ public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumer
         if (_channel is not null) await _channel.DisposeAsync();
         if (_connection is not null) await _connection.DisposeAsync();
     }
-}
-
-public record EmailMessage(string To, string Subject, string Body);
-
-public class AppSettings
-{
-    public RabbitMqSettings RabbitMq { get; set; } = new();
-    public string SendGridApiKey { get; set; } = string.Empty;
-    public string SendGridAccountOwner { get; set; } = string.Empty;
-}
-
-public class RabbitMqSettings
-{
-    public string Host { get; set; } = "localhost";
-    public int Port { get; set; } = 5672;
-    public string UserName { get; set; } = "guest";
-    public string Password { get; set; } = "guest";
-    public string QueueName { get; set; } = "email";
 }

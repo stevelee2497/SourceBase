@@ -1,10 +1,10 @@
 namespace SourceBase.Domain.Entities;
 
-public class EmailEntity(string to, string subject, string body)
+public class EmailEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public string To { get; set; } = to;
-    public string Subject { get; set; } = subject;
-    public string Body { get; set; } = body;
-    public DateTime SentOn { get; set; } = DateTime.UtcNow;
+    public required string To { get; set; }
+    public required string Subject { get; set; }
+    public required string Body { get; set; }
+    public DateTime SentOn { get; set; }
 }

@@ -71,6 +71,7 @@ public static class DependencyInjection
         services.AddScoped<ISecurityProvider, SecurityProvider>();
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<IEmailHelper, EmailHelper>();
         services.AddScoped<IStorageService, CloudflareR2StorageService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IOtpHelper, OtpHelper>();

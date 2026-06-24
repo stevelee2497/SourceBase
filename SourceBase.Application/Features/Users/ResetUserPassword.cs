@@ -22,7 +22,7 @@ public class ResetUserPasswordEndpoint : IEndpoint
         .WithTags("Users");
 }
 
-public class ResetUserPasswordHandler(IDbContext dbContext, ISecurityProvider securityProvider, IMessageQueuePublisher messageQueuePublisher) : IRequestHandler<ResetUserPasswordRequest, ResetUserPasswordResponse>
+public class ResetUserPasswordHandler(IDbContext dbContext, ISecurityProvider securityProvider, IEmailHelper emailHelper) : IRequestHandler<ResetUserPasswordRequest, ResetUserPasswordResponse>
 {
     public async Task<ResetUserPasswordResponse> Handle(ResetUserPasswordRequest request, CancellationToken ct)
     {
@@ -32,11 +32,10 @@ public class ResetUserPasswordHandler(IDbContext dbContext, ISecurityProvider se
         user.PasswordHash = securityProvider.HashPassword(user, request.NewPassword);
         user.SecurityStamp = Guid.NewGuid().ToString();
 
-        var email = new EmailEntity(user.Email!, "Your password has been reset", $"Your account password has been reset by an administrator. Your new password is: <b>{request.NewPassword}</b><br/>Please change it after logging in.");
-        dbContext.Emails.Add(email);
         await dbContext.SaveChangesAsync(ct);
 
-        await messageQueuePublisher.PublishAsync("email", email, ct);
+        await emailHelper.SendEmailAsync(user.Email!, "Your password has been reset",
+            $"Your account password has been reset by an administrator. Your new password is: <b>{request.NewPassword}</b><br/>Please change it after logging in.");
 
         return new ResetUserPasswordResponse(true);
     }
