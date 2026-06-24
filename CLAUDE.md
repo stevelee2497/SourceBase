@@ -21,6 +21,7 @@ SourceBase.Tests/           # Integration tests with xUnit + FluentAssertions + 
 - Use primary constructors for handlers and services to keep code concise and avoid boilerplate.
 - Avoid nested `if` statements; use early returns and guard clauses instead. Keep every method short and focused on a single responsibility.
 - **Config** — add new settings to `AppSettings.cs` and `appsettings.json`. Injected as singleton `AppSettings`.
+- env variables in docker-compose.yml need to be defined in github vars and secrets pipeline docker-publish.yml for deployment to work.
 
 ## Skills
 

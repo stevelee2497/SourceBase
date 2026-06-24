@@ -37,8 +37,8 @@ public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumer
             var body = Encoding.UTF8.GetString(ea.Body.Span);
             try
             {
-                var message = JsonSerializer.Deserialize<EmailMessage>(body)
-                    ?? throw new InvalidOperationException("Deserialized null email message");
+                logger.LogInformation("Received email message: {Body}", body);
+                var message = JsonSerializer.Deserialize<EmailMessage>(body) ?? throw new InvalidOperationException("Deserialized null email message");
 
                 await SendViaGridAsync(message, ct);
                 await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
