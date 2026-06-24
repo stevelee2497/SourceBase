@@ -5,6 +5,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="BetterStack.Logs.Serilog" />
+		<PackageReference Include="Serilog.Sinks.Async" />
 		<PackageReference Include="Swashbuckle.AspNetCore" />
 		<PackageReference Include="Serilog.AspNetCore" />
 		<PackageReference Include="Serilog.Sinks.Console" />

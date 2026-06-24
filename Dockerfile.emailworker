@@ -5,13 +5,9 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY Directory.Packages.props .
 COPY Directory.Build.props .
-COPY SourceBase.Domain/SourceBase.Domain.csproj SourceBase.Domain/
-COPY SourceBase.Application/SourceBase.Application.csproj SourceBase.Application/
 COPY SourceBase.EmailWorker/SourceBase.EmailWorker.csproj SourceBase.EmailWorker/
 RUN dotnet restore SourceBase.EmailWorker/SourceBase.EmailWorker.csproj
 
-COPY SourceBase.Domain/ SourceBase.Domain/
-COPY SourceBase.Application/ SourceBase.Application/
 COPY SourceBase.EmailWorker/ SourceBase.EmailWorker/
 
 RUN dotnet publish SourceBase.EmailWorker/SourceBase.EmailWorker.csproj -c Release -o /app/publish

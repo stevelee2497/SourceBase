@@ -7,8 +7,6 @@ using SendGrid.Helpers.Mail;
 
 namespace SourceBase.EmailWorker;
 
-public record EmailMessage(string To, string Subject, string Body);
-
 public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumerService> logger) : BackgroundService
 {
     private IConnection? _connection;
@@ -89,11 +87,14 @@ public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumer
     }
 }
 
+public record EmailMessage(string To, string Subject, string Body);
+
 public class AppSettings
 {
     public RabbitMqSettings RabbitMq { get; set; } = new();
     public string SendGridApiKey { get; set; } = string.Empty;
     public string SendGridAccountOwner { get; set; } = string.Empty;
+    public string BetterStackSourceToken { get; set; } = string.Empty;
 }
 
 public class RabbitMqSettings

@@ -86,6 +86,10 @@ public static class ProgramConfigurations
             logConfig
                 .ReadFrom.Configuration(ctx.Configuration)
                 .Enrich.WithSpan();
+
+            var token = ctx.Configuration[nameof(AppSettings.BetterStackSourceToken)];
+            if (!string.IsNullOrEmpty(token))
+                logConfig.WriteTo.BetterStack(token);
         });
     }
 
@@ -157,10 +161,25 @@ public static class ProgramConfigurations
 
             options.OnRejected = async (context, ct) =>
             {
+                var logger = context.HttpContext.RequestServices
+                    .GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("RateLimit");
+
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
 
+                var retryAfterSeconds = 0;
                 if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
-                    context.HttpContext.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
+                {
+                    retryAfterSeconds = (int)retryAfter.TotalSeconds;
+                    context.HttpContext.Response.Headers.RetryAfter = retryAfterSeconds.ToString();
+                }
+
+                logger.LogWarning(
+                    "Rate limit exceeded. IP={ClientIp} Path={RequestPath} UserAgent={UserAgent} RetryAfter={RetryAfter}s",
+                    context.HttpContext.GetClientIp(),
+                    context.HttpContext.Request.Path.ToString(),
+                    context.HttpContext.Request.Headers.UserAgent.ToString(),
+                    retryAfterSeconds);
 
                 await context.HttpContext.Response.WriteAsJsonAsync(new
                 {
