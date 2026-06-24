@@ -7,8 +7,6 @@ using SendGrid.Helpers.Mail;
 
 namespace SourceBase.EmailWorker;
 
-public record EmailMessage(string To, string Subject, string Body);
-
 public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumerService> logger) : BackgroundService
 {
     private IConnection? _connection;
@@ -88,6 +86,8 @@ public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumer
         if (_connection is not null) await _connection.DisposeAsync();
     }
 }
+
+public record EmailMessage(string To, string Subject, string Body);
 
 public class AppSettings
 {
