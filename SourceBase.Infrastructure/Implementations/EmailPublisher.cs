@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
-using SourceBase.Application.Shared.Models;
 using SourceBase.Domain.Entities;
 
 namespace SourceBase.Infrastructure.Implementations;

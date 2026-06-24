@@ -5,7 +5,6 @@ using RabbitMQ.Client.Events;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using SourceBase.Application.Shared;
-using SourceBase.Application.Shared.Models;
 
 namespace SourceBase.EmailWorker;
 
