@@ -4,9 +4,9 @@ using SourceBase.Web.Auth;
 
 namespace SourceBase.Web.Services;
 
-public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
+public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastService toast)
 {
-    private static readonly ErrorResponse UnknownError = new("UNKNOWN", "An unexpected error occurred.");
+    private static readonly ErrorResponse UnknownError = new("UNKNOWN", "An unexpected error occurred.", string.Empty);
 
     private HttpRequestMessage Request(HttpMethod method, string url, object? body = null)
     {
@@ -24,7 +24,7 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
         return req;
     }
 
-    private async Task<(T? data, ErrorResponse? error)> ExecuteAsync<T>(Func<HttpRequestMessage> factory, bool retry = true)
+    private async Task<(T? data, ErrorResponse? error)> ExecuteAsync<T>(Func<HttpRequestMessage> factory, bool retry = true, bool silent = false)
     {
         try
         {
@@ -32,21 +32,26 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && retry)
             {
                 if (!await TryRefreshTokensAsync())
-                    return (default, await response.Content.ReadFromJsonAsync<ErrorResponse>() ?? UnknownError);
+                {
+                    var err = await response.Content.ReadFromJsonAsync<ErrorResponse>() ?? UnknownError;
+                    return (default, err);
+                }
                 response = await http.SendAsync(factory());
             }
             if (response.IsSuccessStatusCode)
                 return (await response.Content.ReadFromJsonAsync<T>(), null);
-            var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (default, error ?? UnknownError);
+            var error = await response.Content.ReadFromJsonAsync<ErrorResponse>() ?? UnknownError;
+            if (!silent) toast.ShowError(error);
+            return (default, error);
         }
         catch
         {
+            if (!silent) toast.ShowError(UnknownError);
             return (default, UnknownError);
         }
     }
 
-    private async Task<ErrorResponse?> ExecuteAsync(Func<HttpRequestMessage> factory, bool retry = true)
+    private async Task<ErrorResponse?> ExecuteAsync(Func<HttpRequestMessage> factory, bool retry = true, bool silent = false)
     {
         try
         {
@@ -54,15 +59,21 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && retry)
             {
                 if (!await TryRefreshTokensAsync())
-                    return await response.Content.ReadFromJsonAsync<ErrorResponse>() ?? UnknownError;
+                {
+                    var err = await response.Content.ReadFromJsonAsync<ErrorResponse>() ?? UnknownError;
+                    return err;
+                }
                 response = await http.SendAsync(factory());
             }
             if (response.IsSuccessStatusCode)
                 return null;
-            return await response.Content.ReadFromJsonAsync<ErrorResponse>() ?? UnknownError;
+            var error = await response.Content.ReadFromJsonAsync<ErrorResponse>() ?? UnknownError;
+            if (!silent) toast.ShowError(error);
+            return error;
         }
         catch
         {
+            if (!silent) toast.ShowError(UnknownError);
             return UnknownError;
         }
     }
@@ -74,7 +85,7 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth)
             await auth.SignOutAsync();
             return false;
         }
-        var (tokens, _) = await ExecuteAsync<LoginResponse>(() => Request(HttpMethod.Post, "/api/auth/refresh", new { token = auth.RefreshToken }), retry: false);
+        var (tokens, _) = await ExecuteAsync<LoginResponse>(() => Request(HttpMethod.Post, "/api/auth/refresh", new { token = auth.RefreshToken }), retry: false, silent: true);
         if (tokens is null)
         {
             await auth.SignOutAsync();
@@ -403,7 +414,7 @@ public sealed record TodoItemResponse(Guid Id, string Title, string Date, string
 public sealed record TodoListResponse(Guid Id, string Name, int ItemCount, DateTime? CreatedOn, string? CreatedBy, bool IsDefault);
 public sealed record StatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems, int TotalWallets, int TotalTransactions);
 public sealed record RedisStatusResponse(bool IsOnline);
-public sealed record ErrorResponse(string Code, string Message, Dictionary<string, string[]>? Errors = null);
+public sealed record ErrorResponse(string Code, string Message, string TraceId, Dictionary<string, string[]>? Errors = null);
 public sealed record WalletResponse(Guid Id, string Name, decimal Balance, decimal InitialBalance, string Currency, string? Icon);
 public sealed record GetWalletsResponse(List<WalletResponse> Wallets, decimal TotalBalance);
 public sealed record GetWalletSummaryResponse(decimal TotalBalance, decimal MonthlyIncome, decimal MonthlyExpense, List<RecentTransactionResponse> RecentTransactions);

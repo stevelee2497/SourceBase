@@ -1,0 +1,62 @@
+@inject ToastService Toast
+@implements IDisposable
+
+<div class="fixed top-4 left-4 z-[100] flex flex-col gap-2 w-80 max-w-[calc(100vw-2rem)] pointer-events-none">
+    @foreach (var toast in Toast.Toasts)
+    {
+        <div class="bg-white border border-red-200 rounded-lg shadow-lg p-3 pointer-events-auto flex flex-col gap-1.5 animate-in" @key="toast.Id">
+            <div class="flex items-start gap-2">
+                <div class="shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="badge bg-red-100 text-red-700">@toast.Code</span>
+                        <span class="text-sm font-medium text-gray-800 break-words">@toast.Message</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(toast.TraceId))
+                    {
+                        <p class="text-xs text-gray-400 font-mono truncate mt-1" title="@toast.TraceId">Trace: @toast.TraceId</p>
+                    }
+                </div>
+                <button @onclick="DismissToast(toast.Id)" class="shrink-0 text-gray-400 hover:text-gray-600 transition-colors" aria-label="Dismiss">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        Toast.OnChange += OnToastChanged;
+        _timer = new Timer(_ => InvokeAsync(AutoDismiss), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    private void OnToastChanged() => InvokeAsync(StateHasChanged);
+
+    private void AutoDismiss()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var expired = Toast.Toasts.Where(t => (now - t.CreatedAt).TotalSeconds > 8).Select(t => t.Id).ToList();
+        if (expired.Count == 0) return;
+        foreach (var id in expired)
+            Toast.Dismiss(id);
+        StateHasChanged();
+    }
+
+    private Action DismissToast(Guid id) => () => Toast.Dismiss(id);
+
+    public void Dispose()
+    {
+        Toast.OnChange -= OnToastChanged;
+        _timer?.Dispose();
+    }
+}

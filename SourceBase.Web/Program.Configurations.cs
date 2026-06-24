@@ -76,6 +76,7 @@ public static class ProgramConfigurations
         services.AddScoped<BlazorAuthStateProvider>();
         services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<BlazorAuthStateProvider>());
         services.AddScoped<ApiHttpClient>();
+        services.AddScoped<ToastService>();
         services.AddScoped<NotificationService>();
         services.AddScoped<UserTimeZoneService>();
     }
