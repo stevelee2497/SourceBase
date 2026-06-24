@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+The final goal of this project is to learn fancy design patterns and architecture, and apply them to a real-world project.
+
 ## Architecture
 
 Clean Architecture with Vertical Slice features. Four projects with strict dependency direction: `Api` → `Application` ← `Infrastructure`, all referencing `Domain`.
