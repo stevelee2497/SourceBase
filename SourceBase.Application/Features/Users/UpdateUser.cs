@@ -22,7 +22,7 @@ public class UpdateUserEndpoint : IEndpoint
         .WithTags("Users");
 }
 
-public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, IOtpHelper otpHelper, ICacheService cacheService) : IRequestHandler<UpdateUserRequest, UpdateUserResponse>
+public class UpdateUserHandler(IDbContext dbContext, IMessageQueuePublisher messageQueuePublisher, IOtpHelper otpHelper, ICacheService cacheService) : IRequestHandler<UpdateUserRequest, UpdateUserResponse>
 {
     public async Task<UpdateUserResponse> Handle(UpdateUserRequest request, CancellationToken ct)
     {
@@ -93,7 +93,11 @@ public class UpdateUserHandler(IDbContext dbContext, IEmailHelper emailHelper, I
         await dbContext.SaveChangesAsync(ct);
 
         if (emailChanged)
-            await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>");
+        {
+            dbContext.Emails.Add(new EmailEntity(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>"));
+            await dbContext.SaveChangesAsync(ct);
+            await messageQueuePublisher.PublishAsync("email", new EmailMessage(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{user.OtpCode}</b>"), ct);
+        }
 
         await cacheService.RemoveAsync(CacheKeys.UserInfo.WithId(user.Id), ct);
 

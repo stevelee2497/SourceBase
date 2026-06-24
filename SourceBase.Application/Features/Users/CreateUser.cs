@@ -21,7 +21,7 @@ public class CreateUserEndpoint : IEndpoint
         .WithTags("Users");
 }
 
-public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityProvider, IEmailHelper emailHelper, IOtpHelper otpHelper, INotificationService notificationService) : IRequestHandler<CreateUserRequest, CreateUserResponse>
+public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityProvider, IMessageQueuePublisher messageQueuePublisher, IOtpHelper otpHelper, INotificationService notificationService) : IRequestHandler<CreateUserRequest, CreateUserResponse>
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken ct)
     {
@@ -63,9 +63,10 @@ public class CreateUserHandler(IDbContext dbContext, ISecurityProvider securityP
         }
 
         dbContext.Users.Add(user);
+        dbContext.Emails.Add(new EmailEntity(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{confirmationCode}</b>"));
         await dbContext.SaveChangesAsync(ct);
 
-        await emailHelper.SendEmailAsync(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{confirmationCode}</b>");
+        await messageQueuePublisher.PublishAsync("email", new EmailMessage(user.Email!, "Confirm your email", $"Your confirmation code is: <b>{confirmationCode}</b>"), ct);
 
         var adminUsers = await dbContext.Users
             .Where(u => u.Roles.Any(r => r.Name == AppRoles.Admin))

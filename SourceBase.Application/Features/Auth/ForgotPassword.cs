@@ -21,7 +21,7 @@ public class ForgotPasswordEndpoint : IEndpoint
         .WithTags("Auth");
 }
 
-public class ForgotPasswordHandler(IDbContext dbContext, IEmailHelper emailHelper, IOtpHelper otpHelper) : IRequestHandler<ForgotPasswordRequest, ForgotPasswordResponse>
+public class ForgotPasswordHandler(IDbContext dbContext, IMessageQueuePublisher messageQueuePublisher, IOtpHelper otpHelper) : IRequestHandler<ForgotPasswordRequest, ForgotPasswordResponse>
 {
     public async Task<ForgotPasswordResponse> Handle(ForgotPasswordRequest request, CancellationToken ct)
     {
@@ -29,8 +29,9 @@ public class ForgotPasswordHandler(IDbContext dbContext, IEmailHelper emailHelpe
         var (otp, expiresOn) = otpHelper.Generate();
         user.OtpCode = otp;
         user.OtpCodeExpiresOn = expiresOn;
+        dbContext.Emails.Add(new EmailEntity(request.Email, "Reset Password", $"Your password reset code is: <b>{otp}</b>"));
         await dbContext.SaveChangesAsync(ct);
-        await emailHelper.SendEmailAsync(request.Email, "Reset Password", $"Your password reset code is: <b>{otp}</b>");
+        await messageQueuePublisher.PublishAsync("email", new EmailMessage(request.Email, "Reset Password", $"Your password reset code is: <b>{otp}</b>"), ct);
         return new ForgotPasswordResponse(true);
     }
 }
