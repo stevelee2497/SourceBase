@@ -15,7 +15,7 @@ try
            .ReadFrom.Services(services)
            .Enrich.FromLogContext();
 
-        var token = builder.Configuration["BetterStack:SourceToken"];
+        var token = builder.Configuration[nameof(AppSettings.BetterStackSourceToken)];
         if (!string.IsNullOrEmpty(token))
             cfg.WriteTo.BetterStack(token);
     });

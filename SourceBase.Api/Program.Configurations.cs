@@ -87,7 +87,7 @@ public static class ProgramConfigurations
                 .ReadFrom.Configuration(ctx.Configuration)
                 .Enrich.WithSpan();
 
-            var token = ctx.Configuration["BetterStack:SourceToken"];
+            var token = ctx.Configuration[nameof(AppSettings.BetterStackSourceToken)];
             if (!string.IsNullOrEmpty(token))
                 logConfig.WriteTo.BetterStack(token);
         });

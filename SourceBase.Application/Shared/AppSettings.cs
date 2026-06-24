@@ -16,6 +16,7 @@ public class AppSettings
     public RateLimitSettings RateLimitSettings { get; set; } = new();
     public RabbitMqSettings RabbitMq { get; set; } = new();
     public string[] AllowedSpecificOrigins { get; set; } = [];
+    public string BetterStackSourceToken { get; set; } = string.Empty;
 }
 
 public class R2Settings

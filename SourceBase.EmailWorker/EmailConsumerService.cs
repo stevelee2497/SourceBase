@@ -94,6 +94,7 @@ public class AppSettings
     public RabbitMqSettings RabbitMq { get; set; } = new();
     public string SendGridApiKey { get; set; } = string.Empty;
     public string SendGridAccountOwner { get; set; } = string.Empty;
+    public string BetterStackSourceToken { get; set; } = string.Empty;
 }
 
 public class RabbitMqSettings
