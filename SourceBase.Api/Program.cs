@@ -6,7 +6,6 @@ using SourceBase.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.AddSeriLog();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();

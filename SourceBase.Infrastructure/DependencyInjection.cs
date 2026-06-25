@@ -62,7 +62,6 @@ public static class DependencyInjection
         services.AddSignalR();
         services.AddSingleton<IDateTime, DateTimeProvider>();
         services.AddSingleton<ICacheService, RedisCacheService>();
-        services.AddSingleton<IMessageQueuePublisher, RabbitMqMessageQueuePublisher>();
         services.AddScoped<ISecurityProvider, SecurityProvider>();
         services.AddScoped<IDbContext, ApplicationDbContext>();
         services.AddScoped<ICurrentUser, CurrentUser>();
@@ -70,8 +69,6 @@ public static class DependencyInjection
         services.AddScoped<IStorageService, CloudflareR2StorageService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IOtpHelper, OtpHelper>();
-        services.AddHostedService<EmailConsumerService>();
-
         services.AddHttpClient(Constants.HttpClientName, client =>
         {
             client.Timeout = TimeSpan.FromSeconds(15);
