@@ -21,15 +21,12 @@ public static class DependencyInjection
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var appSettings = configuration.Get<AppSettings>()!;
-        if (appSettings.RedisEnabled)
+        if (appSettings.RedisEnabled && !string.IsNullOrWhiteSpace(appSettings.ConnectionStrings.RedisConnection))
         {
-            if (!string.IsNullOrWhiteSpace(appSettings.ConnectionStrings.RedisConnection))
-            {
-                var redis = ConnectionMultiplexer.Connect(appSettings.ConnectionStrings.RedisConnection);
-                services.AddDataProtection()
-                    .PersistKeysToStackExchangeRedis(redis, CacheKeys.DataProtectionKeys)
-                    .SetApplicationName("SourceBase.Api");
-            }
+            var redis = ConnectionMultiplexer.Connect(appSettings.ConnectionStrings.RedisConnection);
+            services.AddDataProtection()
+                .PersistKeysToStackExchangeRedis(redis, CacheKeys.DataProtectionKeys)
+                .SetApplicationName("api");
         }
 
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
