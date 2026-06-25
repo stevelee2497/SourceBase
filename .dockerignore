@@ -3,6 +3,9 @@ bin/
 obj/
 out/
 
+# Ignore Node.js packages (installed inside Docker via npm ci)
+**/node_modules/
+
 # Ignore user-specific files
 *.user
 *.suo

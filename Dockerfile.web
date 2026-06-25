@@ -14,6 +14,7 @@ COPY Directory.Build.props .
 COPY SourceBase.Web/SourceBase.Web.csproj SourceBase.Web/
 COPY SourceBase.Web/package.json SourceBase.Web/
 COPY SourceBase.Web/package-lock.json SourceBase.Web/
+RUN cd SourceBase.Web && npm ci
 RUN dotnet restore SourceBase.Web/SourceBase.Web.csproj
 
 COPY . .
