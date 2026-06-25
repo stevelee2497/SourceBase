@@ -18,6 +18,12 @@ public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumer
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
+        if (!appSettings.BackgroundJobSettings.Enabled)
+        {
+            logger.LogInformation("Background jobs are disabled. EmailConsumerService will not run.");
+            return;
+        }
+
         var settings = appSettings.RabbitMq;
         var factory = new ConnectionFactory
         {
