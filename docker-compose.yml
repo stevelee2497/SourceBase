@@ -91,12 +91,20 @@ services:
     networks:
       - internal
 
+  sourcebase-web:
+    image: ghcr.io/stevelee2497/sourcebase-web:latest
+    container_name: sourcebase-web
+    restart: always
+    networks:
+      - internal
+
   caddy:
     image: caddy:alpine
     container_name: sourcebase-caddy
     restart: unless-stopped
     environment:
       - API_URL=${API_URL}
+      - WEB_URL=${WEB_URL}
     ports:
       - "80:80"
       - "443:443"
@@ -106,6 +114,7 @@ services:
       - caddy_config:/config
     depends_on:
       - sourcebase-api
+      - sourcebase-web
     networks:
       - internal
 
