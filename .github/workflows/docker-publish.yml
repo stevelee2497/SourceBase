@@ -20,8 +20,8 @@ jobs:
 
       - name: Run tests
         env:
-          USE_POSTGRES: "true"
-          USE_REDIS: "true"
+          USE_POSTGRES: 'true'
+          USE_REDIS: 'true'
         run: dotnet test SourceBase.Tests --verbosity normal
 
   build-and-push:
@@ -128,11 +128,12 @@ jobs:
           API_URL: ${{ vars.API_URL }}
           REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
           BETTERSTACK_SOURCE_TOKEN: ${{ secrets.BETTERSTACK_SOURCE_TOKEN }}
+          CF_URL: ${{ vars.CF_URL }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB,ADMIN_EMAIL,ADMIN_PASSWORD,SENDGRID_API_KEY,SENDGRID_ACCOUNT_OWNER,WEB_URL,API_URL,REDIS_PASSWORD,BETTERSTACK_SOURCE_TOKEN
+          envs: POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB,ADMIN_EMAIL,ADMIN_PASSWORD,SENDGRID_API_KEY,SENDGRID_ACCOUNT_OWNER,WEB_URL,API_URL,REDIS_PASSWORD,BETTERSTACK_SOURCE_TOKEN,CF_URL
           script: |
             cd ${{ vars.VPS_APP_PATH || '~/SourceBase' }}
             git pull
