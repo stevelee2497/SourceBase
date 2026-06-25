@@ -119,3 +119,4 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
   - `NotFoundException` → 404 · `UnAuthorizedException` → 401 · `ForbiddenException` → 403
   - `BadRequestException` → 400 · `ValidationException` → 400 (field errors) · `ApiInternalException` → 500
 - Avoid nested `if` statements; use early returns and guard clauses instead. Keep every method short and focused on a single responsibility.
+- Avoid magic strings; use constants or enums or define value in AppSettings instead

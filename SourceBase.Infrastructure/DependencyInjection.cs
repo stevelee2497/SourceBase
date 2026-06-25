@@ -8,9 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Domain.Entities;
+using SourceBase.Infrastructure.BackgroundServices;
+using SourceBase.Infrastructure.BackgroundServices.Scrapers;
 using SourceBase.Infrastructure.DbContexts;
 using SourceBase.Infrastructure.Implementations;
-using SourceBase.Infrastructure.Implementations.Scrapers;
 using StackExchange.Redis;
 
 namespace SourceBase.Infrastructure;
@@ -20,23 +21,17 @@ public static class DependencyInjection
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var appSettings = configuration.Get<AppSettings>()!;
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-        if (appSettings.RedisEnabled)
+        if (appSettings.RedisEnabled && !string.IsNullOrWhiteSpace(appSettings.ConnectionStrings.RedisConnection))
         {
-            var redisConnection = configuration.GetConnectionString("RedisConnection");
-            if (!string.IsNullOrWhiteSpace(redisConnection))
-            {
-                var redis = ConnectionMultiplexer.Connect(redisConnection);
-                services.AddDataProtection()
-                    .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
-                    .SetApplicationName("SourceBase.Api");
-            }
+            var redis = ConnectionMultiplexer.Connect(appSettings.ConnectionStrings.RedisConnection);
+            services.AddDataProtection()
+                .PersistKeysToStackExchangeRedis(redis, CacheKeys.DataProtectionKeys)
+                .SetApplicationName("api");
         }
 
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
-            options.UseNpgsql(connectionString, o => o.MigrationsAssembly("SourceBase.Infrastructure"))
+            options.UseNpgsql(appSettings.ConnectionStrings.DefaultConnection)
                 .UseSeeding((context, _) => ApplicationDbContext.SeedData(context, configuration))
                 .UseAsyncSeeding(async (context, _, _) => ApplicationDbContext.SeedData(context, configuration));
         });
@@ -75,8 +70,9 @@ public static class DependencyInjection
         services.AddScoped<IStorageService, CloudflareR2StorageService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IOtpHelper, OtpHelper>();
+        services.AddHostedService<EmailConsumerService>();
 
-        services.AddHttpClient("GoldScraper", client =>
+        services.AddHttpClient(Constants.HttpClientName, client =>
         {
             client.Timeout = TimeSpan.FromSeconds(15);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; SourceBase/1.0)");

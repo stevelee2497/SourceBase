@@ -5,7 +5,7 @@ using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Domain.Entities;
 
-namespace SourceBase.Infrastructure.Implementations.Scrapers;
+namespace SourceBase.Infrastructure.BackgroundServices.Scrapers;
 
 public class PnjGoldPriceScraper(ILogger<PnjGoldPriceScraper> logger) : IGoldPriceScraper
 {

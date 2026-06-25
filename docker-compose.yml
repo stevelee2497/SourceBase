@@ -51,19 +51,21 @@ services:
       retries: 5
 
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    image: rabbitmq:4-alpine
     container_name: sourcebase-rabbitmq
     restart: unless-stopped
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+      - RABBITMQ_VM_MEMORY_HIGH_WATERMARK_ABSOLUTE=96MB
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     networks:
       - internal
+    deploy:
+      resources:
+        limits:
+          memory: 150m
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 15s
@@ -89,6 +91,8 @@ services:
       - RabbitMq__Port=5672
       - RabbitMq__UserName=${RABBITMQ_USER}
       - RabbitMq__Password=${RABBITMQ_PASSWORD}
+      - SendGridApiKey=${SENDGRID_API_KEY}
+      - SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
       - BetterStackSourceToken=${BETTERSTACK_SOURCE_TOKEN}
     volumes:
       - ./logs/api:/app/Logs
@@ -99,30 +103,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - internal
-
-  sourcebase-email-worker:
-    image: ghcr.io/stevelee2497/sourcebase-email-worker:latest
-    build:
-      context: .
-      dockerfile: Dockerfile.emailworker
-    container_name: sourcebase-email-worker
-    restart: always
-    environment:
-      - DOTNET_ENVIRONMENT=Production
-      - RabbitMq__Host=rabbitmq
-      - RabbitMq__Port=5672
-      - RabbitMq__UserName=${RABBITMQ_USER}
-      - RabbitMq__Password=${RABBITMQ_PASSWORD}
-      - SendGridApiKey=${SENDGRID_API_KEY}
-      - SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
-      - BetterStackSourceToken=${BETTERSTACK_SOURCE_TOKEN}
-    volumes:
-      - ./logs/email-worker:/app/Logs
-    depends_on:
       rabbitmq:
         condition: service_healthy
     networks:

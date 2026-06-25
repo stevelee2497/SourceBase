@@ -22,6 +22,7 @@ SourceBase.Tests/           # Integration tests with xUnit + FluentAssertions + 
 - Avoid nested `if` statements; use early returns and guard clauses instead. Keep every method short and focused on a single responsibility.
 - **Config** — add new settings to `AppSettings.cs` and `appsettings.json`. Injected as singleton `AppSettings`.
 - env variables in docker-compose.yml need to be defined in github vars and secrets pipeline docker-publish.yml for deployment to work.
+- Avoid magic strings; use constants or enums or define value in AppSettings instead
 
 ## Skills
 

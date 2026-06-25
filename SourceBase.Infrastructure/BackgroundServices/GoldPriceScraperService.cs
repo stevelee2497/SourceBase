@@ -5,7 +5,7 @@ using SourceBase.Application.Features.GoldPrices;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
-namespace SourceBase.Infrastructure.Implementations;
+namespace SourceBase.Infrastructure.BackgroundServices;
 
 public class GoldPriceScraperService(
     AppSettings appSettings,
@@ -32,7 +32,7 @@ public class GoldPriceScraperService(
 
     private async Task RunScrapersAsync(CancellationToken ct)
     {
-        var http = httpClientFactory.CreateClient("GoldScraper");
+        var http = httpClientFactory.CreateClient(Constants.HttpClientName);
         var goldPrices = new List<CreateGoldPriceItem>();
         foreach (var scraper in scrapers)
         {
