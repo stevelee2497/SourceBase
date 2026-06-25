@@ -1,30 +1,14 @@
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SourceBase.Web;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.AddSeriLog();
-builder.Services.AddCompression();
-builder.Services.AddBlazorOptions();
-builder.Services.AddSignalROptions();
-builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthorizationCore();
+builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAppSettings(builder.Configuration);
 builder.Services.AddDependencyInjection();
 
-var app = builder.Build();
-
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
-    app.UseHttpsRedirection();
-    app.UseResponseCompression();
-}
-app.UseStaticFilesWithCache();
-app.UseAntiforgery();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AllowAnonymous();
-
-app.Run();
+await builder.Build().RunAsync();
