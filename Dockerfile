@@ -1,5 +1,6 @@
 # Use .dockerignore to exclude unnecessary files for smaller context and faster build
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 EXPOSE 8080
 

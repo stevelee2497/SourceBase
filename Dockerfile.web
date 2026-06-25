@@ -16,6 +16,7 @@ RUN echo "{\"ApiBaseUrl\":\"${API_URL}\"}" > SourceBase.Web/wwwroot/appsettings.
 RUN dotnet publish SourceBase.Web/SourceBase.Web.csproj -c Release -o /app/publish
 
 FROM nginx:alpine AS final
+RUN apk upgrade --no-cache
 COPY --from=build /app/publish/wwwroot /usr/share/nginx/html
 COPY nginx.web.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
