@@ -80,13 +80,8 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
             services.RemoveAll<IDateTime>();
             services.AddSingleton<IDateTime>(FakeDateTime);
 
-            // Replace real RabbitMQ publisher with a no-op fake
-            services.RemoveAll<IMessageQueuePublisher>();
-            services.AddSingleton<IMessageQueuePublisher, FakeMessageQueuePublisher>();
-
             // Remove all background services that could interfere with tests
             services.RemoveAll<BackgroundService>();
-            services.RemoveAll<EmailConsumerService>();
             services.RemoveAll<GoldPriceScraperService>();
 
             // Prevent background service failures from stopping the test host
