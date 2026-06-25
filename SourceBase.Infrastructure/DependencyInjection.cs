@@ -37,7 +37,7 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
-            options.UseNpgsql(connectionString, o => o.MigrationsAssembly("SourceBase.Infrastructure"))
+            options.UseNpgsql(connectionString)
                 .UseSeeding((context, _) => ApplicationDbContext.SeedData(context, configuration))
                 .UseAsyncSeeding(async (context, _, _) => ApplicationDbContext.SeedData(context, configuration));
         });
