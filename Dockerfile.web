@@ -1,4 +1,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+# Install Node.js 22 (required for @tailwindcss/oxide which needs Node >= 20)
+RUN apt-get update && apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /src
 
 RUN dotnet workload install wasm-tools
@@ -6,6 +12,8 @@ RUN dotnet workload install wasm-tools
 COPY Directory.Packages.props .
 COPY Directory.Build.props .
 COPY SourceBase.Web/SourceBase.Web.csproj SourceBase.Web/
+COPY SourceBase.Web/package.json SourceBase.Web/
+COPY SourceBase.Web/package-lock.json SourceBase.Web/
 RUN dotnet restore SourceBase.Web/SourceBase.Web.csproj
 
 COPY . .
