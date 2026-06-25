@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Serilog;
 using SourceBase.Web.Auth;
 using SourceBase.Web.Services;
-using StackExchange.Redis;
 using System.IO.Compression;
 
 namespace SourceBase.Web;
@@ -54,18 +52,6 @@ public static class ProgramConfigurations
     {
         var appSettings = configuration.Get<AppSettings>() ?? new AppSettings();
         services.AddSingleton(appSettings);
-
-        if (appSettings.RedisEnabled)
-        {
-            var redisConnection = configuration.GetConnectionString("RedisConnection");
-            if (!string.IsNullOrWhiteSpace(redisConnection))
-            {
-                var redis = ConnectionMultiplexer.Connect(redisConnection);
-                services.AddDataProtection()
-                    .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
-                    .SetApplicationName("SourceBase.Web");
-            }
-        }
 
         services.AddHttpClient("api", client => client.BaseAddress = new Uri(appSettings.ApiBaseUrl));
         services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("api"));

@@ -27,7 +27,7 @@ public static class DependencyInjection
             {
                 var redis = ConnectionMultiplexer.Connect(appSettings.ConnectionStrings.RedisConnection);
                 services.AddDataProtection()
-                    .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
+                    .PersistKeysToStackExchangeRedis(redis, CacheKeys.DataProtectionKeys)
                     .SetApplicationName("SourceBase.Api");
             }
         }
