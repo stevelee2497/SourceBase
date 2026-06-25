@@ -151,6 +151,7 @@ jobs:
     environment: Production
     permissions:
       contents: read
+      deployments: write
 
     steps:
       - uses: actions/checkout@v5
