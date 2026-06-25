@@ -1,11 +1,11 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.JSInterop;
 using SourceBase.Web.Services;
 
 namespace SourceBase.Web.Auth;
 
-public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage) : AuthenticationStateProvider
+public class BlazorAuthStateProvider(IJSRuntime js) : AuthenticationStateProvider
 {
     private const string AccessTokenKey = "access_token";
     private const string RefreshTokenKey = "refresh_token";
@@ -29,18 +29,11 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage) : Authe
 
         try
         {
-            var accessToken = await localStorage.GetAsync<string>(AccessTokenKey);
-            var refreshToken = await localStorage.GetAsync<string>(RefreshTokenKey);
-
-            AccessToken = accessToken is { Success: true, Value.Length: > 0 } ? accessToken.Value : null;
-            RefreshToken = refreshToken is { Success: true, Value.Length: > 0 } ? refreshToken.Value : null;
+            AccessToken = await js.InvokeAsync<string?>("localStorage.getItem", AccessTokenKey);
+            RefreshToken = await js.InvokeAsync<string?>("localStorage.getItem", RefreshTokenKey);
         }
         catch
         {
-            // Data protection key changed (e.g. after redeploy) — stale tokens can't be decrypted.
-            // Clear them so the user gets a clean login prompt instead of a crash.
-            await localStorage.DeleteAsync(AccessTokenKey);
-            await localStorage.DeleteAsync(RefreshTokenKey);
             AccessToken = null;
             RefreshToken = null;
         }
@@ -56,8 +49,8 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage) : Authe
         UserInfo = null;
         _currentPrincipal = Anonymous;
 
-        await localStorage.SetAsync(AccessTokenKey, tokens.AccessToken);
-        await localStorage.SetAsync(RefreshTokenKey, tokens.RefreshToken);
+        await js.InvokeVoidAsync("localStorage.setItem", AccessTokenKey, tokens.AccessToken);
+        await js.InvokeVoidAsync("localStorage.setItem", RefreshTokenKey, tokens.RefreshToken);
     }
 
     // Sets the authenticated principal and notifies listeners.
@@ -76,8 +69,8 @@ public class BlazorAuthStateProvider(ProtectedLocalStorage localStorage) : Authe
         UserInfo = null;
         _currentPrincipal = Anonymous;
 
-        await localStorage.DeleteAsync(AccessTokenKey);
-        await localStorage.DeleteAsync(RefreshTokenKey);
+        await js.InvokeVoidAsync("localStorage.removeItem", AccessTokenKey);
+        await js.InvokeVoidAsync("localStorage.removeItem", RefreshTokenKey);
 
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }

@@ -4,7 +4,7 @@ using SourceBase.Web.Auth;
 
 namespace SourceBase.Web.Services;
 
-public class NotificationService(BlazorAuthStateProvider auth, IConfiguration configuration) : IAsyncDisposable
+public class NotificationService(BlazorAuthStateProvider auth, AppSettings settings) : IAsyncDisposable
 {
     public static JsonSerializerOptions JsonOptions => new()
     {
@@ -12,7 +12,7 @@ public class NotificationService(BlazorAuthStateProvider auth, IConfiguration co
     };
 
     private HubConnection? _connection;
-    private readonly string _hubUrl = configuration["ApiBaseUrl"]!.TrimEnd('/') + "/hubs/notifications";
+    private readonly string _hubUrl = settings.ApiBaseUrl.TrimEnd('/') + "/hubs/notifications";
 
     public List<NotificationResponse> Notifications { get; private set; } = [];
     public int UnreadCount => Notifications.Count(n => !n.IsRead);

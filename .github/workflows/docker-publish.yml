@@ -25,7 +25,7 @@ jobs:
         run: dotnet test SourceBase.Tests --verbosity normal
 
   build-and-push:
-    name: Build & Push
+    name: Build & Push API
     runs-on: ubuntu-latest
     needs: test
     permissions:
@@ -64,28 +64,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Extract metadata for Web image
-        id: meta-web
-        uses: docker/metadata-action@v6
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/sourcebase-web
-          tags: |
-            type=raw,value=latest
-            type=sha,prefix=,format=short
-
-      - name: Build and push Web image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: Dockerfile.web
-          push: true
-          tags: ${{ steps.meta-web.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-
-  deploy:
-    name: Deploy to VPS
+  deploy-api:
+    name: Deploy API to VPS
     runs-on: ubuntu-latest
     needs: build-and-push
     environment: Production
@@ -119,3 +99,41 @@ jobs:
               echo "ERROR: One or more required environment variables are not set."
               exit 1
             fi
+
+  deploy-web:
+    name: Deploy Web to Cloudflare Pages
+    runs-on: ubuntu-latest
+    needs: test
+    environment: Production
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install WASM workload
+        run: dotnet workload install wasm-tools
+
+      - name: Inject production API URL
+        run: |
+          echo '{"ApiBaseUrl":"${{ vars.API_URL }}"}' > SourceBase.Web/wwwroot/appsettings.Production.json
+
+      - name: Publish WASM
+        run: dotnet publish SourceBase.Web/SourceBase.Web.csproj -c Release -o ./web-publish
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          projectName: ${{ vars.CF_PROJECT_NAME }}
+          directory: ./web-publish/wwwroot
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
