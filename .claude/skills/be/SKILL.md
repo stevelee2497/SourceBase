@@ -110,7 +110,6 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 - DI wiring: `AddApplication()` in `SourceBase.Application/DependencyInjection.cs`; `AddInfrastructure()` in `SourceBase.Infrastructure/DependencyInjection.cs`.
 - Interfaces belong in `SourceBase.Application/Shared/Interfaces/`; implementations in `SourceBase.Infrastructure/Implementations/`.
 - Pagination: define `OrderBy` enums per feature and use `PagingRequest` base class. Apply `.PaginateAsync()` on `IQueryable`.
-- Use primary constructors for handlers and services to keep code concise and avoid boilerplate.
 - **Update endpoints use `PATCH` with partial update semantics.** All request fields are nullable; only provided (non-null) fields are applied. Handler uses null-coalescing: `entity.Field = request.Field ?? entity.Field`. Validator rules are guarded with `.When(x => x.Field is not null)`. Sending `null` keeps the existing value — it does not clear a field.
 - **DB-level validation (e.g. existence checks) belongs in the handler**, not the validator.
 - Enums stored as strings via `EnumToStringConverter`. -**Entities** — inherit `BaseAuditableEntity` (`Id`, `CreatedOn/By`, `UpdatedOn/By`). Audit fields set automatically by `ApplicationDbContextAuditInterceptor` — never set manually.
@@ -118,5 +117,3 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 - **Errors** — throw typed exceptions; `GlobalExceptionMiddleware` maps them:
   - `NotFoundException` → 404 · `UnAuthorizedException` → 401 · `ForbiddenException` → 403
   - `BadRequestException` → 400 · `ValidationException` → 400 (field errors) · `ApiInternalException` → 500
-- Avoid nested `if` statements; use early returns and guard clauses instead. Keep every method short and focused on a single responsibility.
-- Avoid magic strings; use constants or enums or define value in AppSettings instead
