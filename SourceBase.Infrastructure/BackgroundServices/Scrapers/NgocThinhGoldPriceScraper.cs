@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Domain.Entities;
 
-namespace SourceBase.Infrastructure.Implementations.Scrapers;
+namespace SourceBase.Infrastructure.BackgroundServices.Scrapers;
 
 public class NgocThinhGoldPriceScraper(ILogger<NgocThinhGoldPriceScraper> logger) : IGoldPriceScraper
 {

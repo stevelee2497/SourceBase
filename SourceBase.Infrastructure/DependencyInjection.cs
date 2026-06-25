@@ -8,9 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Domain.Entities;
+using SourceBase.Infrastructure.BackgroundServices;
+using SourceBase.Infrastructure.BackgroundServices.Scrapers;
 using SourceBase.Infrastructure.DbContexts;
 using SourceBase.Infrastructure.Implementations;
-using SourceBase.Infrastructure.Implementations.Scrapers;
+using SourceBase.Infrastructure.BackgroundServices.Scrapers;
 using StackExchange.Redis;
 
 namespace SourceBase.Infrastructure;
@@ -75,7 +77,7 @@ public static class DependencyInjection
         services.AddScoped<IStorageService, CloudflareR2StorageService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IOtpHelper, OtpHelper>();
-        services.AddHostedService<EmailConsumerBackgroundService>();
+        services.AddHostedService<EmailConsumerService>();
 
         services.AddHttpClient("GoldScraper", client =>
         {

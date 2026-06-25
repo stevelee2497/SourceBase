@@ -5,7 +5,7 @@ using SourceBase.Application.Features.GoldPrices;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
-namespace SourceBase.Infrastructure.Implementations;
+namespace SourceBase.Infrastructure.BackgroundServices;
 
 public class GoldPriceScraperService(
     AppSettings appSettings,

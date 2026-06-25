@@ -1,7 +1,7 @@
 using Shouldly;
 using Microsoft.Extensions.Logging.Abstractions;
-using SourceBase.Infrastructure.Implementations.Scrapers;
 using Xunit;
+using SourceBase.Infrastructure.BackgroundServices.Scrapers;
 
 namespace SourceBase.Tests.Features.GoldPrices.Scrapers;
 

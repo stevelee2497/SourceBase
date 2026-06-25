@@ -9,9 +9,9 @@ using SendGrid.Helpers.Mail;
 using SourceBase.Application.Shared;
 using SourceBase.Domain.Entities;
 
-namespace SourceBase.Infrastructure.Implementations;
+namespace SourceBase.Infrastructure.BackgroundServices;
 
-public class EmailConsumerBackgroundService(AppSettings appSettings, ILogger<EmailConsumerBackgroundService> logger) : BackgroundService
+public class EmailConsumerService(AppSettings appSettings, ILogger<EmailConsumerService> logger) : BackgroundService
 {
     private IConnection? _connection;
     private IChannel? _channel;
