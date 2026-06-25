@@ -6,6 +6,7 @@ public static class Constants
     public const string SecurityStampClaimType = "AspNet.Identity.SecurityStamp";
     public const string GeneralRateLimitPolicy = "general";
     public const string StrictRateLimitPolicy = "strict";
+    public const string HttpClientName = "SourceBaseHttpClient";
 }
 
 public static class AppRoles

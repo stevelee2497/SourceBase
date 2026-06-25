@@ -32,7 +32,7 @@ public class GoldPriceScraperService(
 
     private async Task RunScrapersAsync(CancellationToken ct)
     {
-        var http = httpClientFactory.CreateClient("GoldScraper");
+        var http = httpClientFactory.CreateClient(Constants.HttpClientName);
         var goldPrices = new List<CreateGoldPriceItem>();
         foreach (var scraper in scrapers)
         {

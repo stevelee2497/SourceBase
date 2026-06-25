@@ -2,6 +2,7 @@ namespace SourceBase.Application.Shared;
 
 public class AppSettings
 {
+    public ConnectionStrings ConnectionStrings { get; set; } = new();
     public string AdminEmail { get; set; } = null!;
     public string AdminPassword { get; set; } = null!;
     public List<string> Roles { get; set; } = [];
@@ -50,4 +51,10 @@ public class RabbitMqSettings
     public string UserName { get; set; } = "guest";
     public string Password { get; set; } = "guest";
     public string QueueName { get; set; } = "email";
+}
+
+public class ConnectionStrings
+{
+    public string DefaultConnection { get; set; } = null!;
+    public string RedisConnection { get; set; } = null!;
 }

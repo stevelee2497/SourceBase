@@ -185,8 +185,7 @@ public static class ProgramConfigurations
                 {
                     TraceId = context.HttpContext.TraceIdentifier,
                     Code = "RATE_LIMIT_EXCEEDED",
-                    Message = "Too many requests. Please try again later.",
-                    Errors = new { }
+                    Message = "Too many requests. Please try again later."
                 }, ct);
             };
         });

@@ -21,14 +21,11 @@ public static class DependencyInjection
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var appSettings = configuration.Get<AppSettings>()!;
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-
         if (appSettings.RedisEnabled)
         {
-            var redisConnection = configuration.GetConnectionString("RedisConnection");
-            if (!string.IsNullOrWhiteSpace(redisConnection))
+            if (!string.IsNullOrWhiteSpace(appSettings.ConnectionStrings.RedisConnection))
             {
-                var redis = ConnectionMultiplexer.Connect(redisConnection);
+                var redis = ConnectionMultiplexer.Connect(appSettings.ConnectionStrings.RedisConnection);
                 services.AddDataProtection()
                     .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
                     .SetApplicationName("SourceBase.Api");
@@ -37,7 +34,7 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
-            options.UseNpgsql(connectionString)
+            options.UseNpgsql(appSettings.ConnectionStrings.DefaultConnection)
                 .UseSeeding((context, _) => ApplicationDbContext.SeedData(context, configuration))
                 .UseAsyncSeeding(async (context, _, _) => ApplicationDbContext.SeedData(context, configuration));
         });
@@ -78,7 +75,7 @@ public static class DependencyInjection
         services.AddScoped<IOtpHelper, OtpHelper>();
         services.AddHostedService<EmailConsumerService>();
 
-        services.AddHttpClient("GoldScraper", client =>
+        services.AddHttpClient(Constants.HttpClientName, client =>
         {
             client.Timeout = TimeSpan.FromSeconds(15);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; SourceBase/1.0)");
