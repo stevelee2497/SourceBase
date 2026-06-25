@@ -12,7 +12,6 @@ using SourceBase.Infrastructure.BackgroundServices;
 using SourceBase.Infrastructure.BackgroundServices.Scrapers;
 using SourceBase.Infrastructure.DbContexts;
 using SourceBase.Infrastructure.Implementations;
-using SourceBase.Infrastructure.BackgroundServices.Scrapers;
 using StackExchange.Redis;
 
 namespace SourceBase.Infrastructure;
