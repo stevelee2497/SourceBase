@@ -1,5 +1,6 @@
 @inject BlazorAuthStateProvider AuthStateProvider
 @inject ApiHttpClient Api
+@inject IJSRuntime JS
 
 @if (_isReady)
 {
@@ -23,9 +24,7 @@
                     }
                 </NotAuthorized>
                 <Authorizing>
-                    <div class="loading-screen">
-                        <div class="loading-spinner"></div>
-                    </div>
+                    <span></span>
                 </Authorizing>
             </AuthorizeRouteView>
             <FocusOnNavigate RouteData="routeData" Selector="h1" />
@@ -44,9 +43,7 @@
 }
 else
 {
-    <div class="loading-screen">
-        <div class="loading-spinner"></div>
-    </div>
+    <span></span>
 }
 
 @code {
@@ -60,6 +57,7 @@ else
         await InitializeAuthAsync();
         _isReady = true;
         StateHasChanged();
+        await JS.InvokeVoidAsync("hideAppLoading");
     }
 
     private async Task InitializeAuthAsync()
