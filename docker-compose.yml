@@ -64,8 +64,8 @@ services:
       - AdminEmail=${ADMIN_EMAIL}
       - AdminPassword=${ADMIN_PASSWORD}
       - ConnectionStrings__RedisConnection=redis:6379,password=${REDIS_PASSWORD}
-      - AllowedSpecificOrigins__1=${WEB_URL}
-      - AllowedSpecificOrigins__2=${CF_URL}
+      - AllowedSpecificOrigins__1=https://${WEB_URL}
+      - AllowedSpecificOrigins__2=https://${CF_URL}
       - SendGridApiKey=${SENDGRID_API_KEY}
       - SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
       - BetterStackSourceToken=${BETTERSTACK_SOURCE_TOKEN}
