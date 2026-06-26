@@ -413,7 +413,7 @@ public sealed record RoleResponse(Guid Id, string Name, string? Description);
 public sealed record UserResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, bool EmailConfirmed, string? AvatarUrl, IEnumerable<string> Roles);
 public sealed record TodoItemResponse(Guid Id, string Title, string Date, string Status, Guid? TodoListId);
 public sealed record TodoListResponse(Guid Id, string Name, int ItemCount, DateTime? CreatedOn, string? CreatedBy, bool IsDefault);
-public sealed record StatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems, int TotalWallets, int TotalTransactions);
+public sealed record StatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems, int TotalWallets, int TotalTransactions, decimal TotalBalance, decimal MonthlyIncome, decimal MonthlyExpense, bool AllLogged, string LogTimeDetail);
 public sealed record RedisStatusResponse(bool IsOnline);
 public sealed record ErrorResponse(string Code, string Message, string TraceId, Dictionary<string, string[]>? Errors = null);
 public sealed record WalletResponse(Guid Id, string Name, decimal Balance, decimal InitialBalance, string Currency, string? Icon);

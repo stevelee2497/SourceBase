@@ -39,6 +39,10 @@ public class GetStatsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.TotalTodoItems.ShouldBeGreaterThanOrEqualTo(0);
         body.CompletedTodoItems.ShouldBeGreaterThanOrEqualTo(0);
         body.TotalTodoLists.ShouldBeGreaterThanOrEqualTo(0);
+        body.TotalBalance.ShouldBeGreaterThanOrEqualTo(0);
+        body.MonthlyIncome.ShouldBeGreaterThanOrEqualTo(0);
+        body.MonthlyExpense.ShouldBeGreaterThanOrEqualTo(0);
+        body.LogTimeDetail.ShouldNotBeNull();
     }
 
     [Fact(DisplayName = "DATA-STATS-003: GetStats_CompletedTodoItems_DoesNotExceedTotal")]

@@ -9,17 +9,17 @@
     <!-- Log time status -->
     <div class="card flex flex-col justify-between gap-0 p-2 md:p-4">
         <div class="text-sm font-medium text-gray-500">Log Time</div>
-        @if (_timesheetLoading)
+        @if (_statsLoading)
         {
             <div class="text-sm text-gray-400">Loading…</div>
         }
         else
         {
             <div class="flex items-center gap-2 justify-center">
-                <div class="w-3 h-3 rounded-full shrink-0 @(_allLogged ? "bg-green-500" : "bg-red-500")"></div>
-                <span class="text-base md:text-lg font-semibold @(_allLogged ? "text-green-700" : "text-red-700")">@(_allLogged ? "Logged" : "Not logged")</span>
+                <div class="w-3 h-3 rounded-full shrink-0 @(_stats?.AllLogged == true ? "bg-green-500" : "bg-red-500")"></div>
+                <span class="text-base md:text-lg font-semibold @(_stats?.AllLogged == true ? "text-green-700" : "text-red-700")">@(_stats?.AllLogged == true ? "Logged" : "Not logged")</span>
             </div>
-            <div class="text-xs text-right text-gray-400">@_logTimeDetail</div>
+            <div class="text-xs text-right text-gray-400">@(_stats?.LogTimeDetail)</div>
         }
     </div>
 
@@ -35,20 +35,20 @@
     <!-- Total balance -->
     <div class="card flex flex-col gap-0 p-2 md:p-4">
         <div class="text-sm font-medium text-gray-500">Total Balance</div>
-        @if (_walletsLoading)
+        @if (_statsLoading)
         {
             <div class="text-sm text-gray-400">Loading…</div>
         }
         else
         {
-            <div class="text-md md:text-lg text-center font-bold text-green-600 mt-1 md:mt-4">@FormatAmount(_wallets?.TotalBalance ?? 0)</div>
+            <div class="text-md md:text-lg text-center font-bold text-green-600 mt-1 md:mt-4">@FormatAmount(_stats?.TotalBalance ?? 0)</div>
         }
     </div>
 
     <!-- Monthly income / expense -->
     <div class="card flex flex-col gap-2 p-2 md:p-4">
         <div class="text-sm font-medium text-gray-500">This Month</div>
-        @if (_walletSummaryLoading)
+        @if (_statsLoading)
         {
             <div class="text-sm text-gray-400">Loading…</div>
         }
@@ -57,11 +57,11 @@
             <div class="flex flex-col gap-1">
                 <div class="flex justify-between items-center">
                     <span class="text-xs text-gray-500">Income</span>
-                    <span class="text-xs md:text-base font-semibold text-green-600">+@FormatAmount(_walletSummary?.MonthlyIncome ?? 0)</span>
+                    <span class="text-xs md:text-base font-semibold text-green-600">+@FormatAmount(_stats?.MonthlyIncome ?? 0)</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-xs text-gray-500">Expenses</span>
-                    <span class="text-xs md:text-base font-semibold text-red-600">-@FormatAmount(_walletSummary?.MonthlyExpense ?? 0)</span>
+                    <span class="text-xs md:text-base font-semibold text-red-600">-@FormatAmount(_stats?.MonthlyExpense ?? 0)</span>
                 </div>
             </div>
         }
@@ -218,21 +218,14 @@
 @code {
     private StatsResponse? _stats;
     private GetWalletsResponse? _wallets;
-    private GetWalletSummaryResponse? _walletSummary;
-    private TimeSheetSummaryResponse? _timesheetSummary;
     private List<TodoItemResponse> _defaultTodos = [];
-    private bool _timesheetLoading = true;
+    private bool _statsLoading = true;
     private bool _walletsLoading = true;
-    private bool _walletSummaryLoading = true;
     private bool _todosLoading = true;
-    private bool _redisOnline;
 
     private static readonly string[] GoldSources = ["SJC", "PNJ", "KimKhanhVietHung", "NgocThinh", "GiaVang"];
     private Dictionary<string, GoldPriceResponse?> _goldPrices = new();
     private bool _goldPricesLoading = true;
-
-    private bool _allLogged;
-    private string _logTimeDetail = string.Empty;
 
     private static readonly string[] PieColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#a855f7"];
 
@@ -241,13 +234,7 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.Yield();
-        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadWalletSummaryAsync(), LoadTimesheetAsync(), LoadDefaultTodosAsync(), LoadRedisStatusAsync(), LoadGoldPricesAsync());
-    }
-
-    private async Task LoadRedisStatusAsync()
-    {
-        var (data, _) = await Api.GetRedisStatusAsync();
-        _redisOnline = data?.IsOnline ?? false;
+        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync());
     }
 
     private async Task LoadGoldPricesAsync()
@@ -291,8 +278,10 @@
 
     private async Task LoadStatsAsync()
     {
+        _statsLoading = true;
         var (data, _) = await Api.GetStatsAsync();
         _stats = data;
+        _statsLoading = false;
     }
 
     private async Task LoadWalletsAsync()
@@ -301,42 +290,6 @@
         var (data, _) = await Api.GetWalletsAsync();
         _wallets = data;
         _walletsLoading = false;
-    }
-
-    private async Task LoadWalletSummaryAsync()
-    {
-        _walletSummaryLoading = true;
-        var (data, _) = await Api.GetWalletSummaryAsync();
-        _walletSummary = data;
-        _walletSummaryLoading = false;
-    }
-
-    private async Task LoadTimesheetAsync()
-    {
-        _timesheetLoading = true;
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        var (data, _) = await Api.GetTimeSheetSummaryAsync(today.Year, today.Month);
-        _timesheetSummary = data;
-        ComputeLogTimeStatus(today);
-        _timesheetLoading = false;
-    }
-
-    private void ComputeLogTimeStatus(DateOnly today)
-    {
-        var monday = today.AddDays(-(((int)today.DayOfWeek - 1 + 7) % 7));
-        var weekdaysSoFar = Enumerable.Range(0, today.DayNumber - monday.DayNumber + 1)
-            .Select(i => monday.AddDays(i))
-            .Where(d => d.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday))
-            .ToList();
-
-        var loggedDates = (_timesheetSummary?.Days ?? [])
-            .Where(d => d.TotalHours > 0)
-            .Select(d => d.Date)
-            .ToHashSet();
-
-        _allLogged = weekdaysSoFar.Count > 0 && weekdaysSoFar.All(d => loggedDates.Contains(d));
-        var logged = weekdaysSoFar.Count(d => loggedDates.Contains(d));
-        _logTimeDetail = weekdaysSoFar.Count == 0 ? "No weekdays yet this week" : $"{logged}/{weekdaysSoFar.Count} days this week";
     }
 
     private async Task LoadDefaultTodosAsync()
