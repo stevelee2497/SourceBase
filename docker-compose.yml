@@ -51,7 +51,7 @@ services:
       retries: 5
 
   sourcebase-api:
-    image: ghcr.io/stevelee2497/sourcebase-api:latest
+    image: ghcr.io/stevelee2497/sourcebase-api:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
@@ -93,7 +93,7 @@ services:
       - internal
 
   sourcebase-web:
-    image: ghcr.io/stevelee2497/sourcebase-web:latest
+    image: ghcr.io/stevelee2497/sourcebase-web:${IMAGE_TAG:-latest}
     container_name: sourcebase-web
     restart: always
     networks:
