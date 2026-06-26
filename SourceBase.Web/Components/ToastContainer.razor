@@ -1,7 +1,7 @@
 @inject ToastService Toast
 @implements IDisposable
 
-<div class="fixed top-4 left-4 z-[100] flex flex-col gap-2 w-80 max-w-[calc(100vw-2rem)] pointer-events-none">
+<div class="fixed top-4 right-4 z-100 flex flex-col gap-2 w-80 max-w-[calc(100vw-2rem)] pointer-events-none">
     @foreach (var toast in Toast.Toasts)
     {
         <div class="bg-white border border-red-200 rounded-lg shadow-lg p-3 pointer-events-auto flex flex-col gap-1.5 animate-in" @key="toast.Id">
@@ -14,7 +14,7 @@
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-1.5 flex-wrap">
                         <span class="badge bg-red-100 text-red-700">@toast.Code</span>
-                        <span class="text-sm font-medium text-gray-800 break-words">@toast.Message</span>
+                        <span class="text-sm font-medium text-gray-800 wrap-break-word">@toast.Message</span>
                     </div>
                     @if (!string.IsNullOrEmpty(toast.TraceId))
                     {
