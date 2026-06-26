@@ -249,9 +249,6 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
     public Task<ErrorResponse?> DeleteWalletAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/wallets/{id}"));
 
-    public Task<(GetWalletSummaryResponse? data, ErrorResponse? error)> GetWalletSummaryAsync() =>
-        ExecuteAsync<GetWalletSummaryResponse>(() => AuthorizedRequest(HttpMethod.Get, "/api/wallets/summary"));
-
     public Task<ErrorResponse?> ConfigureWalletAsync(Guid id, string currency) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/wallets/{id}/config", new { currency }));
 
