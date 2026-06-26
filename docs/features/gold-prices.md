@@ -53,13 +53,14 @@ As an authenticated user or background service, I want to record a gold price en
 
 ### Use Case
 
-As an authenticated user, I want to retrieve a paginated and filterable list of gold price records, so that I can view price history and build charts.
+As an authenticated user, I want to retrieve a paginated and filterable list of gold price records, so that I can view price history and build charts. I can also request the latest record per source to display a summary dashboard.
 
 ### Description
 
-1. Client sends optional query parameters: `source` (GoldSource), `dateFrom` (DateTime), `dateTo` (DateTime), `page` (default 1), `limit` (default 20), `order` (Asc / Desc, default Desc), `orderBy` (RecordedAt / BuyPrice / SellPrice / Source, default RecordedAt).
-2. Results are filtered by the provided parameters and paginated.
-3. Returns `{ items, page, limit, total }`.
+1. Client sends optional query parameters: `source` (GoldSource), `dateFrom` (DateTime), `dateTo` (DateTime), `latest` (bool), `page` (default 1), `limit` (default 20), `order` (Asc / Desc, default Desc), `orderBy` (RecordedAt / BuyPrice / SellPrice / Source, default RecordedAt).
+2. If `latest=true`: returns one record per source (the most recent `RecordedAt` for each source). Pagination params are ignored; `page=1`, `limit=items.Count`, `total=items.Count`.
+3. Otherwise: results are filtered by the provided parameters and paginated.
+4. Returns `{ items, page, limit, total }`.
 
 ### Test Cases
 
@@ -71,6 +72,9 @@ As an authenticated user, I want to retrieve a paginated and filterable list of 
 | GOLDPRICE-GET-ALL-004 | `GetGoldPrices_FilterByDateRange_ReturnsMatchingRange` | ✅ 200 + items in range only |
 | GOLDPRICE-GET-ALL-005 | `GetGoldPrices_WithPagination_ReturnsCorrectPage` | ✅ 200 + Items.Count=2, Total≥5 |
 | GOLDPRICE-GET-ALL-006 | `GetGoldPrices_DefaultOrder_ReturnsNewestFirst` | ✅ 200 + newest RecordedAt first |
+| GOLDPRICE-GET-ALL-007 | `GetGoldPrices_WithLatestTrue_ReturnsLatestRecordPerSource` | ✅ 200 + one item per source with latest prices |
+| GOLDPRICE-GET-ALL-008 | `GetGoldPrices_WithLatestTrue_MultipleRecordsPerSource_ReturnsOnlyLatest` | ✅ 200 + only newest record per source |
+| GOLDPRICE-GET-ALL-009 | `GetGoldPrices_WithLatestTrue_AllFiveSourcesSeeded_ReturnsOneItemPerSource` | ✅ 200 + exactly 5 items, one per source |
 
 ---
 
