@@ -158,11 +158,13 @@
     {
         _loadingSummary = true;
         _error = null;
-        var (data, error) = await Api.GetTimeSheetSummaryAsync(_currentDate.Year, _currentDate.Month);
+        var (data, error) = await Api.GetTimeSheetsAsync(_currentDate.Year, _currentDate.Month);
         if (error is not null)
             _error = error.Message;
         else
-            _summaryByDate = (data?.Days ?? []).ToDictionary(x => x.Date);
+            _summaryByDate = (data?.Items ?? [])
+                .GroupBy(x => DateOnly.Parse(x.Date))
+                .ToDictionary(g => g.Key, g => new TimeSheetSummaryDayResponse(g.Key, g.Sum(x => x.Hours), [.. g.Select(x => x.Project).Order()]));
         BuildCalendarCells();
         _loadingSummary = false;
     }
@@ -263,8 +265,10 @@
 
     private async Task RefreshSummaryAsync()
     {
-        var (data, _) = await Api.GetTimeSheetSummaryAsync(_currentDate.Year, _currentDate.Month);
-        _summaryByDate = (data?.Days ?? []).ToDictionary(x => x.Date);
+        var (data, _) = await Api.GetTimeSheetsAsync(_currentDate.Year, _currentDate.Month);
+        _summaryByDate = (data?.Items ?? [])
+            .GroupBy(x => DateOnly.Parse(x.Date))
+            .ToDictionary(g => g.Key, g => new TimeSheetSummaryDayResponse(g.Key, g.Sum(x => x.Hours), [.. g.Select(x => x.Project).Order()]));
         StateHasChanged();
     }
 

@@ -4,7 +4,7 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.TimeSheets;
 
-public record GetTimeSheetsRequest(int? Year, int? Month, DateOnly? Date, int? Page, int? Limit, PagingOrder? Order, GetTimeSheetsOrder? OrderBy) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
+public record GetTimeSheetsRequest(DateOnly? From, DateOnly? To, int? Page, int? Limit, PagingOrder? Order, GetTimeSheetsOrder? OrderBy) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
 
 public class GetTimeSheetsEndpoint : IEndpoint
 {
@@ -21,9 +21,8 @@ public class GetTimeSheetsHandler(IDbContext dbContext, ICurrentUser currentUser
     {
         var items = await dbContext.TimeSheets
             .Where(x => x.UserId == currentUser.UserId
-                && (request.Year == null || x.Date.Year == request.Year)
-                && (request.Month == null || x.Date.Month == request.Month)
-                && (request.Date == null || x.Date == request.Date))
+                && (request.From == null || x.Date >= request.From)
+                && (request.To == null || x.Date <= request.To))
             .PaginateAsync(x => new GetTimeSheetResponse(x), request, ct);
         return items;
     }

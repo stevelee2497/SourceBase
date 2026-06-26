@@ -361,11 +361,15 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
 
     // ── TimeSheets ────────────────────────────────────────────────────────────
 
-    public Task<(TimeSheetSummaryResponse? data, ErrorResponse? error)> GetTimeSheetSummaryAsync(int year, int month) =>
-        ExecuteAsync<TimeSheetSummaryResponse>(() => AuthorizedRequest(HttpMethod.Get, $"/api/time-sheets/summary?year={year}&month={month}"));
+    public Task<(PagingResponse<TimeSheetItemResponse>? data, ErrorResponse? error)> GetTimeSheetsAsync(int year, int month)
+    {
+        var from = new DateOnly(year, month, 1);
+        var to = new DateOnly(year, month, DateTime.DaysInMonth(year, month));
+        return ExecuteAsync<PagingResponse<TimeSheetItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/time-sheets?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}&limit=200"));
+    }
 
     public Task<(PagingResponse<TimeSheetItemResponse>? data, ErrorResponse? error)> GetTimeSheetsAsync(DateOnly date) =>
-        ExecuteAsync<PagingResponse<TimeSheetItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/time-sheets?date={date:yyyy-MM-dd}&limit=100"));
+        ExecuteAsync<PagingResponse<TimeSheetItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/time-sheets?from={date:yyyy-MM-dd}&to={date:yyyy-MM-dd}&limit=100"));
 
     public Task<(TimeSheetBulkResponse? data, ErrorResponse? error)> UpsertTimeSheetsAsync(List<TimeSheetUpsertItem> items) =>
         ExecuteAsync<TimeSheetBulkResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/time-sheets", new { items }));
@@ -422,7 +426,6 @@ public sealed record CategoryBreakdownResponse(Guid? CategoryId, string? Categor
 public sealed record TransferResponse(Guid Id, Guid FromWalletId, string FromWalletName, Guid ToWalletId, string ToWalletName, decimal Amount, string Date, string? Note);
 public sealed record TimeSheetItemResponse(Guid Id, string Date, string Project, decimal Hours);
 public sealed record TimeSheetSummaryDayResponse(DateOnly Date, decimal TotalHours, List<string> Projects);
-public sealed record TimeSheetSummaryResponse(List<TimeSheetSummaryDayResponse> Days);
 public sealed record TimeSheetUpsertItem(string Date, string Project, decimal Hours);
 public sealed record TimeSheetBulkResponse(List<Guid> Ids);
 public sealed record NotificationResponse(Guid Id, string Title, string Message, bool IsRead, DateTime? CreatedOn);
