@@ -28,7 +28,3 @@
     reverse_proxy sourcebase-api:8080
 }
 
-{$WEB_URL} {
-    import security
-    reverse_proxy sourcebase-web:80
-}
