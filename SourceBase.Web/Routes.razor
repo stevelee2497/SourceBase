@@ -23,7 +23,9 @@
                     }
                 </NotAuthorized>
                 <Authorizing>
-                    <div class="flex items-center justify-center min-h-screen text-gray-400">Loading…</div>
+                    <div class="loading-screen">
+                        <div class="loading-spinner"></div>
+                    </div>
                 </Authorizing>
             </AuthorizeRouteView>
             <FocusOnNavigate RouteData="routeData" Selector="h1" />
@@ -42,7 +44,9 @@
 }
 else
 {
-    <div class="flex items-center justify-center min-h-screen text-gray-400">Loading…</div>
+    <div class="loading-screen">
+        <div class="loading-spinner"></div>
+    </div>
 }
 
 @code {

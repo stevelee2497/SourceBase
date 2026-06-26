@@ -66,4 +66,25 @@
     .badge-gray {
         @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-800;
     }
+
+    .loading-screen {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background-color: #f9fafb;
+    }
+
+    .loading-spinner {
+        width: 2.5rem;
+        height: 2.5rem;
+        border: 3px solid #e5e7eb;
+        border-top-color: #4f46e5;
+        border-radius: 50%;
+        animation: sb-spin 0.75s linear infinite;
+    }
+}
+
+@keyframes sb-spin {
+    to { transform: rotate(360deg); }
 }
