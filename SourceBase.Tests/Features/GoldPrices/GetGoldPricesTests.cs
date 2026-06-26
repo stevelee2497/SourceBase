@@ -144,4 +144,91 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var earlierIdx = body.Items.FindIndex(x => x.RecordedAt == earlier);
         laterIdx.ShouldBeLessThan(earlierIdx);
     }
+
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-007: GetGoldPrices_WithLatestTrue_ReturnsLatestRecordPerSource")]
+    public async Task GetGoldPrices_WithLatestTrue_ReturnsLatestRecordPerSource()
+    {
+        // Arrange — far-future timestamp guarantees this is the latest SJC record across all tests
+        var client = await factory.CreateAuthorizedClient($"goldprice_latest_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var t = new DateTime(2099, 7, 1, 10, 0, 0, DateTimeKind.Utc);
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
+        {
+            items = new[] { new { source = "SJC", buyPrice = 2_000_000m, sellPrice = 2_100_000m, recordedAt = t } },
+        });
+
+        // Act
+        var response = await client.GetAsync($"{GetGoldPricesEndpoint.Route}?latest=true");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<GoldPriceResponse>>();
+        body.ShouldNotBeNull();
+        body!.Items.ShouldContain(x => x.Source.ToString() == "SJC");
+        var sjc = body.Items.First(x => x.Source.ToString() == "SJC");
+        sjc.BuyPrice.ShouldBe(2_000_000m);
+        sjc.SellPrice.ShouldBe(2_100_000m);
+        sjc.RecordedAt.ShouldBe(t);
+    }
+
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-008: GetGoldPrices_WithLatestTrue_MultipleRecordsPerSource_ReturnsOnlyLatest")]
+    public async Task GetGoldPrices_WithLatestTrue_MultipleRecordsPerSource_ReturnsOnlyLatest()
+    {
+        // Arrange — far-future timestamps guarantee this PNJ record is the latest across all tests
+        var client = await factory.CreateAuthorizedClient($"goldprice_latest_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var older = new DateTime(2098, 6, 1, 8, 0, 0, DateTimeKind.Utc);
+        var newer = new DateTime(2098, 6, 1, 9, 0, 0, DateTimeKind.Utc);
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
+        {
+            items = new[] { new { source = "PNJ", buyPrice = 1_000_000m, sellPrice = 1_100_000m, recordedAt = older } },
+        });
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
+        {
+            items = new[] { new { source = "PNJ", buyPrice = 1_500_000m, sellPrice = 1_600_000m, recordedAt = newer } },
+        });
+
+        // Act
+        var response = await client.GetAsync($"{GetGoldPricesEndpoint.Route}?latest=true");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<GoldPriceResponse>>();
+        body!.Items.ShouldContain(x => x.Source.ToString() == "PNJ");
+        var pnj = body.Items.First(x => x.Source.ToString() == "PNJ");
+        pnj.BuyPrice.ShouldBe(1_500_000m);
+        pnj.SellPrice.ShouldBe(1_600_000m);
+        pnj.RecordedAt.ShouldBe(newer);
+    }
+
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-009: GetGoldPrices_WithLatestTrue_AllFiveSourcesSeeded_ReturnsOneItemPerSource")]
+    public async Task GetGoldPrices_WithLatestTrue_AllFiveSourcesSeeded_ReturnsOneItemPerSource()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"goldprice_latest_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var baseTime = new DateTime(2043, 5, 1, 6, 0, 0, DateTimeKind.Utc);
+        await client.PostAsJsonAsync(CreateGoldPriceEndpoint.Route, new
+        {
+            items = new[]
+            {
+                new { source = "SJC",              buyPrice = 1_900_000m, sellPrice = 1_950_000m, recordedAt = baseTime },
+                new { source = "PNJ",              buyPrice = 1_880_000m, sellPrice = 1_930_000m, recordedAt = baseTime },
+                new { source = "GiaVang",          buyPrice = 1_860_000m, sellPrice = 1_910_000m, recordedAt = baseTime },
+                new { source = "KimKhanhVietHung", buyPrice = 1_840_000m, sellPrice = 1_890_000m, recordedAt = baseTime },
+                new { source = "NgocThinh",        buyPrice = 1_820_000m, sellPrice = 1_870_000m, recordedAt = baseTime },
+            },
+        });
+
+        // Act
+        var response = await client.GetAsync($"{GetGoldPricesEndpoint.Route}?latest=true");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<GoldPriceResponse>>();
+        var sources = body!.Items.Select(x => x.Source.ToString()).ToList();
+        sources.ShouldContain("SJC");
+        sources.ShouldContain("PNJ");
+        sources.ShouldContain("GiaVang");
+        sources.ShouldContain("KimKhanhVietHung");
+        sources.ShouldContain("NgocThinh");
+        body.Items.Select(x => x.Source.ToString()).Distinct().Count().ShouldBe(body.Items.Count);
+    }
 }

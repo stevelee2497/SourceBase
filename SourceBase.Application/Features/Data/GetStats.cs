@@ -5,7 +5,7 @@ namespace SourceBase.Application.Features.Data;
 
 public record GetStatsRequest;
 
-public record GetStatsResponse(int UserCount, int TotalTodoLists, int TotalTodoItems, int CompletedTodoItems, int TotalWallets, int TotalTransactions, decimal TotalBalance, decimal MonthlyIncome, decimal MonthlyExpense, bool AllLogged, string LogTimeDetail);
+public record GetStatsResponse(int UserCount, decimal TotalBalance, decimal MonthlyIncome, decimal MonthlyExpense, bool AllLogged, string LogTimeDetail);
 
 public class GetStatsEndpoint : IEndpoint
 {
@@ -21,20 +21,15 @@ public class GetStatsHandler(IDbContext dbContext, ICurrentUser currentUser, IDa
     public async Task<GetStatsResponse> Handle(GetStatsRequest request, CancellationToken ct)
     {
         var userCount = await dbContext.Users.CountAsync(ct);
-        var totalTodoLists = await dbContext.TodoLists.CountAsync(ct);
-        var totalTodoItems = await dbContext.TodoItems.CountAsync(ct);
-        var completedTodoItems = await dbContext.TodoItems.CountAsync(x => x.Status == TodoItemStatus.Completed, ct);
-        var totalWallets = await dbContext.Wallets.CountAsync(x => x.UserId == currentUser.UserId, ct);
-        var totalTransactions = await dbContext.Transactions.CountAsync(x => x.UserId == currentUser.UserId, ct);
 
         var today = DateOnly.FromDateTime(dateTime.UtcNow);
         var monthStart = new DateOnly(today.Year, today.Month, 1);
         var nextMonth = monthStart.AddMonths(1);
 
-        var walletBalances = await dbContext.Wallets
+        var walletBalance = await dbContext.Wallets
             .Where(w => w.UserId == currentUser.UserId)
             .Select(w => w.InitialBalance + w.Transactions.Sum(t => t.Amount * (t.Type == TransactionType.Income ? 1 : -1)))
-            .ToListAsync(ct);
+            .SumAsync(ct);
 
         var monthlyIncome = await dbContext.Transactions
             .Where(t => t.UserId == currentUser.UserId && t.Type == TransactionType.Income && t.Date >= monthStart && t.Date < nextMonth)
@@ -52,7 +47,7 @@ public class GetStatsHandler(IDbContext dbContext, ICurrentUser currentUser, IDa
 
         var (allLogged, logTimeDetail) = ComputeLogTimeStatus(today, loggedDates.ToHashSet());
 
-        return new GetStatsResponse(userCount, totalTodoLists, totalTodoItems, completedTodoItems, totalWallets, totalTransactions, walletBalances.Sum(), monthlyIncome, monthlyExpense, allLogged, logTimeDetail);
+        return new GetStatsResponse(userCount, walletBalance, monthlyIncome, monthlyExpense, allLogged, logTimeDetail);
     }
 
     private static (bool AllLogged, string LogTimeDetail) ComputeLogTimeStatus(DateOnly today, HashSet<DateOnly> loggedDates)

@@ -1,7 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.GoldPrices;
@@ -21,7 +20,7 @@ public class CreateGoldPriceEndpoint : IEndpoint
         .WithTags("GoldPrices");
 }
 
-public class CreateGoldPriceHandler(IDbContext dbContext, ICacheService cacheService) : IRequestHandler<CreateGoldPriceRequest, CreateGoldPriceResponse>
+public class CreateGoldPriceHandler(IDbContext dbContext) : IRequestHandler<CreateGoldPriceRequest, CreateGoldPriceResponse>
 {
     public async Task<CreateGoldPriceResponse> Handle(CreateGoldPriceRequest request, CancellationToken ct)
     {
@@ -55,7 +54,6 @@ public class CreateGoldPriceHandler(IDbContext dbContext, ICacheService cacheSer
         }
 
         await dbContext.SaveChangesAsync(ct);
-        await cacheService.RemoveAsync(CacheKeys.GoldPriceSummary, ct);
         return new CreateGoldPriceResponse(ids);
     }
 }

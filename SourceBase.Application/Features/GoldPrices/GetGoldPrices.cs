@@ -4,7 +4,7 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.GoldPrices;
 
-public record GetGoldPricesRequest(GoldSource? Source, DateTime? DateFrom, DateTime? DateTo, int? Page = 1, int? Limit = 20, PagingOrder? Order = PagingOrder.Desc, GoldPriceOrderBy? OrderBy = GoldPriceOrderBy.RecordedAt) : PagingRequest(Page, Limit, Order, (OrderBy ?? GoldPriceOrderBy.RecordedAt).ToString());
+public record GetGoldPricesRequest(GoldSource? Source, DateTime? DateFrom, DateTime? DateTo, bool? Latest = null, int? Page = 1, int? Limit = 20, PagingOrder? Order = PagingOrder.Desc, GoldPriceOrderBy? OrderBy = GoldPriceOrderBy.RecordedAt) : PagingRequest(Page, Limit, Order, (OrderBy ?? GoldPriceOrderBy.RecordedAt).ToString());
 
 public record GoldPriceResponse(Guid Id, GoldSource Source, decimal BuyPrice, decimal SellPrice, DateTime RecordedAt);
 
@@ -19,13 +19,14 @@ public class GetGoldPricesEndpoint : IEndpoint
 
 public class GetGoldPricesHandler(IDbContext dbContext) : IRequestHandler<GetGoldPricesRequest, PagingResponse<GoldPriceResponse>>
 {
-    public async Task<PagingResponse<GoldPriceResponse>> Handle(GetGoldPricesRequest request, CancellationToken ct)
+    public Task<PagingResponse<GoldPriceResponse>> Handle(GetGoldPricesRequest request, CancellationToken ct)
     {
-        return await dbContext.GoldPrices
+        return dbContext.GoldPrices
             .Where(x =>
                 (request.Source == null || x.Source == request.Source) &&
                 (request.DateFrom == null || x.RecordedAt >= request.DateFrom) &&
-                (request.DateTo == null || x.RecordedAt <= request.DateTo))
+                (request.DateTo == null || x.RecordedAt <= request.DateTo) &&
+                (request.Latest == null || request.Latest == false || x.RecordedAt == dbContext.GoldPrices.Where(q => q.Source == x.Source).Max(q => q.RecordedAt)))
             .PaginateAsync(x => new GoldPriceResponse(x.Id, x.Source, x.BuyPrice, x.SellPrice, x.RecordedAt), request, ct);
     }
 }

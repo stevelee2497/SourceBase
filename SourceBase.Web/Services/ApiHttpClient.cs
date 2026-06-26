@@ -249,9 +249,6 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
     public Task<ErrorResponse?> DeleteWalletAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/wallets/{id}"));
 
-    public Task<(GetWalletSummaryResponse? data, ErrorResponse? error)> GetWalletSummaryAsync() =>
-        ExecuteAsync<GetWalletSummaryResponse>(() => AuthorizedRequest(HttpMethod.Get, "/api/wallets/summary"));
-
     public Task<ErrorResponse?> ConfigureWalletAsync(Guid id, string currency) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Put, $"/api/wallets/{id}/config", new { currency }));
 
@@ -364,11 +361,15 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
 
     // ── TimeSheets ────────────────────────────────────────────────────────────
 
-    public Task<(TimeSheetSummaryResponse? data, ErrorResponse? error)> GetTimeSheetSummaryAsync(int year, int month) =>
-        ExecuteAsync<TimeSheetSummaryResponse>(() => AuthorizedRequest(HttpMethod.Get, $"/api/time-sheets/summary?year={year}&month={month}"));
+    public Task<(PagingResponse<TimeSheetItemResponse>? data, ErrorResponse? error)> GetTimeSheetsAsync(int year, int month)
+    {
+        var from = new DateOnly(year, month, 1);
+        var to = new DateOnly(year, month, DateTime.DaysInMonth(year, month));
+        return ExecuteAsync<PagingResponse<TimeSheetItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/time-sheets?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}&limit=200"));
+    }
 
     public Task<(PagingResponse<TimeSheetItemResponse>? data, ErrorResponse? error)> GetTimeSheetsAsync(DateOnly date) =>
-        ExecuteAsync<PagingResponse<TimeSheetItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/time-sheets?date={date:yyyy-MM-dd}&limit=100"));
+        ExecuteAsync<PagingResponse<TimeSheetItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/time-sheets?from={date:yyyy-MM-dd}&to={date:yyyy-MM-dd}&limit=100"));
 
     public Task<(TimeSheetBulkResponse? data, ErrorResponse? error)> UpsertTimeSheetsAsync(List<TimeSheetUpsertItem> items) =>
         ExecuteAsync<TimeSheetBulkResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/time-sheets", new { items }));
@@ -392,17 +393,15 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
 
     // ── Gold Prices ───────────────────────────────────────────────────────────
 
-    public Task<(PagingResponse<GoldPriceResponse>? data, ErrorResponse? error)> GetGoldPricesAsync(int page = 1, int limit = 20, string? source = null, string? dateFrom = null, string? dateTo = null)
+    public Task<(PagingResponse<GoldPriceResponse>? data, ErrorResponse? error)> GetGoldPricesAsync(int page = 1, int limit = 20, string? source = null, string? dateFrom = null, string? dateTo = null, bool? latest = null)
     {
         var url = $"/api/gold-prices?page={page}&limit={limit}&order=Desc&orderBy=RecordedAt";
         if (!string.IsNullOrWhiteSpace(source)) url += $"&source={Uri.EscapeDataString(source)}";
         if (!string.IsNullOrWhiteSpace(dateFrom)) url += $"&dateFrom={Uri.EscapeDataString(dateFrom)}";
         if (!string.IsNullOrWhiteSpace(dateTo)) url += $"&dateTo={Uri.EscapeDataString(dateTo)}";
+        if (latest is not null) url += $"&latest={latest.Value.ToString().ToLowerInvariant()}";
         return ExecuteAsync<PagingResponse<GoldPriceResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
     }
-
-    public Task<(GetGoldPriceSummaryResponse? data, ErrorResponse? error)> GetGoldPriceSummaryAsync() =>
-        ExecuteAsync<GetGoldPriceSummaryResponse>(() => AuthorizedRequest(HttpMethod.Get, "/api/gold-prices/summary"));
 }
 
 public sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
@@ -427,7 +426,6 @@ public sealed record CategoryBreakdownResponse(Guid? CategoryId, string? Categor
 public sealed record TransferResponse(Guid Id, Guid FromWalletId, string FromWalletName, Guid ToWalletId, string ToWalletName, decimal Amount, string Date, string? Note);
 public sealed record TimeSheetItemResponse(Guid Id, string Date, string Project, decimal Hours);
 public sealed record TimeSheetSummaryDayResponse(DateOnly Date, decimal TotalHours, List<string> Projects);
-public sealed record TimeSheetSummaryResponse(List<TimeSheetSummaryDayResponse> Days);
 public sealed record TimeSheetUpsertItem(string Date, string Project, decimal Hours);
 public sealed record TimeSheetBulkResponse(List<Guid> Ids);
 public sealed record NotificationResponse(Guid Id, string Title, string Message, bool IsRead, DateTime? CreatedOn);
@@ -435,4 +433,3 @@ public sealed record GetNotificationsResponse(List<NotificationResponse> Items, 
 public sealed record IconResponse(Guid Id, string Value, string Name, string Group, int SortOrder, bool IsSystem);
 public sealed record IconUploadUrlResponse(string UploadUrl, string IconUrl, string ContentType);
 public sealed record GoldPriceResponse(Guid Id, string Source, decimal BuyPrice, decimal SellPrice, DateTime RecordedAt);
-public sealed record GetGoldPriceSummaryResponse(List<GoldPriceResponse> Items);

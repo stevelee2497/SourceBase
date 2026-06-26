@@ -36,27 +36,9 @@ public class GetStatsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         var body = await response.Content.ReadFromJsonAsync<GetStatsResponse>();
         body.ShouldNotBeNull();
         body!.UserCount.ShouldBeGreaterThan(0);
-        body.TotalTodoItems.ShouldBeGreaterThanOrEqualTo(0);
-        body.CompletedTodoItems.ShouldBeGreaterThanOrEqualTo(0);
-        body.TotalTodoLists.ShouldBeGreaterThanOrEqualTo(0);
         body.TotalBalance.ShouldBeGreaterThanOrEqualTo(0);
         body.MonthlyIncome.ShouldBeGreaterThanOrEqualTo(0);
         body.MonthlyExpense.ShouldBeGreaterThanOrEqualTo(0);
         body.LogTimeDetail.ShouldNotBeNull();
-    }
-
-    [Fact(DisplayName = "DATA-STATS-003: GetStats_CompletedTodoItems_DoesNotExceedTotal")]
-    public async Task GetStats_CompletedTodoItems_DoesNotExceedTotal()
-    {
-        // Arrange
-        var client = await factory.CreateAuthorizedClient();
-
-        // Act
-        var response = await client.GetAsync(GetStatsEndpoint.Route);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<GetStatsResponse>();
-        body!.CompletedTodoItems.ShouldBeLessThanOrEqualTo(body.TotalTodoItems);
     }
 }
