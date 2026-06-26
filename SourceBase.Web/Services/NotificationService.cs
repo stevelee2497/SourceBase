@@ -12,8 +12,6 @@ public class NotificationService(BlazorAuthStateProvider auth, AppSettings setti
     };
 
     private HubConnection? _connection;
-    private readonly string _hubUrl = settings.ApiBaseUrl.TrimEnd('/') + "/hubs/notifications";
-
     public List<NotificationResponse> Notifications { get; private set; } = [];
     public int UnreadCount => Notifications.Count(n => !n.IsRead);
 
@@ -36,7 +34,7 @@ public class NotificationService(BlazorAuthStateProvider auth, AppSettings setti
         }
 
         _connection = new HubConnectionBuilder()
-            .WithUrl(_hubUrl, options =>
+            .WithUrl(settings.HubNotificationUrl, options =>
             {
                 options.AccessTokenProvider = () => Task.FromResult<string?>(auth.AccessToken);
             })

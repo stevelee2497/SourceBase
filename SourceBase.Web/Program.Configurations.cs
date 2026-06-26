@@ -10,7 +10,7 @@ public static class ProgramConfigurations
     {
         var appSettings = configuration.Get<AppSettings>() ?? new AppSettings();
         services.AddSingleton(appSettings);
-        services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(appSettings.ApiBaseUrl.StartsWith("http") ? appSettings.ApiBaseUrl : "https://" + appSettings.ApiBaseUrl) });
+        services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(appSettings.FullApiBaseUrl) });
     }
 
     public static void AddDependencyInjection(this IServiceCollection services)
