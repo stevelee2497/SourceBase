@@ -169,7 +169,7 @@ jobs:
 
       - name: Inject production API URL
         run: |
-          echo '{"ApiBaseUrl":"${{ vars.API_URL }}"}' > SourceBase.Web/wwwroot/appsettings.Production.json
+          echo '{"ApiBaseUrl":"${{ vars.CF_URL }}"}' > SourceBase.Web/wwwroot/appsettings.Production.json
 
       - name: Publish WASM
         run: dotnet publish SourceBase.Web/SourceBase.Web.csproj -c Release -o ./web-publish
