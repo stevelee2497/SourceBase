@@ -4,7 +4,7 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.TimeSheets;
 
-public record GetTimeSheetsRequest(DateOnly? From, DateOnly? To, int? Page, int? Limit, PagingOrder? Order, GetTimeSheetsOrder? OrderBy) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
+public record GetTimeSheetsRequest(DateOnly? From, DateOnly? To, int? Year, int? Month, DateOnly? Date, int? Page, int? Limit, PagingOrder? Order, GetTimeSheetsOrder? OrderBy) : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
 
 public class GetTimeSheetsEndpoint : IEndpoint
 {
@@ -19,10 +19,13 @@ public class GetTimeSheetsHandler(IDbContext dbContext, ICurrentUser currentUser
 {
     public async Task<PagingResponse<GetTimeSheetResponse>> Handle(GetTimeSheetsRequest request, CancellationToken ct)
     {
+        var from = request.From ?? (request.Date ?? (request.Year != null && request.Month != null ? new DateOnly(request.Year.Value, request.Month.Value, 1) : (DateOnly?)null));
+        var to = request.To ?? (request.Date ?? (request.Year != null && request.Month != null ? new DateOnly(request.Year.Value, request.Month.Value, 1).AddMonths(1).AddDays(-1) : (DateOnly?)null));
+
         var items = await dbContext.TimeSheets
             .Where(x => x.UserId == currentUser.UserId
-                && (request.From == null || x.Date >= request.From)
-                && (request.To == null || x.Date <= request.To))
+                && (from == null || x.Date >= from)
+                && (to == null || x.Date <= to))
             .PaginateAsync(x => new GetTimeSheetResponse(x), request, ct);
         return items;
     }
