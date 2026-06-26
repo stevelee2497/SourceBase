@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
@@ -20,29 +19,15 @@ public class GetGoldPricesEndpoint : IEndpoint
 
 public class GetGoldPricesHandler(IDbContext dbContext) : IRequestHandler<GetGoldPricesRequest, PagingResponse<GoldPriceResponse>>
 {
-    public async Task<PagingResponse<GoldPriceResponse>> Handle(GetGoldPricesRequest request, CancellationToken ct)
+    public Task<PagingResponse<GoldPriceResponse>> Handle(GetGoldPricesRequest request, CancellationToken ct)
     {
-        if (request.Latest == true)
-            return await GetLatestPerSourceAsync(request, ct);
-
-        return await dbContext.GoldPrices
+        return dbContext.GoldPrices
             .Where(x =>
                 (request.Source == null || x.Source == request.Source) &&
                 (request.DateFrom == null || x.RecordedAt >= request.DateFrom) &&
-                (request.DateTo == null || x.RecordedAt <= request.DateTo))
+                (request.DateTo == null || x.RecordedAt <= request.DateTo) &&
+                (request.Latest == null || request.Latest == false || x.RecordedAt == dbContext.GoldPrices.Where(q => q.Source == x.Source).Max(q => q.RecordedAt)))
             .PaginateAsync(x => new GoldPriceResponse(x.Id, x.Source, x.BuyPrice, x.SellPrice, x.RecordedAt), request, ct);
-    }
-
-    private async Task<PagingResponse<GoldPriceResponse>> GetLatestPerSourceAsync(GetGoldPricesRequest request, CancellationToken ct)
-    {
-        var items = await (
-            from p in dbContext.GoldPrices
-            where (request.Source == null || p.Source == request.Source) &&
-                  p.RecordedAt == dbContext.GoldPrices.Where(q => q.Source == p.Source).Max(q => q.RecordedAt)
-            select new GoldPriceResponse(p.Id, p.Source, p.BuyPrice, p.SellPrice, p.RecordedAt)
-        ).ToListAsync(ct);
-
-        return new PagingResponse<GoldPriceResponse>(items, 1, items.Count, items.Count);
     }
 }
 
