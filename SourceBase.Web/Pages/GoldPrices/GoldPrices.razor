@@ -248,6 +248,7 @@
     {
         _chartRendered = false;
         await LoadChartDataAsync();
+        StateHasChanged();
     }
 
     private async Task OnChartSeriesChangedAsync()
