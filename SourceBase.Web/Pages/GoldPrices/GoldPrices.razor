@@ -190,10 +190,11 @@
     {
         _loadingChart = true;
         var days = int.TryParse(_chartRange, out var d) ? d : 7;
+        var limit = Math.Clamp(days * 100, 500, 5000);
         var dateFrom = days == 1
             ? DateTime.UtcNow.AddHours(-24).ToString("yyyy-MM-ddTHH:mm:ssZ")
             : DateTime.UtcNow.AddDays(-days).ToString("yyyy-MM-dd") + "T00:00:00Z";
-        var (data, _) = await Api.GetGoldPricesAsync(1, 500, null, dateFrom, null);
+        var (data, _) = await Api.GetGoldPricesAsync(1, limit, null, dateFrom, null);
         _chartData = data?.Items ?? [];
         _loadingChart = false;
     }
