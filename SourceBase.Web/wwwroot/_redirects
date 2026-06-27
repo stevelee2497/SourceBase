@@ -1,1 +1,3 @@
-/* /index.html 200
+/_framework/*  /_framework/:splat  200
+/*.*           /:splat             200
+/*             /index.html         200
