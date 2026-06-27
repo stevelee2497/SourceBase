@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SourceBase</title>
     <base href="/" />
-    <link rel="preload" href="_framework/dotnet.native.wasm" as="fetch" type="application/wasm" crossorigin />
-    <link rel="modulepreload" href="_framework/dotnet.js" />
+    <link rel="preload" href="_framework/dotnet.native.wasm#[.{fingerprint}]" as="fetch" type="application/wasm" crossorigin />
+    <link rel="modulepreload" href="_framework/dotnet.js#[.{fingerprint}]" />
+    <script type="importmap"></script>
     <link rel="stylesheet" href="app.min.css" />
   </head>
 
@@ -16,7 +17,7 @@
       <div class="loading-spinner"></div>
     </div>
 
-    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
     <script src="app.js"></script>
   </body>
 </html>

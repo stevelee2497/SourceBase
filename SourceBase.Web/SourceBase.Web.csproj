@@ -3,7 +3,6 @@
 	<PropertyGroup>
 		<PublishTrimmed>true</PublishTrimmed>
 		<InvariantGlobalization>true</InvariantGlobalization>
-		<StaticWebAssetFingerprintContent>false</StaticWebAssetFingerprintContent>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -14,7 +13,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer"
+			PrivateAssets="all" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
 	</ItemGroup>
