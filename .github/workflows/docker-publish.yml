@@ -2,7 +2,7 @@ name: Build & Push Docker Images
 
 on:
   push:
-    branches: [main]
+    branches: [main, web, api]
 
 env:
   REGISTRY: ghcr.io
@@ -28,6 +28,7 @@ jobs:
     name: Calculate Version
     runs-on: ubuntu-latest
     needs: test
+    if: github.ref_name != 'web'
     permissions:
       contents: read
     outputs:
@@ -54,6 +55,7 @@ jobs:
     name: Build & Push API
     runs-on: ubuntu-latest
     needs: [test, version]
+    if: github.ref_name != 'web'
     permissions:
       contents: read
       packages: write
@@ -95,6 +97,7 @@ jobs:
     name: Tag Release
     runs-on: ubuntu-latest
     needs: [build-and-push, version]
+    if: github.ref_name == 'main'
     permissions:
       contents: write
     steps:
@@ -110,7 +113,8 @@ jobs:
   deploy-api:
     name: Deploy API to VPS
     runs-on: ubuntu-latest
-    needs: [tag-release, version]
+    needs: [build-and-push, version]
+    if: github.ref_name != 'web'
     environment: Production
 
     steps:
@@ -151,6 +155,7 @@ jobs:
     name: Deploy Web to Cloudflare Pages
     runs-on: ubuntu-latest
     needs: test
+    if: github.ref_name != 'api'
     environment: Production
     permissions:
       contents: read
