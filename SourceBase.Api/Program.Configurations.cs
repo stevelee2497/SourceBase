@@ -40,6 +40,7 @@ public static class ProgramConfigurations
         {
             options.AddPolicy(nameof(AppSettings.AllowedSpecificOrigins), builder =>
                 builder.WithOrigins(corsSettings)
+                    .SetIsOriginAllowedToAllowWildcardSubdomains()
                     .AllowAnyMethod()
                     .AllowAnyHeader());
         });
