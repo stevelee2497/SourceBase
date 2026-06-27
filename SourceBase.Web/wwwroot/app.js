@@ -34,6 +34,14 @@ window.initOtpPaste = function (container, dotNetRef) {
 
 window.goldPriceChart = null;
 
+function loadApexCharts(callback) {
+  if (window.ApexCharts) { callback(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/apexcharts';
+  s.onload = callback;
+  document.head.appendChild(s);
+}
+
 window.getBrowserTimeZone = function () {
   var tz = localStorage.getItem('userTimeZone');
   if (tz) return tz;
@@ -43,6 +51,7 @@ window.getBrowserTimeZone = function () {
 };
 
 window.renderGoldPriceChart = function (elementId, seriesData, colors, dashArray) {
+  loadApexCharts(function () {
   var el = document.getElementById(elementId);
   if (!el) return;
   if (window.goldPriceChart) {
@@ -129,4 +138,5 @@ window.renderGoldPriceChart = function (elementId, seriesData, colors, dashArray
     });
     el.parentElement.insertBefore(legendDiv, el);
   });
+  }); // loadApexCharts
 };
