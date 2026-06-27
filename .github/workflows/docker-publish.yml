@@ -11,6 +11,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    if: github.ref_name != 'web'
     steps:
       - uses: actions/checkout@v5
 
@@ -155,7 +156,7 @@ jobs:
     name: Deploy Web to Cloudflare Pages
     runs-on: ubuntu-latest
     needs: test
-    if: github.ref_name != 'api'
+    if: github.ref_name != 'api' && (needs.test.result == 'success' || needs.test.result == 'skipped')
     environment: Production
     permissions:
       contents: read
