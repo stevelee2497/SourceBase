@@ -156,7 +156,9 @@ jobs:
     name: Deploy Web to Cloudflare Pages
     runs-on: ubuntu-latest
     needs: test
-    if: github.ref_name != 'api' && (needs.test.result == 'success' || needs.test.result == 'skipped')
+    if: |
+      (github.ref_name == 'web' && always()) ||
+      (github.ref_name == 'main' && needs.test.result == 'success')
     environment: Production
     permissions:
       contents: read
