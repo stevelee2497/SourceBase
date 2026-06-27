@@ -182,7 +182,7 @@ Images are built by GitHub Actions and pushed to GitHub Container Registry (GHCR
 Browser → Nginx :80 → sourcebase-web :8080 → sourcebase-api :8080 → SQLite (volume)
 ```
 
-The Blazor Web app is server-rendered, so all API calls happen inside the Docker network — the browser never calls the API directly.
+The Blazor Web app is web wasm, hosting on static pages of cloudflare pages, and the API is hosted on a separate container. Nginx acts as a reverse proxy to route requests to the appropriate service.
 
 ### CI/CD flow
 
