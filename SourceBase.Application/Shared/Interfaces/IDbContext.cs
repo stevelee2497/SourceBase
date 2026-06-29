@@ -32,5 +32,9 @@ public interface IDbContext
 
     DbSet<GoldPriceEntity> GoldPrices { get; set; }
 
+    DbSet<HabitLogEntity> HabitLogs { get; set; }
+
+    DbSet<HabitEntity> Habits { get; set; }
+
     Task<int> SaveChangesAsync(CancellationToken ct);
 }

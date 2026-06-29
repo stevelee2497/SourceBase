@@ -391,6 +391,31 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
     public Task<ErrorResponse?> ClearAllNotificationsAsync() =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, "/api/notifications"));
 
+    // ── Habits ────────────────────────────────────────────────────────────────
+
+    public Task<(List<HabitItemResponse>? data, ErrorResponse? error)> GetHabitsAsync() =>
+        ExecuteAsync<List<HabitItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, "/api/habits"));
+
+    public Task<ErrorResponse?> CreateHabitAsync(string name, string? icon) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/habits", new { name, icon }));
+
+    public Task<ErrorResponse?> UpdateHabitAsync(Guid id, string? name = null, string? icon = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Patch, $"/api/habits/{id}", new { name, icon }));
+
+    public Task<ErrorResponse?> DeleteHabitAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/habits/{id}"));
+
+    public Task<ErrorResponse?> LogHabitAsync(string habitId, string habitName, string action) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/habit-logs", new { entries = new[] { new { habitId, habitName, action, occurredAt = DateTime.UtcNow } } }));
+
+    // ── Habit Logs ────────────────────────────────────────────────────────────
+
+    public Task<(PagingResponse<HabitLogResponse>? data, ErrorResponse? error)> GetHabitLogsAsync(DateTime from, DateTime to)
+    {
+        var url = $"/api/habit-logs?from={Uri.EscapeDataString(from.ToString("o"))}&to={Uri.EscapeDataString(to.ToString("o"))}&limit=500&orderBy=OccurredAt&order=Asc";
+        return ExecuteAsync<PagingResponse<HabitLogResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
+    }
+
     // ── Gold Prices ───────────────────────────────────────────────────────────
 
     public Task<(PagingResponse<GoldPriceResponse>? data, ErrorResponse? error)> GetGoldPricesAsync(int page = 1, int limit = 20, string? source = null, string? dateFrom = null, string? dateTo = null, bool? latest = null)
@@ -433,3 +458,5 @@ public sealed record GetNotificationsResponse(List<NotificationResponse> Items, 
 public sealed record IconResponse(Guid Id, string Value, string Name, string Group, int SortOrder, bool IsSystem);
 public sealed record IconUploadUrlResponse(string UploadUrl, string IconUrl, string ContentType);
 public sealed record GoldPriceResponse(Guid Id, string Source, decimal BuyPrice, decimal SellPrice, DateTime RecordedAt);
+public sealed record HabitLogResponse(Guid Id, string? HabitId, string? HabitName, string Action, DateTime OccurredAt, DateTime? CreatedOn);
+public sealed record HabitItemResponse(Guid Id, string Name, string? Icon, bool IsSystem);

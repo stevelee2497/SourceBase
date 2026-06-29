@@ -7,6 +7,7 @@
   </Folder>
   <Project Path="SourceBase.Api/SourceBase.Api.csproj" />
   <Project Path="SourceBase.Application/SourceBase.Application.csproj" />
+  <Project Path="SourceBase.Desktop/SourceBase.Desktop.csproj" />
   <Project Path="SourceBase.Domain/SourceBase.Domain.csproj" />
   <Project Path="SourceBase.Infrastructure/SourceBase.Infrastructure.csproj" />
   <Project Path="SourceBase.Tests/SourceBase.Tests.csproj" />
