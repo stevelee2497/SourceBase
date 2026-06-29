@@ -12,7 +12,8 @@ public static class UpdateService
     private const string RepoOwner = "stevelee2497";
     private const string RepoName = "SourceBase";
     private const string TagPrefix = "desktop-v";
-    private const string AssetName = "SourceBase.Desktop.exe";
+    private const string AssetPrefix = "Jupiter-v";
+    private const string AssetSuffix = ".exe";
 
     private static readonly HttpClient Http = CreateHttp();
 
@@ -46,7 +47,8 @@ public static class UpdateService
             if (latestVer is null || currentVer is null || latestVer <= currentVer) return;
 
             var asset = latest.Assets.FirstOrDefault(a =>
-                string.Equals(a.Name, AssetName, StringComparison.OrdinalIgnoreCase));
+                a.Name.StartsWith(AssetPrefix, StringComparison.OrdinalIgnoreCase) &&
+                a.Name.EndsWith(AssetSuffix, StringComparison.OrdinalIgnoreCase));
             if (asset is null) return;
 
             PendingUpdate = new UpdateInfo(latest.TagName[TagPrefix.Length..], asset.BrowserDownloadUrl);

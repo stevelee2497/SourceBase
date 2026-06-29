@@ -50,11 +50,14 @@ jobs:
       - name: Publish
         run: dotnet publish SourceBase.Desktop/SourceBase.Desktop.csproj -c Release /p:Version=${{ needs.version.outputs.version_number }}
 
+      - name: Rename artifact
+        run: Rename-Item "SourceBase.Desktop/Artifacts/SourceBase.Desktop.exe" "Jupiter-v${{ needs.version.outputs.version_number }}.exe"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: SourceBase.Desktop
-          path: SourceBase.Desktop/Artifacts/SourceBase.Desktop.exe
+          path: SourceBase.Desktop/Artifacts/Jupiter-v${{ needs.version.outputs.version_number }}.exe
           if-no-files-found: error
 
   release:
@@ -79,4 +82,4 @@ jobs:
           gh release create ${{ needs.version.outputs.new_version }} \
             --title "Desktop ${{ needs.version.outputs.new_version }}" \
             --notes "Desktop app release ${{ needs.version.outputs.new_version }}" \
-            ./dist/SourceBase.Desktop.exe
+            "./dist/Jupiter-v${{ needs.version.outputs.version_number }}.exe"
