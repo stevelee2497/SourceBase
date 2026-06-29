@@ -11,7 +11,7 @@ namespace SourceBase.Desktop;
 
 public partial class App : Application
 {
-    private const string MutexName = "SourceBase.Desktop.SingleInstance";
+    private const string MutexName = "Jupiter.SingleInstance";
     private Mutex? _mutex;
 
     private readonly SettingsStore _store = new();
@@ -37,7 +37,7 @@ public partial class App : Application
 
         _tray = new TaskbarIcon
         {
-            ToolTipText = "SourceBase - rest reminders",
+            ToolTipText = "Jupiter - rest reminders",
             ContextMenu = (ContextMenu)Resources["TrayMenu"],
             Icon = _trayIcon,
         };

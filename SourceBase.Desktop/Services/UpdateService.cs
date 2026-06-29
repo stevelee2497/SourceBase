@@ -61,7 +61,7 @@ public static class UpdateService
         if (PendingUpdate is null) return;
 
         var exePath = Process.GetCurrentProcess().MainModule!.FileName;
-        var tempExe = Path.Combine(Path.GetTempPath(), "SourceBase.Desktop.new.exe");
+        var tempExe = Path.Combine(Path.GetTempPath(), "Jupiter.new.exe");
         var batPath = Path.Combine(Path.GetTempPath(), "sb_update.bat");
 
         using var resp = await Http.GetAsync(PendingUpdate.DownloadUrl, HttpCompletionOption.ResponseHeadersRead);
@@ -101,7 +101,7 @@ public static class UpdateService
     private static HttpClient CreateHttp()
     {
         var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("SourceBase-Desktop/1.0");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("Jupiter/1.0");
         return client;
     }
 

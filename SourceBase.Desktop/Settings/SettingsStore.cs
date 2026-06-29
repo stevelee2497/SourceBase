@@ -12,7 +12,7 @@ public sealed class SettingsStore
 {
     private static readonly string Dir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "SourceBase.Desktop");
+        "Jupiter");
 
     private static readonly string FilePath = Path.Combine(Dir, "settings.json");
 

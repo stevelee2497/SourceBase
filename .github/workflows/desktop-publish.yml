@@ -51,7 +51,7 @@ jobs:
         run: dotnet publish SourceBase.Desktop/SourceBase.Desktop.csproj -c Release /p:Version=${{ needs.version.outputs.version_number }}
 
       - name: Rename artifact
-        run: Rename-Item "SourceBase.Desktop/Artifacts/SourceBase.Desktop.exe" "Jupiter-v${{ needs.version.outputs.version_number }}.exe"
+        run: Rename-Item "SourceBase.Desktop/Artifacts/Jupiter.exe" "Jupiter-v${{ needs.version.outputs.version_number }}.exe"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

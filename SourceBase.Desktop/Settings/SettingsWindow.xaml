@@ -1,7 +1,7 @@
 <Window x:Class="SourceBase.Desktop.Settings.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="SourceBase — Settings"
+        Title="Jupiter — Settings"
         Width="560" SizeToContent="Height"
         WindowStyle="None" ResizeMode="NoResize"
         AllowsTransparency="True" Background="Transparent"
