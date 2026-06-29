@@ -29,6 +29,34 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="b" Property="Background" Value="#E5E7EB"/>
                             </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#3B82F6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b" Background="{TemplateBinding Background}"
+                                CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -37,8 +65,8 @@
     </Window.Resources>
 
     <Grid>
-        <!-- Centered white modal -->
-        <Border Width="720" MaxHeight="560"
+        <!-- Centered white modal - sizes to its content so nothing gets clipped -->
+        <Border Width="720"
                 HorizontalAlignment="Center" VerticalAlignment="Center"
                 Background="White" CornerRadius="20" Padding="44,40">
             <Border.Effect>
@@ -46,14 +74,14 @@
             </Border.Effect>
 
             <Border.RenderTransform>
-                <ScaleTransform x:Name="ModalScale" CenterX="360" CenterY="280" ScaleX="0.96" ScaleY="0.96"/>
+                <ScaleTransform x:Name="ModalScale" CenterX="360" CenterY="260" ScaleX="0.96" ScaleY="0.96"/>
             </Border.RenderTransform>
 
             <StackPanel>
                 <TextBlock Text="Time to rest" FontSize="30" FontWeight="Bold"
                            Foreground="#111827" HorizontalAlignment="Center"/>
                 <TextBlock x:Name="SubtitleText"
-                           Text="Step away for 5 minutes. Pick one to do now."
+                           Text="Step away for 5 minutes. Pick what you'll do."
                            FontSize="15" Foreground="#6B7280"
                            HorizontalAlignment="Center" Margin="0,8,0,4"/>
                 <TextBlock x:Name="CountdownText" Text="" FontSize="13" Foreground="#9CA3AF"
@@ -68,7 +96,10 @@
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,28,0,0">
+                <StackPanel x:Name="ActionRow" Orientation="Horizontal"
+                            HorizontalAlignment="Center" Margin="0,28,0,0">
+                    <Button x:Name="StartButton" Content="Start rest"
+                            Style="{StaticResource PrimaryButton}" Margin="0,0,12,0" IsEnabled="False"/>
                     <Button x:Name="SnoozeButton" Content="Snooze 5 min"
                             Style="{StaticResource ActionButton}" Margin="0,0,12,0"/>
                     <Button x:Name="DismissButton" Content="Dismiss"
