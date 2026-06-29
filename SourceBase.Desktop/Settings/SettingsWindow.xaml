@@ -18,8 +18,125 @@
         <Style x:Key="Field" TargetType="ComboBox">
             <Setter Property="Height" Value="38"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Foreground" Value="#111827"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="Bd"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8" SnapsToDevicePixels="True">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="32"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter x:Name="ContentSite" Grid.Column="0"
+                                                      IsHitTestVisible="False"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      Margin="12,0,4,0" VerticalAlignment="Center"/>
+                                    <Path x:Name="Arrow" Grid.Column="1"
+                                          Data="M 0 0 L 5 5.5 L 10 0"
+                                          Stroke="#9CA3AF" StrokeThickness="1.8"
+                                          StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          IsHitTestVisible="False" RenderTransformOrigin="0.5,0.5">
+                                        <Path.RenderTransform>
+                                            <RotateTransform Angle="0"/>
+                                        </Path.RenderTransform>
+                                    </Path>
+                                    <ToggleButton Grid.ColumnSpan="2" Focusable="False" Cursor="Hand"
+                                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay,
+                                                              RelativeSource={RelativeSource TemplatedParent}}"
+                                                  ClickMode="Press">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
+                            <Popup x:Name="PART_Popup"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True" Focusable="False"
+                                   Placement="Bottom" VerticalOffset="4">
+                                <Border MinWidth="{TemplateBinding ActualWidth}"
+                                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                        Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
+                                        CornerRadius="8" Padding="4" SnapsToDevicePixels="True">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.1"
+                                                          Color="#000000" Direction="270"/>
+                                    </Border.Effect>
+                                    <ScrollViewer SnapsToDevicePixels="True">
+                                        <StackPanel IsItemsHost="True"
+                                                    KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#9CA3AF"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#3B82F6"/>
+                                <Setter TargetName="Arrow" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <RotateTransform Angle="180"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Background" Value="#F9FAFB"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#E5E7EB"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="12,9"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#111827"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#F3F4F6"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#EFF6FF"/>
+                                <Setter Property="Foreground" Value="#2563EB"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Bd" Property="Background" Value="#DBEAFE"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="Primary" TargetType="Button">
@@ -181,15 +298,17 @@
             <TextBlock Text="Sync habit logs with the SourceBase web app."
                        FontSize="12" Foreground="#9CA3AF" Margin="0,-4,0,16"/>
 
-            <Grid Margin="0,0,0,10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="110"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="API URL" Grid.Column="0" VerticalAlignment="Center"
-                           FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
-                <TextBox x:Name="ApiUrlBox" Grid.Column="1" Style="{StaticResource TextField}"/>
-            </Grid>
+            <StackPanel x:Name="ApiUrlRow">
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="API URL" Grid.Column="0" VerticalAlignment="Center"
+                               FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
+                    <TextBox x:Name="ApiUrlBox" Grid.Column="1" Style="{StaticResource TextField}"/>
+                </Grid>
+            </StackPanel>
 
             <!-- Credentials panel — shown on first use or when reconnecting -->
             <StackPanel x:Name="CredentialsPanel">
