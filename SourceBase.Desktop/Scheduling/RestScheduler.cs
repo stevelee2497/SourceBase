@@ -49,6 +49,14 @@ public sealed class RestScheduler
         var s = _settings();
         if (!IsActiveDay(s) || !WithinWorkingHours(s)) { ScheduleNext(); return; }
 
+        if (s.PauseDuringVideo && PresentationDetector.ShouldSuppress(s.BlockedProcesses))
+        {
+            // Don't reset the full interval — retry shortly so the reminder
+            // fires soon after the video ends, not a full interval later.
+            _nextDue = DateTime.Now.AddMinutes(2);
+            return;
+        }
+
         ScheduleNext();
         DueForRest?.Invoke(this, EventArgs.Empty);
     }

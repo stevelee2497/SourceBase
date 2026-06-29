@@ -21,6 +21,21 @@ public sealed class AppSettings
     /// <summary>Launch the app automatically at Windows login.</summary>
     public bool StartAtLogin { get; set; } = false;
 
+    /// <summary>When true, suppress the overlay while a fullscreen / video app is active.</summary>
+    public bool PauseDuringVideo { get; set; } = true;
+
+    /// <summary>Process names (no .exe) that should suppress the overlay when focused.</summary>
+    public List<string> BlockedProcesses { get; set; } =
+    [
+        "stremio",
+        "vlc",
+        "mpc-hc",
+        "mpc-be",
+        "wmplayer",
+        "netflix",
+        "spotify",
+    ];
+
     /// <summary>Days the reminder is active. Defaults to weekdays Mon–Fri.</summary>
     public List<DayOfWeek> ActiveDays { get; set; } =
     [
