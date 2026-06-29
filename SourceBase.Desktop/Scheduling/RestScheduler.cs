@@ -36,8 +36,24 @@ public sealed class RestScheduler
     /// <summary>Reset the countdown — call after settings change or after a rest is shown/snoozed.</summary>
     public void ScheduleNext(int? overrideMinutes = null)
     {
-        var minutes = overrideMinutes ?? _settings().IntervalMinutes;
-        _nextDue = DateTime.Now.AddMinutes(Math.Max(1, minutes));
+        if (overrideMinutes is not null)
+        {
+            // Snooze: relative delay from now.
+            _nextDue = DateTime.Now.AddMinutes(Math.Max(1, overrideMinutes.Value));
+            return;
+        }
+        _nextDue = NextAlignedSlot(DateTime.Now, _settings());
+    }
+
+    // Snaps to the next N-minute slot anchored at WorkingHourStart (or midnight if unset).
+    // e.g. start=9:00, interval=30 → slots are 9:00, 9:30, 10:00, 10:30 …
+    private static DateTime NextAlignedSlot(DateTime now, AppSettings s)
+    {
+        var interval = Math.Max(1, s.IntervalMinutes);
+        var anchor = now.Date.AddHours(s.WorkingHourStart ?? 0);
+        if (now < anchor) return anchor;
+        var elapsed = (long)((now - anchor).TotalMinutes / interval);
+        return anchor.AddMinutes((elapsed + 1) * interval);
     }
 
     public void Snooze() => ScheduleNext(_settings().SnoozeMinutes);
