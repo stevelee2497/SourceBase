@@ -111,6 +111,7 @@ public partial class SettingsWindow : Window
 
     private void ApplyApiUiState()
     {
+        ApiUrlRow.Visibility = _showCredentials ? Visibility.Visible : Visibility.Collapsed;
         CredentialsPanel.Visibility = _showCredentials ? Visibility.Visible : Visibility.Collapsed;
         ApiNoCredentialSpacer.Visibility = _showCredentials ? Visibility.Collapsed : Visibility.Visible;
         TestButton.Visibility = _showCredentials ? Visibility.Visible : Visibility.Collapsed;
