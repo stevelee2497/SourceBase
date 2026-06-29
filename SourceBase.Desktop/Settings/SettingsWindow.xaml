@@ -203,6 +203,20 @@
             <Setter Property="Background" Value="#F9FAFB"/>
         </Style>
 
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Day-of-week pill toggle -->
         <Style x:Key="DayPill" TargetType="ToggleButton">
             <Setter Property="Width" Value="58"/>
@@ -253,7 +267,13 @@
                         <Ellipse x:Name="StatusDot" Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,5,0"/>
                         <TextBlock x:Name="StatusText" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Cursor="Hand"/>
                     </StackPanel>
-                    <TextBlock x:Name="VersionLabel" FontSize="12" Foreground="#9CA3AF" HorizontalAlignment="Right"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock x:Name="VersionLabel" FontSize="12" Foreground="#9CA3AF" VerticalAlignment="Center"/>
+                        <Button x:Name="CheckUpdateButton" Style="{StaticResource IconButton}"
+                                Margin="5,0,0,0" VerticalAlignment="Center" ToolTip="Check for updates">
+                            <TextBlock x:Name="RefreshIcon" Text="↻" FontSize="14" Foreground="#9CA3AF"/>
+                        </Button>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
             <TextBlock Text="Schedule and API connection"

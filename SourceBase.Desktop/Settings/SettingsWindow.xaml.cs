@@ -66,11 +66,13 @@ public partial class SettingsWindow : Window
         ApplyStatusIndicator();
         ApplyApiUiState();
 
+        UpdateButton.Click += OnUpdateClicked;
+        CheckUpdateButton.Click += OnCheckUpdate;
+
         if (UpdateService.PendingUpdate is { } update)
         {
             UpdateBanner.Visibility = Visibility.Visible;
             UpdateAvailableLabel.Text = $"Update available: v{update.Version}";
-            UpdateButton.Click += OnUpdateClicked;
         }
     }
 
@@ -228,6 +230,29 @@ public partial class SettingsWindow : Window
     }
 
     // ── OTA update ────────────────────────────────────────────────────────────
+
+    private async void OnCheckUpdate(object sender, RoutedEventArgs e)
+    {
+        CheckUpdateButton.IsEnabled = false;
+        RefreshIcon.Text = "…";
+        await UpdateService.CheckAsync();
+        CheckUpdateButton.IsEnabled = true;
+
+        if (UpdateService.PendingUpdate is { } update)
+        {
+            UpdateBanner.Visibility = Visibility.Visible;
+            UpdateAvailableLabel.Text = $"Update available: v{update.Version}";
+            RefreshIcon.Text = "↻";
+        }
+        else
+        {
+            RefreshIcon.Text = "✓";
+            RefreshIcon.Foreground = new SolidColorBrush(Color.FromRgb(0x16, 0xA3, 0x4A));
+            await Task.Delay(2000);
+            RefreshIcon.Text = "↻";
+            RefreshIcon.Foreground = new SolidColorBrush(Color.FromRgb(0x9C, 0xA3, 0xAF));
+        }
+    }
 
     private async void OnUpdateClicked(object sender, RoutedEventArgs e)
     {
