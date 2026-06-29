@@ -1,5 +1,7 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -13,7 +15,9 @@ public partial class SettingsWindow : Window
 {
     private readonly AppSettings _settings;
 
-    // Interval options shown in the dropdown, label → minutes.
+    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(10) };
+    private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
     private static readonly (string Label, int Minutes)[] Intervals =
     [
         ("15 minutes", 15),
@@ -35,7 +39,6 @@ public partial class SettingsWindow : Window
         ("Sun", DayOfWeek.Sunday),
     ];
 
-    /// <summary>True when the user pressed Save (so the caller can persist + reschedule).</summary>
     public bool Saved { get; private set; }
 
     public SettingsWindow(AppSettings settings)
@@ -48,8 +51,8 @@ public partial class SettingsWindow : Window
         PopulateDays();
         PauseDuringVideoBox.IsChecked = _settings.PauseDuringVideo;
         ApiUrlBox.Text = _settings.ApiBaseUrl ?? string.Empty;
-        AccessTokenBox.Text = _settings.ApiToken ?? string.Empty;
-        RefreshTokenBox.Text = _settings.ApiRefreshToken ?? string.Empty;
+        UsernameBox.Text = _settings.ApiUsername ?? string.Empty;
+        PasswordBox.Password = _settings.ApiPassword ?? string.Empty;
 
         MouseLeftButtonDown += (_, e) => { if (e.ButtonState == MouseButtonState.Pressed) DragMove(); };
         CancelButton.Click += (_, _) => Close();
@@ -75,7 +78,7 @@ public partial class SettingsWindow : Window
             IntervalBox.Items.Add(new ComboBoxItem { Content = label, Tag = minutes });
 
         var match = Array.FindIndex(Intervals, i => i.Minutes == _settings.IntervalMinutes);
-        IntervalBox.SelectedIndex = match >= 0 ? match : 1; // default to 30 min
+        IntervalBox.SelectedIndex = match >= 0 ? match : 1;
     }
 
     private void PopulateDays()
@@ -93,7 +96,7 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private void OnSave(object sender, RoutedEventArgs e)
+    private async void OnSave(object sender, RoutedEventArgs e)
     {
         var start = SelectedHour(StartHour);
         var end = SelectedHour(EndHour);
@@ -106,9 +109,33 @@ public partial class SettingsWindow : Window
 
         if (days.Count == 0)
         {
-            MessageBox.Show("Pick at least one day.", "Schedule",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Pick at least one day.", "Schedule", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
+        }
+
+        var url = NullIfEmpty(ApiUrlBox.Text);
+        var username = NullIfEmpty(UsernameBox.Text);
+        var password = NullIfEmpty(PasswordBox.Password);
+
+        if (url is not null && username is not null && password is not null)
+        {
+            SaveButton.IsEnabled = false;
+            var (token, refreshToken, error) = await LoginAsync(url, username, password);
+            SaveButton.IsEnabled = true;
+
+            if (error is not null)
+            {
+                MessageBox.Show(error, "Login Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            _settings.ApiToken = token;
+            _settings.ApiRefreshToken = refreshToken;
+        }
+        else
+        {
+            _settings.ApiToken = null;
+            _settings.ApiRefreshToken = null;
         }
 
         _settings.WorkingHourStart = start;
@@ -116,55 +143,38 @@ public partial class SettingsWindow : Window
         _settings.IntervalMinutes = interval;
         _settings.ActiveDays = days;
         _settings.PauseDuringVideo = PauseDuringVideoBox.IsChecked == true;
-        _settings.ApiBaseUrl = NullIfEmpty(ApiUrlBox.Text);
-        _settings.ApiToken = NullIfEmpty(AccessTokenBox.Text);
-        _settings.ApiRefreshToken = NullIfEmpty(RefreshTokenBox.Text);
+        _settings.ApiBaseUrl = url;
+        _settings.ApiUsername = username;
+        _settings.ApiPassword = password;
 
         Saved = true;
         Close();
     }
 
-    private static int SelectedHour(ComboBox box) => (int)((ComboBoxItem)box.SelectedItem).Tag!;
-    private static T SelectedTag<T>(ComboBox box) => (T)((ComboBoxItem)box.SelectedItem).Tag!;
-
     private async void OnTestConnection(object sender, RoutedEventArgs e)
     {
         var url = NullIfEmpty(ApiUrlBox.Text);
-        var token = NullIfEmpty(AccessTokenBox.Text);
+        var username = NullIfEmpty(UsernameBox.Text);
+        var password = NullIfEmpty(PasswordBox.Password);
 
-        if (url is null || token is null)
+        if (url is null || username is null || password is null)
         {
-            SetTestResult("Enter API URL and Access Token first.", false);
+            SetTestResult("Enter API URL, username and password first.", success: false);
             return;
         }
 
         TestButton.IsEnabled = false;
-        TestResultText.Foreground = new SolidColorBrush(Color.FromRgb(0x6B, 0x72, 0x80));
         TestResultText.Text = "Testing…";
+        TestResultText.Foreground = new SolidColorBrush(Color.FromRgb(0x6B, 0x72, 0x80));
         TestResultText.Visibility = Visibility.Visible;
 
-        try
-        {
-            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await client.GetAsync($"{url.TrimEnd('/')}/api/auth/info");
-            if (response.IsSuccessStatusCode)
-                SetTestResult("Connected ✓", success: true);
-            else
-                SetTestResult($"Failed ({(int)response.StatusCode})", success: false);
-        }
-        catch (TaskCanceledException)
-        {
-            SetTestResult("Timed out", success: false);
-        }
-        catch (Exception ex)
-        {
-            SetTestResult($"Error: {ex.Message}", success: false);
-        }
-        finally
-        {
-            TestButton.IsEnabled = true;
-        }
+        var (_, _, error) = await LoginAsync(url, username, password);
+
+        TestButton.IsEnabled = true;
+        if (error is null)
+            SetTestResult("Connected ✓", success: true);
+        else
+            SetTestResult(error, success: false);
     }
 
     private void SetTestResult(string text, bool success)
@@ -176,6 +186,38 @@ public partial class SettingsWindow : Window
         TestResultText.Visibility = Visibility.Visible;
     }
 
+    private async Task<(string? token, string? refreshToken, string? error)> LoginAsync(string url, string username, string password)
+    {
+        try
+        {
+            var payload = JsonSerializer.Serialize(new { email = username, password }, JsonOpts);
+            using var req = new HttpRequestMessage(HttpMethod.Post, $"{url.TrimEnd('/')}/api/auth/login")
+            {
+                Content = new StringContent(payload, Encoding.UTF8, "application/json"),
+            };
+            var resp = await Http.SendAsync(req);
+            if (!resp.IsSuccessStatusCode)
+                return (null, null, $"Login failed ({(int)resp.StatusCode})");
+
+            var body = await JsonSerializer.DeserializeAsync<LoginResponse>(
+                await resp.Content.ReadAsStreamAsync(), JsonOpts);
+            if (body is null || string.IsNullOrWhiteSpace(body.AccessToken))
+                return (null, null, "Invalid response from server");
+
+            return (body.AccessToken, body.RefreshToken, null);
+        }
+        catch (TaskCanceledException)
+        {
+            return (null, null, "Connection timed out");
+        }
+        catch (Exception ex)
+        {
+            return (null, null, ex.Message);
+        }
+    }
+
+    private static int SelectedHour(ComboBox box) => (int)((ComboBoxItem)box.SelectedItem).Tag!;
+    private static T SelectedTag<T>(ComboBox box) => (T)((ComboBoxItem)box.SelectedItem).Tag!;
     private static string? NullIfEmpty(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
     private static string FormatHour(int h)
@@ -184,4 +226,6 @@ public partial class SettingsWindow : Window
         var display = h % 12 == 0 ? 12 : h % 12;
         return $"{display}:00 {period}";
     }
+
+    private record LoginResponse(string AccessToken, string RefreshToken);
 }

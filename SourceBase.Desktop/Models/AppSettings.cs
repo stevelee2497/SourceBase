@@ -24,10 +24,16 @@ public sealed class AppSettings
     /// <summary>Base URL of the SourceBase API (e.g. https://api.example.com). Leave null to disable logging.</summary>
     public string? ApiBaseUrl { get; set; }
 
-    /// <summary>Bearer token for the SourceBase API. Obtain by logging in via the web app.</summary>
+    /// <summary>Username (email) used to authenticate with the API.</summary>
+    public string? ApiUsername { get; set; }
+
+    /// <summary>Password used to authenticate with the API.</summary>
+    public string? ApiPassword { get; set; }
+
+    /// <summary>Access token obtained from the last successful login. Set programmatically — do not edit manually.</summary>
     public string? ApiToken { get; set; }
 
-    /// <summary>Refresh token used to obtain a new access token when ApiToken expires.</summary>
+    /// <summary>Refresh token obtained from the last successful login. Set programmatically — do not edit manually.</summary>
     public string? ApiRefreshToken { get; set; }
 
     /// <summary>When true, suppress the overlay while a fullscreen / video app is active.</summary>

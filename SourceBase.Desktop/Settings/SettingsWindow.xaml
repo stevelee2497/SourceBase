@@ -76,6 +76,16 @@
             <Setter Property="Background" Value="#F9FAFB"/>
         </Style>
 
+        <Style x:Key="PasswordField" TargetType="PasswordBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#F9FAFB"/>
+        </Style>
+
         <!-- Day-of-week pill toggle -->
         <Style x:Key="DayPill" TargetType="ToggleButton">
             <Setter Property="Width" Value="58"/>
@@ -172,9 +182,9 @@
                     <ColumnDefinition Width="110"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Access Token" Grid.Column="0" VerticalAlignment="Center"
+                <TextBlock Text="Username" Grid.Column="0" VerticalAlignment="Center"
                            FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
-                <TextBox x:Name="AccessTokenBox" Grid.Column="1" Style="{StaticResource TextField}"/>
+                <TextBox x:Name="UsernameBox" Grid.Column="1" Style="{StaticResource TextField}"/>
             </Grid>
 
             <Grid Margin="0,0,0,32">
@@ -182,9 +192,9 @@
                     <ColumnDefinition Width="110"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Refresh Token" Grid.Column="0" VerticalAlignment="Center"
+                <TextBlock Text="Password" Grid.Column="0" VerticalAlignment="Center"
                            FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
-                <TextBox x:Name="RefreshTokenBox" Grid.Column="1" Style="{StaticResource TextField}"/>
+                <PasswordBox x:Name="PasswordBox" Grid.Column="1" Style="{StaticResource PasswordField}"/>
             </Grid>
 
             <!-- Actions -->
