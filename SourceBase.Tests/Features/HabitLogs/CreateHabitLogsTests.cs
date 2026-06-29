@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using Shouldly;
 using SourceBase.Application.Features.HabitLogs;
 using SourceBase.Application.Shared;
-using SourceBase.Domain.Entities;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
