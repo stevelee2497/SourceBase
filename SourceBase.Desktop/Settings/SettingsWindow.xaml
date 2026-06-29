@@ -128,7 +128,18 @@
 
             <!-- Days of week -->
             <TextBlock Text="Repeat on" Style="{StaticResource Label}"/>
-            <StackPanel x:Name="DayRow" Orientation="Horizontal" Margin="0,0,0,32"/>
+            <StackPanel x:Name="DayRow" Orientation="Horizontal" Margin="0,0,0,24"/>
+
+            <!-- Pause during video -->
+            <CheckBox x:Name="PauseDuringVideoBox" Margin="0,0,0,32"
+                      VerticalContentAlignment="Center" Cursor="Hand">
+                <StackPanel>
+                    <TextBlock Text="Pause during video" FontSize="13" FontWeight="SemiBold"
+                               Foreground="#374151"/>
+                    <TextBlock Text="Skip reminders while watching fullscreen video or gaming"
+                               FontSize="12" Foreground="#9CA3AF" Margin="0,2,0,0"/>
+                </StackPanel>
+            </CheckBox>
 
             <!-- Actions -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

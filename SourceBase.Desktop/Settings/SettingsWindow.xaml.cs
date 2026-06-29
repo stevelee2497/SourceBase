@@ -43,6 +43,7 @@ public partial class SettingsWindow : Window
         PopulateHours();
         PopulateInterval();
         PopulateDays();
+        PauseDuringVideoBox.IsChecked = _settings.PauseDuringVideo;
 
         MouseLeftButtonDown += (_, e) => { if (e.ButtonState == MouseButtonState.Pressed) DragMove(); };
         CancelButton.Click += (_, _) => Close();
@@ -107,6 +108,7 @@ public partial class SettingsWindow : Window
         _settings.WorkingHourEnd = end;
         _settings.IntervalMinutes = interval;
         _settings.ActiveDays = days;
+        _settings.PauseDuringVideo = PauseDuringVideoBox.IsChecked == true;
 
         Saved = true;
         Close();
