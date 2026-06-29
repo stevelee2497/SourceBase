@@ -1,7 +1,10 @@
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using SourceBase.Desktop.Models;
 
 namespace SourceBase.Desktop.Settings;
@@ -51,6 +54,7 @@ public partial class SettingsWindow : Window
         MouseLeftButtonDown += (_, e) => { if (e.ButtonState == MouseButtonState.Pressed) DragMove(); };
         CancelButton.Click += (_, _) => Close();
         SaveButton.Click += OnSave;
+        TestButton.Click += OnTestConnection;
     }
 
     private void PopulateHours()
@@ -122,6 +126,55 @@ public partial class SettingsWindow : Window
 
     private static int SelectedHour(ComboBox box) => (int)((ComboBoxItem)box.SelectedItem).Tag!;
     private static T SelectedTag<T>(ComboBox box) => (T)((ComboBoxItem)box.SelectedItem).Tag!;
+
+    private async void OnTestConnection(object sender, RoutedEventArgs e)
+    {
+        var url = NullIfEmpty(ApiUrlBox.Text);
+        var token = NullIfEmpty(AccessTokenBox.Text);
+
+        if (url is null || token is null)
+        {
+            SetTestResult("Enter API URL and Access Token first.", false);
+            return;
+        }
+
+        TestButton.IsEnabled = false;
+        TestResultText.Foreground = new SolidColorBrush(Color.FromRgb(0x6B, 0x72, 0x80));
+        TestResultText.Text = "Testing…";
+        TestResultText.Visibility = Visibility.Visible;
+
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await client.GetAsync($"{url.TrimEnd('/')}/api/auth/info");
+            if (response.IsSuccessStatusCode)
+                SetTestResult("Connected ✓", success: true);
+            else
+                SetTestResult($"Failed ({(int)response.StatusCode})", success: false);
+        }
+        catch (TaskCanceledException)
+        {
+            SetTestResult("Timed out", success: false);
+        }
+        catch (Exception ex)
+        {
+            SetTestResult($"Error: {ex.Message}", success: false);
+        }
+        finally
+        {
+            TestButton.IsEnabled = true;
+        }
+    }
+
+    private void SetTestResult(string text, bool success)
+    {
+        TestResultText.Text = text;
+        TestResultText.Foreground = new SolidColorBrush(success
+            ? Color.FromRgb(0x16, 0xA3, 0x4A)
+            : Color.FromRgb(0xDC, 0x26, 0x26));
+        TestResultText.Visibility = Visibility.Visible;
+    }
 
     private static string? NullIfEmpty(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 

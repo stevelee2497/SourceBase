@@ -188,11 +188,26 @@
             </Grid>
 
             <!-- Actions -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button x:Name="CancelButton" Content="Cancel"
-                        Style="{StaticResource Ghost}" Margin="0,0,12,0"/>
-                <Button x:Name="SaveButton" Content="Save" Style="{StaticResource Primary}"/>
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Test Connection -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="TestButton" Content="Test Connection" Style="{StaticResource Ghost}"/>
+                    <TextBlock x:Name="TestResultText" Margin="10,0,0,0" VerticalAlignment="Center"
+                               FontSize="13" FontWeight="SemiBold" Visibility="Collapsed"/>
+                </StackPanel>
+
+                <!-- Right: Cancel + Save -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button x:Name="CancelButton" Content="Cancel"
+                            Style="{StaticResource Ghost}" Margin="0,0,12,0"/>
+                    <Button x:Name="SaveButton" Content="Save" Style="{StaticResource Primary}"/>
+                </StackPanel>
+            </Grid>
         </StackPanel>
     </Border>
 </Window>
