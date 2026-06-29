@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.HabitLogs;
