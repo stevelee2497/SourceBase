@@ -5,41 +5,47 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.HabitLogs;
 
-public record CreateHabitLogRequest(string? HabitId, string? HabitName, HabitLogAction Action, DateTime OccurredAt);
+public record HabitLogEntry(string? HabitId, string? HabitName, HabitLogAction Action, DateTime OccurredAt);
 
-public record CreateHabitLogResponse(Guid Id);
+public record CreateHabitLogsRequest(List<HabitLogEntry> Entries);
 
-public class CreateHabitLogEndpoint : IEndpoint
+public record CreateHabitLogsResponse(List<Guid> Ids);
+
+public class CreateHabitLogsEndpoint : IEndpoint
 {
     public const string Route = "habit-logs";
 
     public void MapEndpoint(IEndpointRouteBuilder app) => app
-        .MapPost(Route, ([FromBody] CreateHabitLogRequest request, CreateHabitLogHandler handler, CancellationToken ct) => handler.Handle(request, ct))
+        .MapPost(Route, ([FromBody] CreateHabitLogsRequest request, CreateHabitLogsHandler handler, CancellationToken ct) => handler.Handle(request, ct))
         .WithTags("HabitLogs");
 }
 
-public class CreateHabitLogHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateHabitLogRequest, CreateHabitLogResponse>
+public class CreateHabitLogsHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateHabitLogsRequest, CreateHabitLogsResponse>
 {
-    public async Task<CreateHabitLogResponse> Handle(CreateHabitLogRequest request, CancellationToken ct)
+    public async Task<CreateHabitLogsResponse> Handle(CreateHabitLogsRequest request, CancellationToken ct)
     {
-        var entry = new HabitLogEntity
-        {
-            UserId = currentUser.UserId,
-            HabitId = request.HabitId,
-            HabitName = request.HabitName,
-            Action = request.Action,
-            OccurredAt = request.OccurredAt,
-        };
-        dbContext.HabitLogs.Add(entry);
+        var entities = request.Entries
+            .Select(e => new HabitLogEntity
+            {
+                UserId = currentUser.UserId,
+                HabitId = e.HabitId,
+                HabitName = e.HabitName,
+                Action = e.Action,
+                OccurredAt = e.OccurredAt,
+            })
+            .ToList();
+
+        dbContext.HabitLogs.AddRange(entities);
         await dbContext.SaveChangesAsync(ct);
-        return new CreateHabitLogResponse(entry.Id);
+        return new CreateHabitLogsResponse(entities.Select(e => e.Id).ToList());
     }
 }
 
-public class CreateHabitLogRequestValidator : AbstractValidator<CreateHabitLogRequest>
+public class CreateHabitLogsRequestValidator : AbstractValidator<CreateHabitLogsRequest>
 {
-    public CreateHabitLogRequestValidator()
+    public CreateHabitLogsRequestValidator()
     {
-        RuleFor(x => x.OccurredAt).NotEmpty();
+        RuleFor(x => x.Entries).NotEmpty();
+        RuleForEach(x => x.Entries).ChildRules(entry => entry.RuleFor(x => x.OccurredAt).NotEmpty());
     }
 }

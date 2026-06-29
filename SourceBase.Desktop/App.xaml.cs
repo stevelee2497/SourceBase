@@ -147,7 +147,7 @@ public partial class App : Application
 
         overlay.Snoozed += (_, _) => { _scheduler?.Snooze(); _habitLogService?.LogSnoozed(); };
         overlay.Dismissed += (_, _) => _habitLogService?.LogDismissed();
-        overlay.HabitPicked += (_, habit) => _habitLogService?.LogHabitStarted(habit.Id, habit.Name);
+        overlay.HabitsStarted += (_, habits) => _habitLogService?.LogHabitsStarted(habits);
         overlay.Closed += (_, _) => _activeOverlay = null;
 
         overlay.Show();

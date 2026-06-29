@@ -24,8 +24,8 @@ public partial class OverlayWindow : Window
     /// <summary>Fires when the overlay is closed without starting a rest (Dismiss button or Escape).</summary>
     public event EventHandler? Dismissed;
 
-    /// <summary>Fires once per picked habit when the rest starts.</summary>
-    public event EventHandler<Habit>? HabitPicked;
+    /// <summary>Fires with all selected habits at once when the rest starts.</summary>
+    public event EventHandler<IReadOnlyList<Habit>>? HabitsStarted;
 
     public OverlayWindow(AppSettings settings)
     {
@@ -214,8 +214,7 @@ public partial class OverlayWindow : Window
     {
         if (_selected.Count == 0) return;
 
-        foreach (var habit in _selected)
-            HabitPicked?.Invoke(this, habit);
+        HabitsStarted?.Invoke(this, [.. _selected]);
 
         _restStarted = true;
         HabitItems.Visibility = Visibility.Collapsed;
