@@ -34,5 +34,7 @@ public interface IDbContext
 
     DbSet<HabitLogEntity> HabitLogs { get; set; }
 
+    DbSet<HabitEntity> Habits { get; set; }
+
     Task<int> SaveChangesAsync(CancellationToken ct);
 }

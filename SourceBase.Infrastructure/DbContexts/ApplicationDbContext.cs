@@ -40,6 +40,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<HabitLogEntity> HabitLogs { get; set; }
 
+    public DbSet<HabitEntity> Habits { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser, dateTime));
@@ -75,6 +77,26 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasIndex(x => new { x.Source, x.RecordedAt })
             .IsUnique();
 
+    }
+
+    private static void SeedHabits(DbContext context)
+    {
+        var defaults = new List<(string Name, string Icon)>
+        {
+            ("Walk",         "🚶"),
+            ("Drink Water",  "💧"),
+            ("Read",         "📖"),
+            ("Exercise",     "🏋️"),
+            ("Meditate",     "🧘"),
+        };
+
+        foreach (var (name, icon) in defaults)
+        {
+            var exists = context.Set<HabitEntity>().Any(h => h.IsSystem && h.Name == name);
+            if (!exists)
+                context.Set<HabitEntity>().Add(new HabitEntity { Id = Guid.NewGuid(), Name = name, Icon = icon, IsSystem = true, UserId = null });
+        }
+        context.SaveChanges();
     }
 
     #region Helper Methods
@@ -141,6 +163,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         SeedCategories(context);
         SeedIcons(context);
+        SeedHabits(context);
     }
 
     private static void SeedCategories(DbContext context)

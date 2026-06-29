@@ -2,6 +2,33 @@
 @attribute [Authorize]
 @inject ApiHttpClient Api
 
+<!-- Quick log habit cards -->
+@if (_habits.Count > 0)
+{
+    <div class="mb-5">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Quick Log</span>
+            <a href="/habit-logs/habits" class="text-xs text-indigo-500 hover:text-indigo-700">Manage habits →</a>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            @foreach (var habit in _habits)
+            {
+                <button class="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 bg-white hover:border-indigo-400 hover:bg-indigo-50 transition-colors text-sm font-medium text-gray-700 disabled:opacity-50"
+                        @onclick="LogHabit(habit)" disabled="@_loggingHabitId.HasValue" title="Log @habit.Name">
+                    <span class="text-base leading-none">@HabitIcon(habit.Icon)</span>
+                    <span class="truncate max-w-[100px]">@habit.Name</span>
+                </button>
+            }
+        </div>
+    </div>
+}
+else if (!_loading && _habitsLoaded)
+{
+    <div class="mb-5 p-3 rounded-xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
+        No habits configured. <a href="/habit-logs/habits" class="text-indigo-500 hover:underline">Add some habits</a> to enable quick logging.
+    </div>
+}
+
 <!-- Header -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
     <h1 class="text-xl font-bold text-gray-900">Habit Logs</h1>
@@ -103,8 +130,11 @@ else
 @code {
     private int _weekOffset;
     private List<HabitLogResponse> _logs = [];
+    private List<HabitItemResponse> _habits = [];
     private bool _loading = true;
+    private bool _habitsLoaded;
     private string? _error;
+    private Guid? _loggingHabitId;
 
     private DateTime WeekStart => GetWeekStart(DateTime.Today).AddDays(_weekOffset * 7);
     private DateTime WeekEnd => WeekStart.AddDays(6);
@@ -124,7 +154,19 @@ else
             : $"{start:MMM d} – {end:MMM d}, {end.Year}";
     }
 
-    protected override async Task OnInitializedAsync() => await LoadAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        var habitsTask = LoadHabitsAsync();
+        var logsTask = LoadAsync();
+        await Task.WhenAll(habitsTask, logsTask);
+    }
+
+    private async Task LoadHabitsAsync()
+    {
+        var (data, _) = await Api.GetHabitsAsync();
+        _habits = data ?? [];
+        _habitsLoaded = true;
+    }
 
     private async Task PrevWeek() { _weekOffset--; await LoadAsync(); }
 
@@ -143,6 +185,16 @@ else
         if (err is not null) _error = err.Message ?? "Failed to load habit logs.";
         _loading = false;
     }
+
+    private Func<Task> LogHabit(HabitItemResponse habit) => async () =>
+    {
+        _loggingHabitId = habit.Id;
+        await Api.LogHabitAsync(habit.Id.ToString(), habit.Name, "HabitStarted");
+        _loggingHabitId = null;
+        await LoadAsync();
+    };
+
+    private static string HabitIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "💪" : icon;
 
     private IEnumerable<HabitLogResponse> LogsForDay(DateTime day) =>
         _logs.Where(l => l.OccurredAt.ToLocalTime().Date == day.Date);
