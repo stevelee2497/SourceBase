@@ -21,6 +21,9 @@ public partial class OverlayWindow : Window
 
     public event EventHandler? Snoozed;
 
+    /// <summary>Fires when the overlay is closed without starting a rest (Dismiss button or Escape).</summary>
+    public event EventHandler? Dismissed;
+
     /// <summary>Fires once per picked habit when the rest starts.</summary>
     public event EventHandler<Habit>? HabitPicked;
 
@@ -37,8 +40,17 @@ public partial class OverlayWindow : Window
 
         StartButton.Click += (_, _) => StartRest();
         SnoozeButton.Click += (_, _) => { Snoozed?.Invoke(this, EventArgs.Empty); Close(); };
-        DismissButton.Click += (_, _) => Close();
-        KeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.Escape) Close(); };
+        DismissButton.Click += (_, _) =>
+        {
+            if (!_restStarted) Dismissed?.Invoke(this, EventArgs.Empty);
+            Close();
+        };
+        KeyDown += (_, e) =>
+        {
+            if (e.Key != System.Windows.Input.Key.Escape) return;
+            if (!_restStarted) Dismissed?.Invoke(this, EventArgs.Empty);
+            Close();
+        };
 
         _restTimer.Tick += OnRestTick;
         Loaded += (_, _) => FadeIn();

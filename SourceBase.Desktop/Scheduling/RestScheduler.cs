@@ -13,8 +13,12 @@ public sealed class RestScheduler
     private readonly DispatcherTimer _timer;
     private readonly Func<AppSettings> _settings;
     private DateTime _nextDue;
+    private bool _videoSuppressedLogged;
 
     public event EventHandler? DueForRest;
+
+    /// <summary>Fires once per video/game session when a due reminder is suppressed.</summary>
+    public event EventHandler? VideoSuppressed;
 
     public DateTime NextDue => _nextDue;
 
@@ -67,11 +71,17 @@ public sealed class RestScheduler
 
         if (s.PauseDuringVideo && PresentationDetector.ShouldSuppress(s.BlockedProcesses))
         {
+            if (!_videoSuppressedLogged)
+            {
+                _videoSuppressedLogged = true;
+                VideoSuppressed?.Invoke(this, EventArgs.Empty);
+            }
             // Don't reset the full interval — retry shortly so the reminder
             // fires soon after the video ends, not a full interval later.
             _nextDue = DateTime.Now.AddMinutes(2);
             return;
         }
+        _videoSuppressedLogged = false;
 
         ScheduleNext();
         DueForRest?.Invoke(this, EventArgs.Empty);

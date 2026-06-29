@@ -1,6 +1,7 @@
 ﻿using H.NotifyIcon;
 using SourceBase.Desktop.Overlay;
 using SourceBase.Desktop.Scheduling;
+using SourceBase.Desktop.Services;
 using SourceBase.Desktop.Settings;
 using System.Drawing;
 using System.Windows;
@@ -16,6 +17,7 @@ public partial class App : Application
     private readonly SettingsStore _store = new();
     private TaskbarIcon? _tray;
     private RestScheduler? _scheduler;
+    private HabitLogService? _habitLogService;
     private OverlayWindow? _activeOverlay;
     private Icon? _trayIcon;
 
@@ -29,6 +31,7 @@ public partial class App : Application
         }
 
         _store.Load();
+        _habitLogService = new HabitLogService(() => _store.Current);
 
         _trayIcon = CreateTrayIcon(TrayGlyph.Mug);
 
@@ -43,6 +46,7 @@ public partial class App : Application
 
         _scheduler = new RestScheduler(() => _store.Current);
         _scheduler.DueForRest += (_, _) => ShowOverlay();
+        _scheduler.VideoSuppressed += (_, _) => _habitLogService?.LogSuppressedVideo();
         _scheduler.Start();
     }
 
@@ -141,11 +145,9 @@ public partial class App : Application
         var overlay = new OverlayWindow(_store.Current);
         _activeOverlay = overlay;
 
-        overlay.Snoozed += (_, _) => _scheduler?.Snooze();
-        overlay.HabitPicked += (_, habit) =>
-        {
-            // Phase 1: local only. Phase 2: POST to LogHabitEntry on the SourceBase API.
-        };
+        overlay.Snoozed += (_, _) => { _scheduler?.Snooze(); _habitLogService?.LogSnoozed(); };
+        overlay.Dismissed += (_, _) => _habitLogService?.LogDismissed();
+        overlay.HabitPicked += (_, habit) => _habitLogService?.LogHabitStarted(habit.Id, habit.Name);
         overlay.Closed += (_, _) => _activeOverlay = null;
 
         overlay.Show();

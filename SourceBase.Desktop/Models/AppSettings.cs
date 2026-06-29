@@ -21,6 +21,12 @@ public sealed class AppSettings
     /// <summary>Launch the app automatically at Windows login.</summary>
     public bool StartAtLogin { get; set; } = false;
 
+    /// <summary>Base URL of the SourceBase API (e.g. https://api.example.com). Leave null to disable logging.</summary>
+    public string? ApiBaseUrl { get; set; }
+
+    /// <summary>Bearer token for the SourceBase API. Obtain by logging in via the web app.</summary>
+    public string? ApiToken { get; set; }
+
     /// <summary>When true, suppress the overlay while a fullscreen / video app is active.</summary>
     public bool PauseDuringVideo { get; set; } = true;
 
