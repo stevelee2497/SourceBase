@@ -45,11 +45,16 @@ public sealed class RestScheduler
     private void OnTick(object? sender, EventArgs e)
     {
         if (DateTime.Now < _nextDue) return;
-        if (!WithinWorkingHours(_settings())) { ScheduleNext(); return; }
+
+        var s = _settings();
+        if (!IsActiveDay(s) || !WithinWorkingHours(s)) { ScheduleNext(); return; }
 
         ScheduleNext();
         DueForRest?.Invoke(this, EventArgs.Empty);
     }
+
+    private static bool IsActiveDay(AppSettings s) =>
+        s.ActiveDays.Count == 0 || s.ActiveDays.Contains(DateTime.Now.DayOfWeek);
 
     private static bool WithinWorkingHours(AppSettings s)
     {

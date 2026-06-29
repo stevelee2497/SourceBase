@@ -64,12 +64,14 @@ public partial class App : Application
 
     private void OnOpenSettings(object sender, RoutedEventArgs e)
     {
-        // Phase 1 stub. SettingsWindow comes next — interval/rest/habit editor.
-        MessageBox.Show(
-            $"Interval: every {_store.Current.IntervalMinutes} min\n" +
-            $"Rest: {_store.Current.RestMinutes} min\n" +
-            $"Habits: {_store.Current.Habits.Count}",
-            "SourceBase — Settings (preview)");
+        var window = new SettingsWindow(_store.Current);
+        window.ShowDialog();
+
+        if (window.Saved)
+        {
+            _store.Save();
+            _scheduler?.ScheduleNext(); // apply the new interval immediately
+        }
     }
 
     private void OnExitClicked(object sender, RoutedEventArgs e) => Shutdown();

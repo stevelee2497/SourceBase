@@ -16,10 +16,17 @@ public sealed class AppSettings
 
     /// <summary>Only fire between these hours (24h). Null = always.</summary>
     public int? WorkingHourStart { get; set; } = 9;
-    public int? WorkingHourEnd { get; set; } = 22;
+    public int? WorkingHourEnd { get; set; } = 17;
 
     /// <summary>Launch the app automatically at Windows login.</summary>
     public bool StartAtLogin { get; set; } = false;
+
+    /// <summary>Days the reminder is active. Defaults to weekdays Mon–Fri.</summary>
+    public List<DayOfWeek> ActiveDays { get; set; } =
+    [
+        DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+        DayOfWeek.Thursday, DayOfWeek.Friday,
+    ];
 
     /// <summary>The habits available to pick during a rest.</summary>
     public List<Habit> Habits { get; set; } = DefaultHabits();

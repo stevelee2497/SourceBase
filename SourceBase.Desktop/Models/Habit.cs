@@ -7,7 +7,6 @@ namespace SourceBase.Desktop.Models;
 public sealed class Habit
 {
     public required string Id { get; init; }
-
     public required string Name { get; set; }
 
     /// <summary>Emoji shown on the card, e.g. "💧". Optional if ImagePath is set.</summary>
