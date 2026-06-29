@@ -41,11 +41,20 @@ public sealed class HabitLogService(Func<AppSettings> settings, Action onSave)
 
             var resp = await PostAsync(url, body, s.ApiToken);
 
-            if (resp.StatusCode == HttpStatusCode.Unauthorized && await TryRefreshAsync(s))
-                await PostAsync(url, body, s.ApiToken!);
+            if (resp.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                if (!await TryRefreshAsync(s)) { MarkFailed(s); return; }
+                resp = await PostAsync(url, body, s.ApiToken!);
+            }
+
+            if (resp.IsSuccessStatusCode) MarkConnected(s);
+            else MarkFailed(s);
         }
-        catch { }
+        catch { MarkFailed(s); }
     }
+
+    private void MarkConnected(AppSettings s) { s.ApiStatus = ApiConnectionStatus.Connected; onSave(); }
+    private void MarkFailed(AppSettings s) { s.ApiStatus = ApiConnectionStatus.Failed; onSave(); }
 
     private static async Task<HttpResponseMessage> PostAsync(string url, string body, string token)
     {

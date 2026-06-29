@@ -9,7 +9,10 @@
 		<UseWPF>true</UseWPF>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<RootNamespace>SourceBase.Desktop</RootNamespace>
-		<AssemblyName>SourceBase.Desktop</AssemblyName>
+		<AssemblyName>Jupiter</AssemblyName>
+		<Product>Jupiter</Product>
+		<Version>0.0</Version>
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<!-- publish defaults: dotnet publish -c Release -->
 		<PublishSingleFile>true</PublishSingleFile>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>

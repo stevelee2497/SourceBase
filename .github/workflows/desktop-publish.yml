@@ -1,0 +1,85 @@
+name: Desktop Publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'SourceBase.Desktop/**'
+      - '.github/workflows/desktop-publish.yml'
+
+jobs:
+  version:
+    name: Calculate Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      new_version: ${{ steps.calc.outputs.new_version }}
+      version_number: ${{ steps.calc.outputs.version_number }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Calculate next version
+        id: calc
+        run: |
+          latest=$(git tag -l 'desktop-v1.*' | sort -V | tail -1)
+          if [ -z "$latest" ]; then
+            version_number="1.0"
+          else
+            x=$(echo "$latest" | sed 's/desktop-v1\.//')
+            version_number="1.$((x + 1))"
+          fi
+          new_version="desktop-v${version_number}"
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+          echo "version_number=$version_number" >> $GITHUB_OUTPUT
+          echo "Next desktop version: $new_version"
+
+  build:
+    name: Build Desktop App
+    runs-on: windows-latest
+    needs: version
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - name: Publish
+        run: dotnet publish SourceBase.Desktop/SourceBase.Desktop.csproj -c Release /p:Version=${{ needs.version.outputs.version_number }}
+
+      - name: Rename artifact
+        run: Rename-Item "SourceBase.Desktop/Artifacts/Jupiter.exe" "Jupiter-v${{ needs.version.outputs.version_number }}.exe"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SourceBase.Desktop
+          path: SourceBase.Desktop/Artifacts/Jupiter-v${{ needs.version.outputs.version_number }}.exe
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [version, build]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: SourceBase.Desktop
+          path: ./dist
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create ${{ needs.version.outputs.new_version }} \
+            --title "Desktop ${{ needs.version.outputs.new_version }}" \
+            --notes "Desktop app release ${{ needs.version.outputs.new_version }}" \
+            "./dist/Jupiter-v${{ needs.version.outputs.version_number }}.exe"

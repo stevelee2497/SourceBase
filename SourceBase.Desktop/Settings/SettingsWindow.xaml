@@ -1,7 +1,7 @@
 <Window x:Class="SourceBase.Desktop.Settings.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="SourceBase — Settings"
+        Title="Jupiter — Settings"
         Width="560" SizeToContent="Height"
         WindowStyle="None" ResizeMode="NoResize"
         AllowsTransparency="True" Background="Transparent"
@@ -76,6 +76,16 @@
             <Setter Property="Background" Value="#F9FAFB"/>
         </Style>
 
+        <Style x:Key="PasswordField" TargetType="PasswordBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#F9FAFB"/>
+        </Style>
+
         <!-- Day-of-week pill toggle -->
         <Style x:Key="DayPill" TargetType="ToggleButton">
             <Setter Property="Width" Value="58"/>
@@ -114,9 +124,23 @@
         </Border.Effect>
 
         <StackPanel>
-            <TextBlock Text="Settings" FontSize="26" FontWeight="Bold" Foreground="#111827"/>
+            <Grid Margin="0,0,0,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Settings" FontSize="26" FontWeight="Bold" Foreground="#111827"/>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,5">
+                    <StackPanel x:Name="ApiStatusPanel" Orientation="Horizontal" HorizontalAlignment="Right"
+                                Margin="0,0,0,3" Visibility="Collapsed">
+                        <Ellipse x:Name="StatusDot" Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock x:Name="StatusText" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Cursor="Hand"/>
+                    </StackPanel>
+                    <TextBlock x:Name="VersionLabel" FontSize="12" Foreground="#9CA3AF" HorizontalAlignment="Right"/>
+                </StackPanel>
+            </Grid>
             <TextBlock Text="Schedule and API connection"
-                       FontSize="14" Foreground="#6B7280" Margin="0,6,0,28"/>
+                       FontSize="14" Foreground="#6B7280" Margin="0,0,0,28"/>
 
             <!-- Working hours -->
             <TextBlock Text="Active hours" Style="{StaticResource Label}"/>
@@ -167,25 +191,49 @@
                 <TextBox x:Name="ApiUrlBox" Grid.Column="1" Style="{StaticResource TextField}"/>
             </Grid>
 
-            <Grid Margin="0,0,0,10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="110"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="Access Token" Grid.Column="0" VerticalAlignment="Center"
-                           FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
-                <TextBox x:Name="AccessTokenBox" Grid.Column="1" Style="{StaticResource TextField}"/>
-            </Grid>
+            <!-- Credentials panel — shown on first use or when reconnecting -->
+            <StackPanel x:Name="CredentialsPanel">
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Username" Grid.Column="0" VerticalAlignment="Center"
+                               FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
+                    <TextBox x:Name="UsernameBox" Grid.Column="1" Style="{StaticResource TextField}"/>
+                </Grid>
+                <Grid Margin="0,0,0,32">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Password" Grid.Column="0" VerticalAlignment="Center"
+                               FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
+                    <PasswordBox x:Name="PasswordBox" Grid.Column="1" Style="{StaticResource PasswordField}"/>
+                </Grid>
+            </StackPanel>
 
-            <Grid Margin="0,0,0,32">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="110"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="Refresh Token" Grid.Column="0" VerticalAlignment="Center"
-                           FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
-                <TextBox x:Name="RefreshTokenBox" Grid.Column="1" Style="{StaticResource TextField}"/>
-            </Grid>
+            <!-- Spacer used when credentials panel is collapsed -->
+            <Border x:Name="ApiNoCredentialSpacer" Height="32" Visibility="Collapsed"/>
+
+            <!-- Update available banner -->
+            <Border x:Name="UpdateBanner" Visibility="Collapsed"
+                    Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1"
+                    CornerRadius="8" Padding="14,10" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="UpdateAvailableLabel" FontSize="13" FontWeight="SemiBold" Foreground="#1D4ED8"/>
+                        <TextBlock Text="Click Update to download and apply automatically."
+                                   FontSize="12" Foreground="#3B82F6" Margin="0,2,0,0"/>
+                    </StackPanel>
+                    <Button x:Name="UpdateButton" Grid.Column="1" Content="Update"
+                            Style="{StaticResource Primary}" Padding="16,8" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
 
             <!-- Actions -->
             <Grid>
