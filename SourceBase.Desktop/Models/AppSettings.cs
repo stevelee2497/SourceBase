@@ -1,5 +1,7 @@
 namespace SourceBase.Desktop.Models;
 
+public enum ApiConnectionStatus { None, Connected, Failed }
+
 /// <summary>
 /// User-configurable settings, persisted to %AppData%\SourceBase.Desktop\settings.json.
 /// </summary>
@@ -35,6 +37,9 @@ public sealed class AppSettings
 
     /// <summary>Refresh token obtained from the last successful login. Set programmatically — do not edit manually.</summary>
     public string? ApiRefreshToken { get; set; }
+
+    /// <summary>Result of the last API call; drives the connected/reconnect indicator in Settings.</summary>
+    public ApiConnectionStatus ApiStatus { get; set; } = ApiConnectionStatus.None;
 
     /// <summary>When true, suppress the overlay while a fullscreen / video app is active.</summary>
     public bool PauseDuringVideo { get; set; } = true;

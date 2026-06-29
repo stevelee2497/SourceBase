@@ -130,8 +130,14 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="Settings" FontSize="26" FontWeight="Bold" Foreground="#111827"/>
-                <TextBlock x:Name="VersionLabel" Grid.Column="1" VerticalAlignment="Bottom"
-                           FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,5"/>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,5">
+                    <StackPanel x:Name="ApiStatusPanel" Orientation="Horizontal" HorizontalAlignment="Right"
+                                Margin="0,0,0,3" Visibility="Collapsed">
+                        <Ellipse x:Name="StatusDot" Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock x:Name="StatusText" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Cursor="Hand"/>
+                    </StackPanel>
+                    <TextBlock x:Name="VersionLabel" FontSize="12" Foreground="#9CA3AF" HorizontalAlignment="Right"/>
+                </StackPanel>
             </Grid>
             <TextBlock Text="Schedule and API connection"
                        FontSize="14" Foreground="#6B7280" Margin="0,0,0,28"/>
@@ -185,25 +191,30 @@
                 <TextBox x:Name="ApiUrlBox" Grid.Column="1" Style="{StaticResource TextField}"/>
             </Grid>
 
-            <Grid Margin="0,0,0,10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="110"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="Username" Grid.Column="0" VerticalAlignment="Center"
-                           FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
-                <TextBox x:Name="UsernameBox" Grid.Column="1" Style="{StaticResource TextField}"/>
-            </Grid>
+            <!-- Credentials panel — shown on first use or when reconnecting -->
+            <StackPanel x:Name="CredentialsPanel">
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Username" Grid.Column="0" VerticalAlignment="Center"
+                               FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
+                    <TextBox x:Name="UsernameBox" Grid.Column="1" Style="{StaticResource TextField}"/>
+                </Grid>
+                <Grid Margin="0,0,0,32">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Password" Grid.Column="0" VerticalAlignment="Center"
+                               FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
+                    <PasswordBox x:Name="PasswordBox" Grid.Column="1" Style="{StaticResource PasswordField}"/>
+                </Grid>
+            </StackPanel>
 
-            <Grid Margin="0,0,0,32">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="110"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="Password" Grid.Column="0" VerticalAlignment="Center"
-                           FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
-                <PasswordBox x:Name="PasswordBox" Grid.Column="1" Style="{StaticResource PasswordField}"/>
-            </Grid>
+            <!-- Spacer used when credentials panel is collapsed -->
+            <Border x:Name="ApiNoCredentialSpacer" Height="32" Visibility="Collapsed"/>
 
             <!-- Update available banner -->
             <Border x:Name="UpdateBanner" Visibility="Collapsed"

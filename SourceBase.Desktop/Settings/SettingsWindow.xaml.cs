@@ -1,5 +1,4 @@
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
@@ -15,6 +14,7 @@ namespace SourceBase.Desktop.Settings;
 public partial class SettingsWindow : Window
 {
     private readonly AppSettings _settings;
+    private bool _showCredentials;
 
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(10) };
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -55,12 +55,16 @@ public partial class SettingsWindow : Window
         UsernameBox.Text = _settings.ApiUsername ?? string.Empty;
         PasswordBox.Password = _settings.ApiPassword ?? string.Empty;
 
+        _showCredentials = string.IsNullOrWhiteSpace(_settings.ApiToken);
+
         MouseLeftButtonDown += (_, e) => { if (e.ButtonState == MouseButtonState.Pressed) DragMove(); };
         CancelButton.Click += (_, _) => Close();
         SaveButton.Click += OnSave;
         TestButton.Click += OnTestConnection;
 
         VersionLabel.Text = $"v{UpdateService.CurrentVersion}";
+        ApplyStatusIndicator();
+        ApplyApiUiState();
 
         if (UpdateService.PendingUpdate is { } update)
         {
@@ -69,6 +73,160 @@ public partial class SettingsWindow : Window
             UpdateButton.Click += OnUpdateClicked;
         }
     }
+
+    // ── API connection status indicator ──────────────────────────────────────
+
+    private void ApplyStatusIndicator()
+    {
+        var hasToken = !string.IsNullOrWhiteSpace(_settings.ApiToken);
+        var hasUrl = !string.IsNullOrWhiteSpace(_settings.ApiBaseUrl);
+
+        if (!hasToken || !hasUrl || _showCredentials) { ApiStatusPanel.Visibility = Visibility.Collapsed; return; }
+
+        ApiStatusPanel.Visibility = Visibility.Visible;
+
+        if (_settings.ApiStatus == ApiConnectionStatus.Failed)
+        {
+            StatusDot.Fill = new SolidColorBrush(Color.FromRgb(0xDC, 0x26, 0x26));
+            StatusText.Text = "Reconnect";
+            StatusText.Foreground = new SolidColorBrush(Color.FromRgb(0xDC, 0x26, 0x26));
+            StatusText.MouseLeftButtonUp += OnReconnectClicked;
+        }
+        else
+        {
+            StatusDot.Fill = new SolidColorBrush(Color.FromRgb(0x16, 0xA3, 0x4A));
+            StatusText.Text = "Connected";
+            StatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x16, 0xA3, 0x4A));
+        }
+    }
+
+    private void OnReconnectClicked(object sender, MouseButtonEventArgs e)
+    {
+        _showCredentials = true;
+        ApiStatusPanel.Visibility = Visibility.Collapsed;
+        ApplyApiUiState();
+    }
+
+    // ── Credentials panel visibility ─────────────────────────────────────────
+
+    private void ApplyApiUiState()
+    {
+        CredentialsPanel.Visibility = _showCredentials ? Visibility.Visible : Visibility.Collapsed;
+        ApiNoCredentialSpacer.Visibility = _showCredentials ? Visibility.Collapsed : Visibility.Visible;
+        TestButton.Visibility = _showCredentials ? Visibility.Visible : Visibility.Collapsed;
+        TestResultText.Visibility = Visibility.Collapsed;
+    }
+
+    // ── Save ─────────────────────────────────────────────────────────────────
+
+    private async void OnSave(object sender, RoutedEventArgs e)
+    {
+        var start = SelectedHour(StartHour);
+        var end = SelectedHour(EndHour);
+        var interval = SelectedTag<int>(IntervalBox);
+
+        var days = DayRow.Children.OfType<ToggleButton>()
+            .Where(p => p.IsChecked == true)
+            .Select(p => (DayOfWeek)p.Tag!)
+            .ToList();
+
+        if (days.Count == 0)
+        {
+            MessageBox.Show("Pick at least one day.", "Schedule", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (_showCredentials)
+        {
+            var url = NullIfEmpty(ApiUrlBox.Text);
+            var username = NullIfEmpty(UsernameBox.Text);
+            var password = NullIfEmpty(PasswordBox.Password);
+
+            if (url is not null && username is not null && password is not null)
+            {
+                SaveButton.IsEnabled = false;
+                var (token, refreshToken, error) = await LoginAsync(url, username, password);
+                SaveButton.IsEnabled = true;
+
+                if (error is not null)
+                {
+                    MessageBox.Show(error, "Login Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                _settings.ApiToken = token;
+                _settings.ApiRefreshToken = refreshToken;
+                _settings.ApiStatus = ApiConnectionStatus.Connected;
+            }
+            else
+            {
+                _settings.ApiToken = null;
+                _settings.ApiRefreshToken = null;
+                _settings.ApiStatus = ApiConnectionStatus.None;
+            }
+
+            _settings.ApiBaseUrl = url;
+            _settings.ApiUsername = username;
+            _settings.ApiPassword = password;
+        }
+        else
+        {
+            var newUrl = NullIfEmpty(ApiUrlBox.Text);
+            if (newUrl != _settings.ApiBaseUrl)
+            {
+                _settings.ApiBaseUrl = newUrl;
+                _settings.ApiToken = null;
+                _settings.ApiRefreshToken = null;
+                _settings.ApiStatus = ApiConnectionStatus.None;
+            }
+        }
+
+        _settings.WorkingHourStart = start;
+        _settings.WorkingHourEnd = end;
+        _settings.IntervalMinutes = interval;
+        _settings.ActiveDays = days;
+        _settings.PauseDuringVideo = PauseDuringVideoBox.IsChecked == true;
+
+        Saved = true;
+        Close();
+    }
+
+    // ── Test Connection ───────────────────────────────────────────────────────
+
+    private async void OnTestConnection(object sender, RoutedEventArgs e)
+    {
+        var url = NullIfEmpty(ApiUrlBox.Text);
+        var username = NullIfEmpty(UsernameBox.Text);
+        var password = NullIfEmpty(PasswordBox.Password);
+
+        if (url is null || username is null || password is null)
+        {
+            SetTestResult("Enter API URL, username and password first.", success: false);
+            return;
+        }
+
+        TestButton.IsEnabled = false;
+        TestResultText.Text = "Testing…";
+        TestResultText.Foreground = new SolidColorBrush(Color.FromRgb(0x6B, 0x72, 0x80));
+        TestResultText.Visibility = Visibility.Visible;
+
+        var (_, _, error) = await LoginAsync(url, username, password);
+
+        TestButton.IsEnabled = true;
+        if (error is null) SetTestResult("Connected ✓", success: true);
+        else SetTestResult(error, success: false);
+    }
+
+    private void SetTestResult(string text, bool success)
+    {
+        TestResultText.Text = text;
+        TestResultText.Foreground = new SolidColorBrush(success
+            ? Color.FromRgb(0x16, 0xA3, 0x4A)
+            : Color.FromRgb(0xDC, 0x26, 0x26));
+        TestResultText.Visibility = Visibility.Visible;
+    }
+
+    // ── OTA update ────────────────────────────────────────────────────────────
 
     private async void OnUpdateClicked(object sender, RoutedEventArgs e)
     {
@@ -86,6 +244,8 @@ public partial class SettingsWindow : Window
             UpdateButton.Content = "Update";
         }
     }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void PopulateHours()
     {
@@ -123,96 +283,6 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private async void OnSave(object sender, RoutedEventArgs e)
-    {
-        var start = SelectedHour(StartHour);
-        var end = SelectedHour(EndHour);
-        var interval = SelectedTag<int>(IntervalBox);
-
-        var days = DayRow.Children.OfType<ToggleButton>()
-            .Where(p => p.IsChecked == true)
-            .Select(p => (DayOfWeek)p.Tag!)
-            .ToList();
-
-        if (days.Count == 0)
-        {
-            MessageBox.Show("Pick at least one day.", "Schedule", MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
-
-        var url = NullIfEmpty(ApiUrlBox.Text);
-        var username = NullIfEmpty(UsernameBox.Text);
-        var password = NullIfEmpty(PasswordBox.Password);
-
-        if (url is not null && username is not null && password is not null)
-        {
-            SaveButton.IsEnabled = false;
-            var (token, refreshToken, error) = await LoginAsync(url, username, password);
-            SaveButton.IsEnabled = true;
-
-            if (error is not null)
-            {
-                MessageBox.Show(error, "Login Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            _settings.ApiToken = token;
-            _settings.ApiRefreshToken = refreshToken;
-        }
-        else
-        {
-            _settings.ApiToken = null;
-            _settings.ApiRefreshToken = null;
-        }
-
-        _settings.WorkingHourStart = start;
-        _settings.WorkingHourEnd = end;
-        _settings.IntervalMinutes = interval;
-        _settings.ActiveDays = days;
-        _settings.PauseDuringVideo = PauseDuringVideoBox.IsChecked == true;
-        _settings.ApiBaseUrl = url;
-        _settings.ApiUsername = username;
-        _settings.ApiPassword = password;
-
-        Saved = true;
-        Close();
-    }
-
-    private async void OnTestConnection(object sender, RoutedEventArgs e)
-    {
-        var url = NullIfEmpty(ApiUrlBox.Text);
-        var username = NullIfEmpty(UsernameBox.Text);
-        var password = NullIfEmpty(PasswordBox.Password);
-
-        if (url is null || username is null || password is null)
-        {
-            SetTestResult("Enter API URL, username and password first.", success: false);
-            return;
-        }
-
-        TestButton.IsEnabled = false;
-        TestResultText.Text = "Testing…";
-        TestResultText.Foreground = new SolidColorBrush(Color.FromRgb(0x6B, 0x72, 0x80));
-        TestResultText.Visibility = Visibility.Visible;
-
-        var (_, _, error) = await LoginAsync(url, username, password);
-
-        TestButton.IsEnabled = true;
-        if (error is null)
-            SetTestResult("Connected ✓", success: true);
-        else
-            SetTestResult(error, success: false);
-    }
-
-    private void SetTestResult(string text, bool success)
-    {
-        TestResultText.Text = text;
-        TestResultText.Foreground = new SolidColorBrush(success
-            ? Color.FromRgb(0x16, 0xA3, 0x4A)
-            : Color.FromRgb(0xDC, 0x26, 0x26));
-        TestResultText.Visibility = Visibility.Visible;
-    }
-
     private async Task<(string? token, string? refreshToken, string? error)> LoginAsync(string url, string username, string password)
     {
         try
@@ -233,14 +303,8 @@ public partial class SettingsWindow : Window
 
             return (body.AccessToken, body.RefreshToken, null);
         }
-        catch (TaskCanceledException)
-        {
-            return (null, null, "Connection timed out");
-        }
-        catch (Exception ex)
-        {
-            return (null, null, ex.Message);
-        }
+        catch (TaskCanceledException) { return (null, null, "Connection timed out"); }
+        catch (Exception ex) { return (null, null, ex.Message); }
     }
 
     private static int SelectedHour(ComboBox box) => (int)((ComboBoxItem)box.SelectedItem).Tag!;
