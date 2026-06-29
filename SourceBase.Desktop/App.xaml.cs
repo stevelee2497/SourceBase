@@ -48,6 +48,17 @@ public partial class App : Application
         _scheduler.DueForRest += (_, _) => ShowOverlay();
         _scheduler.VideoSuppressed += (_, _) => _habitLogService?.LogSuppressedVideo();
         _scheduler.Start();
+
+        _ = Task.Run(async () =>
+        {
+            await UpdateService.CheckAsync();
+            if (UpdateService.PendingUpdate is { } update)
+                Dispatcher.Invoke(() =>
+                    _tray?.ShowBalloonTip(
+                        "SourceBase Update",
+                        $"v{update.Version} is ready. Open Settings to install.",
+                        BalloonIcon.Info));
+        });
     }
 
     private enum TrayGlyph { Mug, Pause, Leaf, Cup, Droplet }

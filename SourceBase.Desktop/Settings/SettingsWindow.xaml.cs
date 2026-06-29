@@ -8,6 +8,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using SourceBase.Desktop.Models;
+using SourceBase.Desktop.Services;
 
 namespace SourceBase.Desktop.Settings;
 
@@ -58,6 +59,32 @@ public partial class SettingsWindow : Window
         CancelButton.Click += (_, _) => Close();
         SaveButton.Click += OnSave;
         TestButton.Click += OnTestConnection;
+
+        VersionLabel.Text = $"v{UpdateService.CurrentVersion}";
+
+        if (UpdateService.PendingUpdate is { } update)
+        {
+            UpdateBanner.Visibility = Visibility.Visible;
+            UpdateAvailableLabel.Text = $"Update available: v{update.Version}";
+            UpdateButton.Click += OnUpdateClicked;
+        }
+    }
+
+    private async void OnUpdateClicked(object sender, RoutedEventArgs e)
+    {
+        UpdateButton.IsEnabled = false;
+        UpdateButton.Content = "Downloading…";
+        try
+        {
+            await UpdateService.ApplyUpdateAsync(pct =>
+                Dispatcher.Invoke(() => UpdateButton.Content = $"{pct}%"));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Update failed: {ex.Message}", "Update Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            UpdateButton.IsEnabled = true;
+            UpdateButton.Content = "Update";
+        }
     }
 
     private void PopulateHours()

@@ -124,9 +124,17 @@
         </Border.Effect>
 
         <StackPanel>
-            <TextBlock Text="Settings" FontSize="26" FontWeight="Bold" Foreground="#111827"/>
+            <Grid Margin="0,0,0,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Settings" FontSize="26" FontWeight="Bold" Foreground="#111827"/>
+                <TextBlock x:Name="VersionLabel" Grid.Column="1" VerticalAlignment="Bottom"
+                           FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,5"/>
+            </Grid>
             <TextBlock Text="Schedule and API connection"
-                       FontSize="14" Foreground="#6B7280" Margin="0,6,0,28"/>
+                       FontSize="14" Foreground="#6B7280" Margin="0,0,0,28"/>
 
             <!-- Working hours -->
             <TextBlock Text="Active hours" Style="{StaticResource Label}"/>
@@ -196,6 +204,25 @@
                            FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
                 <PasswordBox x:Name="PasswordBox" Grid.Column="1" Style="{StaticResource PasswordField}"/>
             </Grid>
+
+            <!-- Update available banner -->
+            <Border x:Name="UpdateBanner" Visibility="Collapsed"
+                    Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1"
+                    CornerRadius="8" Padding="14,10" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="UpdateAvailableLabel" FontSize="13" FontWeight="SemiBold" Foreground="#1D4ED8"/>
+                        <TextBlock Text="Click Update to download and apply automatically."
+                                   FontSize="12" Foreground="#3B82F6" Margin="0,2,0,0"/>
+                    </StackPanel>
+                    <Button x:Name="UpdateButton" Grid.Column="1" Content="Update"
+                            Style="{StaticResource Primary}" Padding="16,8" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
 
             <!-- Actions -->
             <Grid>
