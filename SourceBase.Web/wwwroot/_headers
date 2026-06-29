@@ -1,0 +1,21 @@
+/_framework/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.wasm
+  Cache-Control: public, max-age=31536000, immutable
+
+/app.min.css
+  Cache-Control: public, max-age=86400
+
+/app.js
+  Cache-Control: public, max-age=86400
+
+/index.html
+  Cache-Control: no-cache
+
+/appsettings.json
+  Cache-Control: no-cache
+
+/appsettings.Production.json
+  Cache-Control: no-cache
+

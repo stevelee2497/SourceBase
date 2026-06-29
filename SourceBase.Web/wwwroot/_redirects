@@ -1,1 +1,4 @@
+/_framework/* /_framework/:splat 200
+/*.wasm /:splat 200
+/index.html /index.html 200
 /* /index.html 200
