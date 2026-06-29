@@ -31,7 +31,7 @@ public partial class App : Application
         }
 
         _store.Load();
-        _habitLogService = new HabitLogService(() => _store.Current);
+        _habitLogService = new HabitLogService(() => _store.Current, _store.Save);
 
         _trayIcon = CreateTrayIcon(TrayGlyph.Mug);
 

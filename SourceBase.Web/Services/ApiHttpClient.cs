@@ -391,6 +391,14 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
     public Task<ErrorResponse?> ClearAllNotificationsAsync() =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, "/api/notifications"));
 
+    // ── Habit Logs ────────────────────────────────────────────────────────────
+
+    public Task<(PagingResponse<HabitLogResponse>? data, ErrorResponse? error)> GetHabitLogsAsync(DateTime from, DateTime to)
+    {
+        var url = $"/api/habit-logs?from={Uri.EscapeDataString(from.ToString("o"))}&to={Uri.EscapeDataString(to.ToString("o"))}&limit=500&orderBy=OccurredAt&order=Asc";
+        return ExecuteAsync<PagingResponse<HabitLogResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
+    }
+
     // ── Gold Prices ───────────────────────────────────────────────────────────
 
     public Task<(PagingResponse<GoldPriceResponse>? data, ErrorResponse? error)> GetGoldPricesAsync(int page = 1, int limit = 20, string? source = null, string? dateFrom = null, string? dateTo = null, bool? latest = null)
@@ -433,3 +441,4 @@ public sealed record GetNotificationsResponse(List<NotificationResponse> Items, 
 public sealed record IconResponse(Guid Id, string Value, string Name, string Group, int SortOrder, bool IsSystem);
 public sealed record IconUploadUrlResponse(string UploadUrl, string IconUrl, string ContentType);
 public sealed record GoldPriceResponse(Guid Id, string Source, decimal BuyPrice, decimal SellPrice, DateTime RecordedAt);
+public sealed record HabitLogResponse(Guid Id, string? HabitId, string? HabitName, string Action, DateTime OccurredAt, DateTime? CreatedOn);

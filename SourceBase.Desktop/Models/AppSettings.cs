@@ -27,6 +27,9 @@ public sealed class AppSettings
     /// <summary>Bearer token for the SourceBase API. Obtain by logging in via the web app.</summary>
     public string? ApiToken { get; set; }
 
+    /// <summary>Refresh token used to obtain a new access token when ApiToken expires.</summary>
+    public string? ApiRefreshToken { get; set; }
+
     /// <summary>When true, suppress the overlay while a fullscreen / video app is active.</summary>
     public bool PauseDuringVideo { get; set; } = true;
 

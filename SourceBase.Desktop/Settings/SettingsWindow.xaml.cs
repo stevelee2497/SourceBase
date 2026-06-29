@@ -44,6 +44,9 @@ public partial class SettingsWindow : Window
         PopulateInterval();
         PopulateDays();
         PauseDuringVideoBox.IsChecked = _settings.PauseDuringVideo;
+        ApiUrlBox.Text = _settings.ApiBaseUrl ?? string.Empty;
+        AccessTokenBox.Text = _settings.ApiToken ?? string.Empty;
+        RefreshTokenBox.Text = _settings.ApiRefreshToken ?? string.Empty;
 
         MouseLeftButtonDown += (_, e) => { if (e.ButtonState == MouseButtonState.Pressed) DragMove(); };
         CancelButton.Click += (_, _) => Close();
@@ -109,6 +112,9 @@ public partial class SettingsWindow : Window
         _settings.IntervalMinutes = interval;
         _settings.ActiveDays = days;
         _settings.PauseDuringVideo = PauseDuringVideoBox.IsChecked == true;
+        _settings.ApiBaseUrl = NullIfEmpty(ApiUrlBox.Text);
+        _settings.ApiToken = NullIfEmpty(AccessTokenBox.Text);
+        _settings.ApiRefreshToken = NullIfEmpty(RefreshTokenBox.Text);
 
         Saved = true;
         Close();
@@ -116,6 +122,8 @@ public partial class SettingsWindow : Window
 
     private static int SelectedHour(ComboBox box) => (int)((ComboBoxItem)box.SelectedItem).Tag!;
     private static T SelectedTag<T>(ComboBox box) => (T)((ComboBoxItem)box.SelectedItem).Tag!;
+
+    private static string? NullIfEmpty(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
     private static string FormatHour(int h)
     {
