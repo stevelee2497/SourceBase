@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace SourceBase.Domain.Entities;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum HabitLogAction { HabitStarted, Dismissed, Snoozed, SuppressedVideo }
 
 public class HabitLogEntity : BaseAuditableEntity
