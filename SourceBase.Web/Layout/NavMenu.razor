@@ -1,5 +1,6 @@
 @inject AppSettings AppSettings
 @inject BlazorAuthStateProvider Auth
+@inject IConfiguration Configuration
 
 <!-- Mobile overlay backdrop -->
 @if (MobileOpen)
@@ -40,6 +41,10 @@
             }
         }
     </nav>
+
+    <div class="px-4 py-3 border-t border-gray-100">
+        <span class="text-xs text-gray-400">v@(Configuration["AppVersion"] ?? "dev")</span>
+    </div>
 </aside>
 
 @code {

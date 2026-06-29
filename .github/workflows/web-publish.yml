@@ -1,0 +1,92 @@
+name: Web Publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'SourceBase.Web/**'
+      - '.github/workflows/web-publish.yml'
+
+jobs:
+  version:
+    name: Calculate Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      new_version: ${{ steps.calc.outputs.new_version }}
+      version_number: ${{ steps.calc.outputs.version_number }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Calculate next version
+        id: calc
+        run: |
+          latest=$(git tag -l 'web-v1.*' | sort -V | tail -1)
+          if [ -z "$latest" ]; then
+            version_number="1.0"
+          else
+            x=$(echo "$latest" | sed 's/web-v1\.//')
+            version_number="1.$((x + 1))"
+          fi
+          new_version="web-v${version_number}"
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+          echo "version_number=$version_number" >> $GITHUB_OUTPUT
+          echo "Next web version: $new_version"
+
+  build-and-deploy:
+    name: Build & Deploy Web
+    runs-on: ubuntu-latest
+    needs: version
+    environment: Production
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install WASM workload
+        run: dotnet workload install wasm-tools
+
+      - name: Inject production settings
+        run: |
+          echo '{"ApiBaseUrl":"${{ vars.API_URL }}","AppVersion":"${{ needs.version.outputs.version_number }}"}' > SourceBase.Web/wwwroot/appsettings.Production.json
+
+      - name: Publish WASM
+        run: dotnet publish SourceBase.Web/SourceBase.Web.csproj -c Release -o ./web-publish
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          projectName: ${{ vars.CF_PROJECT_NAME }}
+          directory: ./web-publish/wwwroot
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+  tag-release:
+    name: Tag Release
+    runs-on: ubuntu-latest
+    needs: [version, build-and-deploy]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Push git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ needs.version.outputs.new_version }}
+          git push origin ${{ needs.version.outputs.new_version }}

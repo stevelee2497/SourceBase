@@ -49,22 +49,10 @@ public partial class App : Application
         _scheduler.VideoSuppressed += (_, _) => _habitLogService?.LogSuppressedVideo();
         _scheduler.Start();
 
-        _ = Task.Run(async () =>
-        {
-            await UpdateService.CheckAsync();
-            if (UpdateService.PendingUpdate is { } update)
-                Dispatcher.Invoke(() =>
-                    _tray?.ShowBalloonTip(
-                        "SourceBase Update",
-                        $"v{update.Version} is ready. Open Settings to install.",
-                        BalloonIcon.Info));
-        });
+        _ = Task.Run(UpdateService.CheckAsync);
     }
 
     private enum TrayGlyph { Mug, Pause, Leaf, Cup, Droplet }
-
-    // In OnStartup, change the call to:
-    //     _trayIcon = CreateTrayIcon(TrayGlyph.Mug);
 
     /// <summary>Draws a crisp white vector glyph as a 32x32 tray icon (font-independent).</summary>
     private static Icon CreateTrayIcon(TrayGlyph glyph)
