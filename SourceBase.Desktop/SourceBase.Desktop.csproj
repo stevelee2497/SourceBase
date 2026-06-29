@@ -9,9 +9,12 @@
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<RootNamespace>SourceBase.Desktop</RootNamespace>
 		<AssemblyName>SourceBase.Desktop</AssemblyName>
-		<!-- single-file friendly publish defaults; override on the CLI as needed -->
-		<RuntimeIdentifier Condition="'$(PublishSingleFile)' == 'true'">win-x64</RuntimeIdentifier>
-		<SelfContained Condition="'$(PublishSingleFile)' == 'true'">true</SelfContained>
+		<!-- publish defaults: dotnet publish -c Release -->
+		<PublishSingleFile>true</PublishSingleFile>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<SelfContained>false</SelfContained>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<PublishDir>Artifacts\</PublishDir>
 	</PropertyGroup>
 
 	<ItemGroup>
