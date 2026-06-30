@@ -20,7 +20,7 @@ public sealed class HabitLogService(Func<AppSettings> settings, Action onSave)
     public void LogHabitsStarted(IEnumerable<Habit> habits)
     {
         var now = DateTime.UtcNow;
-        Send(habits.Select(h => new Entry(h.Id, h.Name, "HabitStarted", now)));
+        Send(habits.Select(h => new Entry(null, h.Name, "HabitStarted", now)));
     }
 
     public void LogDismissed() => Send([new Entry(null, null, "Dismissed", DateTime.UtcNow)]);
@@ -91,6 +91,6 @@ public sealed class HabitLogService(Func<AppSettings> settings, Action onSave)
         catch { return false; }
     }
 
-    private record Entry(string? HabitId, string? HabitName, string Action, DateTime OccurredAt);
+    private record Entry(Guid? HabitId, string? HabitName, string Action, DateTime OccurredAt);
     private record TokenResponse(string AccessToken, string RefreshToken);
 }
