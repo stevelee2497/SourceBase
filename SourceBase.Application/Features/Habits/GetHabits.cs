@@ -20,15 +20,15 @@ public class GetHabitsHandler(IDbContext dbContext, ICurrentUser currentUser) : 
     public Task<List<HabitResponse>> Handle(GetHabitsRequest request, CancellationToken ct)
     {
         var userId = currentUser.UserId;
-        var logCounts = dbContext.HabitLogs
+        var habitCounts = dbContext.HabitLogs
             .Where(l => l.UserId == userId)
             .GroupBy(l => l.HabitId)
             .Select(g => new { HabitId = g.Key, Count = g.Count() });
 
         return dbContext.Habits
             .Where(h => h.IsSystem || h.UserId == userId)
-            .GroupJoin(logCounts, h => h.Id.ToString(), lc => lc.HabitId, (h, lcs) => new { h, lcs })
-            .SelectMany(x => x.lcs.DefaultIfEmpty(), (x, lc) => new HabitResponse(x.h.Id, x.h.Name, x.h.Icon, x.h.IsSystem, lc == null ? 0 : lc.Count))
+            .GroupJoin(habitCounts, h => h.Id.ToString(), hc => hc.HabitId, (h, hcs) => new { h, hcs })
+            .SelectMany(x => x.hcs.DefaultIfEmpty(), (x, hc) => new HabitResponse(x.h.Id, x.h.Name, x.h.Icon, x.h.IsSystem, hc == null ? 0 : hc.Count))
             .OrderByDescending(r => r.LogCount)
             .ToListAsync(ct);
     }
