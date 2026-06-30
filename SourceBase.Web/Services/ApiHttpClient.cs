@@ -412,7 +412,7 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
 
     public Task<(PagingResponse<HabitLogResponse>? data, ErrorResponse? error)> GetHabitLogsAsync(DateTime from, DateTime to)
     {
-        var url = $"/api/habit-logs?from={Uri.EscapeDataString(from.ToString("o"))}&to={Uri.EscapeDataString(to.ToString("o"))}&limit=500&orderBy=OccurredAt&order=Asc";
+        var url = $"/api/habit-logs?from={Uri.EscapeDataString(from.ToString("o"))}&to={Uri.EscapeDataString(to.ToString("o"))}&limit=500&orderBy=OccurredAt&order=Asc&ignoreActions=Dismissed";
         return ExecuteAsync<PagingResponse<HabitLogResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
     }
 
