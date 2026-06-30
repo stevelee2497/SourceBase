@@ -1,10 +1,11 @@
+using FluentValidation;
 using System.Text.Json.Serialization;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.HabitLogs;
 
-public record GetHabitLogsRequest(HabitLogAction? Action, DateTime? From, DateTime? To, int? Page, int? Limit, PagingOrder? Order, GetHabitLogsOrderBy? OrderBy)
+public record GetHabitLogsRequest(HabitLogAction? Action, List<HabitLogAction>? Ignore, DateTime? From, DateTime? To, int? Page, int? Limit, PagingOrder? Order, GetHabitLogsOrderBy? OrderBy)
     : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
 
 public record GetHabitLogResponse(Guid Id, string? HabitId, string? HabitName, HabitLogAction Action, DateTime OccurredAt, DateTime? CreatedOn);
@@ -25,10 +26,19 @@ public class GetHabitLogsHandler(IDbContext dbContext, ICurrentUser currentUser)
         var logs = await dbContext.HabitLogs
             .Where(x => x.UserId == currentUser.UserId
                 && (request.Action == null || x.Action == request.Action)
+                && (request.Ignore == null || !request.Ignore.Contains(x.Action))
                 && (request.From == null || x.OccurredAt >= request.From)
                 && (request.To == null || x.OccurredAt <= request.To))
             .PaginateAsync(x => new GetHabitLogResponse(x.Id, x.HabitId, x.HabitName, x.Action, x.OccurredAt, x.CreatedOn), request, ct);
         return logs;
+    }
+}
+
+public class GetHabitLogsRequestValidator : AbstractValidator<GetHabitLogsRequest>
+{
+    public GetHabitLogsRequestValidator()
+    {
+        RuleFor(x => x.Ignore).Must(x => x is null || x.Count > 0).WithMessage("'Ignore' must not be empty.");
     }
 }
 

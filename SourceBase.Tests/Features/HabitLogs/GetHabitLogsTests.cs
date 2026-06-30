@@ -161,6 +161,33 @@ public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Items.ShouldNotContain(l => l.Id == createdId);
     }
 
+    [Fact(DisplayName = "HLOG-GET-008: GetHabitLogs_WithIgnoreActions_ExcludesMatchingLogs")]
+    public async Task GetHabitLogs_WithIgnoreActions_ExcludesMatchingLogs()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"hlog_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var now = DateTime.UtcNow;
+
+        await client.PostAsJsonAsync(CreateHabitLogsEndpoint.Route, new
+        {
+            entries = new[]
+            {
+                new { action = "HabitStarted", occurredAt = now },
+                new { action = "Dismissed",    occurredAt = now },
+                new { action = "Snoozed",      occurredAt = now },
+            }
+        });
+
+        // Act
+        var response = await client.GetAsync($"{GetHabitLogsEndpoint.Route}?ignore=Dismissed");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<GetHabitLogResponse>>();
+        body!.Total.ShouldBe(2);
+        body.Items.ShouldNotContain(l => l.Action == HabitLogAction.Dismissed);
+    }
+
     [Fact(DisplayName = "HLOG-GET-007: GetHabitLogs_ReturnsCorrectFields")]
     public async Task GetHabitLogs_ReturnsCorrectFields()
     {
