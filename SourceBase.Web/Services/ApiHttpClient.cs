@@ -459,4 +459,4 @@ public sealed record IconResponse(Guid Id, string Value, string Name, string Gro
 public sealed record IconUploadUrlResponse(string UploadUrl, string IconUrl, string ContentType);
 public sealed record GoldPriceResponse(Guid Id, string Source, decimal BuyPrice, decimal SellPrice, DateTime RecordedAt);
 public sealed record HabitLogResponse(Guid Id, string? HabitId, string? HabitName, string Action, DateTime OccurredAt, DateTime? CreatedOn);
-public sealed record HabitItemResponse(Guid Id, string Name, string? Icon, bool IsSystem);
+public sealed record HabitItemResponse(Guid Id, string Name, string? Icon, bool IsSystem, int LogCount);
