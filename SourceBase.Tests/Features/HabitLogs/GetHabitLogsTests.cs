@@ -179,7 +179,7 @@ public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         });
 
         // Act
-        var response = await client.GetAsync($"{GetHabitLogsEndpoint.Route}?ignoreActions=Dismissed");
+        var response = await client.GetAsync($"{GetHabitLogsEndpoint.Route}?ignore=Dismissed");
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
