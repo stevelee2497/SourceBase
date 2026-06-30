@@ -302,12 +302,23 @@
             <StackPanel x:Name="DayRow" Orientation="Horizontal" Margin="0,0,0,24"/>
 
             <!-- Pause during video -->
-            <CheckBox x:Name="PauseDuringVideoBox" Margin="0,0,0,32"
+            <CheckBox x:Name="PauseDuringVideoBox" Margin="0,0,0,16"
                       VerticalContentAlignment="Center" Cursor="Hand">
                 <StackPanel>
                     <TextBlock Text="Pause during video" FontSize="13" FontWeight="SemiBold"
                                Foreground="#374151"/>
                     <TextBlock Text="Skip reminders while watching fullscreen video or gaming"
+                               FontSize="12" Foreground="#9CA3AF" Margin="0,2,0,0"/>
+                </StackPanel>
+            </CheckBox>
+
+            <!-- Run at startup -->
+            <CheckBox x:Name="StartAtLoginBox" Margin="0,0,0,32"
+                      VerticalContentAlignment="Center" Cursor="Hand">
+                <StackPanel>
+                    <TextBlock Text="Run at startup" FontSize="13" FontWeight="SemiBold"
+                               Foreground="#374151"/>
+                    <TextBlock Text="Launch Jupiter automatically when Windows starts"
                                FontSize="12" Foreground="#9CA3AF" Margin="0,2,0,0"/>
                 </StackPanel>
             </CheckBox>

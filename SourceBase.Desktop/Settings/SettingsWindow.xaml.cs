@@ -51,6 +51,7 @@ public partial class SettingsWindow : Window
         PopulateInterval();
         PopulateDays();
         PauseDuringVideoBox.IsChecked = _settings.PauseDuringVideo;
+        StartAtLoginBox.IsChecked = StartupService.IsEnabled();
         ApiUrlBox.Text = _settings.ApiBaseUrl ?? string.Empty;
         UsernameBox.Text = _settings.ApiUsername ?? string.Empty;
         PasswordBox.Password = _settings.ApiPassword ?? string.Empty;
@@ -189,6 +190,8 @@ public partial class SettingsWindow : Window
         _settings.IntervalMinutes = interval;
         _settings.ActiveDays = days;
         _settings.PauseDuringVideo = PauseDuringVideoBox.IsChecked == true;
+        _settings.StartAtLogin = StartAtLoginBox.IsChecked == true;
+        StartupService.Apply(_settings.StartAtLogin);
 
         Saved = true;
         Close();
