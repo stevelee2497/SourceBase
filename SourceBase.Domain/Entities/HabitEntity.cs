@@ -6,4 +6,6 @@ public class HabitEntity : BaseAuditableEntity
     public string? Icon { get; set; }
     public Guid? UserId { get; set; }
     public bool IsSystem { get; set; }
+
+    public List<HabitLogEntity> HabitLogs { get; set; } = [];
 }

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Shouldly;
 using SourceBase.Application.Features.HabitLogs;
+using SourceBase.Application.Features.Habits;
 using SourceBase.Application.Shared;
 using SourceBase.Domain.Entities;
 using SourceBase.Tests.Infrastructure;
@@ -195,11 +196,14 @@ public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var client = await factory.CreateAuthorizedClient($"hlog_{Guid.NewGuid():N}@test.com", "Test@1234!");
         var occurredAt = new DateTime(2025, 3, 15, 9, 30, 0, DateTimeKind.Utc);
 
+        var habitRes = await client.PostAsJsonAsync(CreateHabitEndpoint.Route, new { name = "Short Walk", icon = "🚶" });
+        var habit = await habitRes.Content.ReadFromJsonAsync<CreateHabitResponse>();
+
         await client.PostAsJsonAsync(CreateHabitLogsEndpoint.Route, new
         {
             entries = new[]
             {
-                new { habitId = "walk", habitName = "Short Walk", action = "HabitStarted", occurredAt }
+                new { habitId = habit!.Id, habitName = "Short Walk", action = "HabitStarted", occurredAt }
             }
         });
 
@@ -210,7 +214,7 @@ public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<GetHabitLogResponse>>();
         var log = body!.Items.Single();
-        log.HabitId.ShouldBe("walk");
+        log.HabitId.ShouldBe(habit.Id);
         log.HabitName.ShouldBe("Short Walk");
         log.Action.ShouldBe(HabitLogAction.HabitStarted);
         log.OccurredAt.ShouldBe(occurredAt);
