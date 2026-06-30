@@ -114,11 +114,13 @@
             var cardBg = HabitCardBgColors[i % HabitCardBgColors.Length];
             var cardText = HabitCardTextColors[i % HabitCardTextColors.Length];
             <div class="card p-2 md:p-4 flex flex-col items-center gap-1 md:gap-2 @cardBg">
-                <div class="text-lg md:text-2xl font-bold @cardText">@habit.LogCount</div>
                 <div class="w-10 h-10 md:w-14 md:h-14 rounded-full bg-white/70 flex items-center justify-center text-2xl md:text-3xl shrink-0">
                     @(string.IsNullOrEmpty(habit.Icon) ? "💪" : habit.Icon)
                 </div>
-                <span class="text-xs font-medium @cardText truncate text-center w-full">@habit.Name</span>
+                <div class="flex items-center justify-center gap-1 w-full min-w-0">
+                    <span class="text-lg md:text-2xl font-bold @cardText shrink-0">@habit.LogCount</span>
+                    <span class="text-xs font-medium @cardText truncate">@habit.Name</span>
+                </div>
             </div>
         }
     }
