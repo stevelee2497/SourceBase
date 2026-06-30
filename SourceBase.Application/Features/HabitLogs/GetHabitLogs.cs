@@ -7,7 +7,7 @@ namespace SourceBase.Application.Features.HabitLogs;
 public record GetHabitLogsRequest(HabitLogAction? Action, HabitLogAction[]? Ignore, DateTime? From, DateTime? To, int? Page, int? Limit, PagingOrder? Order, GetHabitLogsOrderBy? OrderBy)
     : PagingRequest(Page, Limit, Order, OrderBy?.ToString());
 
-public record GetHabitLogResponse(Guid Id, string? HabitId, string? HabitName, HabitLogAction Action, DateTime OccurredAt, DateTime? CreatedOn);
+public record GetHabitLogResponse(Guid Id, Guid? HabitId, string? HabitName, HabitLogAction Action, DateTime OccurredAt, DateTime? CreatedOn);
 
 public class GetHabitLogsEndpoint : IEndpoint
 {

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Shouldly;
 using SourceBase.Application.Features.HabitLogs;
+using SourceBase.Application.Features.Habits;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
@@ -31,13 +32,15 @@ public class CreateHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppF
     {
         // Arrange
         var client = await factory.CreateAuthorizedClient($"hlog_{Guid.NewGuid():N}@test.com", "Test@1234!");
+        var habitRes = await client.PostAsJsonAsync(CreateHabitEndpoint.Route, new { name = "Short Walk", icon = "🚶" });
+        var habit = await habitRes.Content.ReadFromJsonAsync<CreateHabitResponse>();
 
         // Act
         var response = await client.PostAsJsonAsync(CreateHabitLogsEndpoint.Route, new
         {
             entries = new[]
             {
-                new { habitId = "walk", habitName = "Short Walk", action = "HabitStarted", occurredAt = DateTime.UtcNow }
+                new { habitId = habit!.Id, habitName = "Short Walk", action = "HabitStarted", occurredAt = DateTime.UtcNow }
             }
         });
 
@@ -54,14 +57,18 @@ public class CreateHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppF
         // Arrange
         var client = await factory.CreateAuthorizedClient($"hlog_{Guid.NewGuid():N}@test.com", "Test@1234!");
         var now = DateTime.UtcNow;
+        var walkRes = await client.PostAsJsonAsync(CreateHabitEndpoint.Route, new { name = "Short Walk", icon = "🚶" });
+        var drinkRes = await client.PostAsJsonAsync(CreateHabitEndpoint.Route, new { name = "Drink Water", icon = "💧" });
+        var walkId = (await walkRes.Content.ReadFromJsonAsync<CreateHabitResponse>())!.Id;
+        var drinkId = (await drinkRes.Content.ReadFromJsonAsync<CreateHabitResponse>())!.Id;
 
         // Act
         var response = await client.PostAsJsonAsync(CreateHabitLogsEndpoint.Route, new
         {
             entries = new object[]
             {
-                new { habitId = "walk",        habitName = "Short Walk",  action = "HabitStarted", occurredAt = now },
-                new { habitId = "drink-water", habitName = "Drink Water", action = "HabitStarted", occurredAt = now },
+                new { habitId = walkId,  habitName = "Short Walk",  action = "HabitStarted", occurredAt = now },
+                new { habitId = drinkId, habitName = "Drink Water", action = "HabitStarted", occurredAt = now },
                 new { action = "Dismissed", occurredAt = now },
             }
         });

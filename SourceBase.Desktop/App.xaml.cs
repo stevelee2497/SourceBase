@@ -50,6 +50,7 @@ public partial class App : Application
         _scheduler.Start();
 
         _ = Task.Run(UpdateService.CheckAsync);
+        _ = SyncHabitsAsync();
     }
 
     private enum TrayGlyph { Mug, Pause, Leaf, Cup, Droplet }
@@ -155,7 +156,7 @@ public partial class App : Application
 
     private void OnBreakNow(object sender, RoutedEventArgs e) => ShowOverlay();
 
-    private void OnOpenSettings(object sender, RoutedEventArgs e)
+    private async void OnOpenSettings(object sender, RoutedEventArgs e)
     {
         var window = new SettingsWindow(_store.Current);
         window.ShowDialog();
@@ -164,7 +165,17 @@ public partial class App : Application
         {
             _store.Save();
             _scheduler?.ScheduleNext();
+            await SyncHabitsAsync();
         }
+    }
+
+    private async Task SyncHabitsAsync()
+    {
+        if (_habitLogService is null) return;
+        var habits = await _habitLogService.FetchHabitsAsync();
+        if (habits is null || habits.Count == 0) return;
+        _store.Current.Habits = habits;
+        _store.Save();
     }
 
     private void OnExitClicked(object sender, RoutedEventArgs e) => Shutdown();

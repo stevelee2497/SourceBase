@@ -77,6 +77,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasIndex(x => new { x.Source, x.RecordedAt })
             .IsUnique();
 
+        modelBuilder.Entity<HabitLogEntity>()
+            .HasOne(l => l.Habit)
+            .WithMany(h => h.HabitLogs)
+            .HasForeignKey(l => l.HabitId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
     }
 
     private static void SeedHabits(DbContext context)

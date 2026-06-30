@@ -405,7 +405,7 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
     public Task<ErrorResponse?> DeleteHabitAsync(Guid id) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/habits/{id}"));
 
-    public Task<ErrorResponse?> LogHabitAsync(string habitId, string habitName, string action) =>
+    public Task<ErrorResponse?> LogHabitAsync(Guid habitId, string habitName, string action) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/habit-logs", new { entries = new[] { new { habitId, habitName, action, occurredAt = DateTime.UtcNow } } }));
 
     // ── Habit Logs ────────────────────────────────────────────────────────────

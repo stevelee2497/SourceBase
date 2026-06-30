@@ -4,7 +4,7 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.HabitLogs;
 
-public record HabitLogEntry(string? HabitId, string? HabitName, HabitLogAction Action, DateTime OccurredAt);
+public record HabitLogEntry(Guid? HabitId, string? HabitName, HabitLogAction Action, DateTime OccurredAt);
 
 public record CreateHabitLogsRequest(List<HabitLogEntry> Entries);
 

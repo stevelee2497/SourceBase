@@ -189,7 +189,7 @@ else
     private Func<Task> LogHabit(HabitItemResponse habit) => async () =>
     {
         _loggingHabitId = habit.Id;
-        await Api.LogHabitAsync(habit.Id.ToString(), habit.Name, "HabitStarted");
+        await Api.LogHabitAsync(habit.Id, habit.Name, "HabitStarted");
         _loggingHabitId = null;
         await LoadAsync();
     };
