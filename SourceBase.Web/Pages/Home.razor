@@ -118,8 +118,7 @@
                     @(string.IsNullOrEmpty(habit.Icon) ? "💪" : habit.Icon)
                 </div>
                 <div class="flex items-center justify-center gap-1 w-full min-w-0">
-                    <span class="text-lg md:text-2xl font-bold @cardText shrink-0">@habit.LogCount</span>
-                    <span class="text-xs font-medium @cardText truncate">@habit.Name</span>
+                    <span class="text-base md:text-lg font-medium @cardText truncate">@habit.LogCount @habit.Name.ToLower()</span>
                 </div>
             </div>
         }
