@@ -17,10 +17,60 @@ public sealed class HabitLogService(Func<AppSettings> settings, Action onSave)
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(5) };
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
+    private static readonly string[] DefaultAccents =
+        ["#3B82F6", "#EF4444", "#10B981", "#8B5CF6", "#F59E0B", "#06B6D4", "#6366F1", "#F97316"];
+
+    /// <summary>
+    /// Fetches the user's habit list from the API and returns it as local Habit models.
+    /// Returns null silently when the API is unreachable or not configured.
+    /// </summary>
+    public async Task<List<Habit>?> FetchHabitsAsync()
+    {
+        var s = settings();
+        if (string.IsNullOrWhiteSpace(s.ApiBaseUrl) || string.IsNullOrWhiteSpace(s.ApiToken)) return null;
+
+        try
+        {
+            var url = $"{s.ApiBaseUrl.TrimEnd('/')}/api/habits";
+            var resp = await GetAsync(url, s.ApiToken);
+
+            if (resp.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                if (!await TryRefreshAsync(s)) return null;
+                resp = await GetAsync(url, s.ApiToken!);
+            }
+
+            if (!resp.IsSuccessStatusCode) return null;
+
+            var dtos = await JsonSerializer.DeserializeAsync<List<HabitDto>>(
+                await resp.Content.ReadAsStreamAsync(), JsonOpts);
+
+            return dtos?
+                .Select((h, i) => new Habit
+                {
+                    Id = h.Id,
+                    Name = h.Name,
+                    Emoji = h.Icon,
+                    Accent = DefaultAccents[i % DefaultAccents.Length],
+                    IsEnabled = true,
+                })
+                .ToList();
+        }
+        catch { return null; }
+    }
+
+    /// <summary>
+    /// Logs only habits that have a valid server-side ID (Id != Guid.Empty).
+    /// Habits still showing local defaults are skipped to avoid FK violations.
+    /// </summary>
     public void LogHabitsStarted(IEnumerable<Habit> habits)
     {
         var now = DateTime.UtcNow;
-        Send(habits.Select(h => new Entry(null, h.Name, "HabitStarted", now)));
+        var entries = habits
+            .Where(h => h.Id != Guid.Empty)
+            .Select(h => new Entry(h.Id, h.Name, "HabitStarted", now))
+            .ToList();
+        if (entries.Count > 0) Send(entries);
     }
 
     public void LogDismissed() => Send([new Entry(null, null, "Dismissed", DateTime.UtcNow)]);
@@ -55,6 +105,15 @@ public sealed class HabitLogService(Func<AppSettings> settings, Action onSave)
 
     private void MarkConnected(AppSettings s) { s.ApiStatus = ApiConnectionStatus.Connected; onSave(); }
     private void MarkFailed(AppSettings s) { s.ApiStatus = ApiConnectionStatus.Failed; onSave(); }
+
+    private static async Task<HttpResponseMessage> GetAsync(string url, string token)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Get, url)
+        {
+            Headers = { Authorization = new AuthenticationHeaderValue("Bearer", token) },
+        };
+        return await Http.SendAsync(req);
+    }
 
     private static async Task<HttpResponseMessage> PostAsync(string url, string body, string token)
     {
@@ -93,4 +152,5 @@ public sealed class HabitLogService(Func<AppSettings> settings, Action onSave)
 
     private record Entry(Guid? HabitId, string? HabitName, string Action, DateTime OccurredAt);
     private record TokenResponse(string AccessToken, string RefreshToken);
+    private record HabitDto(Guid Id, string Name, string? Icon);
 }

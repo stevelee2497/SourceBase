@@ -68,11 +68,11 @@ public sealed class AppSettings
 
     public static List<Habit> DefaultHabits() =>
     [
-        new() { Id = "drink-water", Name = "Drink Water",  Emoji = "💧", Accent = "#3B82F6" },
-        new() { Id = "push-up",     Name = "Push Up",      Emoji = "💪", Accent = "#EF4444" },
-        new() { Id = "stretching",  Name = "Stretching",   Emoji = "🧘", Accent = "#10B981" },
-        new() { Id = "eye-rest",    Name = "Rest Eyes",    Emoji = "👀", Accent = "#8B5CF6" },
-        new() { Id = "walk",        Name = "Short Walk",   Emoji = "🚶", Accent = "#F59E0B" },
-        new() { Id = "deep-breath", Name = "Deep Breaths", Emoji = "🌬️", Accent = "#06B6D4" },
+        new() { Id = Guid.Empty, Name = "Drink Water",  Emoji = "💧", Accent = "#3B82F6" },
+        new() { Id = Guid.Empty, Name = "Push Up",      Emoji = "💪", Accent = "#EF4444" },
+        new() { Id = Guid.Empty, Name = "Stretching",   Emoji = "🧘", Accent = "#10B981" },
+        new() { Id = Guid.Empty, Name = "Rest Eyes",    Emoji = "👀", Accent = "#8B5CF6" },
+        new() { Id = Guid.Empty, Name = "Short Walk",   Emoji = "🚶", Accent = "#F59E0B" },
+        new() { Id = Guid.Empty, Name = "Deep Breaths", Emoji = "🌬️", Accent = "#06B6D4" },
     ];
 }
