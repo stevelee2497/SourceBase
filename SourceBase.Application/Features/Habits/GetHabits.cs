@@ -17,20 +17,25 @@ public class GetHabitsEndpoint : IEndpoint
 
 public class GetHabitsHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetHabitsRequest, List<HabitResponse>>
 {
-    public Task<List<HabitResponse>> Handle(GetHabitsRequest request, CancellationToken ct)
+    public async Task<List<HabitResponse>> Handle(GetHabitsRequest request, CancellationToken ct)
     {
         var userId = currentUser.UserId;
-        var habitCounts = dbContext.HabitLogs
-            .Where(l => l.UserId == userId)
-            .GroupBy(l => l.HabitId)
-            .Select(g => new { HabitId = g.Key, Count = g.Count() });
 
-        return dbContext.Habits
+        var habits = await dbContext.Habits
             .Where(h => h.IsSystem || h.UserId == userId)
-            .GroupJoin(habitCounts, h => h.Id.ToString(), hc => hc.HabitId, (h, hcs) => new { h, hcs })
-            .SelectMany(x => x.hcs.DefaultIfEmpty(), (x, hc) => new { x.h, Count = hc == null ? 0 : hc.Count })
-            .OrderByDescending(x => x.Count)
-            .Select(x => new HabitResponse(x.h.Id, x.h.Name, x.h.Icon, x.h.IsSystem, x.Count))
             .ToListAsync(ct);
+
+        var habitIds = habits.Select(h => h.Id.ToString()).ToList();
+
+        var counts = await dbContext.HabitLogs
+            .Where(l => l.UserId == userId && habitIds.Contains(l.HabitId))
+            .GroupBy(l => l.HabitId)
+            .Select(g => new { HabitId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.HabitId, x => x.Count, ct);
+
+        return habits
+            .Select(h => new HabitResponse(h.Id, h.Name, h.Icon, h.IsSystem, counts.GetValueOrDefault(h.Id.ToString(), 0)))
+            .OrderByDescending(r => r.LogCount)
+            .ToList();
     }
 }
