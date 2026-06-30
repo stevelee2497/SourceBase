@@ -96,6 +96,38 @@
     }
 </div>
 
+<!-- Habits cards row -->
+<div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
+    @if (_habitsLoading)
+    {
+        <div class="col-span-3 lg:col-span-5 text-sm text-gray-400">Loading…</div>
+    }
+    else if (_habits.Count == 0)
+    {
+        <div class="col-span-3 lg:col-span-5 text-sm text-gray-400 py-2">No habits yet.</div>
+    }
+    else
+    {
+        @for (var i = 0; i < _habits.Count; i++)
+        {
+            var habit = _habits[i];
+            var cardBg = HabitCardBgColors[i % HabitCardBgColors.Length];
+            var cardText = HabitCardTextColors[i % HabitCardTextColors.Length];
+            <div class="card p-2 md:p-4 flex flex-col gap-0 md:gap-2 @cardBg">
+                <div class="flex items-center gap-1">
+                    @if (!string.IsNullOrEmpty(habit.Icon))
+                    {
+                        <span class="text-base md:text-xl shrink-0">@habit.Icon</span>
+                    }
+                    <span class="text-xs font-bold @cardText truncate">@habit.Name</span>
+                </div>
+                <div class="text-sm md:text-2xl text-center font-bold @cardText">@habit.LogCount</div>
+                <div class="text-[11px] text-right text-gray-400">logs</div>
+            </div>
+        }
+    }
+</div>
+
 <!-- Main content: two columns -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4">
 
@@ -227,6 +259,12 @@
     private Dictionary<string, GoldPriceResponse?> _goldPrices = new();
     private bool _goldPricesLoading = true;
 
+    private List<HabitItemResponse> _habits = [];
+    private bool _habitsLoading = true;
+
+    private static readonly string[] HabitCardBgColors = ["bg-indigo-50", "bg-amber-50", "bg-green-50", "bg-rose-50", "bg-purple-50", "bg-teal-50", "bg-blue-50", "bg-orange-50"];
+    private static readonly string[] HabitCardTextColors = ["text-indigo-700", "text-amber-700", "text-green-700", "text-rose-700", "text-purple-700", "text-teal-700", "text-blue-700", "text-orange-700"];
+
     private static readonly string[] PieColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#a855f7"];
 
     private record PieSlice(string Name, double Fraction, string Color);
@@ -234,7 +272,15 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.Yield();
-        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync());
+        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync(), LoadHabitsAsync());
+    }
+
+    private async Task LoadHabitsAsync()
+    {
+        _habitsLoading = true;
+        var (data, _) = await Api.GetHabitsAsync();
+        _habits = data ?? [];
+        _habitsLoading = false;
     }
 
     private async Task LoadGoldPricesAsync()

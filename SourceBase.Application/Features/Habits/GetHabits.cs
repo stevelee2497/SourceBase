@@ -4,7 +4,7 @@ using SourceBase.Application.Shared.Interfaces;
 namespace SourceBase.Application.Features.Habits;
 
 public record GetHabitsRequest;
-public record HabitResponse(Guid Id, string Name, string? Icon, bool IsSystem);
+public record HabitResponse(Guid Id, string Name, string? Icon, bool IsSystem, int LogCount);
 
 public class GetHabitsEndpoint : IEndpoint
 {
@@ -17,10 +17,19 @@ public class GetHabitsEndpoint : IEndpoint
 
 public class GetHabitsHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<GetHabitsRequest, List<HabitResponse>>
 {
-    public async Task<List<HabitResponse>> Handle(GetHabitsRequest request, CancellationToken ct) =>
-        await dbContext.Habits
-            .Where(h => h.IsSystem || h.UserId == currentUser.UserId)
-            .OrderBy(h => h.Name)
-            .Select(h => new HabitResponse(h.Id, h.Name, h.Icon, h.IsSystem))
+    public Task<List<HabitResponse>> Handle(GetHabitsRequest request, CancellationToken ct)
+    {
+        var userId = currentUser.UserId;
+        var habitCounts = dbContext.HabitLogs
+            .Where(l => l.UserId == userId)
+            .GroupBy(l => l.HabitId)
+            .Select(g => new { HabitId = g.Key, Count = g.Count() });
+
+        return dbContext.Habits
+            .Where(h => h.IsSystem || h.UserId == userId)
+            .GroupJoin(habitCounts, h => h.Id.ToString(), hc => hc.HabitId, (h, hcs) => new { h, hcs })
+            .SelectMany(x => x.hcs.DefaultIfEmpty(), (x, hc) => new HabitResponse(x.h.Id, x.h.Name, x.h.Icon, x.h.IsSystem, hc == null ? 0 : hc.Count))
+            .OrderByDescending(r => r.LogCount)
             .ToListAsync(ct);
+    }
 }
