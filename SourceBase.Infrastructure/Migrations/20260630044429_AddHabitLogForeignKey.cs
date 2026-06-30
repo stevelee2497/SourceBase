@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -11,15 +10,7 @@ namespace SourceBase.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<Guid>(
-                name: "HabitId",
-                table: "HabitLogs",
-                type: "uuid",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "text",
-                oldNullable: true,
-                oldCollation: "case_insensitive");
+            migrationBuilder.Sql(@"ALTER TABLE ""HabitLogs"" ALTER COLUMN ""HabitId"" TYPE uuid USING ""HabitId""::uuid;");
 
             migrationBuilder.CreateIndex(
                 name: "IX_HabitLogs_HabitId",
