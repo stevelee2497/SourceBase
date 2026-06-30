@@ -1,3 +1,4 @@
+using FluentValidation;
 using System.Text.Json.Serialization;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
@@ -30,6 +31,14 @@ public class GetHabitLogsHandler(IDbContext dbContext, ICurrentUser currentUser)
                 && (request.To == null || x.OccurredAt <= request.To))
             .PaginateAsync(x => new GetHabitLogResponse(x.Id, x.HabitId, x.HabitName, x.Action, x.OccurredAt, x.CreatedOn), request, ct);
         return logs;
+    }
+}
+
+public class GetHabitLogsRequestValidator : AbstractValidator<GetHabitLogsRequest>
+{
+    public GetHabitLogsRequestValidator()
+    {
+        RuleFor(x => x.Ignore).Must(x => x is null || x.Count > 0).WithMessage("'Ignore' must not be empty.");
     }
 }
 
