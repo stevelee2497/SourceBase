@@ -24,6 +24,7 @@
     "expo": "57.0.1",
     "expo-constants": "~57.0.2",
     "expo-image-picker": "~57.0.1",
+    "expo-linear-gradient": "~57.0.0",
     "expo-linking": "~57.0.1",
     "expo-router": "~57.0.2",
     "expo-secure-store": "~57.0.0",
