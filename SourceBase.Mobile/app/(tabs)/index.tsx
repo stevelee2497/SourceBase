@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { ScrollView, View, Text, RefreshControl, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useStats,
@@ -26,6 +27,7 @@ export default function Home() {
   const s = stats.data;
 
   return (
+    <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
     <ScrollView
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -84,6 +86,7 @@ export default function Home() {
         )}
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

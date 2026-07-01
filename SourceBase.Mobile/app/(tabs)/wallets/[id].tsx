@@ -1,7 +1,9 @@
 import React, { useState, useMemo, useRef } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
-import { useLocalSearchParams, Stack } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import groupBy from "lodash/groupBy";
 import { useWallet } from "../../../src/hooks/useWallets";
 import { useTransactions } from "../../../src/hooks/useTransactions";
@@ -24,6 +26,7 @@ type Row =
 
 export default function WalletDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const wallet = useWallet(id!);
   const [tab, setTab] = useState<Tab>("txns");
   const sheetRef = useRef<TransactionSheetRef>(null);
@@ -45,11 +48,14 @@ export default function WalletDetail() {
   const currency = wallet.data?.currency;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.white }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.white }}>
       <Stack.Screen options={{ title: wallet.data?.name ?? "Wallet" }} />
 
       {/* Balance header */}
       <View style={styles.header}>
+        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backBtn}>
+          <Ionicons name="chevron-back" size={24} color={colors.primaryText} />
+        </Pressable>
         <Text style={styles.headerLabel}>{wallet.data?.name}</Text>
         <Text style={styles.headerValue}>
           {wallet.data ? formatMoney(wallet.data.balance, currency) : "—"}
@@ -122,12 +128,13 @@ export default function WalletDetail() {
 
       <Fab onPress={() => sheetRef.current?.openNew(id!)} />
       <TransactionSheet ref={sheetRef} />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   header: { padding: spacing.xl, backgroundColor: colors.primary },
+  backBtn: { marginBottom: spacing.sm },
   headerLabel: { color: colors.primaryText },
   headerValue: { color: colors.white, fontSize: 28, fontWeight: "800" },
   segment: { flexDirection: "row", padding: spacing.sm, gap: spacing.sm },

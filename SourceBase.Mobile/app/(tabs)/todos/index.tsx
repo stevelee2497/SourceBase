@@ -8,6 +8,7 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../src/auth/AuthContext";
@@ -74,8 +75,9 @@ export default function Todos() {
   };
 
   return (
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.white }}>
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.white }}
+      style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       {/* List switcher */}
@@ -143,6 +145,7 @@ export default function Todos() {
         />
       </View>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

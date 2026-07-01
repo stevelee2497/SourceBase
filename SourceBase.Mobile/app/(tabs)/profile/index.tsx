@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../../../src/auth/AuthContext";
 import {
@@ -59,6 +60,7 @@ export default function Profile() {
     });
 
   return (
+    <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.avatarBlock}>
         <Pressable onPress={pickAvatar}>
@@ -102,6 +104,7 @@ export default function Profile() {
         <Text style={{ color: colors.expense, fontWeight: "600" }}>Log out</Text>
       </Pressable>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

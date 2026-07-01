@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
 import groupBy from "lodash/groupBy";
@@ -49,7 +50,7 @@ export default function Habits() {
   }, [logs.data]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.white }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.white }}>
       {/* Filter chips */}
       <View style={styles.chips}>
         <Chip label="All" active={!action} onPress={() => setAction(undefined)} />
@@ -97,7 +98,7 @@ export default function Habits() {
 
       <Fab onPress={() => sheetRef.current?.open()} />
       <LogHabitSheet ref={sheetRef} />
-    </View>
+    </SafeAreaView>
   );
 }
 

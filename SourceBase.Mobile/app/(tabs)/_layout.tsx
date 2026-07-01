@@ -7,7 +7,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
       }}
@@ -25,7 +25,6 @@ export default function TabsLayout() {
         name="wallets"
         options={{
           title: "Wallets",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="wallet-outline" color={color} size={size} />
           ),

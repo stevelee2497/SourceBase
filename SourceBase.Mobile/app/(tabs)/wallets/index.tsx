@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import { useWallets } from "../../../src/hooks/useWallets";
@@ -12,7 +13,7 @@ export default function WalletList() {
   const { data, isLoading, refetch } = useWallets();
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.white }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.white }}>
       {/* Money Lover-style total header */}
       <View style={styles.header}>
         <Text style={styles.headerLabel}>Total balance</Text>
@@ -52,7 +53,7 @@ export default function WalletList() {
           </Pressable>
         )}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
