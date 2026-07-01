@@ -23,7 +23,6 @@ export default function WalletList() {
 
       <FlashList
         data={data?.wallets ?? []}
-        estimatedItemSize={72}
         refreshing={isLoading}
         onRefresh={refetch}
         keyExtractor={(w) => w.id}

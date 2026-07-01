@@ -65,7 +65,6 @@ export default function Habits() {
 
       <FlashList
         data={rows}
-        estimatedItemSize={56}
         keyExtractor={(it, i) => (it.kind === "header" ? `h-${it.day}` : it.log.id) + i}
         getItemType={(it) => it.kind}
         onEndReached={() => logs.hasNextPage && logs.fetchNextPage()}

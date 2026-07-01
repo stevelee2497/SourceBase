@@ -92,7 +92,6 @@ export default function Todos() {
 
       <FlashList
         data={rows}
-        estimatedItemSize={56}
         keyExtractor={(it, i) => (it.kind === "header" ? `h${i}` : it.todo.id)}
         getItemType={(it) => it.kind}
         ListEmptyComponent={

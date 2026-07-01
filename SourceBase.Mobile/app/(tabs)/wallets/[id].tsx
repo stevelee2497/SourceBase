@@ -80,7 +80,6 @@ export default function WalletDetail() {
       {tab === "txns" ? (
         <FlashList
           data={rows}
-          estimatedItemSize={64}
           keyExtractor={(it, i) => (it.kind === "header" ? `h-${it.day}` : it.txn.id) + i}
           getItemType={(it) => it.kind}
           onEndReached={() => txns.hasNextPage && txns.fetchNextPage()}
