@@ -154,23 +154,3 @@ Use `h-14` (56px) on mobile, `h-16` (64px) on desktop. Reduce horizontal padding
 | `.form-error`    | Inline validation error text                                                                |
 | `.card`          | White rounded panel with border (`p-6` built-in — override with `!p-3` on mobile if needed) |
 | `.badge`         | Inline status badge                                                                         |
-
-## Component Directory
-
-```
-SourceBase.Web/
-  Layout/
-    MainLayout.razor    # Root layout: sidebar + top bar + main content
-    NavMenu.razor       # Sidebar nav with mobile drawer support
-    AuthLayout.razor    # Unauthenticated layout
-  Components/
-    ConfirmDialog.razor
-    CurrencyInput.razor
-    IconPicker.razor
-    LoadingSpinner.razor
-    NotificationBell.razor
-    Pagination.razor
-    SelectInput.razor
-    UserModal.razor
-  Pages/               # Route-level components
-```
