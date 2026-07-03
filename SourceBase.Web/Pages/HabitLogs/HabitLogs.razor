@@ -99,7 +99,7 @@ else
                             var entries = LogsForSlot(day, slotIndex);
                             <div class="min-h-8 px-0.5 py-0.5 border-r last:border-r-0 border-gray-100 @(isToday ? "bg-indigo-50/20" : "")">
                                 <div class="flex flex-wrap gap-0.5">
-                                    @foreach (var log in entries)
+                                    @foreach (var log in entries.Where(l => l.Action == "HabitStarted"))
                                     {
                                         <span class="inline-flex items-center justify-center w-6 h-6 rounded-md border text-base leading-none @EntryClass(log.Action)" title="@EntryTitle(log)">@EntryIcon(log)</span>
                                     }
