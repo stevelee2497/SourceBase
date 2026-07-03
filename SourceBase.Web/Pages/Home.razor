@@ -7,7 +7,6 @@
 <h2 class="text-base font-semibold text-blue-800 mb-2">Overall</h2>
 <!-- Overview row -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-2 md:mb-4">
-
     <!-- Log time status -->
     <div class="card flex flex-col justify-between gap-0 p-2 md:p-4">
         <div class="text-sm font-medium text-gray-500">Log Time</div>
@@ -130,117 +129,120 @@
     }
 </div>
 
-<!-- Main content: two columns -->
+<!-- Wallets -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4">
-    <a href="/wallets" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4">Wallets</a>
+    <div>
+        <!-- Left: Wallets distribution -->
+        <a href="/wallets" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4 mb-2">Wallets123</a>
+        <div class="flex flex-col gap-2 p-2 md:p-4">
 
-    <!-- Left: Wallets distribution -->
-    <div class="flex flex-col gap-2 p-2 md:p-4">
-
-        @if (_walletsLoading)
-        {
-            <LoadingSpinner />
-        }
-        else if (_wallets is null || _wallets.Wallets.Count == 0)
-        {
-            <div class="py-6 text-center">
-                <div class="text-sm text-gray-400 mb-2">No wallets yet.</div>
-                <a href="/wallets" class="btn-primary btn-sm">Create Wallet</a>
-            </div>
-        }
-        else
-        {
-            <div class="flex flex-col items-center gap-4">
-                <div class="shrink-0">
-                    @{
-                        var pieData = BuildWalletPieData();
-                    }
-                    <svg width="200" height="200" viewBox="-1 -1 2 2" style="transform: rotate(-90deg)">
-                        @if (pieData.Count == 1)
-                        {
-                            <circle cx="0" cy="0" r="1" fill="@pieData[0].Color" />
-                        }
-                        else
-                        {
-                            double cumulative = 0;
-                            foreach (var slice in pieData)
-                            {
-                                var startAngle = cumulative * 2 * Math.PI;
-                                cumulative += slice.Fraction;
-                                var endAngle = cumulative * 2 * Math.PI;
-                                var x1 = Math.Cos(startAngle);
-                                var y1 = Math.Sin(startAngle);
-                                var x2 = Math.Cos(endAngle);
-                                var y2 = Math.Sin(endAngle);
-                                var largeArc = slice.Fraction > 0.5 ? 1 : 0;
-                                var pathD = $"M 0 0 L {x1:F4} {y1:F4} A 1 1 0 {largeArc} 1 {x2:F4} {y2:F4} Z";
-                                <path d="@pathD" fill="@slice.Color" stroke="white" stroke-width="0.02" />
-                            }
-                        }
-                    </svg>
-                </div>
-                <div class="flex flex-wrap gap-x-4 gap-y-2 justify-center">
-                    @foreach (var slice in BuildWalletPieData())
-                    {
-                        var wallet = _wallets.Wallets.FirstOrDefault(w => w.Name == slice.Name);
-                        <div class="flex items-center gap-1.5 text-sm">
-                            <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: @slice.Color"></div>
-                            <span class="text-gray-700 font-medium">@slice.Name</span>
-                            <span class="text-gray-500">@FormatAmount(wallet?.Balance ?? 0)</span>
-                        </div>
-                    }
-                </div>
-                <div class="flex items-center justify-center gap-1.5 pt-1 border-t border-gray-100">
-                    <span class="text-sm text-gray-500 mt-3">Total</span>
-                    <span class="text-sm font-semibold text-gray-800 mt-3">@FormatAmount(_wallets.TotalBalance)</span>
-                </div>
-            </div>
-        }
-    </div>
-
-    <!-- Right: Default todo list -->
-    <a href="/todos" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4">Todo</a>
-    <div class="card flex flex-col gap-2 p-2 md:p-4">
-
-        @if (_todosLoading)
-        {
-            <LoadingSpinner />
-        }
-        else if (Auth.UserInfo?.DefaultTodoListId is null)
-        {
-            <div class="py-6 text-center">
-                <div class="text-sm text-gray-400 mb-2">No default list set.</div>
-                <a href="/todos" class="btn-primary btn-sm">Go to Todos to star a list</a>
-            </div>
-        }
-        else
-        {
-            @if (_defaultTodos.Count == 0)
+            @if (_walletsLoading)
             {
-                <div class="text-sm text-gray-400 text-center py-4">No open todos in this list.</div>
+                <LoadingSpinner />
+            }
+            else if (_wallets is null || _wallets.Wallets.Count == 0)
+            {
+                <div class="py-6 text-center">
+                    <div class="text-sm text-gray-400 mb-2">No wallets yet.</div>
+                    <a href="/wallets" class="btn-primary btn-sm">Create Wallet</a>
+                </div>
             }
             else
             {
-                <div class="flex flex-col gap-2">
-                    @foreach (var (todo, index) in _defaultTodos.Take(10).Select((t, i) => (t, i)))
-                    {
-                        <div class="flex items-center gap-3 ml-2 @(index == 0 ? "" : "border-t border-gray-100 pt-2")">
-                            <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 hover:border-green-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoDone(todo)" title="Mark complete">
-                            </button>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm text-gray-800 truncate">@todo.Title</div>
-                                <div class="text-xs text-gray-400">@todo.Date</div>
+                <div class="flex flex-col items-center gap-4">
+                    <div class="shrink-0">
+                        @{
+                            var pieData = BuildWalletPieData();
+                        }
+                        <svg width="200" height="200" viewBox="-1 -1 2 2" style="transform: rotate(-90deg)">
+                            @if (pieData.Count == 1)
+                            {
+                                <circle cx="0" cy="0" r="1" fill="@pieData[0].Color" />
+                            }
+                            else
+                            {
+                                double cumulative = 0;
+                                foreach (var slice in pieData)
+                                {
+                                    var startAngle = cumulative * 2 * Math.PI;
+                                    cumulative += slice.Fraction;
+                                    var endAngle = cumulative * 2 * Math.PI;
+                                    var x1 = Math.Cos(startAngle);
+                                    var y1 = Math.Sin(startAngle);
+                                    var x2 = Math.Cos(endAngle);
+                                    var y2 = Math.Sin(endAngle);
+                                    var largeArc = slice.Fraction > 0.5 ? 1 : 0;
+                                    var pathD = $"M 0 0 L {x1:F4} {y1:F4} A 1 1 0 {largeArc} 1 {x2:F4} {y2:F4} Z";
+                                    <path d="@pathD" fill="@slice.Color" stroke="white" stroke-width="0.02" />
+                                }
+                            }
+                        </svg>
+                    </div>
+                    <div class="flex flex-wrap gap-x-4 gap-y-2 justify-center">
+                        @foreach (var slice in BuildWalletPieData())
+                        {
+                            var wallet = _wallets.Wallets.FirstOrDefault(w => w.Name == slice.Name);
+                            <div class="flex items-center gap-1.5 text-sm">
+                                <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: @slice.Color"></div>
+                                <span class="text-gray-700 font-medium">@slice.Name</span>
+                                <span class="text-gray-500">@FormatAmount(wallet?.Balance ?? 0)</span>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
+                    <div class="flex items-center justify-center gap-1.5 pt-1 border-t border-gray-100">
+                        <span class="text-sm text-gray-500 mt-3">Total</span>
+                        <span class="text-sm font-semibold text-gray-800 mt-3">@FormatAmount(_wallets.TotalBalance)</span>
+                    </div>
                 </div>
-                @if (_defaultTodos.Count > 10)
+            }
+        </div>
+    </div>
+    <div>
+        <!-- Right: Default todo list -->
+        <a href="/todos" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4 mb-2">Todo</a>
+        <div class="card flex flex-col gap-2 p-2 md:p-4">
+
+            @if (_todosLoading)
+            {
+                <LoadingSpinner />
+            }
+            else if (Auth.UserInfo?.DefaultTodoListId is null)
+            {
+                <div class="py-6 text-center">
+                    <div class="text-sm text-gray-400 mb-2">No default list set.</div>
+                    <a href="/todos" class="btn-primary btn-sm">Go to Todos to star a list</a>
+                </div>
+            }
+            else
+            {
+                @if (_defaultTodos.Count == 0)
                 {
-                    <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">+@(_defaultTodos.Count - 10) more →</a>
+                    <div class="text-sm text-gray-400 text-center py-4">No open todos in this list.</div>
+                }
+                else
+                {
+                    <div class="flex flex-col gap-2">
+                        @foreach (var (todo, index) in _defaultTodos.Take(10).Select((t, i) => (t, i)))
+                        {
+                            <div class="flex items-center gap-3 ml-2 @(index == 0 ? "" : "border-t border-gray-100 pt-2")">
+                                <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 hover:border-green-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoDone(todo)" title="Mark complete">
+                                </button>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm text-gray-800 truncate">@todo.Title</div>
+                                    <div class="text-xs text-gray-400">@todo.Date</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    @if (_defaultTodos.Count > 10)
+                    {
+                        <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">+@(_defaultTodos.Count - 10) more →</a>
+                    }
                 }
             }
-        }
+        </div>
     </div>
+
 </div>
 
 @code {
