@@ -5,7 +5,6 @@
 
 <!-- Overall section -->
 <h2 class="text-base font-semibold text-blue-800 mb-2">Overall</h2>
-
 <!-- Overview row -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-2 md:mb-4">
 
@@ -73,7 +72,6 @@
 
 <!-- Habits section -->
 <a href="/habit-logs" class="block text-base font-semibold text-blue-800 mb-2 hover:text-indigo-600 transition-colors mt-4">Habits</a>
-
 <!-- Habits cards row -->
 <div class="grid grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
     @if (_habitsLoading)
@@ -104,7 +102,6 @@
 
 <!-- Gold section -->
 <a href="/gold-prices" class="block text-base font-semibold text-blue-800 mb-2 hover:text-indigo-600 transition-colors mt-4">Gold</a>
-
 <!-- Gold price status row -->
 <div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
     @foreach (var source in GoldSources)
@@ -138,7 +135,7 @@
     <a href="/wallets" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4">Wallets</a>
 
     <!-- Left: Wallets distribution -->
-    <div class="card flex flex-col gap-2 p-2 md:p-4">
+    <div class="flex flex-col gap-2 p-2 md:p-4">
 
         @if (_walletsLoading)
         {
@@ -203,7 +200,7 @@
 
     <!-- Right: Default todo list -->
     <a href="/todos" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4">Todo</a>
-    <div class="flex flex-col gap-2 p-2 md:p-4">
+    <div class="card flex flex-col gap-2 p-2 md:p-4">
 
         @if (_todosLoading)
         {
