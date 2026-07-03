@@ -42,7 +42,7 @@ else if (!_loading && _habitsLoaded)
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
         </button>
-        <span class="text-sm font-medium text-gray-700 whitespace-nowrap min-w-[160px] text-center">@WeekRangeLabel()</span>
+        <span class="text-sm font-medium text-gray-700 whitespace-nowrap min-w-40 text-center">@WeekRangeLabel()</span>
         <button class="btn-secondary btn-sm" @onclick="NextWeek" title="Next week">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -63,7 +63,7 @@ else
 {
     <!-- Calendar — 30-min time-block grid, horizontal scroll on mobile S/M -->
     <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-        <div id="@GridScrollId" class="min-w-[640px] max-h-[70vh] overflow-y-auto">
+        <div id="@GridScrollId" class="min-w-160 max-h-[70vh] overflow-y-auto">
 
             <!-- Day header row -->
             <div class="grid grid-cols-[52px_repeat(7,1fr)] bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
