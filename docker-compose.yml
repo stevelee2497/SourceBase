@@ -93,6 +93,7 @@ services:
       - BetterStackSourceToken=${BETTERSTACK_SOURCE_TOKEN}
       - R2__AccessKeyId=${CF_ACCESS_KEY_ID}
       - R2__SecretAccessKey=${CF_SECRET_ACCESS_KEY}
+      - R2__BucketName=general
       - R2__PublicUrl=${CF_PUBLIC_URL}
       - R2__ServiceURL=https://${CF_ACCOUNT_ID}.r2.cloudflarestorage.com
     volumes:
