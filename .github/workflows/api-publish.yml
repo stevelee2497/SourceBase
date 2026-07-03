@@ -138,17 +138,22 @@ jobs:
           REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
           BETTERSTACK_SOURCE_TOKEN: ${{ secrets.BETTERSTACK_SOURCE_TOKEN }}
           CF_URL: ${{ vars.CF_URL }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
+          CF_SECRET_ACCESS_KEY: ${{ secrets.CF_SECRET_ACCESS_KEY }}
+          CF_PUBLIC_URL: ${{ vars.CF_PUBLIC_URL }}
           IMAGE_TAG: ${{ needs.version.outputs.new_version }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB,ADMIN_EMAIL,ADMIN_PASSWORD,SENDGRID_API_KEY,SENDGRID_ACCOUNT_OWNER,WEB_URL,API_URL,REDIS_PASSWORD,BETTERSTACK_SOURCE_TOKEN,CF_URL,IMAGE_TAG
+          envs: POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB,ADMIN_EMAIL,ADMIN_PASSWORD,SENDGRID_API_KEY,SENDGRID_ACCOUNT_OWNER,WEB_URL,API_URL,REDIS_PASSWORD,BETTERSTACK_SOURCE_TOKEN,CF_URL,CF_ACCOUNT_ID,CF_ACCESS_KEY_ID,CF_SECRET_ACCESS_KEY,CF_PUBLIC_URL,IMAGE_TAG
           script: |
             set -e
             cd ${{ vars.VPS_APP_PATH || '~/SourceBase' }}
             git pull
             IMAGE_TAG=$IMAGE_TAG docker compose pull sourcebase-api
+            docker compose build postgres-backup
             output=$(IMAGE_TAG=$IMAGE_TAG docker compose up -d --remove-orphans 2>&1)
             echo "$output"
             if echo "$output" | grep -q 'variable is not set. Defaulting to a blank string'; then

@@ -19,6 +19,28 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres-backup:
+    build:
+      context: ./backup
+    container_name: sourcebase-postgres-backup
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - CF_ACCOUNT_ID=${CF_ACCOUNT_ID}
+      - CF_ACCESS_KEY_ID=${CF_ACCESS_KEY_ID}
+      - CF_SECRET_ACCESS_KEY=${CF_SECRET_ACCESS_KEY}
+      - R2_BUCKET=backup
+      - R2_PREFIX=sourcebase-postgres
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 3 * * *}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+
   pgweb:
     image: sosedoff/pgweb:latest
     container_name: sourcebase-pgweb
@@ -69,6 +91,10 @@ services:
       - SendGridApiKey=${SENDGRID_API_KEY}
       - SendGridAccountOwner=${SENDGRID_ACCOUNT_OWNER}
       - BetterStackSourceToken=${BETTERSTACK_SOURCE_TOKEN}
+      - R2__AccessKeyId=${CF_ACCESS_KEY_ID}
+      - R2__SecretAccessKey=${CF_SECRET_ACCESS_KEY}
+      - R2__PublicUrl=${CF_PUBLIC_URL}
+      - R2__ServiceURL=https://${CF_ACCOUNT_ID}.r2.cloudflarestorage.com
     volumes:
       - ./logs/api:/app/Logs
     ports:
