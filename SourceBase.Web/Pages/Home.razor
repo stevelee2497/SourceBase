@@ -3,6 +3,8 @@
 @inject BlazorAuthStateProvider Auth
 @inject ApiHttpClient Api
 
+<!-- Overall section -->
+<h2 class="text-base font-semibold text-blue-800 mb-2">Overall</h2>
 <!-- Overview row -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-2 md:mb-4">
 
@@ -68,6 +70,38 @@
     </div>
 </div>
 
+<!-- Habits section -->
+<a href="/habit-logs" class="block text-base font-semibold text-blue-800 mb-2 hover:text-indigo-600 transition-colors mt-4">Habits</a>
+<!-- Habits cards row -->
+<div class="grid grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
+    @if (_habitsLoading)
+    {
+        <div class="col-span-4 lg:col-span-5 text-sm text-gray-400">Loading…</div>
+    }
+    else if (_habits.Count == 0)
+    {
+        <div class="col-span-4 lg:col-span-5 text-sm text-gray-400 py-2">No habits yet.</div>
+    }
+    else
+    {
+        @for (var i = 0; i < _habits.Count; i++)
+        {
+            var habit = _habits[i];
+            var cardText = HabitCardTextColors[i % HabitCardTextColors.Length];
+            <div class="flex flex-col items-center gap-1">
+                <div class="w-9 h-9 md:w-14 md:h-14 rounded-full bg-white/70 flex items-center justify-center text-xl md:text-3xl shrink-0">
+                    @(string.IsNullOrEmpty(habit.Icon) ? "💪" : habit.Icon)
+                </div>
+                <div class="flex items-center justify-center gap-1 w-full min-w-0">
+                    <span class="text-xs md:text-lg font-medium text-center @cardText truncate">@habit.LogCount @habit.Name.ToLower()</span>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<!-- Gold section -->
+<a href="/gold-prices" class="block text-base font-semibold text-blue-800 mb-2 hover:text-indigo-600 transition-colors mt-4">Gold</a>
 <!-- Gold price status row -->
 <div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
     @foreach (var source in GoldSources)
@@ -96,44 +130,12 @@
     }
 </div>
 
-<!-- Habits cards row -->
-<div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
-    @if (_habitsLoading)
-    {
-        <div class="col-span-3 lg:col-span-5 text-sm text-gray-400">Loading…</div>
-    }
-    else if (_habits.Count == 0)
-    {
-        <div class="col-span-3 lg:col-span-5 text-sm text-gray-400 py-2">No habits yet.</div>
-    }
-    else
-    {
-        @for (var i = 0; i < _habits.Count; i++)
-        {
-            var habit = _habits[i];
-            var cardBg = HabitCardBgColors[i % HabitCardBgColors.Length];
-            var cardText = HabitCardTextColors[i % HabitCardTextColors.Length];
-            <div class="card p-2 md:p-4 flex flex-col items-center gap-1 md:gap-2 @cardBg">
-                <div class="w-10 h-10 md:w-14 md:h-14 rounded-full bg-white/70 flex items-center justify-center text-2xl md:text-3xl shrink-0">
-                    @(string.IsNullOrEmpty(habit.Icon) ? "💪" : habit.Icon)
-                </div>
-                <div class="flex items-center justify-center gap-1 w-full min-w-0">
-                    <span class="text-base md:text-lg font-medium @cardText truncate">@habit.LogCount @habit.Name.ToLower()</span>
-                </div>
-            </div>
-        }
-    }
-</div>
-
 <!-- Main content: two columns -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4">
+    <a href="/wallets" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4">Wallets</a>
 
     <!-- Left: Wallets distribution -->
-    <div class="card flex flex-col gap-2 p-2 md:p-4">
-        <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-gray-800">Wallets Distribution</h2>
-            <a href="/wallets" class="text-xs text-indigo-500 hover:text-indigo-700">View Wallets</a>
-        </div>
+    <div class="flex flex-col gap-2 p-2 md:p-4">
 
         @if (_walletsLoading)
         {
@@ -197,11 +199,8 @@
     </div>
 
     <!-- Right: Default todo list -->
+    <a href="/todos" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4">Todo</a>
     <div class="card flex flex-col gap-2 p-2 md:p-4">
-        <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-gray-800">Your Todo List</h2>
-            <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">View all</a>
-        </div>
 
         @if (_todosLoading)
         {
@@ -223,9 +222,9 @@
             else
             {
                 <div class="flex flex-col gap-2">
-                    @foreach (var todo in _defaultTodos.Take(10))
+                    @foreach (var (todo, index) in _defaultTodos.Take(10).Select((t, i) => (t, i)))
                     {
-                        <div class="flex items-center gap-3 ml-2">
+                        <div class="flex items-center gap-3 ml-2 @(index == 0 ? "" : "border-t border-gray-100 pt-2")">
                             <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 hover:border-green-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoDone(todo)" title="Mark complete">
                             </button>
                             <div class="flex-1 min-w-0">
@@ -259,7 +258,6 @@
     private List<HabitItemResponse> _habits = [];
     private bool _habitsLoading = true;
 
-    private static readonly string[] HabitCardBgColors = ["bg-indigo-50", "bg-amber-50", "bg-green-50", "bg-rose-50", "bg-purple-50", "bg-teal-50", "bg-blue-50", "bg-orange-50"];
     private static readonly string[] HabitCardTextColors = ["text-indigo-700", "text-amber-700", "text-green-700", "text-rose-700", "text-purple-700", "text-teal-700", "text-blue-700", "text-orange-700"];
 
     private static readonly string[] PieColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#a855f7"];

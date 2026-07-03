@@ -8,7 +8,7 @@
     <div class="fixed inset-0 z-40 bg-black/50 md:hidden" @onclick="CloseMenu"></div>
 }
 
-<aside class="@AsideClass w-64 bg-white border-r border-gray-200 flex-col shrink-0">
+<aside class="@AsideClass md:w-56 bg-white border-r border-gray-200 flex-col shrink-0">
     <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200">
         <span class="text-xl font-bold text-indigo-600">SourceBase</span>
         <button class="md:hidden p-1 rounded text-gray-400 hover:text-gray-600" @onclick="CloseMenu" aria-label="Close menu">
@@ -18,7 +18,7 @@
         </button>
     </div>
 
-    <nav class="flex-1 px-4 py-4 space-y-1">
+    <nav class="flex-1 p-2 space-y-1">
         @foreach (var navPage in AppSettings.Pages)
         {
             if (navPage.Roles.Count() == 0 || navPage.Roles.Any(role => Auth.UserInfo?.Roles.Contains(role) == true))
