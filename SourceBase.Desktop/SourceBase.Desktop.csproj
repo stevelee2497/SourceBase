@@ -18,11 +18,12 @@
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<SelfContained>false</SelfContained>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-		<PublishDir>Artifacts\</PublishDir>
+		<PublishDir>artifacts\</PublishDir>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- Modern WPF tray-icon library (NOTIFYICON). Hardcodet.NotifyIcon.Wpf is the classic alternative. -->
+		<!-- Modern WPF tray-icon library (NOTIFYICON). Hardcodet.NotifyIcon.Wpf is the classic
+		alternative. -->
 		<PackageReference Include="H.NotifyIcon.Wpf" />
 	</ItemGroup>
 
