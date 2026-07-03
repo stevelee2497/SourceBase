@@ -30,6 +30,7 @@ SourceBase.Tests/           # Integration tests with xUnit + FluentAssertions + 
 
 - `/be` — backend: Clean Architecture, vertical slice features, API endpoints, handlers, entities, validators, conventions
 - `/fe` — frontend: Blazor components, Tailwind CSS v4, mobile-responsive layout (Mobile S 320px / Mobile M 375px)
+- `/desktop` — desktop: WPF tray-app (Jupiter) architecture, tray/overlay/scheduler/settings conventions
 - `/test` — test infrastructure and patterns
 - `/pr-reviewer` — PR review checklist
 
@@ -39,6 +40,7 @@ Automatically invoke the matching skill based on what you're working on — no n
 
 - Touching `SourceBase.Domain`, `SourceBase.Application`, `SourceBase.Infrastructure`, or `SourceBase.Api` (entities, handlers, endpoints, validators, migrations, config) → use `/be`.
 - Touching `SourceBase.Web` (Blazor components, Tailwind, layout) → use `/fe`.
+- Touching `SourceBase.Desktop` (tray icon, overlay window, scheduler, settings, WPF code-behind) → use `/desktop`.
 - Touching `SourceBase.Tests` (integration tests, `WebApplicationFactory`, fixtures) → use `/test`.
 
 If a change spans multiple projects, load each relevant skill (e.g. a feature with API + Blazor UI uses `/be` and `/fe`). Invoke the skill before writing code, not after.

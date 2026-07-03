@@ -313,7 +313,7 @@
             </CheckBox>
 
             <!-- Run at startup -->
-            <CheckBox x:Name="StartAtLoginBox" Margin="0,0,0,32"
+            <CheckBox x:Name="StartAtLoginBox" Margin="0,0,0,24"
                       VerticalContentAlignment="Center" Cursor="Hand">
                 <StackPanel>
                     <TextBlock Text="Run at startup" FontSize="13" FontWeight="SemiBold"
@@ -322,6 +322,13 @@
                                FontSize="12" Foreground="#9CA3AF" Margin="0,2,0,0"/>
                 </StackPanel>
             </CheckBox>
+
+            <!-- Rest hotkey -->
+            <TextBlock Text="Rest hotkey" Style="{StaticResource Label}"/>
+            <TextBox x:Name="HotkeyBox" Style="{StaticResource TextField}" IsReadOnly="True"
+                     Cursor="Hand" Margin="0,0,0,4"/>
+            <TextBlock Text="Click the field and press a key combo (must include Ctrl, Alt, Shift or Win). Press Esc to disable."
+                       FontSize="11" Foreground="#9CA3AF" Margin="0,0,0,32" TextWrapping="Wrap"/>
 
             <!-- API Connection -->
             <Border Height="1" Background="#E5E7EB" Margin="0,0,0,24"/>

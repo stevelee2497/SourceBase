@@ -1,3 +1,5 @@
+using System.Windows.Input;
+
 namespace SourceBase.Desktop.Models;
 
 public enum ApiConnectionStatus { None, Connected, Failed }
@@ -22,6 +24,12 @@ public sealed class AppSettings
 
     /// <summary>Launch the app automatically at Windows login.</summary>
     public bool StartAtLogin { get; set; } = false;
+
+    /// <summary>Modifier keys for the global "show rest overlay" hotkey. Default Ctrl+Alt.</summary>
+    public ModifierKeys HotkeyModifiers { get; set; } = ModifierKeys.Control | ModifierKeys.Alt;
+
+    /// <summary>Key for the global "show rest overlay" hotkey. Default L. Null disables the hotkey.</summary>
+    public Key? HotkeyKey { get; set; } = Key.L;
 
     /// <summary>Base URL of the SourceBase API (e.g. https://api.example.com). Leave null to disable logging.</summary>
     public string? ApiBaseUrl { get; set; }

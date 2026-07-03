@@ -12,6 +12,7 @@
 		<AssemblyName>Jupiter</AssemblyName>
 		<Product>Jupiter</Product>
 		<Version>0.0</Version>
+		<ApplicationIcon>Assets\jupiter.ico</ApplicationIcon>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<!-- publish defaults: dotnet publish -c Release -->
 		<PublishSingleFile>true</PublishSingleFile>
