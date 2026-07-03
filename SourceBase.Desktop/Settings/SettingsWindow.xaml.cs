@@ -15,6 +15,8 @@ public partial class SettingsWindow : Window
 {
     private readonly AppSettings _settings;
     private bool _showCredentials;
+    private ModifierKeys _hotkeyModifiers;
+    private Key? _hotkeyKey;
 
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(10) };
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -52,6 +54,10 @@ public partial class SettingsWindow : Window
         PopulateDays();
         PauseDuringVideoBox.IsChecked = _settings.PauseDuringVideo;
         StartAtLoginBox.IsChecked = StartupService.IsEnabled();
+        _hotkeyModifiers = _settings.HotkeyModifiers;
+        _hotkeyKey = _settings.HotkeyKey;
+        UpdateHotkeyLabel();
+        HotkeyBox.PreviewKeyDown += OnHotkeyPreviewKeyDown;
         ApiUrlBox.Text = _settings.ApiBaseUrl ?? string.Empty;
         UsernameBox.Text = _settings.ApiUsername ?? string.Empty;
         PasswordBox.Password = _settings.ApiPassword ?? string.Empty;
@@ -140,6 +146,13 @@ public partial class SettingsWindow : Window
             return;
         }
 
+        if (_hotkeyKey is not null && _hotkeyModifiers == ModifierKeys.None)
+        {
+            MessageBox.Show("The rest hotkey must include at least one modifier (Ctrl, Alt, Shift or Win).",
+                "Rest Hotkey", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
         if (_showCredentials)
         {
             var url = NullIfEmpty(ApiUrlBox.Text);
@@ -192,6 +205,8 @@ public partial class SettingsWindow : Window
         _settings.PauseDuringVideo = PauseDuringVideoBox.IsChecked == true;
         _settings.StartAtLogin = StartAtLoginBox.IsChecked == true;
         StartupService.Apply(_settings.StartAtLogin);
+        _settings.HotkeyModifiers = _hotkeyModifiers;
+        _settings.HotkeyKey = _hotkeyKey;
 
         Saved = true;
         Close();
@@ -272,6 +287,38 @@ public partial class SettingsWindow : Window
             UpdateButton.IsEnabled = true;
             UpdateButton.Content = "Update";
         }
+    }
+
+    // ── Rest hotkey ───────────────────────────────────────────────────────────
+
+    private void OnHotkeyPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        e.Handled = true;
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+
+        if (key == Key.Escape) { _hotkeyModifiers = ModifierKeys.None; _hotkeyKey = null; UpdateHotkeyLabel(); return; }
+
+        var isModifierOnly = key is Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt
+            or Key.LeftShift or Key.RightShift or Key.LWin or Key.RWin;
+        if (isModifierOnly) return;
+
+        _hotkeyModifiers = Keyboard.Modifiers;
+        _hotkeyKey = key;
+        UpdateHotkeyLabel();
+    }
+
+    private void UpdateHotkeyLabel() =>
+        HotkeyBox.Text = _hotkeyKey is null ? "Disabled — click and press a combo to enable" : FormatHotkey(_hotkeyModifiers, _hotkeyKey.Value);
+
+    private static string FormatHotkey(ModifierKeys mods, Key key)
+    {
+        var parts = new List<string>();
+        if (mods.HasFlag(ModifierKeys.Control)) parts.Add("Ctrl");
+        if (mods.HasFlag(ModifierKeys.Alt)) parts.Add("Alt");
+        if (mods.HasFlag(ModifierKeys.Shift)) parts.Add("Shift");
+        if (mods.HasFlag(ModifierKeys.Windows)) parts.Add("Win");
+        parts.Add(key.ToString());
+        return string.Join(" + ", parts);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

@@ -20,7 +20,8 @@ background tray app that auto-starts at login. That's this project.
 dotnet run --project SourceBase.Desktop
 ```
 
-The app starts in the tray. Double-click the tray icon (or "Take a break now")
+The app starts in the tray. Double-click the tray icon, use "Take a break now",
+or press the global rest hotkey (default **Ctrl+Alt+L**, configurable in Settings)
 to preview the overlay immediately without waiting for the interval.
 
 ## Build a portable exe
@@ -36,6 +37,8 @@ Stored at `%AppData%\SourceBase.Desktop\settings.json`. Defaults:
 - Interval: 30 min (set to 60 for hourly, etc.)
 - Rest length: 5 min
 - Working hours: 09:00–22:00
+- Rest hotkey: Ctrl+Alt+L (rebindable in Settings; disable by pressing Esc while
+  the field is focused)
 - Default habits: Drink Water 💧, Push Up 💪, Stretching 🧘, Rest Eyes 👀,
   Short Walk 🚶, Deep Breaths 🌬️
 
@@ -47,6 +50,7 @@ Each habit can use an emoji or an `imagePath` (image takes priority).
 Models/        Habit, AppSettings (+ default seed)
 Settings/      SettingsStore — JSON load/save to %AppData%
 Scheduling/    RestScheduler — interval timer + working-hours gate
+Services/      HabitLogService, StartupService, UpdateService, GlobalHotkeyService (RegisterHotKey)
 Overlay/       OverlayWindow — dimmed backdrop, white modal, habit cards, rest countdown
 App.xaml(.cs)  Tray icon, single-instance mutex, wiring
 ```

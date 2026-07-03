@@ -18,6 +18,7 @@ public partial class App : Application
     private TaskbarIcon? _tray;
     private RestScheduler? _scheduler;
     private HabitLogService? _habitLogService;
+    private GlobalHotkeyService? _hotkeyService;
     private OverlayWindow? _activeOverlay;
     private Icon? _trayIcon;
 
@@ -48,6 +49,9 @@ public partial class App : Application
         _scheduler.DueForRest += (_, _) => ShowOverlay();
         _scheduler.VideoSuppressed += (_, _) => _habitLogService?.LogSuppressedVideo();
         _scheduler.Start();
+
+        _hotkeyService = new GlobalHotkeyService(() => _store.Current);
+        _hotkeyService.Pressed += (_, _) => ShowOverlay();
 
         _ = Task.Run(UpdateService.CheckAsync);
         _ = SyncHabitsAsync();
@@ -165,6 +169,7 @@ public partial class App : Application
         {
             _store.Save();
             _scheduler?.ScheduleNext();
+            _hotkeyService?.Register();
             await SyncHabitsAsync();
         }
     }
@@ -183,6 +188,7 @@ public partial class App : Application
     private void OnExit(object sender, ExitEventArgs e)
     {
         _scheduler?.Stop();
+        _hotkeyService?.Dispose();
         _tray?.Dispose();
         _trayIcon?.Dispose();
         _mutex?.Dispose();
