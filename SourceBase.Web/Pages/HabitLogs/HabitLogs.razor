@@ -1,6 +1,7 @@
 @page "/habit-logs"
 @attribute [Authorize]
 @inject ApiHttpClient Api
+@inject IJSRuntime JS
 
 <!-- Quick log habit cards -->
 @if (_habits.Count > 0)
@@ -8,7 +9,7 @@
     <div class="mb-5">
         <div class="flex items-center justify-between mb-2">
             <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Quick Log</span>
-            <a href="/habit-logs/habits" class="text-xs text-indigo-500 hover:text-indigo-700">Manage habits →</a>
+            <a href="/habit-logs/habits" class="text-xs text-indigo-500 hover:text-indigo-700">Manage habits</a>
         </div>
         <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
             @foreach (var habit in _habits)
@@ -60,44 +61,50 @@ else if (_error is not null)
 }
 else
 {
-    <!-- Calendar — horizontal scroll on mobile S/M -->
+    <!-- Calendar — 30-min time-block grid, horizontal scroll on mobile S/M -->
     <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-        <div class="min-w-[600px]">
+        <div id="@GridScrollId" class="min-w-[640px] max-h-[70vh] overflow-y-auto">
 
             <!-- Day header row -->
-            <div class="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
+            <div class="grid grid-cols-[52px_repeat(7,1fr)] bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                <div class="border-r border-gray-200"></div>
                 @for (var d = 0; d < 7; d++)
                 {
                     var day = WeekStart.AddDays(d);
                     var isToday = day.Date == DateTime.Today;
-                    <div class="flex flex-col items-center py-3 border-r last:border-r-0 border-gray-200 @(isToday ? "bg-indigo-50" : "")">
+                    <div class="flex flex-col items-center py-2 border-r last:border-r-0 border-gray-200 @(isToday ? "bg-indigo-50" : "")">
                         <span class="text-[11px] font-semibold uppercase tracking-wide @(isToday ? "text-indigo-500" : "text-gray-400")">@day.ToString("ddd")</span>
-                        <span class="text-lg font-bold mt-0.5 @(isToday ? "text-indigo-700" : "text-gray-700")">@day.Day</span>
+                        <span class="text-base font-bold mt-0.5 @(isToday ? "text-indigo-700" : "text-gray-700")">@day.Day</span>
                     </div>
                 }
             </div>
 
-            <!-- Log cells -->
-            <div class="grid grid-cols-7 bg-white">
-                @for (var d = 0; d < 7; d++)
+            <!-- Time rows: one row per 30-min slot -->
+            <div class="bg-white">
+                @for (var slot = 0; slot < SlotsPerDay; slot++)
                 {
-                    var day = WeekStart.AddDays(d);
-                    var isToday = day.Date == DateTime.Today;
-                    var entries = LogsForDay(day);
-                    <div class="min-h-30 p-1.5 border-r last:border-r-0 border-gray-100 space-y-1 @(isToday ? "bg-indigo-50/20" : "")">
-                        @if (!entries.Any())
-                        {
-                            <div class="flex items-center justify-center h-full pt-8 text-gray-200 text-xs select-none">—</div>
-                        }
-                        else
-                        {
-                            @foreach (var log in entries)
+                    var slotIndex = slot;
+                    var isHour = slotIndex % 2 == 0;
+                    <div id="@(slotIndex == DefaultStartSlot ? DefaultStartRowId : null)" class="grid grid-cols-[52px_repeat(7,1fr)] @(isHour ? "border-t border-gray-200" : "border-t border-gray-100")">
+                        <div class="flex items-start justify-end pr-1.5 pt-0.5 border-r border-gray-200 text-[10px] text-gray-400 select-none">
+                            @if (isHour)
                             {
-                                <div class="rounded-md px-1.5 py-1 border @EntryClass(log.Action)">
-                                    <div class="text-[10px] opacity-60 leading-none mb-0.5">@log.OccurredAt.ToLocalTime().ToString("HH:mm")</div>
-                                    <div class="text-[11px] font-semibold truncate leading-tight">@EntryLabel(log)</div>
-                                </div>
+                                @SlotLabel(slotIndex)
                             }
+                        </div>
+                        @for (var d = 0; d < 7; d++)
+                        {
+                            var day = WeekStart.AddDays(d);
+                            var isToday = day.Date == DateTime.Today;
+                            var entries = LogsForSlot(day, slotIndex);
+                            <div class="min-h-8 px-0.5 py-0.5 border-r last:border-r-0 border-gray-100 @(isToday ? "bg-indigo-50/20" : "")">
+                                <div class="flex flex-wrap gap-0.5">
+                                    @foreach (var log in entries)
+                                    {
+                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-md border text-base leading-none @EntryClass(log.Action)" title="@EntryTitle(log)">@EntryIcon(log)</span>
+                                    }
+                                </div>
+                            </div>
                         }
                     </div>
                 }
@@ -133,6 +140,12 @@ else
     private bool _habitsLoaded;
     private string? _error;
     private Guid? _loggingHabitId;
+    private bool _scrolledToStart;
+
+    private const int DefaultStartHour = 8;
+    private const int DefaultStartSlot = DefaultStartHour * 2;
+    private const string GridScrollId = "habit-cal-scroll";
+    private const string DefaultStartRowId = "habit-cal-start";
 
     private DateTime WeekStart => GetWeekStart(DateTime.Today).AddDays(_weekOffset * 7);
     private DateTime WeekEnd => WeekStart.AddDays(6);
@@ -157,6 +170,13 @@ else
         var habitsTask = LoadHabitsAsync();
         var logsTask = LoadAsync();
         await Task.WhenAll(habitsTask, logsTask);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_loading || _error is not null || _scrolledToStart) return;
+        _scrolledToStart = true;
+        await JS.InvokeVoidAsync("scrollRowToTop", DefaultStartRowId, GridScrollId);
     }
 
     private async Task LoadHabitsAsync()
@@ -194,8 +214,34 @@ else
 
     private static string HabitIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "💪" : icon;
 
-    private IEnumerable<HabitLogResponse> LogsForDay(DateTime day) =>
-        _logs.Where(l => l.OccurredAt.ToLocalTime().Date == day.Date);
+    private const int SlotsPerDay = 48; // 24h × two 30-min slots
+
+    private static string SlotLabel(int slot) => TimeSpan.FromMinutes(slot * 30).ToString(@"hh\:mm");
+
+    private IEnumerable<HabitLogResponse> LogsForSlot(DateTime day, int slot) =>
+        _logs.Where(l =>
+        {
+            var local = l.OccurredAt.ToLocalTime();
+            return local.Date == day.Date && (local.Hour * 60 + local.Minute) / 30 == slot;
+        });
+
+    private string EntryIcon(HabitLogResponse log)
+    {
+        if (log.Action != "HabitStarted") return ActionIcon(log.Action);
+        var habit = _habits.FirstOrDefault(h => h.Name == log.HabitName);
+        return HabitIcon(habit?.Icon);
+    }
+
+    private static string ActionIcon(string action) => action switch
+    {
+        "Dismissed" => "✖️",
+        "Snoozed" => "😴",
+        "SuppressedVideo" => "🚫",
+        _ => "•",
+    };
+
+    private static string EntryTitle(HabitLogResponse log) =>
+        $"{EntryLabel(log)} · {log.OccurredAt.ToLocalTime():HH:mm}";
 
     private static string EntryClass(string action) => action switch
     {

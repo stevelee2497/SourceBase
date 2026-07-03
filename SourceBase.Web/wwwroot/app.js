@@ -20,6 +20,14 @@ window.focusElement = function (el) {
   if (el) el.focus();
 };
 
+// Scroll a row to the top of its scrollable container (by id; no page scroll).
+window.scrollRowToTop = function (rowId, containerId) {
+  var row = document.getElementById(rowId);
+  var container = document.getElementById(containerId);
+  if (!row || !container) return;
+  container.scrollTop = row.offsetTop - container.offsetTop;
+};
+
 window.initOtpPaste = function (container, dotNetRef) {
   if (!container) return;
   container.addEventListener('paste', function (e) {
