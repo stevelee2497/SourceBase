@@ -421,3 +421,15 @@ app.min.css
 .zprofile
 .ripgreprc
 .env
+
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+.DS_Store
+.env
+.env.local
+ios/
+android/
+expo-env.d.ts
