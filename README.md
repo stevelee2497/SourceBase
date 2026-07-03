@@ -260,3 +260,21 @@ docker compose pull && docker compose up -d --remove-orphans
 ```
 
 No manual action needed. To force a redeploy, push any commit to `main` or re-run the workflow from the GitHub Actions tab.
+
+### 6. Automated Postgres backups to Cloudflare R2
+
+The `postgres-backup` service (`backup/`) is a standalone container — built `FROM postgres:17-alpine` so `pg_dump` always matches the server — that runs a cron job (default **daily at 03:00 UTC**, override with the `BACKUP_SCHEDULE` variable) which dumps `sourcebase-postgres`, gzips it, and uploads it to the Cloudflare R2 bucket named `backup` via `rclone`, configured entirely through environment variables (no config file, no secrets on disk).
+
+Add these to **GitHub → repo Settings → Secrets and variables → Actions** (the bucket itself — `backup` — must already exist in R2):
+
+| Secret                 | Value                                            |
+| ---------------------- | ------------------------------------------------ |
+| `CF_ACCOUNT_ID`        | Cloudflare account ID (shared with Pages deploy) |
+| `CF_ACCESS_KEY_ID`     | R2 API token access key ID                       |
+| `CF_SECRET_ACCESS_KEY` | R2 API token secret access key                   |
+
+To restore a backup, download the dump from the `backup` bucket and pipe it into `psql`:
+
+```sh
+gunzip -c sourcebase-YYYYMMDDThhmmssZ.sql.gz | docker exec -i sourcebase-postgres psql -U $POSTGRES_USER -d $POSTGRES_DB
+```
