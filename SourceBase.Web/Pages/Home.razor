@@ -71,37 +71,6 @@
     </div>
 </div>
 
-<!-- Gold section -->
-<a href="/gold-prices" class="block text-base font-semibold text-gray-800 mb-2 hover:text-indigo-600 transition-colors mt-4">Gold</a>
-
-<!-- Gold price status row -->
-<div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
-    @foreach (var source in GoldSources)
-    {
-        var record = _goldPrices.GetValueOrDefault(source);
-        var live = IsGoldPriceLive(record);
-        <div class="card p-2 md:p-4 flex flex-col gap-0 md:gap-2 @GetGoldSourceCardClass(source)">
-            <div class="flex items-center justify-between gap-1">
-                <span class="text-xs md:text-base font-bold truncate @GetGoldSourceBadgeClass(source)">@GetGoldSourceDisplayName(source)</span>
-                <span class="text-[10px] text-right @(live ? "text-green-700" : "text-red-700")">@(live ? "🟢" : "🔴")</span>
-            </div>
-            @if (_goldPricesLoading)
-            {
-                <div class="text-sm text-gray-400">Loading…</div>
-            }
-            else if (record is null)
-            {
-                <div class="text-sm text-gray-400">No data</div>
-            }
-            else
-            {
-                <div class="text-sm md:text-2xl text-center font-bold text-emerald-600">@FormatAmount(@record.SellPrice)</div>
-                <div class="text-[11px] md:text-md font-semibold text-right text-red-600">@FormatAmount(@record.BuyPrice)</div>
-            }
-        </div>
-    }
-</div>
-
 <!-- Habits section -->
 <a href="/habit-logs" class="block text-base font-semibold text-gray-800 mb-2 hover:text-indigo-600 transition-colors mt-4">Habits</a>
 
@@ -130,6 +99,37 @@
                 </div>
             </div>
         }
+    }
+</div>
+
+<!-- Gold section -->
+<a href="/gold-prices" class="block text-base font-semibold text-gray-800 mb-2 hover:text-indigo-600 transition-colors mt-4">Gold</a>
+
+<!-- Gold price status row -->
+<div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
+    @foreach (var source in GoldSources)
+    {
+        var record = _goldPrices.GetValueOrDefault(source);
+        var live = IsGoldPriceLive(record);
+        <div class="card p-2 md:p-4 flex flex-col gap-0 md:gap-2 @GetGoldSourceCardClass(source)">
+            <div class="flex items-center justify-between gap-1">
+                <span class="text-xs md:text-base font-bold truncate @GetGoldSourceBadgeClass(source)">@GetGoldSourceDisplayName(source)</span>
+                <span class="text-[10px] text-right @(live ? "text-green-700" : "text-red-700")">@(live ? "🟢" : "🔴")</span>
+            </div>
+            @if (_goldPricesLoading)
+            {
+                <div class="text-sm text-gray-400">Loading…</div>
+            }
+            else if (record is null)
+            {
+                <div class="text-sm text-gray-400">No data</div>
+            }
+            else
+            {
+                <div class="text-sm md:text-2xl text-center font-bold text-emerald-600">@FormatAmount(@record.SellPrice)</div>
+                <div class="text-[11px] md:text-md font-semibold text-right text-red-600">@FormatAmount(@record.BuyPrice)</div>
+            }
+        </div>
     }
 </div>
 
@@ -203,7 +203,7 @@
 
     <!-- Right: Default todo list -->
     <a href="/todos" class="block text-base font-semibold text-gray-800 hover:text-indigo-600 transition-colors mt-4">Todo</a>
-    <div class="card flex flex-col gap-2 p-2 md:p-4">
+    <div class="flex flex-col gap-2 p-2 md:p-4">
 
         @if (_todosLoading)
         {
