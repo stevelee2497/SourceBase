@@ -13,7 +13,7 @@
 <div class="flex flex-col md:flex-row gap-6 md:h-[calc(100vh-180px)]">
 
     <!-- Todo Lists panel -->
-    <div class="@(_selectedListId != Guid.Empty ? "hidden md:flex" : "flex") flex-col gap-3 md:w-72 md:shrink-0">
+    <div class="@(_selectedListId != Guid.Empty ? "hidden lg:flex" : "flex") flex-col gap-3 md:w-72 md:shrink-0">
         <div class="flex items-center justify-between mt-3">
             <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Your Lists</h2>
             <button class="btn-primary btn-sm" @onclick="OpenCreateList">
@@ -79,7 +79,7 @@
         else
         {
             <!-- Back button (mobile only) -->
-            <button class="md:hidden btn-secondary btn-sm self-start" @onclick="GoBackToLists">
+            <button class="lg:hidden btn-secondary btn-sm self-start" @onclick="GoBackToLists">
                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
