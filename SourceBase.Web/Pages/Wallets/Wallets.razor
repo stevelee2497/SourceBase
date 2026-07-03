@@ -84,30 +84,6 @@ else
         
     </div>
 
-    <!-- Bar chart: transactions by date -->
-    @if (_barChartData.Count > 0)
-    {
-        <div class="card mb-6">
-            <div class="text-sm font-semibold text-gray-700 mb-3">Transactions (Last 30 days)</div>
-            <div class="flex items-end gap-0.5 h-24 overflow-x-auto">
-                @{
-                    var maxVal = _barChartData.Values.DefaultIfEmpty(1m).Max();
-                }
-                @foreach (var (date, amount) in _barChartData.OrderBy(x => x.Key))
-                {
-                    var heightPct = maxVal > 0 ? (double)(amount / maxVal) * 100 : 0;
-                    <div class="flex flex-col items-center gap-0.5 flex-1 min-w-3" title="@date: @FormatAmount(amount)">
-                        <div class="w-full bg-indigo-400 rounded-t transition-all" style="height: @(heightPct.ToString("F0"))%; min-height: 2px; max-height: 100%;"></div>
-                    </div>
-                }
-            </div>
-            <div class="flex justify-between text-xs text-gray-400 mt-1">
-                <span>@(_barChartData.Keys.OrderBy(x => x).FirstOrDefault())</span>
-                <span>@(_barChartData.Keys.OrderBy(x => x).LastOrDefault())</span>
-            </div>
-        </div>
-    }
-
     <!-- Wallets grid (6 per row) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2 mb-6">
         @foreach (var wallet in _wallets)

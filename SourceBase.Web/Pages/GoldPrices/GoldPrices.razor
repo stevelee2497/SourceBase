@@ -13,27 +13,22 @@
 <div class="flex flex-col gap-6">
 
     <!-- Chart -->
-    <div class="card p-4">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Price Trend</h3>
-            <div class="flex items-center gap-2">
-                <SelectInput @bind-Value="_chartRange" @bind-Value:after="OnChartRangeChangedAsync" Options="ChartRangeOptions" Class="w-36" />
-                <SelectInput @bind-Value="_chartSeries" @bind-Value:after="OnChartSeriesChangedAsync" Options="ChartSeriesOptions" Class="w-32" />
-            </div>
-        </div>
-        @if (_loadingChart)
-        {
-            <LoadingSpinner />
-        }
-        else if (_chartData.Count == 0)
-        {
-            <p class="text-sm text-gray-400 text-center py-6">No data to display.</p>
-        }
-        else
-        {
-            <div id="gold-price-chart" class="w-full"></div>
-        }
+    <div class="flex items-center justify-between mb-3">
+        <SelectInput @bind-Value="_chartRange" @bind-Value:after="OnChartRangeChangedAsync" Options="ChartRangeOptions" Class="w-36" />
+        <SelectInput @bind-Value="_chartSeries" @bind-Value:after="OnChartSeriesChangedAsync" Options="ChartSeriesOptions" Class="w-32" />
     </div>
+    @if (_loadingChart)
+    {
+        <LoadingSpinner />
+    }
+    else if (_chartData.Count == 0)
+    {
+        <p class="text-sm text-gray-400 text-center py-6">No data to display.</p>
+    }
+    else
+    {
+        <div id="gold-price-chart" class="w-full"></div>
+    }
 
     <!-- Filters -->
     <div class="card p-4">
@@ -69,7 +64,7 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Buy Price</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sell Price</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recorded At</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Recorded At</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100">
@@ -89,7 +84,7 @@
                                     </td>
                                     <td class="px-4 py-3 text-sm text-right font-mono text-gray-800">@item.BuyPrice.ToString("N0")</td>
                                     <td class="px-4 py-3 text-sm text-right font-mono text-gray-800">@item.SellPrice.ToString("N0")</td>
-                                    <td class="px-4 py-3 text-sm text-gray-700">@TimeZoneService.ToLocalTime(item.RecordedAt).ToString("dd MMM yyyy HH:mm")</td>
+                                    <td class="px-4 py-3 text-sm text-right font-mono text-gray-800 whitespace-nowrap">@TimeZoneService.ToLocalTime(item.RecordedAt).ToString("dd MMM yyyy HH:mm")</td>
                                 </tr>
                             }
                         }
