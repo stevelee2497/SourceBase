@@ -33,6 +33,7 @@ app.UseCors(nameof(AppSettings.AllowedSpecificOrigins));
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
+app.UseStaticFiles();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCustomAuthorization();
