@@ -103,7 +103,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "CODE-005: email confirmed return 200 and access token")]
+    [Fact(DisplayName = "CODE-005: confirmed email return 200 and access token")]
     public async Task Login_AfterEmailConfirmed_ReturnsOkAndAccessToken()
     {
         // Arrange
@@ -150,7 +150,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "CODE-007: expiresIn reflects configured token lifetime")]
+    [Fact(DisplayName = "CODE-007: expiresIn reflects configured token expiration")]
     public async Task Login_ExpiresIn_ReflectsConfiguredAccessTokenLifetime()
     {
         // Arrange

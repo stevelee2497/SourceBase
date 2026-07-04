@@ -23,7 +23,7 @@ namespace SourceBase.Tests.Features.Users;
     })]
 public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-001: confirm user email without token return 401")]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-001: no token returns 401")]
     public async Task ConfirmUserEmail_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-002: confirm user email as non admin return 403")]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-002: non-admin user returns 403")]
     public async Task ConfirmUserEmail_AsNonAdmin_ReturnsForbidden()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-003: confirm user email with non existent user return 404")]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-003: non-existent user returns 404")]
     public async Task ConfirmUserEmail_WithNonExistentUser_ReturnsNotFound()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-004: confirm user email with valid user return 200")]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-004: valid user returns 200")]
     public async Task ConfirmUserEmail_WithValidUser_ReturnsOk()
     {
         // Arrange
@@ -86,7 +86,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         body!.Success.ShouldBeTrue();
     }
 
-    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-005: confirm user email sets email confirmed true")]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-005: sets email confirmed to true")]
     public async Task ConfirmUserEmail_SetsEmailConfirmedTrue()
     {
         // Arrange

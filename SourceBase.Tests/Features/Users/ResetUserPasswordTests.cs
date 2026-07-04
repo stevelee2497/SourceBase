@@ -25,7 +25,7 @@ namespace SourceBase.Tests.Features.Users;
     })]
 public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "USERS-RESET-PWD-001: reset user password without token return 401")]
+    [Fact(DisplayName = "USERS-RESET-PWD-001: without token return 401")]
     public async Task ResetUserPassword_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "USERS-RESET-PWD-002: reset user password as non admin return 403")]
+    [Fact(DisplayName = "USERS-RESET-PWD-002: non-admin return 403")]
     public async Task ResetUserPassword_AsNonAdmin_ReturnsForbidden()
     {
         // Arrange
@@ -51,7 +51,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "USERS-RESET-PWD-003: reset user password with non existent user return 404")]
+    [Fact(DisplayName = "USERS-RESET-PWD-003: non-existent user return 404")]
     public async Task ResetUserPassword_WithNonExistentUser_ReturnsNotFound()
     {
         // Arrange
@@ -64,7 +64,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "USERS-RESET-PWD-004: reset user password with valid data return 200")]
+    [Fact(DisplayName = "USERS-RESET-PWD-004: valid data return 200")]
     public async Task ResetUserPassword_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         body!.Success.ShouldBeTrue();
     }
 
-    [Fact(DisplayName = "USERS-RESET-PWD-005: reset user password sends email with new password")]
+    [Fact(DisplayName = "USERS-RESET-PWD-005: sends email with new password")]
     public async Task ResetUserPassword_SendsEmailWithNewPassword()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         latestEmail.Body.ShouldContain(newPassword);
     }
 
-    [Fact(DisplayName = "USERS-RESET-PWD-006: reset user password with too short password return 400")]
+    [Fact(DisplayName = "USERS-RESET-PWD-006: too short password return 400")]
     public async Task ResetUserPassword_WithTooShortPassword_ReturnsBadRequest()
     {
         // Arrange

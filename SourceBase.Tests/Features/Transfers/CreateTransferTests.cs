@@ -28,7 +28,7 @@ namespace SourceBase.Tests.Features.Transfers;
     })]
 public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TRANSFER-CREATE-001: create transfer without token return 401")]
+    [Fact(DisplayName = "TRANSFER-CREATE-001: no token returns 401")]
     public async Task CreateTransfer_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -47,7 +47,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-002: create transfer with valid data updates both wallet balances")]
+    [Fact(DisplayName = "TRANSFER-CREATE-002: valid data updates both wallet balances")]
     public async Task CreateTransfer_WithValidData_UpdatesBothWalletBalances()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         toWalletData!.Balance.ShouldBe(80m);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-003: create transfer with same wallets return 400")]
+    [Fact(DisplayName = "TRANSFER-CREATE-003: same wallets returns 400")]
     public async Task CreateTransfer_WithSameWallets_ReturnsBadRequest()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-004: create transfer with other users from wallet return 400")]
+    [Fact(DisplayName = "TRANSFER-CREATE-004: other user's from wallet returns 400")]
     public async Task CreateTransfer_WithOtherUsersFromWallet_ReturnsBadRequest()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-005: create transfer with other users to wallet return 400")]
+    [Fact(DisplayName = "TRANSFER-CREATE-005: other user's to wallet returns 400")]
     public async Task CreateTransfer_WithOtherUsersToWallet_ReturnsBadRequest()
     {
         // Arrange
@@ -160,7 +160,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-006: create transfer with zero or negative amount return 400")]
+    [Fact(DisplayName = "TRANSFER-CREATE-006: zero or negative amount returns 400")]
     public async Task CreateTransfer_WithZeroOrNegativeAmount_ReturnsBadRequest()
     {
         // Arrange
@@ -192,7 +192,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         negativeResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-007: create transfer with missing date return 400")]
+    [Fact(DisplayName = "TRANSFER-CREATE-007: missing date returns 400")]
     public async Task CreateTransfer_WithMissingDate_ReturnsBadRequest()
     {
         // Arrange
@@ -215,7 +215,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-008: create transfer creates linked transfer transactions")]
+    [Fact(DisplayName = "TRANSFER-CREATE-008: creates linked transfer transactions")]
     public async Task CreateTransfer_CreatesLinkedTransferTransactions()
     {
         // Arrange
@@ -240,7 +240,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         toTxns!.Items.ShouldContain(x => x.Type == TransactionType.Income && x.IsTransfer);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-009: create transfer with missing from wallet return 400")]
+    [Fact(DisplayName = "TRANSFER-CREATE-009: missing from wallet returns 400")]
     public async Task CreateTransfer_WithMissingFromWallet_ReturnsBadRequest()
     {
         // Arrange
@@ -261,7 +261,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-010: create transfer with unknown from wallet return 400")]
+    [Fact(DisplayName = "TRANSFER-CREATE-010: unknown from wallet returns 400")]
     public async Task CreateTransfer_WithUnknownFromWallet_ReturnsBadRequest()
     {
         // Arrange
@@ -283,7 +283,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-011: create transfer with unknown to wallet return 400")]
+    [Fact(DisplayName = "TRANSFER-CREATE-011: unknown to wallet returns 400")]
     public async Task CreateTransfer_WithUnknownToWallet_ReturnsBadRequest()
     {
         // Arrange

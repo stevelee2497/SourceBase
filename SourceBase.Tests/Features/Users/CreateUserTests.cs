@@ -28,7 +28,7 @@ namespace SourceBase.Tests.Features.Users;
     })]
 public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "USERS-CREATE-001: create user without token return 401")]
+    [Fact(DisplayName = "USERS-CREATE-001: no token returns 401")]
     public async Task CreateUser_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -47,7 +47,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "USERS-CREATE-002: create user with non admin user return 403")]
+    [Fact(DisplayName = "USERS-CREATE-002: non-admin user returns 403")]
     public async Task CreateUser_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -66,7 +66,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "USERS-CREATE-003: create user with valid data return 200")]
+    [Fact(DisplayName = "USERS-CREATE-003: valid data returns 200")]
     public async Task CreateUser_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -110,7 +110,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         latestEmail.Body.ShouldNotBeNullOrWhiteSpace();
     }
 
-    [Fact(DisplayName = "USERS-CREATE-004: create user with unknown role return 400")]
+    [Fact(DisplayName = "USERS-CREATE-004: unknown role returns 400")]
     public async Task CreateUser_WithUnknownRole_ReturnsBadRequest()
     {
         // Arrange
@@ -129,7 +129,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "USERS-CREATE-005: create user with mixed valid and invalid roles return 400")]
+    [Fact(DisplayName = "USERS-CREATE-005: mixed valid and invalid roles returns 400")]
     public async Task CreateUser_WithMixedValidAndInvalidRoles_ReturnsBadRequest()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "USERS-CREATE-006: create user with duplicate email ignoring case return 400")]
+    [Fact(DisplayName = "USERS-CREATE-006: duplicate email (case-insensitive) returns 400")]
     public async Task CreateUser_WithDuplicateEmailIgnoringCase_ReturnsBadRequest()
     {
         // Arrange
@@ -176,7 +176,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "USERS-CREATE-007: create user with roles containing whitespace stores normalized distinct roles")]
+    [Fact(DisplayName = "USERS-CREATE-007: roles with whitespace are normalized and deduplicated")]
     public async Task CreateUser_WithRolesContainingWhitespace_StoresNormalizedDistinctRoles()
     {
         // Arrange
@@ -201,7 +201,7 @@ public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         createdUser.Roles.ShouldBe(new[] { "User" });
     }
 
-    [Fact(DisplayName = "USERS-CREATE-008: create user with valid data creates notification for all admins")]
+    [Fact(DisplayName = "USERS-CREATE-008: valid data creates notification for all admins")]
     public async Task CreateUser_WithValidData_CreatesNotificationForAllAdmins()
     {
         // Arrange

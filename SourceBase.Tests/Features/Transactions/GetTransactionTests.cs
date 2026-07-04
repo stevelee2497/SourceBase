@@ -84,7 +84,7 @@ public class GetTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TXN-GET-004: get transaction with other users transaction return 404")]
+    [Fact(DisplayName = "TXN-GET-004: other user's transaction return 404")]
     public async Task GetTransaction_WithOtherUsersTransaction_ReturnsNotFound()
     {
         // Arrange

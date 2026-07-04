@@ -24,7 +24,7 @@ namespace SourceBase.Tests.Features.Wallets;
     })]
 public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "WALLETS-DELETE-001: without token return 401")]
+    [Fact(DisplayName = "WALLETS-DELETE-001: no token returns 401")]
     public async Task DeleteWallet_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-002: with owned wallet return 200")]
+    [Fact(DisplayName = "WALLETS-DELETE-002: owned wallet returns 200")]
     public async Task DeleteWallet_WithOwnedWallet_ReturnsOk()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         getResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-003: with other users wallet return 404")]
+    [Fact(DisplayName = "WALLETS-DELETE-003: other user's wallet returns 404")]
     public async Task DeleteWallet_WithOtherUsersWallet_ReturnsNotFound()
     {
         // Arrange
@@ -77,7 +77,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-004: with unknown id return 404")]
+    [Fact(DisplayName = "WALLETS-DELETE-004: unknown id returns 404")]
     public async Task DeleteWallet_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-005: removes associated transactions")]
+    [Fact(DisplayName = "WALLETS-DELETE-005: delete removes associated transactions")]
     public async Task DeleteWallet_RemovesAssociatedTransactions()
     {
         // Arrange
@@ -124,7 +124,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         txns!.Total.ShouldBe(0);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-006: deleted wallet excluded from list")]
+    [Fact(DisplayName = "WALLETS-DELETE-006: deleted wallet is excluded from list")]
     public async Task DeleteWallet_DeletedWalletExcludedFromList()
     {
         // Arrange

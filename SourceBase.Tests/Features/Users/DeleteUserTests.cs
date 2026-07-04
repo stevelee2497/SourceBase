@@ -24,7 +24,7 @@ namespace SourceBase.Tests.Features.Users;
     })]
 public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "USERS-DELETE-001: delete user without token return 401")]
+    [Fact(DisplayName = "USERS-DELETE-001: no token returns 401")]
     public async Task DeleteUser_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "USERS-DELETE-002: delete user with non admin user return 403")]
+    [Fact(DisplayName = "USERS-DELETE-002: non-admin user returns 403")]
     public async Task DeleteUser_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "USERS-DELETE-003: delete user with existing user return 200")]
+    [Fact(DisplayName = "USERS-DELETE-003: existing user returns 200")]
     public async Task DeleteUser_WithExistingUser_ReturnsOk()
     {
         // Arrange
@@ -87,7 +87,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         users!.Items.ShouldNotContain(x => x.Id == createBody.Id);
     }
 
-    [Fact(DisplayName = "USERS-DELETE-004: delete user with unknown user return 404")]
+    [Fact(DisplayName = "USERS-DELETE-004: unknown user returns 404")]
     public async Task DeleteUser_WithUnknownUser_ReturnsNotFound()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "USERS-DELETE-005: delete user with deleted user revokes existing token")]
+    [Fact(DisplayName = "USERS-DELETE-005: deleted user revokes existing token")]
     public async Task DeleteUser_WithDeletedUser_RevokesExistingToken()
     {
         // Arrange

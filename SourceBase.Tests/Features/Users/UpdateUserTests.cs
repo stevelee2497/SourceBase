@@ -25,7 +25,7 @@ namespace SourceBase.Tests.Features.Users;
     })]
 public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "USERS-UPDATE-001: update user without token return 401")]
+    [Fact(DisplayName = "USERS-UPDATE-001: no token returns 401")]
     public async Task UpdateUser_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "USERS-UPDATE-002: update user with non admin user return 403")]
+    [Fact(DisplayName = "USERS-UPDATE-002: non-admin user returns 403")]
     public async Task UpdateUser_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -74,7 +74,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "USERS-UPDATE-003: update user with valid data return 200")]
+    [Fact(DisplayName = "USERS-UPDATE-003: valid data returns 200")]
     public async Task UpdateUser_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -115,7 +115,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         updatedUser.Roles.ShouldContain("User");
     }
 
-    [Fact(DisplayName = "USERS-UPDATE-004: update user with unknown role return 400")]
+    [Fact(DisplayName = "USERS-UPDATE-004: unknown role returns 400")]
     public async Task UpdateUser_WithUnknownRole_ReturnsBadRequest()
     {
         // Arrange
@@ -142,7 +142,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "USERS-UPDATE-005: update user with duplicate email ignoring case return 400")]
+    [Fact(DisplayName = "USERS-UPDATE-005: duplicate email (case-insensitive) returns 400")]
     public async Task UpdateUser_WithDuplicateEmailIgnoringCase_ReturnsBadRequest()
     {
         // Arrange
@@ -179,7 +179,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "USERS-UPDATE-006: update user with email change requires reconfirmation and issues otp")]
+    [Fact(DisplayName = "USERS-UPDATE-006: email change requires reconfirmation and issues OTP")]
     public async Task UpdateUser_WithEmailChange_RequiresReconfirmationAndIssuesOtp()
     {
         // Arrange
@@ -224,7 +224,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         latestEmail.Body.ShouldNotBeNullOrWhiteSpace();
     }
 
-    [Fact(DisplayName = "USERS-UPDATE-007: update user with role change invalidates users existing token")]
+    [Fact(DisplayName = "USERS-UPDATE-007: role change invalidates existing token")]
     public async Task UpdateUser_WithRoleChange_InvalidatesUsersExistingToken()
     {
         // Arrange
@@ -249,7 +249,7 @@ public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         getInfoResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "USERS-UPDATE-008: update user with empty id return 400")]
+    [Fact(DisplayName = "USERS-UPDATE-008: empty ID returns 400")]
     public async Task UpdateUser_WithEmptyId_ReturnsBadRequest()
     {
         // Arrange

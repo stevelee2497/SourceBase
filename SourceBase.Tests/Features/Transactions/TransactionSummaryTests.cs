@@ -70,7 +70,7 @@ public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebA
         body.TotalExpense.ShouldBe(40m);
     }
 
-    [Fact(DisplayName = "TXN-SUMMARY-003: get transaction summary with totals returns net balance")]
+    [Fact(DisplayName = "TXN-SUMMARY-003: calculates net balance (income minus expense)")]
     public async Task GetTransactionSummary_WithTotals_ReturnsNetBalance()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebA
         body!.NetBalance.ShouldBe(60m);
     }
 
-    [Fact(DisplayName = "TXN-SUMMARY-004: get transaction summary with wallet filter returns wallet totals only")]
+    [Fact(DisplayName = "TXN-SUMMARY-004: wallet filter returns only specified wallet totals")]
     public async Task GetTransactionSummary_WithWalletFilter_ReturnsWalletTotalsOnly()
     {
         // Arrange
@@ -140,7 +140,7 @@ public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebA
         body.NetBalance.ShouldBe(100m);
     }
 
-    [Fact(DisplayName = "TXN-SUMMARY-005: get transaction summary with date range returns transactions within range")]
+    [Fact(DisplayName = "TXN-SUMMARY-005: date range returns transactions within the specified range")]
     public async Task GetTransactionSummary_WithDateRange_ReturnsTransactionsWithinRange()
     {
         // Arrange
@@ -175,7 +175,7 @@ public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebA
         body.TotalExpense.ShouldBe(0m);
     }
 
-    [Fact(DisplayName = "TXN-SUMMARY-006: get transaction summary by category returns grouped totals")]
+    [Fact(DisplayName = "TXN-SUMMARY-006: by category returns grouped totals")]
     public async Task GetTransactionSummary_ByCategory_ReturnsGroupedTotals()
     {
         // Arrange
@@ -210,7 +210,7 @@ public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebA
         body.ByCategory.ShouldContain(x => x.CategoryId == foodCategory.Id && x.Total == 50m && x.Type == TransactionType.Expense);
     }
 
-    [Fact(DisplayName = "TXN-SUMMARY-007: get transaction summary with multiple users excludes other users transactions")]
+    [Fact(DisplayName = "TXN-SUMMARY-007: multiple users isolates each user's transactions")]
     public async Task GetTransactionSummary_WithMultipleUsers_ExcludesOtherUsersTransactions()
     {
         // Arrange

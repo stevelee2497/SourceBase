@@ -166,7 +166,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-006: create transaction with zero or negative amount return 400")]
+    [Fact(DisplayName = "TXN-CREATE-006: zero or negative amount returns 400")]
     public async Task CreateTransaction_WithZeroOrNegativeAmount_ReturnsBadRequest()
     {
         // Arrange
@@ -203,7 +203,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         negativeResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-007: create transaction with missing date return 400")]
+    [Fact(DisplayName = "TXN-CREATE-007: missing date returns 400")]
     public async Task CreateTransaction_WithMissingDate_ReturnsBadRequest()
     {
         // Arrange
@@ -230,7 +230,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-008: create transaction with missing type return 400")]
+    [Fact(DisplayName = "TXN-CREATE-008: missing type returns 400")]
     public async Task CreateTransaction_WithMissingType_ReturnsBadRequest()
     {
         // Arrange
@@ -257,7 +257,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-009: create transaction with other users wallet return 400")]
+    [Fact(DisplayName = "TXN-CREATE-009: other user's wallet returns 400")]
     public async Task CreateTransaction_WithOtherUsersWallet_ReturnsBadRequest()
     {
         // Arrange
@@ -286,7 +286,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-010: create transaction with other users category return 400")]
+    [Fact(DisplayName = "TXN-CREATE-010: other user's category returns 400")]
     public async Task CreateTransaction_WithOtherUsersCategory_ReturnsBadRequest()
     {
         // Arrange
@@ -315,7 +315,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-011: create transaction without category return 400")]
+    [Fact(DisplayName = "TXN-CREATE-011: missing category returns 400")]
     public async Task CreateTransaction_WithoutCategory_ReturnsBadRequest()
     {
         // Arrange
