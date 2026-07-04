@@ -155,14 +155,14 @@ else
                 </div>
                 @if (_selectedWallet is not null)
                 {
-                    <div class="flex gap-2 flex-wrap">
-                        <button class="btn-primary btn-sm" @onclick="OpenCreateTransaction">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="btn-primary btn-sm w-full" @onclick="OpenCreateTransaction">
                             <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
                             Add Transaction
                         </button>
-                        <button class="btn-secondary btn-sm" @onclick="OpenCreateTransfer">
+                        <button class="btn-secondary btn-sm w-full" @onclick="OpenCreateTransfer">
                             <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l-4-4m4 4l4-4" />
                             </svg>
