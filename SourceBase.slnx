@@ -10,6 +10,7 @@
   <Project Path="SourceBase.Desktop/SourceBase.Desktop.csproj" />
   <Project Path="SourceBase.Domain/SourceBase.Domain.csproj" />
   <Project Path="SourceBase.Infrastructure/SourceBase.Infrastructure.csproj" />
+  <Project Path="SourceBase.ReportGenerator/SourceBase.ReportGenerator.csproj" />
   <Project Path="SourceBase.Tests/SourceBase.Tests.csproj" />
   <Project Path="SourceBase.Web/SourceBase.Web.csproj" />
 </Solution>
