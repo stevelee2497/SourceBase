@@ -24,7 +24,7 @@ else
         <!-- Pie chart -->
         @if (_wallets.Count > 0)
         {
-            <div class="card flex-1 flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
+            <div class="card flex-1 flex flex-col sm:flex-row items-center gap-4 p-3 sm:gap-8">
                 <div class="shrink-0">
                     @{
                         var pieData = BuildPieData();
@@ -89,8 +89,20 @@ else
         @foreach (var wallet in _wallets)
         {
             var isSelected = _selectedWalletIds.Contains(wallet.Id);
-            <div class="rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50") cursor-pointer transition-all p-3 flex flex-col gap-1.5" @onclick="SelectWallet(wallet.Id)">
-                <div class="flex items-center justify-between gap-1">
+            <div class="relative rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50") cursor-pointer transition-all p-2 px-4 md:p-3 flex flex-col gap-1 md:gap-1.5" @onclick="SelectWallet(wallet.Id)">
+                <div class="absolute top-1.5 right-1.5 flex gap-1">
+                    <button class="text-gray-400 hover:text-indigo-600" @onclick:stopPropagation @onclick="OpenEditWallet(wallet)" title="Edit">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </button>
+                    <button class="text-gray-400 hover:text-red-600" @onclick:stopPropagation @onclick="ConfirmDeleteWallet(wallet)" title="Delete">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex items-center justify-start gap-1">
                     <span class="text-xl leading-none">
                         @if (wallet.Icon?.StartsWith("http") == true)
                         {
@@ -105,22 +117,9 @@ else
                             @(string.IsNullOrWhiteSpace(wallet.Icon) ? "👛" : wallet.Icon)
                         }
                     </span>
-                    <span class="text-xs @(isSelected ? "text-indigo-600 font-semibold" : "text-gray-400")">@wallet.Currency</span>
                 </div>
                 <div class="text-xs font-semibold @(isSelected ? "text-indigo-700" : "text-gray-700") truncate">@wallet.Name</div>
                 <div class="text-sm font-bold @(isSelected ? "text-indigo-700" : "text-gray-900")">@FormatAmount(wallet.Balance)</div>
-                <div class="flex gap-1 mt-0.5">
-                    <button class="text-gray-400 hover:text-indigo-600" @onclick:stopPropagation @onclick="OpenEditWallet(wallet)" title="Edit">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </button>
-                    <button class="text-gray-400 hover:text-red-600" @onclick:stopPropagation @onclick="ConfirmDeleteWallet(wallet)" title="Delete">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
-                </div>
             </div>
         }
         <div class="rounded-lg border-2 border-dashed border-gray-300 bg-white hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition-all p-3 flex flex-col items-center justify-center gap-1.5 text-gray-400 hover:text-indigo-500" @onclick="OpenCreateWallet">
@@ -134,7 +133,7 @@ else
     <!-- Inline detail panel -->
     @if (_wallets.Count > 0 || _selectedWalletIds.Count == 0)
     {
-        <div class="card">
+        <div class="">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div>
                     @if (_selectedWalletIds.Count == 0)
@@ -172,19 +171,16 @@ else
                 }
             </div>
 
-            @if (_selectedWallet is not null)
-            {
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="rounded-lg bg-green-50 px-4 py-3">
-                        <div class="text-xs text-green-600 font-medium mb-0.5">Monthly Income</div>
-                        <div class="text-xl font-bold text-green-700">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
-                    </div>
-                    <div class="rounded-lg bg-red-50 px-4 py-3">
-                        <div class="text-xs text-red-600 font-medium mb-0.5">Monthly Expense</div>
-                        <div class="text-xl font-bold text-red-700">@FormatAmount(_summary?.TotalExpense ?? 0)</div>
-                    </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="rounded-lg bg-green-50 px-4 py-3">
+                    <div class="text-xs text-green-600 font-medium mb-0.5">Monthly Income</div>
+                    <div class="text-xl font-bold text-green-700">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
                 </div>
-            }
+                <div class="rounded-lg bg-red-50 px-4 py-3">
+                    <div class="text-xs text-red-600 font-medium mb-0.5">Monthly Expense</div>
+                    <div class="text-xl font-bold text-red-700">@FormatAmount(_summary?.TotalExpense ?? 0)</div>
+                </div>
+            </div>
 
             <!-- Filters -->
             <div class="mb-4 flex flex-col gap-3">
@@ -211,7 +207,9 @@ else
                     </div>
                 </div>
             </div>
+        </div>
 
+        <div class="card px-3 py-1">
             @if (_loadingTransactions && _transactions.Count == 0)
             {
                 <LoadingSpinner />
@@ -232,8 +230,8 @@ else
                     <div class="@(_loadingTransactions ? "blur-sm pointer-events-none select-none" : "") flex flex-col divide-y divide-gray-100">
                         @foreach (var transaction in _transactions)
                         {
-                            <div class="py-2 flex flex-col sm:flex-row sm:items-center gap-2">
-                                <div class="flex items-start gap-2 flex-1 min-w-0">
+                            <div class="py-2 flex flex-col sm:flex-row sm:items-center gap-2 @(!transaction.IsTransfer ? "cursor-pointer hover:bg-gray-50" : "")" @onclick="RowClick(transaction)">
+                                <div class="flex items-center gap-2 flex-1 min-w-0">
                                     <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">
                                         @{
                                             var txIcon = TransactionIcon(transaction);
@@ -249,35 +247,18 @@ else
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <div class="font-medium text-gray-900 truncate">@TransactionCategoryLabel(transaction)</div>
-                                        <div class="text-sm text-gray-500 truncate">@TransactionTitle(transaction)</div>
-                                        <div class="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-gray-400">
-                                            <span>@FormatDisplayDate(transaction.Date)</span>
-                                            <span>•</span>
-                                            <span>@transaction.WalletName</span>
-                                            @if (transaction.IsTransfer)
-                                            {
-                                                <span class="badge-blue">Transfer</span>
-                                            }
+                                        <div class="text-sm text-gray-500 truncate flex">
+                                            @TransactionTitle(transaction)
+                                            <div class="ml-2 flex flex-wrap items-center gap-1 text-xs text-gray-400">
+                                                <span>@FormatDisplayDate(transaction.Date)</span>
+                                                @if (transaction.IsTransfer)
+                                                {
+                                                    <span class="badge-blue">Transfer</span>
+                                                }
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
                                     <div class="font-semibold @TransactionAmountClass(transaction.Type)">@SignedAmount(transaction.Amount, transaction.Type)</div>
-                                    @if (!transaction.IsTransfer)
-                                    {
-                                        <div class="flex items-center gap-2">
-                                            <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEditTransaction(transaction)" title="Edit">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                            </button>
-                                            <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDeleteTransaction(transaction)" title="Delete">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    }
                                 </div>
                             </div>
                         }
@@ -339,14 +320,14 @@ else
 {
     <div class="fixed inset-0 z-40 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" @onclick="CloseTransactionForm"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-4 md:p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingTransaction is null ? "Add Transaction" : "Edit Transaction")</h2>
             @if (!string.IsNullOrEmpty(_transactionFormError))
             {
                 <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_transactionFormError</div>
             }
             <div class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="form-label">Amount *</label>
                         <CurrencyInput @bind-Value="_transactionAmount" Class="form-input" />
@@ -356,7 +337,7 @@ else
                         <input @bind="_transactionDate" class="form-input" type="date" />
                     </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="form-label">Type</label>
                         <SelectInput @bind-Value="_transactionType" @bind-Value:after="OnTransactionTypeAfterChange" Options="TransactionTypeOptions" />
@@ -378,9 +359,15 @@ else
                     </div>
                 }
             </div>
-            <div class="flex justify-end gap-3 mt-5">
-                <button class="btn-secondary" @onclick="CloseTransactionForm">Cancel</button>
-                <button class="btn-primary" @onclick="SaveTransactionAsync" disabled="@_savingTransaction">@(_savingTransaction ? "Saving…" : "Save")</button>
+            <div class="flex justify-between gap-3 mt-5">
+                @if (_editingTransaction is not null)
+                {
+                    <button class="btn-danger" @onclick="ConfirmDeleteTransaction(_editingTransaction)">Delete</button>
+                }
+                <div class="flex justify-end gap-3 ml-auto">
+                    <button class="btn-secondary" @onclick="CloseTransactionForm">Cancel</button>
+                    <button class="btn-primary" @onclick="SaveTransactionAsync" disabled="@_savingTransaction">@(_savingTransaction ? "Saving…" : "Save")</button>
+                </div>
             </div>
         </div>
     </div>
@@ -513,7 +500,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         await Task.WhenAll(LoadWalletsAsync(), LoadCategoriesAsync());
-        await Task.WhenAll(LoadTransactionsAsync(), LoadBarChartAsync());
+        await Task.WhenAll(LoadTransactionsAsync(), LoadBarChartAsync(), LoadSummaryAsync());
     }
 
     private async Task LoadWalletsAsync()
@@ -562,13 +549,13 @@ else
 
     private async Task LoadSummaryAsync()
     {
-        if (_selectedWalletIds.Count != 1)
+        if (_selectedWalletIds.Count > 1)
         {
             _summary = null;
             return;
         }
         var (start, end) = CurrentMonthRange();
-        var (data, _) = await Api.GetTransactionSummaryAsync(_selectedWalletIds.First(), start, end);
+        var (data, _) = await Api.GetTransactionSummaryAsync(_selectedWalletIds.Count == 1 ? _selectedWalletIds.First() : null, start, end);
         _summary = data;
     }
 
@@ -716,6 +703,8 @@ else
         _showTransactionForm = true;
     }
 
+    private Action RowClick(TransactionResponse transaction) => transaction.IsTransfer ? () => { } : OpenEditTransaction(transaction);
+
     private Action OpenEditTransaction(TransactionResponse transaction) => () =>
     {
         _editingTransaction = transaction;
@@ -788,6 +777,7 @@ else
     {
         _deletingTransaction = transaction;
         _showDeleteTransaction = true;
+        _showTransactionForm = false;
     };
 
     private void CancelDeleteTransaction() { _showDeleteTransaction = false; _deletingTransaction = null; }
@@ -828,7 +818,7 @@ else
     private static string FormatAmount(decimal amount) => amount.ToString("N0");
     private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N0}" : $"-{amount:N0}";
     private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600" : "text-red-600";
-    private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MMM yyyy") : value;
+    private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MM") : value;
     private static string? EmptyToNull(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
     private static string? FormatDateFilter(DateOnly? value) => value?.ToString("yyyy-MM-dd");
     private static Guid? ParseGuid(string value) => Guid.TryParse(value, out var parsed) ? parsed : null;
