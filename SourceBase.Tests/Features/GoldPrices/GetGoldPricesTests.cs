@@ -8,9 +8,22 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.GoldPrices;
 
+[EndpointFact(
+    Feature = "GoldPrices",
+    Name = "Get Gold Prices",
+    Route = "GET /api/gold-prices",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve a paginated and filterable list of gold price records, so that I can view price history and build charts. I can also request the latest record per source to display a summary dashboard.",
+    Description = new[]
+    {
+        "Client sends optional query parameters: `source` (GoldSource), `dateFrom` (DateTime), `dateTo` (DateTime), `latest` (bool), `page` (default 1), `limit` (default 20), `order` (Asc / Desc, default Desc), `orderBy` (RecordedAt / BuyPrice / SellPrice / Source, default RecordedAt).",
+        "If `latest=true`: returns one record per source (the most recent `RecordedAt` for each source). Pagination params are ignored; `page=1`, `limit=items.Count`, `total=items.Count`.",
+        "Otherwise: results are filtered by the provided parameters and paginated.",
+        "Returns `{ items, page, limit, total }`.",
+    })]
 public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "GOLDPRICE-GET-ALL-001: GetGoldPrices_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-001: no token returns 401")]
     public async Task GetGoldPrices_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +36,7 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-GET-ALL-002: GetGoldPrices_WithNoFilter_ReturnsPaginatedList")]
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-002: no filter returns paginated list")]
     public async Task GetGoldPrices_WithNoFilter_ReturnsPaginatedList()
     {
         // Arrange
@@ -49,7 +62,7 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.Total.ShouldBeGreaterThanOrEqualTo(1);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-GET-ALL-003: GetGoldPrices_FilterBySource_ReturnsOnlyMatchingSource")]
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-003: filter by source returns matching source only")]
     public async Task GetGoldPrices_FilterBySource_ReturnsOnlyMatchingSource()
     {
         // Arrange
@@ -68,7 +81,7 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.Items.ShouldAllBe(x => x.Source.ToString() == "SJC");
     }
 
-    [Fact(DisplayName = "GOLDPRICE-GET-ALL-004: GetGoldPrices_FilterByDateRange_ReturnsMatchingRange")]
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-004: filter by date range returns matching range")]
     public async Task GetGoldPrices_FilterByDateRange_ReturnsMatchingRange()
     {
         // Arrange
@@ -91,7 +104,7 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.Items.ShouldContain(x => x.RecordedAt == recentDate);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-GET-ALL-005: GetGoldPrices_WithPagination_ReturnsCorrectPage")]
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-005: pagination returns correct page")]
     public async Task GetGoldPrices_WithPagination_ReturnsCorrectPage()
     {
         // Arrange
@@ -123,7 +136,7 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.Page.ShouldBe(2);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-GET-ALL-006: GetGoldPrices_DefaultOrder_ReturnsNewestFirst")]
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-006: default order returns newest first")]
     public async Task GetGoldPrices_DefaultOrder_ReturnsNewestFirst()
     {
         // Arrange
@@ -145,7 +158,7 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         laterIdx.ShouldBeLessThan(earlierIdx);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-GET-ALL-007: GetGoldPrices_WithLatestTrue_ReturnsLatestRecordPerSource")]
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-007: latest=true returns latest record per source")]
     public async Task GetGoldPrices_WithLatestTrue_ReturnsLatestRecordPerSource()
     {
         // Arrange — far-future timestamp guarantees this is the latest SJC record across all tests
@@ -170,7 +183,7 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         sjc.RecordedAt.ShouldBe(t);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-GET-ALL-008: GetGoldPrices_WithLatestTrue_MultipleRecordsPerSource_ReturnsOnlyLatest")]
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-008: latest=true with multiple records per source returns only latest")]
     public async Task GetGoldPrices_WithLatestTrue_MultipleRecordsPerSource_ReturnsOnlyLatest()
     {
         // Arrange — far-future timestamps guarantee this PNJ record is the latest across all tests
@@ -199,7 +212,7 @@ public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         pnj.RecordedAt.ShouldBe(newer);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-GET-ALL-009: GetGoldPrices_WithLatestTrue_AllFiveSourcesSeeded_ReturnsOneItemPerSource")]
+    [Fact(DisplayName = "GOLDPRICE-GET-ALL-009: latest=true with all five sources returns one item per source")]
     public async Task GetGoldPrices_WithLatestTrue_AllFiveSourcesSeeded_ReturnsOneItemPerSource()
     {
         // Arrange

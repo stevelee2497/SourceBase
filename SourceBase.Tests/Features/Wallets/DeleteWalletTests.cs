@@ -10,9 +10,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Wallets;
 
+[EndpointFact(
+    Feature = "Wallets",
+    Name = "Delete Wallet",
+    Route = "DELETE /api/wallets/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete one of my wallets, so that I can remove accounts I no longer use.",
+    Description = new[]
+    {
+        "Client provides the wallet `id` (route).",
+        "If the wallet doesn't exist or belongs to a different user → `404 Not Found`.",
+        "The wallet and all its associated transactions are deleted. Any transfer records that reference this wallet are also deleted.",
+    })]
 public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "WALLETS-DELETE-001: DeleteWallet_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "WALLETS-DELETE-001: no token returns 401")]
     public async Task DeleteWallet_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -25,7 +37,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-002: DeleteWallet_WithOwnedWallet_ReturnsOk")]
+    [Fact(DisplayName = "WALLETS-DELETE-002: owned wallet returns 200")]
     public async Task DeleteWallet_WithOwnedWallet_ReturnsOk()
     {
         // Arrange
@@ -47,7 +59,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         getResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-003: DeleteWallet_WithOtherUsersWallet_ReturnsNotFound")]
+    [Fact(DisplayName = "WALLETS-DELETE-003: other user's wallet returns 404")]
     public async Task DeleteWallet_WithOtherUsersWallet_ReturnsNotFound()
     {
         // Arrange
@@ -65,7 +77,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-004: DeleteWallet_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "WALLETS-DELETE-004: unknown id returns 404")]
     public async Task DeleteWallet_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -78,7 +90,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-005: DeleteWallet_RemovesAssociatedTransactions")]
+    [Fact(DisplayName = "WALLETS-DELETE-005: delete removes associated transactions")]
     public async Task DeleteWallet_RemovesAssociatedTransactions()
     {
         // Arrange
@@ -112,7 +124,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         txns!.Total.ShouldBe(0);
     }
 
-    [Fact(DisplayName = "WALLETS-DELETE-006: DeleteWallet_DeletedWalletExcludedFromList")]
+    [Fact(DisplayName = "WALLETS-DELETE-006: deleted wallet is excluded from list")]
     public async Task DeleteWallet_DeletedWalletExcludedFromList()
     {
         // Arrange

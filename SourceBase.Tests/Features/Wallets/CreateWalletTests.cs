@@ -9,9 +9,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Wallets;
 
+[EndpointFact(
+    Feature = "Wallets",
+    Name = "Create Wallet",
+    Route = "POST /api/wallets",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to create a named wallet with an initial balance and currency, so that I can start tracking my finances separately per account (e.g. cash, bank, savings).",
+    Description = new[]
+    {
+        "Client sends `name` (required, max 100 characters), `initialBalance` (required, default `0`), `currency` (required, e.g. `\"USD\"`), and optionally `icon` (emoji or icon name string).",
+        "The wallet is created and associated with the authenticated user.",
+        "Returns the new wallet's `Id`.",
+    })]
 public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "WALLETS-CREATE-001: CreateWallet_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "WALLETS-CREATE-001: missing token returns 401")]
     public async Task CreateWallet_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -29,7 +41,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-002: CreateWallet_WithValidData_ReturnsOkAndId")]
+    [Fact(DisplayName = "WALLETS-CREATE-002: valid data returns 200 and wallet id")]
     public async Task CreateWallet_WithValidData_ReturnsOkAndId()
     {
         // Arrange
@@ -50,7 +62,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Id.ShouldNotBe(Guid.Empty);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-003: CreateWallet_WithMissingName_ReturnsBadRequest")]
+    [Fact(DisplayName = "WALLETS-CREATE-003: missing name returns 400")]
     public async Task CreateWallet_WithMissingName_ReturnsBadRequest()
     {
         // Arrange
@@ -67,7 +79,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-004: CreateWallet_WithMissingCurrency_ReturnsBadRequest")]
+    [Fact(DisplayName = "WALLETS-CREATE-004: missing currency returns 400")]
     public async Task CreateWallet_WithMissingCurrency_ReturnsBadRequest()
     {
         // Arrange
@@ -84,7 +96,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-005: CreateWallet_WithNegativeInitialBalance_ReturnsOk")]
+    [Fact(DisplayName = "WALLETS-CREATE-005: negative initial balance returns 200")]
     public async Task CreateWallet_WithNegativeInitialBalance_ReturnsOk()
     {
         // Arrange
@@ -110,7 +122,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.InitialBalance.ShouldBe(-25m);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-006: CreateWallet_WithoutTransactions_HasBalanceEqualToInitialBalance")]
+    [Fact(DisplayName = "WALLETS-CREATE-006: balance equals initial balance when no transactions")]
     public async Task CreateWallet_WithoutTransactions_HasBalanceEqualToInitialBalance()
     {
         // Arrange
@@ -136,7 +148,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.Currency.ShouldBe("EUR");
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-007: CreateWallet_WithAuthenticatedUser_SetsWalletOwnership")]
+    [Fact(DisplayName = "WALLETS-CREATE-007: authenticated user sets wallet ownership")]
     public async Task CreateWallet_WithAuthenticatedUser_SetsWalletOwnership()
     {
         // Arrange
@@ -163,7 +175,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         data.Wallet.UserId.ShouldBe(data.UserId);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-008: CreateWallet_WithZeroInitialBalance_HasBalanceOfZero")]
+    [Fact(DisplayName = "WALLETS-CREATE-008: zero initial balance results in zero balance")]
     public async Task CreateWallet_WithZeroInitialBalance_HasBalanceOfZero()
     {
         // Arrange
@@ -189,7 +201,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.InitialBalance.ShouldBe(0m);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-009: CreateWallet_WithNoIcon_StillCreatesWallet")]
+    [Fact(DisplayName = "WALLETS-CREATE-009: missing icon still creates wallet")]
     public async Task CreateWallet_WithNoIcon_StillCreatesWallet()
     {
         // Arrange

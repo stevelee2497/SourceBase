@@ -8,9 +8,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.TimeSheets;
 
+[EndpointFact(
+    Feature = "TimeSheets",
+    Name = "List Time Sheets",
+    Route = "GET /api/time-sheets",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve my time entries for a given date or month, so that I can review or manage my logged hours.",
+    Description = new[]
+    {
+        "Client may filter by `date` (exact day), `year`, or `month` query parameters.",
+        "Returns only entries belonging to the authenticated user — other users' entries are never included.",
+        "Supports pagination via `page` and `limit` query parameters.",
+    })]
 public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TIMESHEET-GET-ALL-001: GetTimeSheets_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TIMESHEET-GET-ALL-001: without token returns 401")]
     public async Task GetTimeSheets_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +35,7 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TIMESHEET-GET-ALL-002: GetTimeSheets_Authenticated_ReturnsOk")]
+    [Fact(DisplayName = "TIMESHEET-GET-ALL-002: authenticated user returns 200")]
     public async Task GetTimeSheets_Authenticated_ReturnsOk()
     {
         // Arrange
@@ -39,7 +51,7 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body!.Items.ShouldNotBeNull();
     }
 
-    [Fact(DisplayName = "TIMESHEET-GET-ALL-003: GetTimeSheets_WithYearAndMonthFilter_ReturnsMatchingItems")]
+    [Fact(DisplayName = "TIMESHEET-GET-ALL-003: year and month filter returns matching items")]
     public async Task GetTimeSheets_WithYearAndMonthFilter_ReturnsMatchingItems()
     {
         // Arrange
@@ -66,7 +78,7 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.Items.ShouldNotContain(x => x.Project == "JulyProject");
     }
 
-    [Fact(DisplayName = "TIMESHEET-GET-ALL-004: GetTimeSheets_WithDateFilter_ReturnsMatchingItems")]
+    [Fact(DisplayName = "TIMESHEET-GET-ALL-004: date filter returns matching items")]
     public async Task GetTimeSheets_WithDateFilter_ReturnsMatchingItems()
     {
         // Arrange
@@ -93,7 +105,7 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.Items.ShouldNotContain(x => x.Project == "OtherDayProject");
     }
 
-    [Fact(DisplayName = "TIMESHEET-GET-ALL-005: GetTimeSheets_WithMultipleUsers_ReturnsOnlyCurrentUsersItems")]
+    [Fact(DisplayName = "TIMESHEET-GET-ALL-005: multiple users returns only current user's items")]
     public async Task GetTimeSheets_WithMultipleUsers_ReturnsOnlyCurrentUsersItems()
     {
         // Arrange

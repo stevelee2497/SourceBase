@@ -9,9 +9,23 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Data;
 
+[EndpointFact(
+    Feature = "Data",
+    Name = "Get Enums",
+    Route = "POST /api/data/enums",
+    Auth = "Anonymous",
+    UseCase = "As a client application, I want to fetch the definitions of one or more enum types in a single request, so that I can populate dropdowns and labels without hard-coding values.",
+    Description = new[]
+    {
+        "Client sends a list of `enums` (e.g. `[\"TodoItemStatus\", \"Roles\"]`).",
+        "The list must not be empty → `400 Bad Request` if empty.",
+        "Static enum types (`RolesOrder`, `TodoItemStatus`) are resolved from the .NET enum values.",
+        "The special `Roles` enum type is resolved dynamically from the database, returning the current list of roles.",
+        "Returns a dictionary keyed by enum type, each containing a list of `{ name, description }` entries.",
+    })]
 public class GetEnumsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "DATA-ENUMS-001: GetEnums_WithRequestedStaticEnums_ReturnsOnlyRequestedDefinitions")]
+    [Fact(DisplayName = "DATA-ENUMS-001: static enums return only requested definitions")]
     public async Task GetEnums_WithRequestedStaticEnums_ReturnsOnlyRequestedDefinitions()
     {
         // Arrange
@@ -33,7 +47,7 @@ public class GetEnumsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Data[AvailableEnums.TodoItemStatus].ShouldContain(x => x.Name == TodoItemStatus.Archived.ToString());
     }
 
-    [Fact(DisplayName = "DATA-ENUMS-002: GetEnums_WithRolesRequested_ReturnsRolesFromDatabase")]
+    [Fact(DisplayName = "DATA-ENUMS-002: roles return current list from database")]
     public async Task GetEnums_WithRolesRequested_ReturnsRolesFromDatabase()
     {
         // Arrange
@@ -61,7 +75,7 @@ public class GetEnumsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Data[AvailableEnums.Roles].ShouldContain(x => x.Name == roleName && x.Description == "Dynamic role");
     }
 
-    [Fact(DisplayName = "DATA-ENUMS-003: GetEnums_WithEmptyEnums_ReturnsBadRequest")]
+    [Fact(DisplayName = "DATA-ENUMS-003: empty enums return 400")]
     public async Task GetEnums_WithEmptyEnums_ReturnsBadRequest()
     {
         // Arrange

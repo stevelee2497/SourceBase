@@ -9,7 +9,7 @@ public class KimKhanhVietHungGoldPriceScraperTests
 {
     private static readonly KimKhanhVietHungGoldPriceScraper Scraper = new(NullLogger<KimKhanhVietHungGoldPriceScraper>.Instance);
 
-    [Fact(DisplayName = "KIMKHANH-SCRAPER-001: ParseAsync_WithRealPageHtml_ReturnsVang999Prices")]
+    [Fact(DisplayName = "KIMKHANH-SCRAPER-001: real page HTML returns vang 99.9 prices")]
     public async Task ParseAsync_WithRealPageHtml_ReturnsVang999Prices()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class KimKhanhVietHungGoldPriceScraperTests
         result!.Value.SellPrice.ShouldBe(14_450_000m);
     }
 
-    [Fact(DisplayName = "KIMKHANH-SCRAPER-002: ParseAsync_WithNoMatchingRow_ReturnsNull")]
+    [Fact(DisplayName = "KIMKHANH-SCRAPER-002: no matching row returns null")]
     public async Task ParseAsync_WithNoMatchingRow_ReturnsNull()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class KimKhanhVietHungGoldPriceScraperTests
         result.ShouldBeNull();
     }
 
-    [Fact(DisplayName = "KIMKHANH-SCRAPER-003: ParseAsync_WithNoTable_ReturnsNull")]
+    [Fact(DisplayName = "KIMKHANH-SCRAPER-003: no table returns null")]
     public async Task ParseAsync_WithNoTable_ReturnsNull()
     {
         // Arrange

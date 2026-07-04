@@ -9,9 +9,23 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Users;
 
+[EndpointFact(
+    Feature = "Users",
+    Name = "Reset User Password",
+    Route = "POST /api/users/{id}/resetPassword",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to reset a user's password to a new random value and notify them by email, so that I can help users who are locked out of their accounts.",
+    Description = new[]
+    {
+        "Admin provides the target user `id` (route) and a `newPassword`.",
+        "If the user doesn't exist → `404 Not Found`.",
+        "The password must meet the minimum length requirement (6 characters) → `400 Bad Request` otherwise.",
+        "The user's password is updated and the security stamp is rotated.",
+        "An email is sent to the user notifying them of their new password.",
+    })]
 public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "USERS-RESET-PWD-001: ResetUserPassword_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "USERS-RESET-PWD-001: without token return 401")]
     public async Task ResetUserPassword_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -24,7 +38,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "USERS-RESET-PWD-002: ResetUserPassword_AsNonAdmin_ReturnsForbidden")]
+    [Fact(DisplayName = "USERS-RESET-PWD-002: non-admin return 403")]
     public async Task ResetUserPassword_AsNonAdmin_ReturnsForbidden()
     {
         // Arrange
@@ -37,7 +51,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "USERS-RESET-PWD-003: ResetUserPassword_WithNonExistentUser_ReturnsNotFound")]
+    [Fact(DisplayName = "USERS-RESET-PWD-003: non-existent user return 404")]
     public async Task ResetUserPassword_WithNonExistentUser_ReturnsNotFound()
     {
         // Arrange
@@ -50,7 +64,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "USERS-RESET-PWD-004: ResetUserPassword_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "USERS-RESET-PWD-004: valid data return 200")]
     public async Task ResetUserPassword_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -74,7 +88,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         body!.Success.ShouldBeTrue();
     }
 
-    [Fact(DisplayName = "USERS-RESET-PWD-005: ResetUserPassword_SendsEmailWithNewPassword")]
+    [Fact(DisplayName = "USERS-RESET-PWD-005: sends email with new password")]
     public async Task ResetUserPassword_SendsEmailWithNewPassword()
     {
         // Arrange
@@ -103,7 +117,7 @@ public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAp
         latestEmail.Body.ShouldContain(newPassword);
     }
 
-    [Fact(DisplayName = "USERS-RESET-PWD-006: ResetUserPassword_WithTooShortPassword_ReturnsBadRequest")]
+    [Fact(DisplayName = "USERS-RESET-PWD-006: too short password return 400")]
     public async Task ResetUserPassword_WithTooShortPassword_ReturnsBadRequest()
     {
         // Arrange

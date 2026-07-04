@@ -10,9 +10,23 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Wallets;
 
+[EndpointFact(
+    Feature = "Wallets",
+    Name = "Update Wallet",
+    Route = "PATCH /api/wallets/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to partially update a wallet's name or icon, so that I can keep it organised without resending all fields.",
+    Description = new[]
+    {
+        "Client sends the wallet `id` (route) and any subset of: `name`, `icon`. All fields are optional — only provided (non-null) fields are updated. Sending `null` for a field keeps the existing value.",
+        "If the wallet doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If `name` is provided but empty → `400 Bad Request`.",
+        "Only metadata fields (`name`, `icon`) are updated; computed balance is unaffected.",
+        "Returns the updated wallet's `Id`.",
+    })]
 public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "WALLETS-UPDATE-001: UpdateWallet_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "WALLETS-UPDATE-001: without token returns 401")]
     public async Task UpdateWallet_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -29,7 +43,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-002: UpdateWallet_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "WALLETS-UPDATE-002: valid data returns 200")]
     public async Task UpdateWallet_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -58,7 +72,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.Icon.ShouldBe("🏦");
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-003: UpdateWallet_WithOnlyIcon_ReturnsOkAndKeepsName")]
+    [Fact(DisplayName = "WALLETS-UPDATE-003: only icon returns 200 and keeps name")]
     public async Task UpdateWallet_WithOnlyIcon_ReturnsOkAndKeepsName()
     {
         // Arrange
@@ -83,7 +97,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.Icon.ShouldBe("🏦");
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-004: UpdateWallet_WithOtherUsersWallet_ReturnsNotFound")]
+    [Fact(DisplayName = "WALLETS-UPDATE-004: other user's wallet returns 404")]
     public async Task UpdateWallet_WithOtherUsersWallet_ReturnsNotFound()
     {
         // Arrange
@@ -105,7 +119,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-005: UpdateWallet_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "WALLETS-UPDATE-005: unknown id returns 404")]
     public async Task UpdateWallet_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -122,7 +136,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-006: UpdateWallet_DoesNotChangeComputedBalance")]
+    [Fact(DisplayName = "WALLETS-UPDATE-006: computed balance remains unchanged")]
     public async Task UpdateWallet_DoesNotChangeComputedBalance()
     {
         // Arrange
@@ -156,7 +170,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         after.Balance.ShouldBe(125m);
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-007: UpdateWallet_WithNullIcon_KeepsExistingIcon")]
+    [Fact(DisplayName = "WALLETS-UPDATE-007: null icon keeps existing value")]
     public async Task UpdateWallet_WithNullIcon_KeepsExistingIcon()
     {
         // Arrange
@@ -182,7 +196,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.Icon.ShouldBe("💳");
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-008: UpdateWallet_WithEmptyId_ReturnsBadRequest")]
+    [Fact(DisplayName = "WALLETS-UPDATE-008: empty id returns 400")]
     public async Task UpdateWallet_WithEmptyId_ReturnsBadRequest()
     {
         // Arrange

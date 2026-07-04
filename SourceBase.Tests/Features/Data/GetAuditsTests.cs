@@ -11,9 +11,22 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Data;
 
+[EndpointFact(
+    Feature = "Data",
+    Name = "Get Audits",
+    Route = "GET /api/data/audits",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to view the audit history of all data changes in the system, so that I can trace who changed what and when for compliance and debugging.",
+    Description = new[]
+    {
+        "Admin sends optional paging parameters (`page`, `limit`, `order`).",
+        "Results are sorted by `ActionOn` (most recent first by default).",
+        "Each entry includes `author`, `action`, `entityType`, `entityId`, and JSON snapshots of the `current`, `original`, and `changes` state.",
+        "Audit records are written automatically by `ApplicationDbContextAuditInterceptor` on every save — this endpoint only reads them.",
+    })]
 public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "DATA-AUDITS-001: GetAudits_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "DATA-AUDITS-001: missing token return 401")]
     public async Task GetAudits_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -26,7 +39,7 @@ public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "DATA-AUDITS-002: GetAudits_WithNonAdminUser_ReturnsForbidden")]
+    [Fact(DisplayName = "DATA-AUDITS-002: non-admin user return 403")]
     public async Task GetAudits_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -39,7 +52,7 @@ public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "DATA-AUDITS-003: GetAudits_WithAdminUser_ReturnsAuditHistory")]
+    [Fact(DisplayName = "DATA-AUDITS-003: admin user returns audit history")]
     public async Task GetAudits_WithAdminUser_ReturnsAuditHistory()
     {
         // Arrange
@@ -72,7 +85,7 @@ public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
             x.EntityType.EndsWith("TodoItemEntity", StringComparison.Ordinal));
     }
 
-    [Fact(DisplayName = "DATA-AUDITS-004: GetAudits_WithRecentChanges_ReturnsMostRecentEntriesFirst")]
+    [Fact(DisplayName = "DATA-AUDITS-004: recent changes returns most recent entries first")]
     public async Task GetAudits_WithRecentChanges_ReturnsMostRecentEntriesFirst()
     {
         // Arrange

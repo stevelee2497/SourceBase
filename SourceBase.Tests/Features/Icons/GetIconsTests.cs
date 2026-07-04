@@ -7,9 +7,22 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Icons;
 
+[EndpointFact(
+    Feature = "Icons",
+    Name = "Get Icons",
+    Route = "GET /api/icons",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve the available icons so that I can pick one when creating or editing a wallet or category.",
+    Description = new[]
+    {
+        "Client calls the endpoint with an optional `group` query parameter (`Wallet`, `Category`, or `General`).",
+        "If `group` is provided, returns icons of that group plus all `General` icons. If `group` is omitted or unrecognised, returns all icons.",
+        "Results are ordered by `SortOrder` ascending within each group.",
+        "Each icon includes `id`, `value`, `name`, `group`, `sortOrder`, `isSystem`.",
+    })]
 public class GetIconsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "ICONS-GET-001: GetIcons_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "ICONS-GET-001: without token return 401")]
     public async Task GetIcons_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -22,7 +35,7 @@ public class GetIconsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "ICONS-GET-002: GetIcons_WithToken_ReturnsAllSeededIcons")]
+    [Fact(DisplayName = "ICONS-GET-002: with token return 200 and all icons")]
     public async Task GetIcons_WithToken_ReturnsAllSeededIcons()
     {
         // Arrange
@@ -38,7 +51,7 @@ public class GetIconsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.ShouldNotBeEmpty();
     }
 
-    [Fact(DisplayName = "ICONS-GET-003: GetIcons_WithGroupFilter_ReturnsGroupAndGeneralIcons")]
+    [Fact(DisplayName = "ICONS-GET-003: with group filter return group and general icons")]
     public async Task GetIcons_WithGroupFilter_ReturnsGroupAndGeneralIcons()
     {
         // Arrange
@@ -57,7 +70,7 @@ public class GetIconsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.ShouldContain(i => i.Group == "General");
     }
 
-    [Fact(DisplayName = "ICONS-GET-004: GetIcons_WithInvalidGroup_ReturnsAllIcons")]
+    [Fact(DisplayName = "ICONS-GET-004: with invalid group return all icons")]
     public async Task GetIcons_WithInvalidGroup_ReturnsAllIcons()
     {
         // Arrange
@@ -74,7 +87,7 @@ public class GetIconsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.Count.ShouldBe(allIcons!.Count);
     }
 
-    [Fact(DisplayName = "ICONS-GET-005: GetIcons_ResultsOrderedBySortOrder")]
+    [Fact(DisplayName = "ICONS-GET-005: results ordered by sort order")]
     public async Task GetIcons_ResultsOrderedBySortOrder()
     {
         // Arrange

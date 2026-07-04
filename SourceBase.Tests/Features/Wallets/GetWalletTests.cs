@@ -10,9 +10,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Wallets;
 
+[EndpointFact(
+    Feature = "Wallets",
+    Name = "Get Wallet",
+    Route = "GET /api/wallets/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve the details of a specific wallet, so that I can view its current balance and metadata.",
+    Description = new[]
+    {
+        "Client provides the wallet `id` (route).",
+        "If the wallet doesn't exist or belongs to a different user → `404 Not Found`.",
+        "Returns the wallet's full details.",
+    })]
 public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "WALLETS-GET-001: GetWallet_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "WALLETS-GET-001: without token returns 401")]
     public async Task GetWallet_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -25,7 +37,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-002: GetWallet_WithOwnedWalletId_ReturnsWalletData")]
+    [Fact(DisplayName = "WALLETS-GET-002: owned wallet id returns wallet data")]
     public async Task GetWallet_WithOwnedWalletId_ReturnsWalletData()
     {
         // Arrange
@@ -53,7 +65,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         body.Balance.ShouldBe(250m);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-003: GetWallet_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "WALLETS-GET-003: unknown id returns 404")]
     public async Task GetWallet_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -66,7 +78,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-004: GetWallet_WithOtherUsersWallet_ReturnsNotFound")]
+    [Fact(DisplayName = "WALLETS-GET-004: other user's wallet returns 404")]
     public async Task GetWallet_WithOtherUsersWallet_ReturnsNotFound()
     {
         // Arrange
@@ -84,7 +96,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-005: GetWallet_BalanceReflectsMultipleTransactions")]
+    [Fact(DisplayName = "WALLETS-GET-005: balance accurately reflects multiple transactions")]
     public async Task GetWallet_BalanceReflectsMultipleTransactions()
     {
         // Arrange

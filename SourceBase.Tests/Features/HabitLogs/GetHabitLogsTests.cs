@@ -10,9 +10,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.HabitLogs;
 
+[EndpointFact(
+    Feature = "HabitLogs",
+    Name = "Get Habit Logs",
+    Route = "GET /api/habit-logs",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to list my habit log entries with filtering and pagination, so that I can review my habit activity history.",
+    Description = new[]
+    {
+        "Client sends optional filters: `action`, `ignore` (actions to exclude), `from`/date range, plus paging parameters (`page`, `limit`).",
+        "Returns only habit log entries belonging to the authenticated user.",
+        "Each item includes `id`, `habitId`, `habitName`, `action`, and `occurredAt`.",
+    })]
 public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "HLOG-GET-001: GetHabitLogs_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "HLOG-GET-001: no token returns 401")]
     public async Task GetHabitLogs_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -25,7 +37,7 @@ public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "HLOG-GET-002: GetHabitLogs_WithNoFilters_ReturnsAllLogsForCurrentUser")]
+    [Fact(DisplayName = "HLOG-GET-002: no filters returns all logs for current user")]
     public async Task GetHabitLogs_WithNoFilters_ReturnsAllLogsForCurrentUser()
     {
         // Arrange
@@ -51,7 +63,7 @@ public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body.Items.Count.ShouldBe(2);
     }
 
-    [Fact(DisplayName = "HLOG-GET-003: GetHabitLogs_FilteredByAction_ReturnsOnlyMatchingLogs")]
+    [Fact(DisplayName = "HLOG-GET-003: action filter returns only matching logs")]
     public async Task GetHabitLogs_FilteredByAction_ReturnsOnlyMatchingLogs()
     {
         // Arrange
@@ -78,7 +90,7 @@ public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body.Items.ShouldAllBe(l => l.Action == HabitLogAction.HabitStarted);
     }
 
-    [Fact(DisplayName = "HLOG-GET-004: GetHabitLogs_FilteredByDateRange_ReturnsLogsInRange")]
+    [Fact(DisplayName = "HLOG-GET-004: date range filter returns logs in range")]
     public async Task GetHabitLogs_FilteredByDateRange_ReturnsLogsInRange()
     {
         // Arrange
@@ -108,7 +120,7 @@ public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body.Items.ShouldNotContain(l => l.OccurredAt < cutoff);
     }
 
-    [Fact(DisplayName = "HLOG-GET-005: GetHabitLogs_Paginated_RespectsLimitAndPage")]
+    [Fact(DisplayName = "HLOG-GET-005: pagination respects limit and page")]
     public async Task GetHabitLogs_Paginated_RespectsLimitAndPage()
     {
         // Arrange
@@ -139,7 +151,7 @@ public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         page2.Total.ShouldBe(5);
     }
 
-    [Fact(DisplayName = "HLOG-GET-006: GetHabitLogs_DoesNotReturnOtherUsersLogs")]
+    [Fact(DisplayName = "HLOG-GET-006: does not return other users' logs")]
     public async Task GetHabitLogs_DoesNotReturnOtherUsersLogs()
     {
         // Arrange
@@ -162,7 +174,7 @@ public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Items.ShouldNotContain(l => l.Id == createdId);
     }
 
-    [Fact(DisplayName = "HLOG-GET-008: GetHabitLogs_WithIgnoreActions_ExcludesMatchingLogs")]
+    [Fact(DisplayName = "HLOG-GET-008: ignore actions exclude matching logs")]
     public async Task GetHabitLogs_WithIgnoreActions_ExcludesMatchingLogs()
     {
         // Arrange
@@ -189,7 +201,7 @@ public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body.Items.ShouldNotContain(l => l.Action == HabitLogAction.Dismissed);
     }
 
-    [Fact(DisplayName = "HLOG-GET-007: GetHabitLogs_ReturnsCorrectFields")]
+    [Fact(DisplayName = "HLOG-GET-007: returns correct fields")]
     public async Task GetHabitLogs_ReturnsCorrectFields()
     {
         // Arrange

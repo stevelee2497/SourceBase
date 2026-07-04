@@ -9,9 +9,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Todo;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Get Todos",
+    Route = "GET /api/todos",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to list my todo items with filtering, paging, and ordering, so that I can view and navigate my tasks efficiently.",
+    Description = new[]
+    {
+        "Client sends optional filters: `status`, `date`, `todoListId`, plus paging parameters.",
+        "Returns only todo items belonging to the authenticated user.",
+        "Filters are applied as AND conditions — only items matching all provided filters are returned.",
+    })]
 public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TODOS-GET-ALL-001: GetTodos_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TODOS-GET-ALL-001: missing token returns 401")]
     public async Task GetTodos_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -24,7 +36,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TODOS-GET-ALL-002: GetTodos_Authenticated_ReturnsOk")]
+    [Fact(DisplayName = "TODOS-GET-ALL-002: authenticated user returns 200")]
     public async Task GetTodos_Authenticated_ReturnsOk()
     {
         // Arrange
@@ -40,7 +52,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.Items.ShouldNotBeNull();
     }
 
-    [Fact(DisplayName = "TODOS-GET-ALL-003: GetTodos_WithMultipleUsers_ReturnsOnlyCurrentUsersItems")]
+    [Fact(DisplayName = "TODOS-GET-ALL-003: multiple users returns only current user's items")]
     public async Task GetTodos_WithMultipleUsers_ReturnsOnlyCurrentUsersItems()
     {
         // Arrange
@@ -71,7 +83,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         todos.Items.ShouldNotContain(x => x.Title == "Other Todo");
     }
 
-    [Fact(DisplayName = "TODOS-GET-ALL-004: GetTodos_WithStatusAndDateFilters_ReturnsMatchingItems")]
+    [Fact(DisplayName = "TODOS-GET-ALL-004: status and date filters return matching items")]
     public async Task GetTodos_WithStatusAndDateFilters_ReturnsMatchingItems()
     {
         // Arrange
@@ -106,7 +118,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         todos!.Items.ShouldContain(x => x.Id == matchingTodoBody!.Id);
     }
 
-    [Fact(DisplayName = "TODOS-GET-ALL-005: GetTodos_WithPagingAndOrdering_ReturnsRequestedPage")]
+    [Fact(DisplayName = "TODOS-GET-ALL-005: paging and ordering return requested page")]
     public async Task GetTodos_WithPagingAndOrdering_ReturnsRequestedPage()
     {
         // Arrange
@@ -138,7 +150,7 @@ public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         todos.Items.Single().Id.ShouldBe(expectedTodoBody!.Id);
     }
 
-    [Fact(DisplayName = "TODOS-GET-ALL-006: GetTodos_FilteredByTodoListId_ReturnsMatchingItems")]
+    [Fact(DisplayName = "TODOS-GET-ALL-006: todolistid filter returns matching items")]
     public async Task GetTodos_FilteredByTodoListId_ReturnsMatchingItems()
     {
         // Arrange

@@ -11,9 +11,22 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transactions;
 
+[EndpointFact(
+    Feature = "Transactions",
+    Name = "Get Transactions",
+    Route = "GET /api/transactions",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to list my transactions with filtering and pagination, so that I can browse and analyse my transaction history.",
+    Description = new[]
+    {
+        "Client sends optional filters: `walletId`, `type`, `categoryId`, `dateFrom`, `dateTo`, plus paging parameters (`page`, `pageSize`).",
+        "Returns only transactions belonging to the authenticated user.",
+        "Results are ordered by `date` descending, then by `CreatedOn` descending.",
+        "Each item includes wallet name and category name for display.",
+    })]
 public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TXN-GET-ALL-001: GetTransactions_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TXN-GET-ALL-001: missing token returns 401")]
     public async Task GetTransactions_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -26,7 +39,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TXN-GET-ALL-002: GetTransactions_WithOwnedTransactions_ReturnsOk")]
+    [Fact(DisplayName = "TXN-GET-ALL-002: owned transactions return 200")]
     public async Task GetTransactions_WithOwnedTransactions_ReturnsOk()
     {
         // Arrange
@@ -54,7 +67,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body.Total.ShouldBe(1);
     }
 
-    [Fact(DisplayName = "TXN-GET-ALL-003: GetTransactions_WithMultipleUsers_ReturnsOnlyCurrentUsersTransactions")]
+    [Fact(DisplayName = "TXN-GET-ALL-003: multiple users returns only current user's transactions")]
     public async Task GetTransactions_WithMultipleUsers_ReturnsOnlyCurrentUsersTransactions()
     {
         // Arrange
@@ -88,7 +101,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Items.ShouldContain(x => x.Id == ownTransaction!.Id);
     }
 
-    [Fact(DisplayName = "TXN-GET-ALL-004: GetTransactions_WithWalletFilter_ReturnsMatchingTransactions")]
+    [Fact(DisplayName = "TXN-GET-ALL-004: wallet filter returns matching transactions")]
     public async Task GetTransactions_WithWalletFilter_ReturnsMatchingTransactions()
     {
         // Arrange
@@ -116,7 +129,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Items.ShouldContain(x => x.Id == transactionA!.Id && x.WalletId == walletA.Id);
     }
 
-    [Fact(DisplayName = "TXN-GET-ALL-005: GetTransactions_WithIncomeTypeFilter_ReturnsOnlyIncomeTransactions")]
+    [Fact(DisplayName = "TXN-GET-ALL-005: income type filter returns only income transactions")]
     public async Task GetTransactions_WithIncomeTypeFilter_ReturnsOnlyIncomeTransactions()
     {
         // Arrange
@@ -146,7 +159,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body.Items.ShouldAllBe(x => x.Type == TransactionType.Income);
     }
 
-    [Fact(DisplayName = "TXN-GET-ALL-006: GetTransactions_WithExpenseTypeFilter_ReturnsOnlyExpenseTransactions")]
+    [Fact(DisplayName = "TXN-GET-ALL-006: expense type filter returns only expense transactions")]
     public async Task GetTransactions_WithExpenseTypeFilter_ReturnsOnlyExpenseTransactions()
     {
         // Arrange
@@ -176,7 +189,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body.Items.ShouldAllBe(x => x.Type == TransactionType.Expense);
     }
 
-    [Fact(DisplayName = "TXN-GET-ALL-007: GetTransactions_WithDateRangeFilter_ReturnsTransactionsWithinRange")]
+    [Fact(DisplayName = "TXN-GET-ALL-007: date range filter returns transactions within range")]
     public async Task GetTransactions_WithDateRangeFilter_ReturnsTransactionsWithinRange()
     {
         // Arrange
@@ -203,7 +216,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Items.ShouldContain(x => x.Id == inRange!.Id);
     }
 
-    [Fact(DisplayName = "TXN-GET-ALL-008: GetTransactions_WithCategoryFilter_ReturnsMatchingTransactions")]
+    [Fact(DisplayName = "TXN-GET-ALL-008: category filter returns matching transactions")]
     public async Task GetTransactions_WithCategoryFilter_ReturnsMatchingTransactions()
     {
         // Arrange
@@ -234,7 +247,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Items.ShouldContain(x => x.Id == matching!.Id && x.CategoryId == firstCategory.Id);
     }
 
-    [Fact(DisplayName = "TXN-GET-ALL-010: GetTransactions_WithSingleWalletIdsFilter_ReturnsMatchingTransactions")]
+    [Fact(DisplayName = "TXN-GET-ALL-010: single wallet ids filter returns matching transactions")]
     public async Task GetTransactions_WithSingleWalletIdsFilter_ReturnsMatchingTransactions()
     {
         // Arrange
@@ -262,7 +275,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Items.ShouldContain(x => x.Id == transactionA!.Id && x.WalletId == walletA.Id);
     }
 
-    [Fact(DisplayName = "TXN-GET-ALL-011: GetTransactions_WithMultipleWalletIdsFilter_ReturnsTransactionsFromAllSpecifiedWallets")]
+    [Fact(DisplayName = "TXN-GET-ALL-011: multiple wallet ids filter returns transactions from all specified wallets")]
     public async Task GetTransactions_WithMultipleWalletIdsFilter_ReturnsTransactionsFromAllSpecifiedWallets()
     {
         // Arrange
@@ -297,7 +310,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body.Items.ShouldNotContain(x => x.WalletId == walletC!.Id);
     }
 
-    [Fact(DisplayName = "TXN-GET-ALL-012: GetTransactions_WithWalletIdsFilterCombinedWithTypeFilter_ReturnsMatchingTransactions")]
+    [Fact(DisplayName = "TXN-GET-ALL-012: wallet ids filter combined with type filter returns matching transactions")]
     public async Task GetTransactions_WithWalletIdsFilterCombinedWithTypeFilter_ReturnsMatchingTransactions()
     {
         // Arrange
@@ -331,7 +344,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body.Items.ShouldAllBe(x => x.WalletId == walletA.Id && x.Type == TransactionType.Income);
     }
 
-    [Fact(DisplayName = "TXN-GET-ALL-009: GetTransactions_WithPagination_ReturnsCorrectSubset")]
+    [Fact(DisplayName = "TXN-GET-ALL-009: pagination returns correct subset")]
     public async Task GetTransactions_WithPagination_ReturnsCorrectSubset()
     {
         // Arrange

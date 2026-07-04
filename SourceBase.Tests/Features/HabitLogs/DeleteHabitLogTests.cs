@@ -8,9 +8,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.HabitLogs;
 
+[EndpointFact(
+    Feature = "HabitLogs",
+    Name = "Delete Habit Log",
+    Route = "DELETE /api/habit-logs/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete a habit log entry, so that I can remove an incorrect or unwanted log from my history.",
+    Description = new[]
+    {
+        "Client provides the habit log `id` (route).",
+        "If the log doesn't exist or belongs to a different user → `404 Not Found`.",
+        "The log entry is removed from the database.",
+    })]
 public class DeleteHabitLogTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "HLOG-DELETE-001: DeleteHabitLog_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "HLOG-DELETE-001: without token returns 401")]
     public async Task DeleteHabitLog_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +35,7 @@ public class DeleteHabitLogTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "HLOG-DELETE-002: DeleteHabitLog_WithValidId_ReturnsOkAndRemovesLog")]
+    [Fact(DisplayName = "HLOG-DELETE-002: valid id returns 200 and removes log")]
     public async Task DeleteHabitLog_WithValidId_ReturnsOkAndRemovesLog()
     {
         // Arrange
@@ -50,7 +62,7 @@ public class DeleteHabitLogTests(WebAppFactory factory) : IClassFixture<WebAppFa
         list!.Items.ShouldNotContain(l => l.Id == id);
     }
 
-    [Fact(DisplayName = "HLOG-DELETE-003: DeleteHabitLog_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "HLOG-DELETE-003: unknown id returns 404")]
     public async Task DeleteHabitLog_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -63,7 +75,7 @@ public class DeleteHabitLogTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "HLOG-DELETE-004: DeleteHabitLog_WithOtherUsersLog_ReturnsNotFound")]
+    [Fact(DisplayName = "HLOG-DELETE-004: other user's log returns 404")]
     public async Task DeleteHabitLog_WithOtherUsersLog_ReturnsNotFound()
     {
         // Arrange

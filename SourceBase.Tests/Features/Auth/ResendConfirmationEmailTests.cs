@@ -8,9 +8,23 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Resend Confirmation Email",
+    Route = "POST /api/auth/resendConfirmationEmail",
+    Auth = "Anonymous",
+    UseCase = "As a user whose confirmation email expired or was lost, I want to request a new confirmation code, so that I can complete my email verification.",
+    Description = new[]
+    {
+        "Client sends their registered `email`.",
+        "If the user is not found → `404 Not Found`.",
+        "If the email is already confirmed → `400 Bad Request`.",
+        "A new OTP code is generated and stored with a fresh expiry timestamp.",
+        "A new confirmation email is sent to the user.",
+    })]
 public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "RESEND-CONF-001: ResendConfirmationEmail_WithValidEmail_ReturnsOk")]
+    [Fact(DisplayName = "RESEND-CONF-001: valid email returns 200")]
     public async Task ResendConfirmationEmail_WithValidEmail_ReturnsOk()
     {
         // Arrange
@@ -50,7 +64,7 @@ public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture
         latestEmail.Body.ShouldNotBeNullOrWhiteSpace();
     }
 
-    [Fact(DisplayName = "RESEND-CONF-002: ResendConfirmationEmail_WithConfirmedEmail_ReturnsBadRequest")]
+    [Fact(DisplayName = "RESEND-CONF-002: confirmed email returns 400")]
     public async Task ResendConfirmationEmail_WithConfirmedEmail_ReturnsBadRequest()
     {
         // Arrange
@@ -79,7 +93,7 @@ public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "RESEND-CONF-003: ResendConfirmationEmail_WithUnknownEmail_ReturnsNotFound")]
+    [Fact(DisplayName = "RESEND-CONF-003: unknown email returns 404")]
     public async Task ResendConfirmationEmail_WithUnknownEmail_ReturnsNotFound()
     {
         // Arrange
@@ -95,7 +109,7 @@ public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "RESEND-CONF-004: ResendConfirmationEmail_WithInvalidEmail_ReturnsBadRequest")]
+    [Fact(DisplayName = "RESEND-CONF-004: invalid email returns 400")]
     public async Task ResendConfirmationEmail_WithInvalidEmail_ReturnsBadRequest()
     {
         // Arrange

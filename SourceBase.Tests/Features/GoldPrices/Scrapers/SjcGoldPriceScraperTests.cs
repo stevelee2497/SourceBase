@@ -9,7 +9,7 @@ public class SjcGoldPriceScraperTests
 {
     private static readonly SjcGoldPriceScraper Scraper = new(NullLogger<SjcGoldPriceScraper>.Instance);
 
-    [Fact(DisplayName = "SJC-SCRAPER-001: ParseAsync_WithRealApiResponse_ReturnsSjcPrices")]
+    [Fact(DisplayName = "SJC-SCRAPER-001: real API response returns SJC prices")]
     public async Task ParseAsync_WithRealApiResponse_ReturnsSjcPrices()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class SjcGoldPriceScraperTests
         result!.Value.SellPrice.ShouldBe(15_180_000m);
     }
 
-    [Fact(DisplayName = "SJC-SCRAPER-002: ParseAsync_WithMissingSjc_ReturnsNull")]
+    [Fact(DisplayName = "SJC-SCRAPER-002: missing SJC returns null")]
     public async Task ParseAsync_WithMissingSjc_ReturnsNull()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class SjcGoldPriceScraperTests
         result.ShouldBeNull();
     }
 
-    [Fact(DisplayName = "SJC-SCRAPER-003: ParseAsync_WithMissingDataArray_ReturnsNull")]
+    [Fact(DisplayName = "SJC-SCRAPER-003: missing data array returns null")]
     public async Task ParseAsync_WithMissingDataArray_ReturnsNull()
     {
         // Arrange

@@ -12,9 +12,25 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transactions;
 
+[EndpointFact(
+    Feature = "Transactions",
+    Name = "Update Transaction",
+    Route = "PATCH /api/transactions/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to partially update a transaction's amount, type, date, note, category, or wallet, so that I can correct mistakes, add missing details, or move a transaction to a different wallet.",
+    Description = new[]
+    {
+        "Client sends the transaction `id` (route) and any subset of: `amount`, `type`, `date`, `note`, `categoryId`, `walletId`. All fields are optional — only provided (non-null) fields are updated.",
+        "If the transaction doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If the transaction is part of a transfer → `400 Bad Request` (edit the transfer instead).",
+        "If a `walletId` is provided but doesn't exist or belongs to a different user → `400 Bad Request`.",
+        "If a `categoryId` is provided but doesn't exist or isn't accessible to the user → `400 Bad Request`.",
+        "The transaction fields are updated. Both the old and new wallet's computed balance automatically reflect the change on next query.",
+        "Returns the updated transaction's `Id`.",
+    })]
 public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TXN-UPDATE-001: UpdateTransaction_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TXN-UPDATE-001: no token returns 401")]
     public async Task UpdateTransaction_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -33,7 +49,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TXN-UPDATE-002: UpdateTransaction_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "TXN-UPDATE-002: valid data returns 200")]
     public async Task UpdateTransaction_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -78,7 +94,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         updated.CategoryId.ShouldBe(updatedCategory.Id);
     }
 
-    [Fact(DisplayName = "TXN-UPDATE-003: UpdateTransaction_WhenAmountChanges_RecomputesWalletBalance")]
+    [Fact(DisplayName = "TXN-UPDATE-003: amount change recomputes wallet balance")]
     public async Task UpdateTransaction_WhenAmountChanges_RecomputesWalletBalance()
     {
         // Arrange
@@ -112,7 +128,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         walletData!.Balance.ShouldBe(140m);
     }
 
-    [Fact(DisplayName = "TXN-UPDATE-004: UpdateTransaction_WhenTypeChanges_RecomputesWalletBalance")]
+    [Fact(DisplayName = "TXN-UPDATE-004: type change recomputes wallet balance")]
     public async Task UpdateTransaction_WhenTypeChanges_RecomputesWalletBalance()
     {
         // Arrange
@@ -150,7 +166,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         walletData!.Balance.ShouldBe(70m);
     }
 
-    [Fact(DisplayName = "TXN-UPDATE-005: UpdateTransaction_WithZeroOrNegativeAmount_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-UPDATE-005: zero or negative amount returns 400")]
     public async Task UpdateTransaction_WithZeroOrNegativeAmount_ReturnsBadRequest()
     {
         // Arrange
@@ -190,7 +206,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         negativeResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-UPDATE-006: UpdateTransaction_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "TXN-UPDATE-006: unknown id returns 404")]
     public async Task UpdateTransaction_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -213,7 +229,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TXN-UPDATE-007: UpdateTransaction_WithOtherUsersTransaction_ReturnsNotFound")]
+    [Fact(DisplayName = "TXN-UPDATE-007: other user's transaction returns 404")]
     public async Task UpdateTransaction_WithOtherUsersTransaction_ReturnsNotFound()
     {
         // Arrange
@@ -248,7 +264,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TXN-UPDATE-008: UpdateTransaction_WithTransferTransaction_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-UPDATE-008: transfer transaction returns 400")]
     public async Task UpdateTransaction_WithTransferTransaction_ReturnsBadRequest()
     {
         // Arrange
@@ -285,7 +301,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         content.ShouldContain("Transfer transactions cannot be edited directly");
     }
 
-    [Fact(DisplayName = "TXN-UPDATE-009: UpdateTransaction_WithWalletId_MovesTransactionAndRecalculatesBalances")]
+    [Fact(DisplayName = "TXN-UPDATE-009: wallet id moves transaction and recalculates balances")]
     public async Task UpdateTransaction_WithWalletId_MovesTransactionAndRecalculatesBalances()
     {
         // Arrange
@@ -326,7 +342,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         txnDetail!.WalletId.ShouldBe(walletB.Id);
     }
 
-    [Fact(DisplayName = "TXN-UPDATE-010: UpdateTransaction_WithInvalidWalletId_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-UPDATE-010: invalid wallet id returns 400")]
     public async Task UpdateTransaction_WithInvalidWalletId_ReturnsBadRequest()
     {
         // Arrange
@@ -353,7 +369,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-UPDATE-011: UpdateTransaction_WithOtherUsersWalletId_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-UPDATE-011: other user's wallet id returns 400")]
     public async Task UpdateTransaction_WithOtherUsersWalletId_ReturnsBadRequest()
     {
         // Arrange
@@ -384,7 +400,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-UPDATE-012: UpdateTransaction_WithEmptyId_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-UPDATE-012: empty id returns 400")]
     public async Task UpdateTransaction_WithEmptyId_ReturnsBadRequest()
     {
         // Arrange

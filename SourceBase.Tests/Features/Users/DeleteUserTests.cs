@@ -9,9 +9,22 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Users;
 
+[EndpointFact(
+    Feature = "Users",
+    Name = "Delete User",
+    Route = "DELETE /api/users/{id}",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to delete a user account, so that I can remove deactivated or unwanted accounts from the system.",
+    Description = new[]
+    {
+        "Admin provides the target user `id` (route).",
+        "If the user doesn't exist → `404 Not Found`.",
+        "The user record is deleted from the database.",
+        "Any existing tokens issued to that user are implicitly invalidated because the user no longer exists.",
+    })]
 public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "USERS-DELETE-001: DeleteUser_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "USERS-DELETE-001: no token returns 401")]
     public async Task DeleteUser_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -24,7 +37,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "USERS-DELETE-002: DeleteUser_WithNonAdminUser_ReturnsForbidden")]
+    [Fact(DisplayName = "USERS-DELETE-002: non-admin user returns 403")]
     public async Task DeleteUser_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -47,7 +60,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "USERS-DELETE-003: DeleteUser_WithExistingUser_ReturnsOk")]
+    [Fact(DisplayName = "USERS-DELETE-003: existing user returns 200")]
     public async Task DeleteUser_WithExistingUser_ReturnsOk()
     {
         // Arrange
@@ -74,7 +87,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         users!.Items.ShouldNotContain(x => x.Id == createBody.Id);
     }
 
-    [Fact(DisplayName = "USERS-DELETE-004: DeleteUser_WithUnknownUser_ReturnsNotFound")]
+    [Fact(DisplayName = "USERS-DELETE-004: unknown user returns 404")]
     public async Task DeleteUser_WithUnknownUser_ReturnsNotFound()
     {
         // Arrange
@@ -87,7 +100,7 @@ public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "USERS-DELETE-005: DeleteUser_WithDeletedUser_RevokesExistingToken")]
+    [Fact(DisplayName = "USERS-DELETE-005: deleted user revokes existing token")]
     public async Task DeleteUser_WithDeletedUser_RevokesExistingToken()
     {
         // Arrange

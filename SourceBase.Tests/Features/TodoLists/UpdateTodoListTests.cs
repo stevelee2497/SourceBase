@@ -8,9 +8,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.TodoLists;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Update Todo List",
+    Route = "PATCH /api/todo-lists/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to partially update one of my todo lists, so that I can keep its name relevant to my tasks without sending all fields.",
+    Description = new[]
+    {
+        "Client sends the list `id` (route) and any subset of: `name`. All fields are optional — only provided (non-null) fields are updated.",
+        "If the list doesn't exist or belongs to a different user → `404 Not Found`.",
+        "Returns the updated list's `Id`.",
+    })]
 public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TODOLISTS-UPDATE-001: UpdateTodoList_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TODOLISTS-UPDATE-001: missing token returns 401")]
     public async Task UpdateTodoList_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +35,7 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TODOLISTS-UPDATE-002: UpdateTodoList_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "TODOLISTS-UPDATE-002: valid data returns 200")]
     public async Task UpdateTodoList_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -40,7 +52,7 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body!.Id.ShouldBe(created.Id);
     }
 
-    [Fact(DisplayName = "TODOLISTS-UPDATE-003: UpdateTodoList_OwnedByAnotherUser_ReturnsNotFound")]
+    [Fact(DisplayName = "TODOLISTS-UPDATE-003: list owned by another user returns 404")]
     public async Task UpdateTodoList_OwnedByAnotherUser_ReturnsNotFound()
     {
         // Arrange
@@ -57,7 +69,7 @@ public class UpdateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TODOLISTS-UPDATE-004: UpdateTodoList_WithEmptyId_ReturnsBadRequest")]
+    [Fact(DisplayName = "TODOLISTS-UPDATE-004: empty id returns 400")]
     public async Task UpdateTodoList_WithEmptyId_ReturnsBadRequest()
     {
         // Arrange

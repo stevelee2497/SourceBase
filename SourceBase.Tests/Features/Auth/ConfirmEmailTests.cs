@@ -7,9 +7,23 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Confirm Email",
+    Route = "POST /api/auth/confirmEmail",
+    Auth = "Anonymous",
+    UseCase = "As a newly registered user, I want to confirm my email with the OTP code I received, so that I can unlock login access to my account.",
+    Description = new[]
+    {
+        "Client sends `email` and `code` (6-character OTP).",
+        "The server looks up the user by email — if not found → `401 Unauthorized`.",
+        "The OTP code is validated against the stored code and its expiry timestamp.",
+        "If invalid or expired → `401 Unauthorized`.",
+        "On success, `EmailConfirmed` is set to `true` and the default `User` role is assigned to the account.",
+    })]
 public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "CONFIRM-EMAIL-001: ConfirmEmail_WithValidCode_ReturnsOk")]
+    [Fact(DisplayName = "CONFIRM-EMAIL-001: valid code returns 200")]
     public async Task ConfirmEmail_WithValidCode_ReturnsOk()
     {
         // Arrange
@@ -46,7 +60,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
     }
 
 
-    [Fact(DisplayName = "CONFIRM-EMAIL-002: ConfirmEmail_WithInvalidCode_ReturnsUnauthorized")]
+    [Fact(DisplayName = "CONFIRM-EMAIL-002: invalid code returns 401")]
     public async Task ConfirmEmail_WithInvalidCode_ReturnsUnauthorized()
     {
         // Arrange
@@ -72,7 +86,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
     }
 
 
-    [Fact(DisplayName = "CONFIRM-EMAIL-003: ConfirmEmail_WithExpiredCode_ReturnsUnauthorized")]
+    [Fact(DisplayName = "CONFIRM-EMAIL-003: expired code returns 401")]
     public async Task ConfirmEmail_WithExpiredCode_ReturnsUnauthorized()
     {
         // Arrange
@@ -100,7 +114,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
     }
 
 
-    [Fact(DisplayName = "CONFIRM-EMAIL-004: ConfirmEmail_WithUnknownEmail_ReturnsUnauthorized")]
+    [Fact(DisplayName = "CONFIRM-EMAIL-004: unknown email returns 401")]
     public async Task ConfirmEmail_WithUnknownEmail_ReturnsUnauthorized()
     {
         // Arrange
@@ -118,7 +132,7 @@ public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFact
     }
 
 
-    [Fact(DisplayName = "CONFIRM-EMAIL-005: ConfirmEmail_WithInvalidPayload_ReturnsBadRequest")]
+    [Fact(DisplayName = "CONFIRM-EMAIL-005: invalid payload returns 400")]
     public async Task ConfirmEmail_WithInvalidPayload_ReturnsBadRequest()
     {
         // Arrange

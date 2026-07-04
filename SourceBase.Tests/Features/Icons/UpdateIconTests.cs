@@ -8,9 +8,23 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Icons;
 
+[EndpointFact(
+    Feature = "Icons",
+    Name = "Update Icon",
+    Route = "PATCH /api/icons/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to partially update a custom icon's value, name, group, or sort order, so that I can correct or reorganise it without resending all fields.",
+    Description = new[]
+    {
+        "Client sends the icon `id` (route) and any subset of: `value`, `name`, `group`, `sortOrder`. All fields are optional — only provided (non-null) fields are updated.",
+        "If the icon doesn't exist → `404 Not Found`.",
+        "If the icon is a system icon (`IsSystem = true`) → `403 Forbidden`.",
+        "If `value` or `name` is provided but empty → `400 Bad Request`.",
+        "Returns the updated icon's `Id`.",
+    })]
 public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "ICONS-UPDATE-001: UpdateIcon_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "ICONS-UPDATE-001: without token returns 401")]
     public async Task UpdateIcon_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -29,7 +43,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "ICONS-UPDATE-002: UpdateIcon_WithValidRequest_ReturnsOk")]
+    [Fact(DisplayName = "ICONS-UPDATE-002: valid request returns 200")]
     public async Task UpdateIcon_WithValidRequest_ReturnsOk()
     {
         // Arrange
@@ -59,7 +73,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         body!.Id.ShouldBe(created.Id);
     }
 
-    [Fact(DisplayName = "ICONS-UPDATE-003: UpdateIcon_PersistsChanges")]
+    [Fact(DisplayName = "ICONS-UPDATE-003: persists changes")]
     public async Task UpdateIcon_PersistsChanges()
     {
         // Arrange
@@ -95,7 +109,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         updated.SortOrder.ShouldBe(99);
     }
 
-    [Fact(DisplayName = "ICONS-UPDATE-004: UpdateIcon_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "ICONS-UPDATE-004: unknown id returns 404")]
     public async Task UpdateIcon_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -114,7 +128,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "ICONS-UPDATE-005: UpdateIcon_OnSystemIcon_ReturnsForbidden")]
+    [Fact(DisplayName = "ICONS-UPDATE-005: system icon returns 403")]
     public async Task UpdateIcon_OnSystemIcon_ReturnsForbidden()
     {
         // Arrange
@@ -137,7 +151,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "ICONS-UPDATE-006: UpdateIcon_WithEmptyValue_ReturnsBadRequest")]
+    [Fact(DisplayName = "ICONS-UPDATE-006: empty value returns 400")]
     public async Task UpdateIcon_WithEmptyValue_ReturnsBadRequest()
     {
         // Arrange
@@ -165,7 +179,7 @@ public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "ICONS-UPDATE-007: UpdateIcon_WithEmptyId_ReturnsBadRequest")]
+    [Fact(DisplayName = "ICONS-UPDATE-007: empty id returns 400")]
     public async Task UpdateIcon_WithEmptyId_ReturnsBadRequest()
     {
         // Arrange

@@ -8,9 +8,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.TimeSheets;
 
+[EndpointFact(
+    Feature = "TimeSheets",
+    Name = "Delete Time Sheet",
+    Route = "DELETE /api/time-sheets/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete a time entry I no longer need, so that my records remain accurate.",
+    Description = new[]
+    {
+        "Client provides the entry `id` as a route parameter.",
+        "If the entry does not exist or belongs to a different user → `404 Not Found`.",
+        "The entry is permanently removed from the database.",
+    })]
 public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TIMESHEET-DELETE-001: DeleteTimeSheet_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TIMESHEET-DELETE-001: without token returns 401")]
     public async Task DeleteTimeSheet_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +35,7 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TIMESHEET-DELETE-002: DeleteTimeSheet_ExistingEntry_ReturnsOk")]
+    [Fact(DisplayName = "TIMESHEET-DELETE-002: existing entry returns 200")]
     public async Task DeleteTimeSheet_ExistingEntry_ReturnsOk()
     {
         // Arrange
@@ -47,7 +59,7 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         getResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TIMESHEET-DELETE-003: DeleteTimeSheet_WithNonExistentId_ReturnsNotFound")]
+    [Fact(DisplayName = "TIMESHEET-DELETE-003: non-existent id returns 404")]
     public async Task DeleteTimeSheet_WithNonExistentId_ReturnsNotFound()
     {
         // Arrange
@@ -60,7 +72,7 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TIMESHEET-DELETE-004: DeleteTimeSheet_WithOtherUsersEntry_ReturnsNotFound")]
+    [Fact(DisplayName = "TIMESHEET-DELETE-004: other user's entry returns 404")]
     public async Task DeleteTimeSheet_WithOtherUsersEntry_ReturnsNotFound()
     {
         // Arrange

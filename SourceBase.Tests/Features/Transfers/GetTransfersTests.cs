@@ -9,9 +9,22 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transfers;
 
+[EndpointFact(
+    Feature = "Transfers",
+    Name = "Get Transfers",
+    Route = "GET /api/transfers",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to view my transfer history, so that I can track money movements between my wallets.",
+    Description = new[]
+    {
+        "Client sends optional `walletId` (filter by either from or to wallet), `dateFrom`, `dateTo`, plus paging parameters.",
+        "Returns only transfers belonging to the authenticated user.",
+        "Results are ordered by `date` descending.",
+        "Each item includes from/to wallet names and amount.",
+    })]
 public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TRANSFER-GET-001: GetTransfers_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TRANSFER-GET-001: missing token returns 401")]
     public async Task GetTransfers_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -24,7 +37,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-002: GetTransfers_WithOwnedTransfers_ReturnsOk")]
+    [Fact(DisplayName = "TRANSFER-GET-002: owned transfers return 200")]
     public async Task GetTransfers_WithOwnedTransfers_ReturnsOk()
     {
         // Arrange
@@ -49,7 +62,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body.Total.ShouldBe(1);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-003: GetTransfers_ReturnsTransferDetails")]
+    [Fact(DisplayName = "TRANSFER-GET-003: returns complete transfer details")]
     public async Task GetTransfers_ReturnsTransferDetails()
     {
         // Arrange
@@ -82,7 +95,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         item.Note.ShouldBe(note);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-004: GetTransfers_WithMultipleUsers_ReturnsOnlyCurrentUsersTransfers")]
+    [Fact(DisplayName = "TRANSFER-GET-004: multiple users returns only user's transfers")]
     public async Task GetTransfers_WithMultipleUsers_ReturnsOnlyCurrentUsersTransfers()
     {
         // Arrange
@@ -114,7 +127,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Items.ShouldContain(x => x.Id == ownTransfer!.Id);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-005: GetTransfers_WithWalletFilter_ReturnsMatchingTransfers")]
+    [Fact(DisplayName = "TRANSFER-GET-005: wallet filter returns matching transfers")]
     public async Task GetTransfers_WithWalletFilter_ReturnsMatchingTransfers()
     {
         // Arrange
@@ -141,7 +154,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Items.ShouldContain(x => x.Id == matching!.Id);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-006: GetTransfers_WithDateRange_ReturnsTransfersWithinRange")]
+    [Fact(DisplayName = "TRANSFER-GET-006: date range returns transfers within range")]
     public async Task GetTransfers_WithDateRange_ReturnsTransfersWithinRange()
     {
         // Arrange
@@ -167,7 +180,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Items.ShouldContain(x => x.Id == inRange!.Id);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-007: GetTransfers_WithPagination_ReturnsCorrectSubset")]
+    [Fact(DisplayName = "TRANSFER-GET-007: pagination returns correct subset")]
     public async Task GetTransfers_WithPagination_ReturnsCorrectSubset()
     {
         // Arrange
@@ -195,7 +208,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body.Items[0].Id.ShouldBe(second!.Id);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-008: GetTransfers_WithNoTransfers_ReturnsEmptyList")]
+    [Fact(DisplayName = "TRANSFER-GET-008: no transfers returns empty list")]
     public async Task GetTransfers_WithNoTransfers_ReturnsEmptyList()
     {
         // Arrange

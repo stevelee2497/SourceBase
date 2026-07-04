@@ -10,9 +10,23 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Categories;
 
+[EndpointFact(
+    Feature = "Categories",
+    Name = "Delete Category",
+    Route = "DELETE /api/categories/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete one of my custom categories, so that I can remove categories I no longer use.",
+    Description = new[]
+    {
+        "Client provides the category `id` (route).",
+        "If the category doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If the category is a system category → `403 Forbidden`.",
+        "If any transaction references this category → `400 Bad Request` with message `\"Category is in use by transactions\"`.",
+        "The category is deleted.",
+    })]
 public class DeleteCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "CATS-DELETE-001: DeleteCategory_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "CATS-DELETE-001: no token returns 401")]
     public async Task DeleteCategory_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -25,7 +39,7 @@ public class DeleteCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "CATS-DELETE-002: DeleteCategory_WithOwnedUnusedCategory_ReturnsOk")]
+    [Fact(DisplayName = "CATS-DELETE-002: owned unused category returns 200")]
     public async Task DeleteCategory_WithOwnedUnusedCategory_ReturnsOk()
     {
         // Arrange
@@ -48,7 +62,7 @@ public class DeleteCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         categories!.ShouldNotContain(x => x.Id == create.Id);
     }
 
-    [Fact(DisplayName = "CATS-DELETE-003: DeleteCategory_WithSystemCategory_ReturnsForbidden")]
+    [Fact(DisplayName = "CATS-DELETE-003: system category returns 403")]
     public async Task DeleteCategory_WithSystemCategory_ReturnsForbidden()
     {
         // Arrange
@@ -66,7 +80,7 @@ public class DeleteCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "CATS-DELETE-004: DeleteCategory_WithOtherUsersCategory_ReturnsNotFound")]
+    [Fact(DisplayName = "CATS-DELETE-004: other user's category returns 404")]
     public async Task DeleteCategory_WithOtherUsersCategory_ReturnsNotFound()
     {
         // Arrange
@@ -84,7 +98,7 @@ public class DeleteCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "CATS-DELETE-005: DeleteCategory_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "CATS-DELETE-005: unknown id returns 404")]
     public async Task DeleteCategory_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -97,7 +111,7 @@ public class DeleteCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "CATS-DELETE-006: DeleteCategory_WithReferencedTransactions_ReturnsBadRequest")]
+    [Fact(DisplayName = "CATS-DELETE-006: category with referenced transactions returns 400")]
     public async Task DeleteCategory_WithReferencedTransactions_ReturnsBadRequest()
     {
         // Arrange

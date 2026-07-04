@@ -8,9 +8,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Users;
 
+[EndpointFact(
+    Feature = "Users",
+    Name = "Get Users",
+    Route = "GET /api/users",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to list all registered users with paging and ordering, so that I can manage and audit user accounts.",
+    Description = new[]
+    {
+        "Admin sends optional paging parameters (`page`, `limit`, `order`, `orderBy`).",
+        "Returns a paginated list of users with their profile fields and roles.",
+    })]
 public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "USERS-GET-001: GetUsers_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "USERS-GET-001: missing token returns 401")]
     public async Task GetUsers_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +34,7 @@ public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "USERS-GET-002: GetUsers_WithNonAdminUser_ReturnsForbidden")]
+    [Fact(DisplayName = "USERS-GET-002: non-admin user returns 403")]
     public async Task GetUsers_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -36,7 +47,7 @@ public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "USERS-GET-003: GetUsers_WithAdminUser_ReturnsCreatedUsers")]
+    [Fact(DisplayName = "USERS-GET-003: admin user returns 200 and created users")]
     public async Task GetUsers_WithAdminUser_ReturnsCreatedUsers()
     {
         // Arrange
@@ -62,7 +73,7 @@ public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.Items.ShouldContain(x => x.Id == createBody!.Id && x.Email == managedEmail && x.Roles.Contains("User"));
     }
 
-    [Fact(DisplayName = "USERS-GET-004: GetUsers_WithPagingAndOrdering_ReturnsRequestedPage")]
+    [Fact(DisplayName = "USERS-GET-004: paging and ordering returns requested page")]
     public async Task GetUsers_WithPagingAndOrdering_ReturnsRequestedPage()
     {
         // Arrange

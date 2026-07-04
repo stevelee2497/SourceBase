@@ -10,9 +10,23 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transactions;
 
+[EndpointFact(
+    Feature = "Transactions",
+    Name = "Create Transaction",
+    Route = "POST /api/transactions",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to record an income or expense transaction on one of my wallets, so that my wallet balance stays accurate and I can track where my money goes.",
+    Description = new[]
+    {
+        "Client sends `walletId` (required), `amount` (required, positive decimal), `type` (required: `Income` or `Expense`), `date` (required), optional `note`, optional `categoryId`.",
+        "If `walletId` doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If `categoryId` is provided but doesn't exist or belongs to a different user → `404 Not Found`.",
+        "The transaction is created and associated with the authenticated user.",
+        "Returns the new transaction's `Id`.",
+    })]
 public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TXN-CREATE-001: CreateTransaction_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TXN-CREATE-001: missing token returns 401")]
     public async Task CreateTransaction_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -32,7 +46,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-002: CreateTransaction_WithIncome_UpdatesWalletBalance")]
+    [Fact(DisplayName = "TXN-CREATE-002: income transaction updates wallet balance correctly")]
     public async Task CreateTransaction_WithIncome_UpdatesWalletBalance()
     {
         // Arrange
@@ -67,7 +81,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         walletData!.Balance.ShouldBe(125m);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-003: CreateTransaction_WithExpense_UpdatesWalletBalance")]
+    [Fact(DisplayName = "TXN-CREATE-003: expense transaction updates wallet balance correctly")]
     public async Task CreateTransaction_WithExpense_UpdatesWalletBalance()
     {
         // Arrange
@@ -102,7 +116,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         walletData!.Balance.ShouldBe(70m);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-004: CreateTransaction_WithMissingWalletId_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-CREATE-004: missing wallet id returns 400")]
     public async Task CreateTransaction_WithMissingWalletId_ReturnsBadRequest()
     {
         // Arrange
@@ -125,7 +139,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-005: CreateTransaction_WithMissingAmount_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-CREATE-005: missing amount returns 400")]
     public async Task CreateTransaction_WithMissingAmount_ReturnsBadRequest()
     {
         // Arrange
@@ -152,7 +166,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-006: CreateTransaction_WithZeroOrNegativeAmount_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-CREATE-006: zero or negative amount returns 400")]
     public async Task CreateTransaction_WithZeroOrNegativeAmount_ReturnsBadRequest()
     {
         // Arrange
@@ -189,7 +203,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         negativeResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-007: CreateTransaction_WithMissingDate_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-CREATE-007: missing date returns 400")]
     public async Task CreateTransaction_WithMissingDate_ReturnsBadRequest()
     {
         // Arrange
@@ -216,7 +230,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-008: CreateTransaction_WithMissingType_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-CREATE-008: missing type returns 400")]
     public async Task CreateTransaction_WithMissingType_ReturnsBadRequest()
     {
         // Arrange
@@ -243,7 +257,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-009: CreateTransaction_WithOtherUsersWallet_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-CREATE-009: other user's wallet returns 400")]
     public async Task CreateTransaction_WithOtherUsersWallet_ReturnsBadRequest()
     {
         // Arrange
@@ -272,7 +286,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-010: CreateTransaction_WithOtherUsersCategory_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-CREATE-010: other user's category returns 400")]
     public async Task CreateTransaction_WithOtherUsersCategory_ReturnsBadRequest()
     {
         // Arrange
@@ -301,7 +315,7 @@ public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TXN-CREATE-011: CreateTransaction_WithoutCategory_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-CREATE-011: missing category returns 400")]
     public async Task CreateTransaction_WithoutCategory_ReturnsBadRequest()
     {
         // Arrange

@@ -9,9 +9,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Todo;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Update Todo",
+    Route = "PATCH /api/todos/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to partially update a todo item's title, date, or status, so that I can keep my task list current without sending all fields.",
+    Description = new[]
+    {
+        "Client sends the todo `id` (route) and any subset of: `title`, `date`, `status`. All fields are optional — only provided (non-null) fields are updated.",
+        "If the item doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If `title` is provided but empty → `400 Bad Request`.",
+    })]
 public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TODOS-UPDATE-001: UpdateTodo_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TODOS-UPDATE-001: without token returns 401")]
     public async Task UpdateTodo_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -29,7 +41,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TODOS-UPDATE-002: UpdateTodo_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "TODOS-UPDATE-002: valid data returns 200")]
     public async Task UpdateTodo_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -61,7 +73,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         updated.Status.ShouldBe(TodoItemStatus.Completed);
     }
 
-    [Fact(DisplayName = "TODOS-UPDATE-003: UpdateTodo_WithEmptyTitle_ReturnsBadRequest")]
+    [Fact(DisplayName = "TODOS-UPDATE-003: empty title returns 400")]
     public async Task UpdateTodo_WithEmptyTitle_ReturnsBadRequest()
     {
         // Arrange
@@ -84,7 +96,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TODOS-UPDATE-004: UpdateTodo_WithNonExistentId_ReturnsNotFound")]
+    [Fact(DisplayName = "TODOS-UPDATE-004: non-existent id returns 404")]
     public async Task UpdateTodo_WithNonExistentId_ReturnsNotFound()
     {
         // Arrange
@@ -102,7 +114,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TODOS-UPDATE-005: UpdateTodo_WithOtherUsersTodo_ReturnsNotFound")]
+    [Fact(DisplayName = "TODOS-UPDATE-005: other user's todo returns 404")]
     public async Task UpdateTodo_WithOtherUsersTodo_ReturnsNotFound()
     {
         // Arrange
@@ -129,7 +141,7 @@ public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TODOS-UPDATE-006: UpdateTodo_WithEmptyId_ReturnsBadRequest")]
+    [Fact(DisplayName = "TODOS-UPDATE-006: empty id returns 400")]
     public async Task UpdateTodo_WithEmptyId_ReturnsBadRequest()
     {
         // Arrange

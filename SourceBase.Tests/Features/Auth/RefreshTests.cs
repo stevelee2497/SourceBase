@@ -8,9 +8,23 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Refresh Token",
+    Route = "POST /api/auth/refresh",
+    Auth = "Anonymous",
+    UseCase = "As an authenticated user whose access token has expired, I want to exchange my refresh token for a new access token, so that I can continue using the app without re-entering my credentials.",
+    Description = new[]
+    {
+        "Client sends the `token` (refresh token string).",
+        "The server parses the refresh token and extracts `userId` and `securityStamp`.",
+        "The user is loaded from the database; if not found → `401 Unauthorized`.",
+        "The stored security stamp is compared with the one in the token — mismatch → `401 Unauthorized` (covers logged-out or password-changed scenarios).",
+        "On success, a new access token (and refresh token) are issued via the JWT middleware.",
+    })]
 public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "REFRESH-001: RefreshToken_WithValidToken_PreservesRoles")]
+    [Fact(DisplayName = "REFRESH-001: valid token preserves roles")]
     public async Task RefreshToken_WithValidToken_PreservesRoles()
     {
         // Arrange
@@ -40,7 +54,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.Roles.ShouldContain("Admin");
     }
 
-    [Fact(DisplayName = "REFRESH-002: RefreshToken_WithInvalidToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "REFRESH-002: invalid token returns 401")]
     public async Task RefreshToken_WithInvalidToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -56,7 +70,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "REFRESH-003: RefreshToken_AfterLogout_ReturnsUnauthorized")]
+    [Fact(DisplayName = "REFRESH-003: after logout returns 401")]
     public async Task RefreshToken_AfterLogout_ReturnsUnauthorized()
     {
         // Arrange
@@ -95,7 +109,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "REFRESH-005: RefreshToken_AfterPasswordReset_ReturnsUnauthorized")]
+    [Fact(DisplayName = "REFRESH-005: after password reset returns 401")]
     public async Task RefreshToken_AfterPasswordReset_ReturnsUnauthorized()
     {
         // Arrange
@@ -136,7 +150,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "REFRESH-006: RefreshToken_NewTokenFromRefreshResponse_CanRefreshAgain")]
+    [Fact(DisplayName = "REFRESH-006: new token from refresh response can refresh again")]
     public async Task RefreshToken_NewTokenFromRefreshResponse_CanRefreshAgain()
     {
         // Arrange
@@ -177,7 +191,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         secondRefreshBody!.AccessToken.ShouldNotBeNullOrEmpty();
     }
 
-    [Fact(DisplayName = "REFRESH-004: RefreshToken_WithMissingToken_ReturnsBadRequest")]
+    [Fact(DisplayName = "REFRESH-004: missing token returns 400")]
     public async Task RefreshToken_WithMissingToken_ReturnsBadRequest()
     {
         // Arrange

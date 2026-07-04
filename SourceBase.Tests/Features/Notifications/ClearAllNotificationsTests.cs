@@ -11,9 +11,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Notifications;
 
+[EndpointFact(
+    Feature = "Notifications",
+    Name = "Clear All Notifications",
+    Route = "DELETE /api/notifications",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to clear all my notifications, so that I can keep my notification list clean and remove events I no longer care about.",
+    Description = new[]
+    {
+        "Deletes all notifications belonging to the current user.",
+        "Returns `{ success: true }`.",
+    })]
 public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "NOTIF-CLEAR-001: ClearAllNotifications_WithExistingNotifications_DeletesAll")]
+    [Fact(DisplayName = "NOTIF-CLEAR-001: existing notifications are deleted")]
     public async Task ClearAllNotifications_WithExistingNotifications_DeletesAll()
     {
         // Arrange
@@ -44,7 +55,7 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
         notifications!.Total.ShouldBe(0);
     }
 
-    [Fact(DisplayName = "NOTIF-CLEAR-002: ClearAllNotifications_WithNoNotifications_ReturnsOk")]
+    [Fact(DisplayName = "NOTIF-CLEAR-002: no notifications returns 200")]
     public async Task ClearAllNotifications_WithNoNotifications_ReturnsOk()
     {
         // Arrange
@@ -59,7 +70,7 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
         body!.Success.ShouldBeTrue();
     }
 
-    [Fact(DisplayName = "NOTIF-CLEAR-003: ClearAllNotifications_DoesNotAffectOtherUsersNotifications")]
+    [Fact(DisplayName = "NOTIF-CLEAR-003: other users' notifications are not affected")]
     public async Task ClearAllNotifications_DoesNotAffectOtherUsersNotifications()
     {
         // Arrange
@@ -82,7 +93,7 @@ public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<W
         otherUserCount.ShouldBe(1);
     }
 
-    [Fact(DisplayName = "NOTIF-CLEAR-004: ClearAllNotifications_WithoutAuth_ReturnsUnauthorized")]
+    [Fact(DisplayName = "NOTIF-CLEAR-004: without auth returns 401")]
     public async Task ClearAllNotifications_WithoutAuth_ReturnsUnauthorized()
     {
         // Arrange

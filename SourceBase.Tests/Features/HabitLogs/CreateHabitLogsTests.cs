@@ -9,9 +9,22 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.HabitLogs;
 
+[EndpointFact(
+    Feature = "HabitLogs",
+    Name = "Create Habit Logs",
+    Route = "POST /api/habit-logs",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to record one or more habit log entries in a single batch, so that I can track habit-related events (started, dismissed, snoozed, etc.) without a separate request per entry.",
+    Description = new[]
+    {
+        "Client sends `entries` (required, non-empty array), each with `action` (required), `occurredAt` (required), and optional `habitId`/`habitName`.",
+        "If `entries` is empty, or any entry is missing `occurredAt`, the request returns `400 Bad Request`.",
+        "Each log entry is created and associated with the authenticated user.",
+        "Returns the new log entries' `Ids` (one per submitted entry, in order).",
+    })]
 public class CreateHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "HLOG-CREATE-001: CreateHabitLogs_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "HLOG-CREATE-001: missing token returns 401")]
     public async Task CreateHabitLogs_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -27,7 +40,7 @@ public class CreateHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "HLOG-CREATE-002: CreateHabitLogs_WithSingleEntry_ReturnsOkWithId")]
+    [Fact(DisplayName = "HLOG-CREATE-002: single entry returns 200 with id")]
     public async Task CreateHabitLogs_WithSingleEntry_ReturnsOkWithId()
     {
         // Arrange
@@ -51,7 +64,7 @@ public class CreateHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body.Ids[0].ShouldNotBe(Guid.Empty);
     }
 
-    [Fact(DisplayName = "HLOG-CREATE-003: CreateHabitLogs_WithMultipleEntries_ReturnsBatchIds")]
+    [Fact(DisplayName = "HLOG-CREATE-003: multiple entries return batch ids")]
     public async Task CreateHabitLogs_WithMultipleEntries_ReturnsBatchIds()
     {
         // Arrange
@@ -80,7 +93,7 @@ public class CreateHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body.Ids.ShouldAllBe(id => id != Guid.Empty);
     }
 
-    [Fact(DisplayName = "HLOG-CREATE-004: CreateHabitLogs_WithEmptyEntries_ReturnsBadRequest")]
+    [Fact(DisplayName = "HLOG-CREATE-004: empty entries return 400")]
     public async Task CreateHabitLogs_WithEmptyEntries_ReturnsBadRequest()
     {
         // Arrange
@@ -96,7 +109,7 @@ public class CreateHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "HLOG-CREATE-005: CreateHabitLogs_WithMissingOccurredAt_ReturnsBadRequest")]
+    [Fact(DisplayName = "HLOG-CREATE-005: missing occurredAt returns 400")]
     public async Task CreateHabitLogs_WithMissingOccurredAt_ReturnsBadRequest()
     {
         // Arrange
@@ -112,7 +125,7 @@ public class CreateHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "HLOG-CREATE-006: CreateHabitLogs_WithAllActionTypes_ReturnsOk")]
+    [Fact(DisplayName = "HLOG-CREATE-006: all action types return 200")]
     public async Task CreateHabitLogs_WithAllActionTypes_ReturnsOk()
     {
         // Arrange
@@ -137,7 +150,7 @@ public class CreateHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Ids.Count.ShouldBe(4);
     }
 
-    [Fact(DisplayName = "HLOG-CREATE-007: CreateHabitLogs_ScopedToCurrentUser_NotVisibleToOtherUser")]
+    [Fact(DisplayName = "HLOG-CREATE-007: logs scoped to current user are not visible to other users")]
     public async Task CreateHabitLogs_ScopedToCurrentUser_NotVisibleToOtherUser()
     {
         // Arrange

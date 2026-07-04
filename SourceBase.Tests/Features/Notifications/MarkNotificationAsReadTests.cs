@@ -10,9 +10,22 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Notifications;
 
+[EndpointFact(
+    Feature = "Notifications",
+    Name = "Mark Notification As Read",
+    Route = "PUT /api/notifications/{id}/read",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to mark a specific notification as read by clicking on it, so that I can track which notifications I have already seen.",
+    Description = new[]
+    {
+        "Client provides the notification `id` as a route parameter.",
+        "If the notification does not exist or belongs to a different user → `404 Not Found`.",
+        "Sets `IsRead = true` on the notification record.",
+        "Returns `{ success: true }`.",
+    })]
 public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "NOTIF-MARK-READ-001: MarkNotificationAsRead_WithValidId_ReturnsOk")]
+    [Fact(DisplayName = "NOTIF-MARK-READ-001: valid id returns 200")]
     public async Task MarkNotificationAsRead_WithValidId_ReturnsOk()
     {
         // Arrange
@@ -42,7 +55,7 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
         notif.IsRead.ShouldBeTrue();
     }
 
-    [Fact(DisplayName = "NOTIF-MARK-READ-002: MarkNotificationAsRead_WithNonExistentId_ReturnsNotFound")]
+    [Fact(DisplayName = "NOTIF-MARK-READ-002: non-existent id returns 404")]
     public async Task MarkNotificationAsRead_WithNonExistentId_ReturnsNotFound()
     {
         // Arrange
@@ -55,7 +68,7 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "NOTIF-MARK-READ-003: MarkNotificationAsRead_WithOtherUsersNotification_ReturnsNotFound")]
+    [Fact(DisplayName = "NOTIF-MARK-READ-003: other user's notification returns 404")]
     public async Task MarkNotificationAsRead_WithOtherUsersNotification_ReturnsNotFound()
     {
         // Arrange
@@ -77,7 +90,7 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "NOTIF-MARK-READ-004: MarkNotificationAsRead_AlreadyRead_StillReturnsOk")]
+    [Fact(DisplayName = "NOTIF-MARK-READ-004: already read notification returns 200")]
     public async Task MarkNotificationAsRead_AlreadyRead_StillReturnsOk()
     {
         // Arrange
@@ -102,7 +115,7 @@ public class MarkNotificationAsReadTests(WebAppFactory factory) : IClassFixture<
         body!.Success.ShouldBeTrue();
     }
 
-    [Fact(DisplayName = "NOTIF-MARK-READ-005: MarkNotificationAsRead_WithoutAuth_ReturnsUnauthorized")]
+    [Fact(DisplayName = "NOTIF-MARK-READ-005: without auth returns 401")]
     public async Task MarkNotificationAsRead_WithoutAuth_ReturnsUnauthorized()
     {
         // Arrange

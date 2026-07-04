@@ -9,7 +9,7 @@ public class GiaVangGoldPriceScraperTests
 {
     private static readonly GiaVangGoldPriceScraper Scraper = new(NullLogger<GiaVangGoldPriceScraper>.Instance);
 
-    [Fact(DisplayName = "GIAVANG-SCRAPER-001: ParseAsync_WithRealPageHtml_ReturnsPricePerChi")]
+    [Fact(DisplayName = "GIAVANG-SCRAPER-001: real page HTML returns price per chi")]
     public async Task ParseAsync_WithRealPageHtml_ReturnsPricePerChi()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class GiaVangGoldPriceScraperTests
         result!.Value.SellPrice.ShouldBe(13_783_736m);
     }
 
-    [Fact(DisplayName = "GIAVANG-SCRAPER-002: ParseAsync_WithMissingPriceElement_ReturnsNull")]
+    [Fact(DisplayName = "GIAVANG-SCRAPER-002: missing price element returns null")]
     public async Task ParseAsync_WithMissingPriceElement_ReturnsNull()
     {
         // Arrange

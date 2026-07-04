@@ -8,9 +8,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Roles;
 
+[EndpointFact(
+    Feature = "Roles",
+    Name = "Get Roles",
+    Route = "GET /api/roles",
+    Auth = "Anonymous",
+    UseCase = "As any client (authenticated or not), I want to retrieve the list of available roles with paging and ordering, so that I can populate dropdowns and role-assignment UIs.",
+    Description = new[]
+    {
+        "Client sends optional paging parameters (`page`, `limit`, `order`, `orderBy`).",
+        "Returns a paginated list of roles (`id`, `name`, `description`).",
+    })]
 public class GetRolesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "ROLES-GET-001: GetRoles_WithAnonymousClient_ReturnsSeededRoles")]
+    [Fact(DisplayName = "ROLES-GET-001: anonymous client returns seeded roles")]
     public async Task GetRoles_WithAnonymousClient_ReturnsSeededRoles()
     {
         // Arrange
@@ -27,7 +38,7 @@ public class GetRolesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Items.ShouldContain(role => role.Name == "User");
     }
 
-    [Fact(DisplayName = "ROLES-GET-002: GetRoles_WithCreatedRole_ReturnsRole")]
+    [Fact(DisplayName = "ROLES-GET-002: created role is returned")]
     public async Task GetRoles_WithCreatedRole_ReturnsRole()
     {
         // Arrange
@@ -50,7 +61,7 @@ public class GetRolesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         roles!.Items.ShouldContain(x => x.Name == roleName && x.Description == "Created role");
     }
 
-    [Fact(DisplayName = "ROLES-GET-003: GetRoles_WithPagingAndOrdering_ReturnsRequestedPage")]
+    [Fact(DisplayName = "ROLES-GET-003: paging and ordering returns requested page")]
     public async Task GetRoles_WithPagingAndOrdering_ReturnsRequestedPage()
     {
         // Arrange

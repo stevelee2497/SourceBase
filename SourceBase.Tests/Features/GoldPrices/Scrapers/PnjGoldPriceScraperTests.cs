@@ -9,7 +9,7 @@ public class PnjGoldPriceScraperTests
 {
     private static readonly PnjGoldPriceScraper Scraper = new(NullLogger<PnjGoldPriceScraper>.Instance);
 
-    [Fact(DisplayName = "PNJ-SCRAPER-001: ParseAsync_WithRealApiResponse_ReturnsN24KPrices")]
+    [Fact(DisplayName = "PNJ-SCRAPER-001: real api response returns n24k prices")]
     public async Task ParseAsync_WithRealApiResponse_ReturnsN24KPrices()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class PnjGoldPriceScraperTests
         result!.Value.SellPrice.ShouldBe(15_180_000m);
     }
 
-    [Fact(DisplayName = "PNJ-SCRAPER-002: ParseAsync_WithMissingN24K_ReturnsNull")]
+    [Fact(DisplayName = "PNJ-SCRAPER-002: missing n24k returns null")]
     public async Task ParseAsync_WithMissingN24K_ReturnsNull()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class PnjGoldPriceScraperTests
         result.ShouldBeNull();
     }
 
-    [Fact(DisplayName = "PNJ-SCRAPER-003: ParseAsync_WithMissingDataArray_ReturnsNull")]
+    [Fact(DisplayName = "PNJ-SCRAPER-003: missing data array returns null")]
     public async Task ParseAsync_WithMissingDataArray_ReturnsNull()
     {
         // Arrange

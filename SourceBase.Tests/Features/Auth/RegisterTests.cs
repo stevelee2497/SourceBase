@@ -8,9 +8,24 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Register",
+    Route = "POST /api/auth/register",
+    Auth = "Anonymous",
+    UseCase = "As a new user, I want to register an account with my username, email, and password, so that I can access the application after confirming my email.",
+    Description = new[]
+    {
+        "Client sends `userName`, `email`, and `password`.",
+        "Username and email are trimmed of surrounding whitespace before processing.",
+        "If the username or email is already taken → `400 Bad Request`.",
+        "A new user is created with a hashed password and a 6-digit OTP confirmation code.",
+        "A confirmation email containing the OTP code is sent to the user's email address.",
+        "Returns the new user's `Id`.",
+    })]
 public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "REGISTER-001: Register_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "REGISTER-001: valid data returns 200")]
     public async Task Register_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -46,7 +61,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
 
-    [Fact(DisplayName = "REGISTER-002: Register_WithWhitespaceAroundEmailAndUserName_TrimsInputBeforeValidation")]
+    [Fact(DisplayName = "REGISTER-002: whitespace around email and username trims input")]
     public async Task Register_WithWhitespaceAroundEmailAndUserName_TrimsInputBeforeValidation()
     {
         // Arrange
@@ -69,7 +84,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
 
-    [Fact(DisplayName = "REGISTER-003: Register_WithPasswordContainingOuterSpaces_TrimsPasswordBeforePersisting")]
+    [Fact(DisplayName = "REGISTER-003: password with outer spaces trims password")]
     public async Task Register_WithPasswordContainingOuterSpaces_TrimsPasswordBeforePersisting()
     {
         // Arrange
@@ -102,7 +117,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
 
-    [Fact(DisplayName = "REGISTER-004: Register_WithDuplicateEmailIgnoringCase_ReturnsBadRequest")]
+    [Fact(DisplayName = "REGISTER-004: duplicate email ignoring case returns 400")]
     public async Task Register_WithDuplicateEmailIgnoringCase_ReturnsBadRequest()
     {
         // Arrange
@@ -129,7 +144,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
 
-    [Fact(DisplayName = "REGISTER-005: Register_WithInvalidEmail_ReturnsBadRequest")]
+    [Fact(DisplayName = "REGISTER-005: invalid email returns 400")]
     public async Task Register_WithInvalidEmail_ReturnsBadRequest()
     {
         // Arrange
@@ -148,7 +163,7 @@ public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
     }
 
 
-    [Fact(DisplayName = "REGISTER-006: Register_WithShortPassword_ReturnsBadRequest")]
+    [Fact(DisplayName = "REGISTER-006: short password returns 400")]
     public async Task Register_WithShortPassword_ReturnsBadRequest()
     {
         // Arrange

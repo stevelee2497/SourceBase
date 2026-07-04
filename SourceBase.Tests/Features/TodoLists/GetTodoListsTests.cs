@@ -8,9 +8,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.TodoLists;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Get Todo Lists",
+    Route = "GET /api/todo-lists",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve my todo lists, so that I can navigate to and manage my task collections.",
+    Description = new[]
+    {
+        "Client calls the endpoint with a valid access token.",
+        "Returns only the todo lists that belong to the authenticated user — other users' lists are never included.",
+    })]
 public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TODOLISTS-GET-001: GetTodoLists_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TODOLISTS-GET-001: without token return 401")]
     public async Task GetTodoLists_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +34,7 @@ public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TODOLISTS-GET-002: GetTodoLists_ReturnsOk")]
+    [Fact(DisplayName = "TODOLISTS-GET-002: authorized user return 200")]
     public async Task GetTodoLists_ReturnsOk()
     {
         // Arrange
@@ -39,7 +50,7 @@ public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Items.ShouldNotBeNull();
     }
 
-    [Fact(DisplayName = "TODOLISTS-GET-003: GetTodoLists_ReturnsOnlyCurrentUserLists")]
+    [Fact(DisplayName = "TODOLISTS-GET-003: returns only current user lists")]
     public async Task GetTodoLists_ReturnsOnlyCurrentUserLists()
     {
         // Arrange

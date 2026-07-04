@@ -11,9 +11,24 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transfers;
 
+[EndpointFact(
+    Feature = "Transfers",
+    Name = "Create Transfer",
+    Route = "POST /api/transfers",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to record a transfer of money between two of my wallets, so that it is not counted as income or expense and both wallet balances are correctly computed.",
+    Description = new[]
+    {
+        "Client sends `fromWalletId` (required), `toWalletId` (required), `amount` (required, positive), `date` (required), optional `note`.",
+        "`fromWalletId` and `toWalletId` must be different → `400 Bad Request` otherwise.",
+        "Both wallets must exist and belong to the current user → `404 Not Found` otherwise.",
+        "Two linked transactions are created internally: an Expense in `fromWallet` and an Income in `toWallet`. Both are flagged as transfer transactions (not editable or deletable directly).",
+        "A `TransferEntity` record is created linking both transactions.",
+        "Returns the new transfer's `Id`.",
+    })]
 public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TRANSFER-CREATE-001: CreateTransfer_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TRANSFER-CREATE-001: no token returns 401")]
     public async Task CreateTransfer_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -32,7 +47,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-002: CreateTransfer_WithValidData_UpdatesBothWalletBalances")]
+    [Fact(DisplayName = "TRANSFER-CREATE-002: valid data updates both wallet balances")]
     public async Task CreateTransfer_WithValidData_UpdatesBothWalletBalances()
     {
         // Arrange
@@ -70,7 +85,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         toWalletData!.Balance.ShouldBe(80m);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-003: CreateTransfer_WithSameWallets_ReturnsBadRequest")]
+    [Fact(DisplayName = "TRANSFER-CREATE-003: same wallets returns 400")]
     public async Task CreateTransfer_WithSameWallets_ReturnsBadRequest()
     {
         // Arrange
@@ -93,7 +108,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-004: CreateTransfer_WithOtherUsersFromWallet_ReturnsBadRequest")]
+    [Fact(DisplayName = "TRANSFER-CREATE-004: other user's from wallet returns 400")]
     public async Task CreateTransfer_WithOtherUsersFromWallet_ReturnsBadRequest()
     {
         // Arrange
@@ -119,7 +134,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-005: CreateTransfer_WithOtherUsersToWallet_ReturnsBadRequest")]
+    [Fact(DisplayName = "TRANSFER-CREATE-005: other user's to wallet returns 400")]
     public async Task CreateTransfer_WithOtherUsersToWallet_ReturnsBadRequest()
     {
         // Arrange
@@ -145,7 +160,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-006: CreateTransfer_WithZeroOrNegativeAmount_ReturnsBadRequest")]
+    [Fact(DisplayName = "TRANSFER-CREATE-006: zero or negative amount returns 400")]
     public async Task CreateTransfer_WithZeroOrNegativeAmount_ReturnsBadRequest()
     {
         // Arrange
@@ -177,7 +192,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         negativeResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-007: CreateTransfer_WithMissingDate_ReturnsBadRequest")]
+    [Fact(DisplayName = "TRANSFER-CREATE-007: missing date returns 400")]
     public async Task CreateTransfer_WithMissingDate_ReturnsBadRequest()
     {
         // Arrange
@@ -200,7 +215,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-008: CreateTransfer_CreatesLinkedTransferTransactions")]
+    [Fact(DisplayName = "TRANSFER-CREATE-008: creates linked transfer transactions")]
     public async Task CreateTransfer_CreatesLinkedTransferTransactions()
     {
         // Arrange
@@ -225,7 +240,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         toTxns!.Items.ShouldContain(x => x.Type == TransactionType.Income && x.IsTransfer);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-009: CreateTransfer_WithMissingFromWallet_ReturnsBadRequest")]
+    [Fact(DisplayName = "TRANSFER-CREATE-009: missing from wallet returns 400")]
     public async Task CreateTransfer_WithMissingFromWallet_ReturnsBadRequest()
     {
         // Arrange
@@ -246,7 +261,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-010: CreateTransfer_WithUnknownFromWallet_ReturnsBadRequest")]
+    [Fact(DisplayName = "TRANSFER-CREATE-010: unknown from wallet returns 400")]
     public async Task CreateTransfer_WithUnknownFromWallet_ReturnsBadRequest()
     {
         // Arrange
@@ -268,7 +283,7 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TRANSFER-CREATE-011: CreateTransfer_WithUnknownToWallet_ReturnsBadRequest")]
+    [Fact(DisplayName = "TRANSFER-CREATE-011: unknown to wallet returns 400")]
     public async Task CreateTransfer_WithUnknownToWallet_ReturnsBadRequest()
     {
         // Arrange

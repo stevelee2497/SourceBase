@@ -9,9 +9,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Users;
 
+[EndpointFact(
+    Feature = "Users",
+    Name = "Confirm User Email",
+    Route = "POST /api/users/{id}/confirmEmail",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to manually confirm a user's email, so that I can unblock accounts without requiring the user to go through the email verification flow.",
+    Description = new[]
+    {
+        "Admin provides the target user `id` (route).",
+        "If the user doesn't exist → `404 Not Found`.",
+        "`EmailConfirmed` is set to `true` on the user record.",
+    })]
 public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-001: ConfirmUserEmail_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-001: no token returns 401")]
     public async Task ConfirmUserEmail_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -24,7 +36,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-002: ConfirmUserEmail_AsNonAdmin_ReturnsForbidden")]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-002: non-admin user returns 403")]
     public async Task ConfirmUserEmail_AsNonAdmin_ReturnsForbidden()
     {
         // Arrange
@@ -37,7 +49,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-003: ConfirmUserEmail_WithNonExistentUser_ReturnsNotFound")]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-003: non-existent user returns 404")]
     public async Task ConfirmUserEmail_WithNonExistentUser_ReturnsNotFound()
     {
         // Arrange
@@ -50,7 +62,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-004: ConfirmUserEmail_WithValidUser_ReturnsOk")]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-004: valid user returns 200")]
     public async Task ConfirmUserEmail_WithValidUser_ReturnsOk()
     {
         // Arrange
@@ -74,7 +86,7 @@ public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebApp
         body!.Success.ShouldBeTrue();
     }
 
-    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-005: ConfirmUserEmail_SetsEmailConfirmedTrue")]
+    [Fact(DisplayName = "USERS-CONFIRM-EMAIL-005: sets email confirmed to true")]
     public async Task ConfirmUserEmail_SetsEmailConfirmedTrue()
     {
         // Arrange

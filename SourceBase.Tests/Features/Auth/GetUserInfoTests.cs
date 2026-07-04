@@ -9,9 +9,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Get User Info",
+    Route = "GET /api/auth/info",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve my profile information, so that I can display or use my account details in the application.",
+    Description = new[]
+    {
+        "Client calls the endpoint with a valid access token.",
+        "The server reads the current user ID from the JWT claims and loads the user from the database.",
+        "Returns `id`, `userName`, `email`, `firstName`, `lastName`, `phoneNumber`, and `roles` (from the current token claims).",
+    })]
 public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "GET-INFO-001: GetUserInfo_WithValidToken_ReturnsOk")]
+    [Fact(DisplayName = "GET-INFO-001: valid token returns 200")]
     public async Task GetUserInfo_WithValidToken_ReturnsOk()
     {
         // Arrange
@@ -30,7 +42,7 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         body.Roles.ShouldContain("Admin");
     }
 
-    [Fact(DisplayName = "GET-INFO-002: GetUserInfo_WithDistinctUserNameAndEmail_ReturnsMatchingClaims")]
+    [Fact(DisplayName = "GET-INFO-002: distinct username and email return matching claims")]
     public async Task GetUserInfo_WithDistinctUserNameAndEmail_ReturnsMatchingClaims()
     {
         // Arrange
@@ -70,7 +82,7 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         body.Roles.ShouldContain("User");
     }
 
-    [Fact(DisplayName = "GET-INFO-004: GetUserInfo_ReturnsEmailConfirmedTrue_ForConfirmedUser")]
+    [Fact(DisplayName = "GET-INFO-004: confirmed user returns emailConfirmed=true")]
     public async Task GetUserInfo_ReturnsEmailConfirmedTrue_ForConfirmedUser()
     {
         // Arrange
@@ -103,7 +115,7 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         body!.EmailConfirmed.ShouldBeTrue();
     }
 
-    [Fact(DisplayName = "GET-INFO-003: GetUserInfo_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "GET-INFO-003: missing token returns 401")]
     public async Task GetUserInfo_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -116,7 +128,7 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [RequiresRedisFact(DisplayName = "GET-INFO-005: GetUserInfo_CachesResult_ServesStaleDataBeforeCacheIsInvalidated")]
+    [RequiresRedisFact(DisplayName = "GET-INFO-005: caches result and serves stale data before invalidation")]
     public async Task GetUserInfo_CachesResult_ServesStaleDataBeforeCacheIsInvalidated()
     {
         // Arrange — register and log in as a fresh user

@@ -8,9 +8,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Categories;
 
+[EndpointFact(
+    Feature = "Categories",
+    Name = "Create Category",
+    Route = "POST /api/categories",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to create a custom transaction category, so that I can organise my transactions beyond the default categories.",
+    Description = new[]
+    {
+        "Client sends `name` (required, max 100 characters), `type` (required: `Income` or `Expense`), and optionally `icon`.",
+        "The category is created as a user-owned (non-system) category.",
+        "Returns the new category's `Id`.",
+    })]
 public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "CATS-CREATE-001: CreateCategory_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "CATS-CREATE-001: missing token returns 401")]
     public async Task CreateCategory_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -27,7 +39,7 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "CATS-CREATE-002: CreateCategory_WithValidData_ReturnsOkAndId")]
+    [Fact(DisplayName = "CATS-CREATE-002: valid data returns 200 and id")]
     public async Task CreateCategory_WithValidData_ReturnsOkAndId()
     {
         // Arrange
@@ -47,7 +59,7 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body!.Id.ShouldNotBe(Guid.Empty);
     }
 
-    [Fact(DisplayName = "CATS-CREATE-003: CreateCategory_WithMissingName_ReturnsBadRequest")]
+    [Fact(DisplayName = "CATS-CREATE-003: missing name returns 400")]
     public async Task CreateCategory_WithMissingName_ReturnsBadRequest()
     {
         // Arrange
@@ -63,7 +75,7 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "CATS-CREATE-004: CreateCategory_WithMissingType_ReturnsBadRequest")]
+    [Fact(DisplayName = "CATS-CREATE-004: missing type returns 400")]
     public async Task CreateCategory_WithMissingType_ReturnsBadRequest()
     {
         // Arrange
@@ -79,7 +91,7 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "CATS-CREATE-005: CreateCategory_WithInvalidType_ReturnsBadRequest")]
+    [Fact(DisplayName = "CATS-CREATE-005: invalid type returns 400")]
     public async Task CreateCategory_WithInvalidType_ReturnsBadRequest()
     {
         // Arrange
@@ -96,7 +108,7 @@ public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "CATS-CREATE-006: CreateCategory_WithAuthenticatedUser_SetsOwnershipAndNonSystem")]
+    [Fact(DisplayName = "CATS-CREATE-006: authenticated user creates non-system user-owned category")]
     public async Task CreateCategory_WithAuthenticatedUser_SetsOwnershipAndNonSystem()
     {
         // Arrange

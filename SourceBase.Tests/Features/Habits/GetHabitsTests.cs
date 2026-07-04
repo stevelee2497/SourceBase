@@ -8,9 +8,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Habits;
 
+[EndpointFact(
+    Feature = "Habits",
+    Name = "Get Habits",
+    Route = "GET /api/habits",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve my habits along with their log counts, so that I can see which habits I've been keeping up with and in what order.",
+    Description = new[]
+    {
+        "Client calls the endpoint with a valid access token.",
+        "Returns the authenticated user's habits, each including a computed `LogCount` (number of associated habit logs).",
+        "Habits are ordered by `LogCount` descending, so the most-logged habits appear first.",
+    })]
 public class GetHabitsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "HABITS-GET-001: GetHabits_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "HABITS-GET-001: missing token returns 401")]
     public async Task GetHabits_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +35,7 @@ public class GetHabitsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "HABITS-GET-002: GetHabits_WithNoLogs_ReturnsCreatedHabit")]
+    [Fact(DisplayName = "HABITS-GET-002: created habit with no logs is returned")]
     public async Task GetHabits_WithNoLogs_ReturnsCreatedHabit()
     {
         // Arrange
@@ -40,7 +52,7 @@ public class GetHabitsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         habits!.ShouldContain(h => h.Name == "Morning Run" && h.LogCount == 0);
     }
 
-    [Fact(DisplayName = "HABITS-GET-003: GetHabits_WithLogs_ReturnsCorrectLogCount")]
+    [Fact(DisplayName = "HABITS-GET-003: habit log count is calculated correctly")]
     public async Task GetHabits_WithLogs_ReturnsCorrectLogCount()
     {
         // Arrange
@@ -68,7 +80,7 @@ public class GetHabitsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         habits!.ShouldContain(h => h.Name == "Drink Water" && h.LogCount == 2);
     }
 
-    [Fact(DisplayName = "HABITS-GET-004: GetHabits_OrderedByLogCountDescending")]
+    [Fact(DisplayName = "HABITS-GET-004: habits are ordered by log count descending")]
     public async Task GetHabits_OrderedByLogCountDescending()
     {
         // Arrange
