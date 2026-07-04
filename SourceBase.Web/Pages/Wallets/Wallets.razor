@@ -187,29 +187,27 @@ else
             }
 
             <!-- Filters -->
-            <div class="card mb-4 bg-gray-50 border-gray-100">
-                <div class="flex flex-col gap-3">
-                    <div class="flex flex-wrap gap-2">
-                        <button class="@TypeFilterClass(string.Empty)" @onclick="SelectAllTypes">All</button>
-                        <button class="@TypeFilterClass(IncomeType)" @onclick="SelectIncomeType">Income</button>
-                        <button class="@TypeFilterClass(ExpenseType)" @onclick="SelectExpenseType">Expense</button>
+            <div class="mb-4 flex flex-col gap-3">
+                <div class="flex flex-wrap gap-2">
+                    <button class="@TypeFilterClass(string.Empty)" @onclick="SelectAllTypes">All</button>
+                    <button class="@TypeFilterClass(IncomeType)" @onclick="SelectIncomeType">Income</button>
+                    <button class="@TypeFilterClass(ExpenseType)" @onclick="SelectExpenseType">Expense</button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="form-label">Date From</label>
+                        <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div>
-                            <label class="form-label">Date From</label>
-                            <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
-                        </div>
-                        <div>
-                            <label class="form-label">Date To</label>
-                            <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
-                        </div>
-                        <div>
-                            <label class="form-label">Category</label>
-                            <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
-                        </div>
-                        <div class="flex items-end">
-                            <button class="btn-secondary w-full" @onclick="ResetFiltersAsync">Clear</button>
-                        </div>
+                    <div>
+                        <label class="form-label">Date To</label>
+                        <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
+                    </div>
+                    <div>
+                        <label class="form-label">Category</label>
+                        <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
+                    </div>
+                    <div class="flex items-end">
+                        <button class="btn-secondary w-full" @onclick="ResetFiltersAsync">Clear</button>
                     </div>
                 </div>
             </div>
