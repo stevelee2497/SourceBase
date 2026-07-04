@@ -348,25 +348,29 @@ else
                 <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_transactionFormError</div>
             }
             <div class="space-y-4">
-                <div>
-                    <label class="form-label">Amount *</label>
-                    <CurrencyInput @bind-Value="_transactionAmount" Class="form-input" />
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Amount *</label>
+                        <CurrencyInput @bind-Value="_transactionAmount" Class="form-input" />
+                    </div>
+                    <div>
+                        <label class="form-label">Date *</label>
+                        <input @bind="_transactionDate" class="form-input" type="date" />
+                    </div>
                 </div>
-                <div>
-                    <label class="form-label">Type</label>
-                    <SelectInput @bind-Value="_transactionType" @bind-Value:after="OnTransactionTypeAfterChange" Options="TransactionTypeOptions" />
-                </div>
-                <div>
-                    <label class="form-label">Date *</label>
-                    <input @bind="_transactionDate" class="form-input" type="date" />
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Type</label>
+                        <SelectInput @bind-Value="_transactionType" @bind-Value:after="OnTransactionTypeAfterChange" Options="TransactionTypeOptions" />
+                    </div>
+                    <div>
+                        <label class="form-label">Category *</label>
+                        <SelectInput @bind-Value="_transactionCategoryId" Options="TransactionCategoryOptions" />
+                    </div>
                 </div>
                 <div>
                     <label class="form-label">Note</label>
-                    <input @bind="_transactionNote" class="form-input" placeholder="Optional description" />
-                </div>
-                <div>
-                    <label class="form-label">Category *</label>
-                    <SelectInput @bind-Value="_transactionCategoryId" Options="TransactionCategoryOptions" />
+                    <textarea @bind="_transactionNote" class="form-input" rows="2" placeholder="Optional description"></textarea>
                 </div>
                 @if (_editingTransaction is not null)
                 {
