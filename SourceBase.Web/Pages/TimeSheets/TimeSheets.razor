@@ -47,7 +47,7 @@
                             @if (summary is not null)
                             {
                                 <span class="text-xs mt-0.5 font-medium leading-none">@summary.TotalHours h</span>
-                                <span class="text-xs leading-none opacity-75 truncate w-full text-center px-0.5">@string.Join(", ", summary.Projects)</span>
+                                <span class="hidden md:block text-xs leading-none opacity-75 truncate w-full text-center px-0.5">@string.Join(", ", summary.Projects)</span>
                             }
                             @if (IsSos(date, summary))
                             {
