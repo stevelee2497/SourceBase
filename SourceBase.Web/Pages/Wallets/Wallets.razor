@@ -84,8 +84,8 @@ else
         
     </div>
 
-    <!-- Wallets grid (6 per row) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2 mb-6">
+    <!-- Wallets grid (2 per row mobile, 6 per row desktop) -->
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2 mb-6">
         @foreach (var wallet in _wallets)
         {
             var isSelected = _selectedWalletIds.Contains(wallet.Id);
