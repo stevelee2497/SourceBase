@@ -221,10 +221,14 @@
                 }
                 else
                 {
-                    <div class="flex flex-col gap-2">
+                    <div class="flex flex-col">
                         @foreach (var (todo, index) in _defaultTodos.Take(10).Select((t, i) => (t, i)))
                         {
-                            <div class="flex items-center gap-3 ml-2 @(index == 0 ? "" : "border-t border-gray-100 pt-2")">
+                            @if (index > 0)
+                            {
+                                <div class="border-t border-gray-100"></div>
+                            }
+                            <div class="flex items-center gap-3 ml-2 py-2">
                                 <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 hover:border-green-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoDone(todo)" title="Mark complete">
                                 </button>
                                 <div class="flex-1 min-w-0">
