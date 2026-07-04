@@ -282,9 +282,9 @@
     private string GetCellClass(DateOnly date, TimeSheetSummaryDayResponse? summary)
     {
         if (summary is not null)
-            return "h-12 md:h16 rounded border flex flex-col items-center justify-center p-1 overflow-hidden transition-all cursor-pointer bg-green-50 border-green-200 text-green-800 hover:bg-green-100 hover:shadow-sm";
+            return "h-12 md:h-16 rounded border flex flex-col items-center justify-center p-1 overflow-hidden transition-all cursor-pointer bg-green-50 border-green-200 text-green-800 hover:bg-green-100 hover:shadow-sm";
         if (IsSos(date, summary))
-            return "h-12 md:h16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:shadow-sm";
-        return "h-12 md:h16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:shadow-sm";
+            return "h-12 md:h-16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:shadow-sm";
+        return "h-12 md:h-16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:shadow-sm";
     }
 }
