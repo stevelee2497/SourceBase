@@ -23,7 +23,7 @@ namespace SourceBase.Tests.Features.Wallets;
     })]
 public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "WALLETS-CREATE-001: CreateWallet_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "WALLETS-CREATE-001: create wallet without token return 401")]
     public async Task CreateWallet_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-002: CreateWallet_WithValidData_ReturnsOkAndId")]
+    [Fact(DisplayName = "WALLETS-CREATE-002: create wallet with valid data returns ok and id")]
     public async Task CreateWallet_WithValidData_ReturnsOkAndId()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Id.ShouldNotBe(Guid.Empty);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-003: CreateWallet_WithMissingName_ReturnsBadRequest")]
+    [Fact(DisplayName = "WALLETS-CREATE-003: create wallet with missing name return 400")]
     public async Task CreateWallet_WithMissingName_ReturnsBadRequest()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-004: CreateWallet_WithMissingCurrency_ReturnsBadRequest")]
+    [Fact(DisplayName = "WALLETS-CREATE-004: create wallet with missing currency return 400")]
     public async Task CreateWallet_WithMissingCurrency_ReturnsBadRequest()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-005: CreateWallet_WithNegativeInitialBalance_ReturnsOk")]
+    [Fact(DisplayName = "WALLETS-CREATE-005: create wallet with negative initial balance return 200")]
     public async Task CreateWallet_WithNegativeInitialBalance_ReturnsOk()
     {
         // Arrange
@@ -122,7 +122,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.InitialBalance.ShouldBe(-25m);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-006: CreateWallet_WithoutTransactions_HasBalanceEqualToInitialBalance")]
+    [Fact(DisplayName = "WALLETS-CREATE-006: create wallet without transactions has balance equal to initial balance")]
     public async Task CreateWallet_WithoutTransactions_HasBalanceEqualToInitialBalance()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.Currency.ShouldBe("EUR");
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-007: CreateWallet_WithAuthenticatedUser_SetsWalletOwnership")]
+    [Fact(DisplayName = "WALLETS-CREATE-007: create wallet with authenticated user sets wallet ownership")]
     public async Task CreateWallet_WithAuthenticatedUser_SetsWalletOwnership()
     {
         // Arrange
@@ -175,7 +175,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         data.Wallet.UserId.ShouldBe(data.UserId);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-008: CreateWallet_WithZeroInitialBalance_HasBalanceOfZero")]
+    [Fact(DisplayName = "WALLETS-CREATE-008: create wallet with zero initial balance has balance of zero")]
     public async Task CreateWallet_WithZeroInitialBalance_HasBalanceOfZero()
     {
         // Arrange
@@ -201,7 +201,7 @@ public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.InitialBalance.ShouldBe(0m);
     }
 
-    [Fact(DisplayName = "WALLETS-CREATE-009: CreateWallet_WithNoIcon_StillCreatesWallet")]
+    [Fact(DisplayName = "WALLETS-CREATE-009: create wallet with no icon still creates wallet")]
     public async Task CreateWallet_WithNoIcon_StillCreatesWallet()
     {
         // Arrange

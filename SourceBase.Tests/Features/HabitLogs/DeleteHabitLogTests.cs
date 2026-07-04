@@ -22,7 +22,7 @@ namespace SourceBase.Tests.Features.HabitLogs;
     })]
 public class DeleteHabitLogTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "HLOG-DELETE-001: DeleteHabitLog_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "HLOG-DELETE-001: without token returns 401")]
     public async Task DeleteHabitLog_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class DeleteHabitLogTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "HLOG-DELETE-002: DeleteHabitLog_WithValidId_ReturnsOkAndRemovesLog")]
+    [Fact(DisplayName = "HLOG-DELETE-002: valid id returns 200 and removes log")]
     public async Task DeleteHabitLog_WithValidId_ReturnsOkAndRemovesLog()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class DeleteHabitLogTests(WebAppFactory factory) : IClassFixture<WebAppFa
         list!.Items.ShouldNotContain(l => l.Id == id);
     }
 
-    [Fact(DisplayName = "HLOG-DELETE-003: DeleteHabitLog_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "HLOG-DELETE-003: unknown id returns 404")]
     public async Task DeleteHabitLog_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -75,7 +75,7 @@ public class DeleteHabitLogTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "HLOG-DELETE-004: DeleteHabitLog_WithOtherUsersLog_ReturnsNotFound")]
+    [Fact(DisplayName = "HLOG-DELETE-004: other user's log returns 404")]
     public async Task DeleteHabitLog_WithOtherUsersLog_ReturnsNotFound()
     {
         // Arrange

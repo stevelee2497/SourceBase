@@ -9,7 +9,7 @@ public class NgocThinhGoldPriceScraperTests
 {
     private static readonly NgocThinhGoldPriceScraper Scraper = new(NullLogger<NgocThinhGoldPriceScraper>.Instance);
 
-    [Fact(DisplayName = "NGOCTHINH-SCRAPER-001: ParseAsync_WithRealPageHtml_Returns9999Prices")]
+    [Fact(DisplayName = "NGOCTHINH-SCRAPER-001: real page html returns 99.99 prices")]
     public async Task ParseAsync_WithRealPageHtml_Returns9999Prices()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class NgocThinhGoldPriceScraperTests
         result!.Value.SellPrice.ShouldBe(14_160_000m);
     }
 
-    [Fact(DisplayName = "NGOCTHINH-SCRAPER-002: ParseAsync_WithMissing9999Row_ReturnsNull")]
+    [Fact(DisplayName = "NGOCTHINH-SCRAPER-002: missing 99.99 row returns null")]
     public async Task ParseAsync_WithMissing9999Row_ReturnsNull()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class NgocThinhGoldPriceScraperTests
         result.ShouldBeNull();
     }
 
-    [Fact(DisplayName = "NGOCTHINH-SCRAPER-003: ParseAsync_WithEmptyHtml_ReturnsNull")]
+    [Fact(DisplayName = "NGOCTHINH-SCRAPER-003: empty html returns null")]
     public async Task ParseAsync_WithEmptyHtml_ReturnsNull()
     {
         // Act

@@ -23,7 +23,7 @@ namespace SourceBase.Tests.Features.Wallets;
     })]
 public class GetWalletsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "WALLETS-GET-ALL-001: GetWallets_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "WALLETS-GET-ALL-001: without token return 401")]
     public async Task GetWallets_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class GetWalletsTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-ALL-002: GetWallets_WithOwnedWallets_ReturnsOk")]
+    [Fact(DisplayName = "WALLETS-GET-ALL-002: with owned wallets return 200")]
     public async Task GetWallets_WithOwnedWallets_ReturnsOk()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class GetWalletsTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         body.Wallets.ShouldContain(x => x.Id == second!.Id);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-ALL-003: GetWallets_WithMultipleUsers_ReturnsOnlyCurrentUsersWallets")]
+    [Fact(DisplayName = "WALLETS-GET-ALL-003: with multiple users returns only current users wallets")]
     public async Task GetWallets_WithMultipleUsers_ReturnsOnlyCurrentUsersWallets()
     {
         // Arrange
@@ -82,7 +82,7 @@ public class GetWalletsTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         body!.Wallets.ShouldContain(x => x.Id == ownWallet!.Id);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-ALL-004: GetWallets_WithBalances_ReturnsCorrectTotalBalance")]
+    [Fact(DisplayName = "WALLETS-GET-ALL-004: with balances returns correct total balance")]
     public async Task GetWallets_WithBalances_ReturnsCorrectTotalBalance()
     {
         // Arrange
@@ -116,7 +116,7 @@ public class GetWalletsTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         body!.TotalBalance.ShouldBe(165m);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-ALL-005: GetWallets_WithNoWallets_ReturnsEmptyList")]
+    [Fact(DisplayName = "WALLETS-GET-ALL-005: with no wallets returns empty list")]
     public async Task GetWallets_WithNoWallets_ReturnsEmptyList()
     {
         // Arrange
@@ -132,7 +132,7 @@ public class GetWalletsTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         body.TotalBalance.ShouldBe(0m);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-ALL-006: GetWallets_ReturnsWalletCurrencyAndIcon")]
+    [Fact(DisplayName = "WALLETS-GET-ALL-006: returns wallet currency and icon")]
     public async Task GetWallets_ReturnsWalletCurrencyAndIcon()
     {
         // Arrange

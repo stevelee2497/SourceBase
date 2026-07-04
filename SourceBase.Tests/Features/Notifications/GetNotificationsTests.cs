@@ -25,7 +25,7 @@ namespace SourceBase.Tests.Features.Notifications;
     })]
 public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "NOTIF-GET-001: GetNotifications_WithNoNotifications_ReturnsEmptyList")]
+    [Fact(DisplayName = "NOTIF-GET-001: no notifications return empty list")]
     public async Task GetNotifications_WithNoNotifications_ReturnsEmptyList()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
         body.Total.ShouldBeGreaterThanOrEqualTo(0);
     }
 
-    [Fact(DisplayName = "NOTIF-GET-002: GetNotifications_WithExistingNotifications_ReturnsNotifications")]
+    [Fact(DisplayName = "NOTIF-GET-002: existing notifications return notifications")]
     public async Task GetNotifications_WithExistingNotifications_ReturnsNotifications()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
         body!.Items.ShouldContain(n => n.Title == "Test Title" && n.Message == "Test Message");
     }
 
-    [Fact(DisplayName = "NOTIF-GET-003: GetNotifications_WithUnreadOnlyFilter_ReturnsOnlyUnread")]
+    [Fact(DisplayName = "NOTIF-GET-003: unread only filter returns only unread")]
     public async Task GetNotifications_WithUnreadOnlyFilter_ReturnsOnlyUnread()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
         body!.Items.ShouldAllBe(n => !n.IsRead);
     }
 
-    [Fact(DisplayName = "NOTIF-GET-004: GetNotifications_WithPagination_ReturnsCorrectPage")]
+    [Fact(DisplayName = "NOTIF-GET-004: pagination returns correct page")]
     public async Task GetNotifications_WithPagination_ReturnsCorrectPage()
     {
         // Arrange
@@ -119,7 +119,7 @@ public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebApp
         body.Page.ShouldBe(1);
     }
 
-    [Fact(DisplayName = "NOTIF-GET-005: GetNotifications_WithoutAuth_ReturnsUnauthorized")]
+    [Fact(DisplayName = "NOTIF-GET-005: without auth return 401")]
     public async Task GetNotifications_WithoutAuth_ReturnsUnauthorized()
     {
         // Arrange

@@ -24,7 +24,7 @@ namespace SourceBase.Tests.Features.Auth;
     })]
 public class RateLimitTests(RateLimitWebAppFactory factory) : IClassFixture<RateLimitWebAppFactory>
 {
-    [Fact(DisplayName = "RATE-LIMIT-001: Login_ExceedsStrictLimit_Returns429")]
+    [Fact(DisplayName = "RATE-LIMIT-001: login exceeds strict limit returns 429")]
     public async Task Login_ExceedsStrictLimit_Returns429()
     {
         // Arrange — each CreateClient() call gets a unique IP so buckets don't bleed between tests
@@ -41,7 +41,7 @@ public class RateLimitTests(RateLimitWebAppFactory factory) : IClassFixture<Rate
         response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
     }
 
-    [Fact(DisplayName = "RATE-LIMIT-002: Register_ExceedsStrictLimit_Returns429")]
+    [Fact(DisplayName = "RATE-LIMIT-002: register exceeds strict limit returns 429")]
     public async Task Register_ExceedsStrictLimit_Returns429()
     {
         // Arrange
@@ -67,7 +67,7 @@ public class RateLimitTests(RateLimitWebAppFactory factory) : IClassFixture<Rate
         response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
     }
 
-    [Fact(DisplayName = "RATE-LIMIT-003: ForgotPassword_ExceedsStrictLimit_Returns429")]
+    [Fact(DisplayName = "RATE-LIMIT-003: forgot password exceeds strict limit returns 429")]
     public async Task ForgotPassword_ExceedsStrictLimit_Returns429()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class RateLimitTests(RateLimitWebAppFactory factory) : IClassFixture<Rate
         response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
     }
 
-    [Fact(DisplayName = "RATE-LIMIT-004: RateLimitRejection_ReturnsJsonErrorFormat")]
+    [Fact(DisplayName = "RATE-LIMIT-004: rate limit rejection returns json error format")]
     public async Task RateLimitRejection_ReturnsJsonErrorFormat()
     {
         // Arrange

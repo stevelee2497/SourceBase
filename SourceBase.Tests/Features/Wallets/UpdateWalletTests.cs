@@ -26,7 +26,7 @@ namespace SourceBase.Tests.Features.Wallets;
     })]
 public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "WALLETS-UPDATE-001: UpdateWallet_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "WALLETS-UPDATE-001: without token return 401")]
     public async Task UpdateWallet_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -43,7 +43,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-002: UpdateWallet_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "WALLETS-UPDATE-002: with valid data return 200")]
     public async Task UpdateWallet_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.Icon.ShouldBe("🏦");
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-003: UpdateWallet_WithOnlyIcon_ReturnsOkAndKeepsName")]
+    [Fact(DisplayName = "WALLETS-UPDATE-003: with only icon returns ok and keeps name")]
     public async Task UpdateWallet_WithOnlyIcon_ReturnsOkAndKeepsName()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.Icon.ShouldBe("🏦");
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-004: UpdateWallet_WithOtherUsersWallet_ReturnsNotFound")]
+    [Fact(DisplayName = "WALLETS-UPDATE-004: with other users wallet return 404")]
     public async Task UpdateWallet_WithOtherUsersWallet_ReturnsNotFound()
     {
         // Arrange
@@ -119,7 +119,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-005: UpdateWallet_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "WALLETS-UPDATE-005: with unknown id return 404")]
     public async Task UpdateWallet_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-006: UpdateWallet_DoesNotChangeComputedBalance")]
+    [Fact(DisplayName = "WALLETS-UPDATE-006: does not change computed balance")]
     public async Task UpdateWallet_DoesNotChangeComputedBalance()
     {
         // Arrange
@@ -170,7 +170,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         after.Balance.ShouldBe(125m);
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-007: UpdateWallet_WithNullIcon_KeepsExistingIcon")]
+    [Fact(DisplayName = "WALLETS-UPDATE-007: with null icon keeps existing icon")]
     public async Task UpdateWallet_WithNullIcon_KeepsExistingIcon()
     {
         // Arrange
@@ -196,7 +196,7 @@ public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         wallet.Icon.ShouldBe("💳");
     }
 
-    [Fact(DisplayName = "WALLETS-UPDATE-008: UpdateWallet_WithEmptyId_ReturnsBadRequest")]
+    [Fact(DisplayName = "WALLETS-UPDATE-008: with empty id return 400")]
     public async Task UpdateWallet_WithEmptyId_ReturnsBadRequest()
     {
         // Arrange

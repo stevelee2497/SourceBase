@@ -24,7 +24,7 @@ namespace SourceBase.Tests.Features.Transfers;
     })]
 public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TRANSFER-GET-001: GetTransfers_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TRANSFER-GET-001: get transfers without token return 401")]
     public async Task GetTransfers_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-002: GetTransfers_WithOwnedTransfers_ReturnsOk")]
+    [Fact(DisplayName = "TRANSFER-GET-002: get transfers with owned transfers return 200")]
     public async Task GetTransfers_WithOwnedTransfers_ReturnsOk()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body.Total.ShouldBe(1);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-003: GetTransfers_ReturnsTransferDetails")]
+    [Fact(DisplayName = "TRANSFER-GET-003: get transfers returns transfer details")]
     public async Task GetTransfers_ReturnsTransferDetails()
     {
         // Arrange
@@ -95,7 +95,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         item.Note.ShouldBe(note);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-004: GetTransfers_WithMultipleUsers_ReturnsOnlyCurrentUsersTransfers")]
+    [Fact(DisplayName = "TRANSFER-GET-004: get transfers with multiple users returns only current users transfers")]
     public async Task GetTransfers_WithMultipleUsers_ReturnsOnlyCurrentUsersTransfers()
     {
         // Arrange
@@ -127,7 +127,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Items.ShouldContain(x => x.Id == ownTransfer!.Id);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-005: GetTransfers_WithWalletFilter_ReturnsMatchingTransfers")]
+    [Fact(DisplayName = "TRANSFER-GET-005: get transfers with wallet filter returns matching transfers")]
     public async Task GetTransfers_WithWalletFilter_ReturnsMatchingTransfers()
     {
         // Arrange
@@ -154,7 +154,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Items.ShouldContain(x => x.Id == matching!.Id);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-006: GetTransfers_WithDateRange_ReturnsTransfersWithinRange")]
+    [Fact(DisplayName = "TRANSFER-GET-006: get transfers with date range returns transfers within range")]
     public async Task GetTransfers_WithDateRange_ReturnsTransfersWithinRange()
     {
         // Arrange
@@ -180,7 +180,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body!.Items.ShouldContain(x => x.Id == inRange!.Id);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-007: GetTransfers_WithPagination_ReturnsCorrectSubset")]
+    [Fact(DisplayName = "TRANSFER-GET-007: get transfers with pagination returns correct subset")]
     public async Task GetTransfers_WithPagination_ReturnsCorrectSubset()
     {
         // Arrange
@@ -208,7 +208,7 @@ public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFact
         body.Items[0].Id.ShouldBe(second!.Id);
     }
 
-    [Fact(DisplayName = "TRANSFER-GET-008: GetTransfers_WithNoTransfers_ReturnsEmptyList")]
+    [Fact(DisplayName = "TRANSFER-GET-008: get transfers with no transfers returns empty list")]
     public async Task GetTransfers_WithNoTransfers_ReturnsEmptyList()
     {
         // Arrange

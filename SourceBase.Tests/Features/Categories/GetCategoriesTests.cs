@@ -22,7 +22,7 @@ namespace SourceBase.Tests.Features.Categories;
     })]
 public class GetCategoriesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "CATS-GET-001: GetCategories_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "CATS-GET-001: without token returns 401")]
     public async Task GetCategories_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class GetCategoriesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "CATS-GET-002: GetCategories_ReturnsSystemAndUserCategories")]
+    [Fact(DisplayName = "CATS-GET-002: returns system and user categories")]
     public async Task GetCategories_ReturnsSystemAndUserCategories()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class GetCategoriesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body!.ShouldContain(x => x.IsSystem);
     }
 
-    [Fact(DisplayName = "CATS-GET-003: GetCategories_WithMultipleUsers_ExcludesOtherUsersCategories")]
+    [Fact(DisplayName = "CATS-GET-003: multiple users exclude others' categories")]
     public async Task GetCategories_WithMultipleUsers_ExcludesOtherUsersCategories()
     {
         // Arrange
@@ -80,7 +80,7 @@ public class GetCategoriesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body!.ShouldNotContain(x => x.Id == otherCategory!.Id);
     }
 
-    [Fact(DisplayName = "CATS-GET-004: GetCategories_WithIncomeFilter_ReturnsOnlyIncomeCategories")]
+    [Fact(DisplayName = "CATS-GET-004: income filter returns only income categories")]
     public async Task GetCategories_WithIncomeFilter_ReturnsOnlyIncomeCategories()
     {
         // Arrange
@@ -99,7 +99,7 @@ public class GetCategoriesTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.ShouldAllBe(x => x.Type == CategoryType.Income);
     }
 
-    [Fact(DisplayName = "CATS-GET-005: GetCategories_WithExpenseFilter_ReturnsOnlyExpenseCategories")]
+    [Fact(DisplayName = "CATS-GET-005: expense filter returns only expense categories")]
     public async Task GetCategories_WithExpenseFilter_ReturnsOnlyExpenseCategories()
     {
         // Arrange

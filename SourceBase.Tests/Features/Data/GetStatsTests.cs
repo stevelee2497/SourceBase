@@ -24,7 +24,7 @@ namespace SourceBase.Tests.Features.Data;
     })]
 public class GetStatsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "DATA-STATS-001: GetStats_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "DATA-STATS-001: missing token returns 401")]
     public async Task GetStats_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class GetStatsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "DATA-STATS-002: GetStats_AsAuthenticatedUser_ReturnsOk")]
+    [Fact(DisplayName = "DATA-STATS-002: authenticated user returns 200")]
     public async Task GetStats_AsAuthenticatedUser_ReturnsOk()
     {
         // Arrange

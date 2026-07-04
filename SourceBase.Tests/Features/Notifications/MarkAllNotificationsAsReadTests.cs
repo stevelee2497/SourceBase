@@ -25,7 +25,7 @@ namespace SourceBase.Tests.Features.Notifications;
     })]
 public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "NOTIF-MARK-ALL-READ-001: MarkAllNotificationsAsRead_WithUnreadNotifications_MarksAllAsRead")]
+    [Fact(DisplayName = "NOTIF-MARK-ALL-READ-001: unread notifications are marked as read")]
     public async Task MarkAllNotificationsAsRead_WithUnreadNotifications_MarksAllAsRead()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
         unreadNotifications!.Total.ShouldBe(0);
     }
 
-    [Fact(DisplayName = "NOTIF-MARK-ALL-READ-002: MarkAllNotificationsAsRead_WithNoNotifications_ReturnsOk")]
+    [Fact(DisplayName = "NOTIF-MARK-ALL-READ-002: no notifications returns 200")]
     public async Task MarkAllNotificationsAsRead_WithNoNotifications_ReturnsOk()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
         body!.Success.ShouldBeTrue();
     }
 
-    [Fact(DisplayName = "NOTIF-MARK-ALL-READ-003: MarkAllNotificationsAsRead_DoesNotAffectOtherUsersNotifications")]
+    [Fact(DisplayName = "NOTIF-MARK-ALL-READ-003: other users' notifications are not affected")]
     public async Task MarkAllNotificationsAsRead_DoesNotAffectOtherUsersNotifications()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixt
         otherUserUnread.ShouldBe(1);
     }
 
-    [Fact(DisplayName = "NOTIF-MARK-ALL-READ-004: MarkAllNotificationsAsRead_WithoutAuth_ReturnsUnauthorized")]
+    [Fact(DisplayName = "NOTIF-MARK-ALL-READ-004: unauthenticated request returns 401")]
     public async Task MarkAllNotificationsAsRead_WithoutAuth_ReturnsUnauthorized()
     {
         // Arrange

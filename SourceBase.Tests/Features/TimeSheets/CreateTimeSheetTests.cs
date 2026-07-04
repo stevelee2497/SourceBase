@@ -25,7 +25,7 @@ namespace SourceBase.Tests.Features.TimeSheets;
     })]
 public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TIMESHEET-CREATE-001: CreateTimeSheet_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TIMESHEET-CREATE-001: without token returns 401")]
     public async Task CreateTimeSheet_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TIMESHEET-CREATE-002: CreateTimeSheet_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "TIMESHEET-CREATE-002: valid data returns 200")]
     public async Task CreateTimeSheet_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         body.Ids[0].ShouldNotBe(Guid.Empty);
     }
 
-    [Fact(DisplayName = "TIMESHEET-CREATE-003: CreateTimeSheet_WithExistingDateAndProject_UpdatesHours")]
+    [Fact(DisplayName = "TIMESHEET-CREATE-003: existing date and project updates hours")]
     public async Task CreateTimeSheet_WithExistingDateAndProject_UpdatesHours()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         ts!.Hours.ShouldBe(8);
     }
 
-    [Fact(DisplayName = "TIMESHEET-CREATE-004: CreateTimeSheet_WithMultipleItems_CreatesAll")]
+    [Fact(DisplayName = "TIMESHEET-CREATE-004: multiple items creates all")]
     public async Task CreateTimeSheet_WithMultipleItems_CreatesAll()
     {
         // Arrange
@@ -110,7 +110,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Ids.Count.ShouldBe(2);
     }
 
-    [Fact(DisplayName = "TIMESHEET-CREATE-005: CreateTimeSheet_WithMissingProject_ReturnsBadRequest")]
+    [Fact(DisplayName = "TIMESHEET-CREATE-005: missing project returns 400")]
     public async Task CreateTimeSheet_WithMissingProject_ReturnsBadRequest()
     {
         // Arrange
@@ -126,7 +126,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TIMESHEET-CREATE-006: CreateTimeSheet_WithZeroHours_ReturnsBadRequest")]
+    [Fact(DisplayName = "TIMESHEET-CREATE-006: zero hours returns 400")]
     public async Task CreateTimeSheet_WithZeroHours_ReturnsBadRequest()
     {
         // Arrange
@@ -142,7 +142,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TIMESHEET-CREATE-007: CreateTimeSheet_WithHoursExceeding8_ReturnsBadRequest")]
+    [Fact(DisplayName = "TIMESHEET-CREATE-007: hours exceeding 8 returns 400")]
     public async Task CreateTimeSheet_WithHoursExceeding8_ReturnsBadRequest()
     {
         // Arrange
@@ -158,7 +158,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TIMESHEET-CREATE-008: CreateTimeSheet_WithEmptyItems_ReturnsBadRequest")]
+    [Fact(DisplayName = "TIMESHEET-CREATE-008: empty items returns 400")]
     public async Task CreateTimeSheet_WithEmptyItems_ReturnsBadRequest()
     {
         // Arrange
@@ -174,7 +174,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "TIMESHEET-CREATE-009: CreateTimeSheet_UpsertDoesNotOverwriteOtherUsersEntry")]
+    [Fact(DisplayName = "TIMESHEET-CREATE-009: upsert does not overwrite other users' entries")]
     public async Task CreateTimeSheet_UpsertDoesNotOverwriteOtherUsersEntry()
     {
         // Arrange
@@ -201,7 +201,7 @@ public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         (ownerBody!.Items.Count(x => x.Project == "SharedName") + strangerBody!.Items.Count(x => x.Project == "SharedName")).ShouldBe(2);
     }
 
-    [Fact(DisplayName = "TIMESHEET-CREATE-010: CreateTimeSheet_WithValidData_CreatesNotificationForUser")]
+    [Fact(DisplayName = "TIMESHEET-CREATE-010: valid data creates notification")]
     public async Task CreateTimeSheet_WithValidData_CreatesNotificationForUser()
     {
         // Arrange

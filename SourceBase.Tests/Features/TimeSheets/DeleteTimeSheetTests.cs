@@ -22,7 +22,7 @@ namespace SourceBase.Tests.Features.TimeSheets;
     })]
 public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TIMESHEET-DELETE-001: DeleteTimeSheet_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TIMESHEET-DELETE-001: without token returns 401")]
     public async Task DeleteTimeSheet_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TIMESHEET-DELETE-002: DeleteTimeSheet_ExistingEntry_ReturnsOk")]
+    [Fact(DisplayName = "TIMESHEET-DELETE-002: existing entry returns 200")]
     public async Task DeleteTimeSheet_ExistingEntry_ReturnsOk()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         getResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TIMESHEET-DELETE-003: DeleteTimeSheet_WithNonExistentId_ReturnsNotFound")]
+    [Fact(DisplayName = "TIMESHEET-DELETE-003: non-existent id returns 404")]
     public async Task DeleteTimeSheet_WithNonExistentId_ReturnsNotFound()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TIMESHEET-DELETE-004: DeleteTimeSheet_WithOtherUsersEntry_ReturnsNotFound")]
+    [Fact(DisplayName = "TIMESHEET-DELETE-004: other user's entry returns 404")]
     public async Task DeleteTimeSheet_WithOtherUsersEntry_ReturnsNotFound()
     {
         // Arrange

@@ -24,7 +24,7 @@ namespace SourceBase.Tests.Features.Wallets;
     })]
 public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "WALLETS-GET-001: GetWallet_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "WALLETS-GET-001: without token return 401")]
     public async Task GetWallet_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-002: GetWallet_WithOwnedWalletId_ReturnsWalletData")]
+    [Fact(DisplayName = "WALLETS-GET-002: with owned wallet id returns wallet data")]
     public async Task GetWallet_WithOwnedWalletId_ReturnsWalletData()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         body.Balance.ShouldBe(250m);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-003: GetWallet_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "WALLETS-GET-003: with unknown id return 404")]
     public async Task GetWallet_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-004: GetWallet_WithOtherUsersWallet_ReturnsNotFound")]
+    [Fact(DisplayName = "WALLETS-GET-004: with other users wallet return 404")]
     public async Task GetWallet_WithOtherUsersWallet_ReturnsNotFound()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "WALLETS-GET-005: GetWallet_BalanceReflectsMultipleTransactions")]
+    [Fact(DisplayName = "WALLETS-GET-005: balance reflects multiple transactions")]
     public async Task GetWallet_BalanceReflectsMultipleTransactions()
     {
         // Arrange

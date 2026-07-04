@@ -24,7 +24,7 @@ namespace SourceBase.Tests.Features.Transfers;
     })]
 public class DeleteTransferTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TRANSFER-DELETE-001: DeleteTransfer_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TRANSFER-DELETE-001: delete transfer without token return 401")]
     public async Task DeleteTransfer_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class DeleteTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TRANSFER-DELETE-002: DeleteTransfer_WithOwnedTransfer_RemovesLinkedTransactionsAndRestoresBalances")]
+    [Fact(DisplayName = "TRANSFER-DELETE-002: delete transfer with owned transfer removes linked transactions and restores balances")]
     public async Task DeleteTransfer_WithOwnedTransfer_RemovesLinkedTransactionsAndRestoresBalances()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class DeleteTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         toWalletData!.Balance.ShouldBe(50m);
     }
 
-    [Fact(DisplayName = "TRANSFER-DELETE-003: DeleteTransfer_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "TRANSFER-DELETE-003: delete transfer with unknown id return 404")]
     public async Task DeleteTransfer_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class DeleteTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TRANSFER-DELETE-004: DeleteTransfer_WithOtherUsersTransfer_ReturnsNotFound")]
+    [Fact(DisplayName = "TRANSFER-DELETE-004: delete transfer with other users transfer return 404")]
     public async Task DeleteTransfer_WithOtherUsersTransfer_ReturnsNotFound()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class DeleteTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TRANSFER-DELETE-005: DeleteTransfer_RemovesBothLinkedTransactions")]
+    [Fact(DisplayName = "TRANSFER-DELETE-005: delete transfer removes both linked transactions")]
     public async Task DeleteTransfer_RemovesBothLinkedTransactions()
     {
         // Arrange
@@ -141,7 +141,7 @@ public class DeleteTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         toTxns!.Items.ShouldNotContain(x => x.IsTransfer);
     }
 
-    [Fact(DisplayName = "TRANSFER-DELETE-006: DeleteTransfer_DoesNotAffectOtherTransfers")]
+    [Fact(DisplayName = "TRANSFER-DELETE-006: delete transfer does not affect other transfers")]
     public async Task DeleteTransfer_DoesNotAffectOtherTransfers()
     {
         // Arrange

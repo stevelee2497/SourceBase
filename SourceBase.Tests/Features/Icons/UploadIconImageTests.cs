@@ -21,7 +21,7 @@ namespace SourceBase.Tests.Features.Icons;
     })]
 public class UploadIconImageTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "ICONS-UPLOAD-001: UploadIconImage_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "ICONS-UPLOAD-001: without token returns 401")]
     public async Task UploadIconImage_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -34,7 +34,7 @@ public class UploadIconImageTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "ICONS-UPLOAD-002: UploadIconImage_WithEmptyFileName_ReturnsBadRequest")]
+    [Fact(DisplayName = "ICONS-UPLOAD-002: empty file name returns 400")]
     public async Task UploadIconImage_WithEmptyFileName_ReturnsBadRequest()
     {
         // Arrange
@@ -47,7 +47,7 @@ public class UploadIconImageTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "ICONS-UPLOAD-003: UploadIconImage_WithUnsupportedExtension_ReturnsBadRequest")]
+    [Fact(DisplayName = "ICONS-UPLOAD-003: unsupported extension returns 400")]
     public async Task UploadIconImage_WithUnsupportedExtension_ReturnsBadRequest()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class UploadIconImageTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "ICONS-UPLOAD-004: UploadIconImage_WithNoExtension_ReturnsBadRequest")]
+    [Fact(DisplayName = "ICONS-UPLOAD-004: no extension returns 400")]
     public async Task UploadIconImage_WithNoExtension_ReturnsBadRequest()
     {
         // Arrange

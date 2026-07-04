@@ -23,7 +23,7 @@ namespace SourceBase.Tests.Features.Auth;
     })]
 public class LogoutTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "LOGOUT-001: Logout_WithValidToken_ReturnsOk")]
+    [Fact(DisplayName = "LOGOUT-001: valid token returns 200")]
     public async Task Logout_WithValidToken_ReturnsOk()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class LogoutTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         getInfoResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "LOGOUT-002: Logout_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "LOGOUT-002: without token returns 401")]
     public async Task Logout_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -51,7 +51,7 @@ public class LogoutTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "LOGOUT-003: Logout_WithValidToken_InvalidatesRefreshToken")]
+    [Fact(DisplayName = "LOGOUT-003: valid token invalidates refresh token")]
     public async Task Logout_WithValidToken_InvalidatesRefreshToken()
     {
         // Arrange

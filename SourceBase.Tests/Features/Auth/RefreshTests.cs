@@ -24,7 +24,7 @@ namespace SourceBase.Tests.Features.Auth;
     })]
 public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "REFRESH-001: RefreshToken_WithValidToken_PreservesRoles")]
+    [Fact(DisplayName = "REFRESH-001: valid token preserves roles")]
     public async Task RefreshToken_WithValidToken_PreservesRoles()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.Roles.ShouldContain("Admin");
     }
 
-    [Fact(DisplayName = "REFRESH-002: RefreshToken_WithInvalidToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "REFRESH-002: invalid token returns 401")]
     public async Task RefreshToken_WithInvalidToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "REFRESH-003: RefreshToken_AfterLogout_ReturnsUnauthorized")]
+    [Fact(DisplayName = "REFRESH-003: after logout returns 401")]
     public async Task RefreshToken_AfterLogout_ReturnsUnauthorized()
     {
         // Arrange
@@ -109,7 +109,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "REFRESH-005: RefreshToken_AfterPasswordReset_ReturnsUnauthorized")]
+    [Fact(DisplayName = "REFRESH-005: after password reset returns 401")]
     public async Task RefreshToken_AfterPasswordReset_ReturnsUnauthorized()
     {
         // Arrange
@@ -150,7 +150,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "REFRESH-006: RefreshToken_NewTokenFromRefreshResponse_CanRefreshAgain")]
+    [Fact(DisplayName = "REFRESH-006: new token from refresh response can refresh again")]
     public async Task RefreshToken_NewTokenFromRefreshResponse_CanRefreshAgain()
     {
         // Arrange
@@ -191,7 +191,7 @@ public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         secondRefreshBody!.AccessToken.ShouldNotBeNullOrEmpty();
     }
 
-    [Fact(DisplayName = "REFRESH-004: RefreshToken_WithMissingToken_ReturnsBadRequest")]
+    [Fact(DisplayName = "REFRESH-004: missing token returns 400")]
     public async Task RefreshToken_WithMissingToken_ReturnsBadRequest()
     {
         // Arrange

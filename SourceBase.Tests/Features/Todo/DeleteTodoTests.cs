@@ -22,7 +22,7 @@ namespace SourceBase.Tests.Features.Todo;
     })]
 public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TODOS-DELETE-001: DeleteTodo_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TODOS-DELETE-001: without token returns 401")]
     public async Task DeleteTodo_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TODOS-DELETE-002: DeleteTodo_ExistingItem_ReturnsOk")]
+    [Fact(DisplayName = "TODOS-DELETE-002: existing item returns 200")]
     public async Task DeleteTodo_ExistingItem_ReturnsOk()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         getResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TODOS-DELETE-003: DeleteTodo_WithNonExistentId_ReturnsNotFound")]
+    [Fact(DisplayName = "TODOS-DELETE-003: non-existent id returns 404")]
     public async Task DeleteTodo_WithNonExistentId_ReturnsNotFound()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TODOS-DELETE-004: DeleteTodo_WithOtherUsersTodo_ReturnsNotFound")]
+    [Fact(DisplayName = "TODOS-DELETE-004: other user's todo returns 404")]
     public async Task DeleteTodo_WithOtherUsersTodo_ReturnsNotFound()
     {
         // Arrange

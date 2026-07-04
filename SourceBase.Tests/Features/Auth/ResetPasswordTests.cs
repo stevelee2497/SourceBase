@@ -23,7 +23,7 @@ namespace SourceBase.Tests.Features.Auth;
     })]
 public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "RESET-PWD-001: ResetPassword_WithValidToken_ReturnsOk")]
+    [Fact(DisplayName = "RESET-PWD-001: valid token returns 200")]
     public async Task ResetPassword_WithValidToken_ReturnsOk()
     {
         // Arrange
@@ -74,7 +74,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         oldPasswordResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "RESET-PWD-002: ResetPassword_AfterReset_CanLoginWithNewPassword")]
+    [Fact(DisplayName = "RESET-PWD-002: after reset can login with new password")]
     public async Task ResetPassword_AfterReset_CanLoginWithNewPassword()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
-    [Fact(DisplayName = "RESET-PWD-003: ResetPassword_WithInvalidCode_ReturnsBadRequest")]
+    [Fact(DisplayName = "RESET-PWD-003: invalid code returns 400")]
     public async Task ResetPassword_WithInvalidCode_ReturnsBadRequest()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "RESET-PWD-004: ResetPassword_WithExpiredCode_ReturnsBadRequest")]
+    [Fact(DisplayName = "RESET-PWD-004: expired code returns 400")]
     public async Task ResetPassword_WithExpiredCode_ReturnsBadRequest()
     {
         // Arrange
@@ -185,7 +185,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "RESET-PWD-005: ResetPassword_WithUnknownEmail_ReturnsNotFound")]
+    [Fact(DisplayName = "RESET-PWD-005: unknown email returns 404")]
     public async Task ResetPassword_WithUnknownEmail_ReturnsNotFound()
     {
         // Arrange
@@ -203,7 +203,7 @@ public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "RESET-PWD-006: ResetPassword_AfterReset_EmailIsConfirmedAndLoginWithNewPassword")]
+    [Fact(DisplayName = "RESET-PWD-006: after reset email is confirmed and can login")]
     public async Task ResetPassword_AfterReset_EmailIsConfirmedAndLoginWithNewPassword()
     {
         // Arrange

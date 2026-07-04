@@ -22,7 +22,7 @@ namespace SourceBase.Tests.Features.Auth;
     })]
 public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "UPDATE-INFO-001: UpdateUserInfo_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "UPDATE-INFO-001: missing token returns 401")]
     public async Task UpdateUserInfo_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "UPDATE-INFO-002: UpdateUserInfo_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "UPDATE-INFO-002: valid data returns 200")]
     public async Task UpdateUserInfo_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body!.Id.ShouldNotBe(Guid.Empty);
     }
 
-    [Fact(DisplayName = "UPDATE-INFO-003: UpdateUserInfo_ChangesReflectedInGetUserInfo")]
+    [Fact(DisplayName = "UPDATE-INFO-003: changes reflected in subsequent get")]
     public async Task UpdateUserInfo_ChangesReflectedInGetUserInfo()
     {
         // Arrange
@@ -87,7 +87,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body.PhoneNumber.ShouldBe(phoneNumber);
     }
 
-    [Fact(DisplayName = "UPDATE-INFO-005: UpdateUserInfo_WithValidTodoListId_SetsDefault")]
+    [Fact(DisplayName = "UPDATE-INFO-005: valid todo list id sets default")]
     public async Task UpdateUserInfo_WithValidTodoListId_SetsDefault()
     {
         // Arrange
@@ -107,7 +107,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         info!.DefaultTodoListId.ShouldBe(list.Id);
     }
 
-    [Fact(DisplayName = "UPDATE-INFO-006: UpdateUserInfo_WithNullTodoListId_DoesNotClearDefault")]
+    [Fact(DisplayName = "UPDATE-INFO-006: null todo list id does not clear default")]
     public async Task UpdateUserInfo_WithNullTodoListId_DoesNotClearDefault()
     {
         // Arrange
@@ -128,7 +128,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         info!.DefaultTodoListId.ShouldBe(list.Id);
     }
 
-    [Fact(DisplayName = "UPDATE-INFO-007: UpdateUserInfo_PartialUpdate_DoesNotOverwriteOmittedFields")]
+    [Fact(DisplayName = "UPDATE-INFO-007: partial update does not overwrite omitted fields")]
     public async Task UpdateUserInfo_PartialUpdate_DoesNotOverwriteOmittedFields()
     {
         // Arrange
@@ -145,7 +145,7 @@ public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFa
         info.PhoneNumber.ShouldBe("0111222333");
     }
 
-    [Fact(DisplayName = "UPDATE-INFO-004: UpdateUserInfo_WithPhoneNumberTooLong_ReturnsBadRequest")]
+    [Fact(DisplayName = "UPDATE-INFO-004: phone number too long returns 400")]
     public async Task UpdateUserInfo_WithPhoneNumberTooLong_ReturnsBadRequest()
     {
         // Arrange

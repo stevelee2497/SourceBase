@@ -23,7 +23,7 @@ namespace SourceBase.Tests.Features.Roles;
     })]
 public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "ROLES-CREATE-001: CreateRole_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "ROLES-CREATE-001: missing token returns 401")]
     public async Task CreateRole_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "ROLES-CREATE-002: CreateRole_WithNonAdminUser_ReturnsForbidden")]
+    [Fact(DisplayName = "ROLES-CREATE-002: non-admin user returns 403")]
     public async Task CreateRole_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -57,7 +57,7 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "ROLES-CREATE-003: CreateRole_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "ROLES-CREATE-003: valid data returns 200")]
     public async Task CreateRole_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -81,7 +81,7 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         roles!.Items.ShouldContain(x => x.Name == roleName && x.Description == "Created in integration test");
     }
 
-    [Fact(DisplayName = "ROLES-CREATE-004: CreateRole_WithDuplicateNameIgnoringCase_ReturnsBadRequest")]
+    [Fact(DisplayName = "ROLES-CREATE-004: duplicate name (case-insensitive) returns 400")]
     public async Task CreateRole_WithDuplicateNameIgnoringCase_ReturnsBadRequest()
     {
         // Arrange
@@ -105,7 +105,7 @@ public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "ROLES-CREATE-005: CreateRole_WithWhitespaceAroundName_TrimsBeforePersisting")]
+    [Fact(DisplayName = "ROLES-CREATE-005: whitespace around name is trimmed")]
     public async Task CreateRole_WithWhitespaceAroundName_TrimsBeforePersisting()
     {
         // Arrange

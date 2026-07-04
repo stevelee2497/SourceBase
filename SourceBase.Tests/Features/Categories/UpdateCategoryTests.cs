@@ -24,7 +24,7 @@ namespace SourceBase.Tests.Features.Categories;
     })]
 public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "CATS-UPDATE-001: UpdateCategory_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "CATS-UPDATE-001: missing token returns 401")]
     public async Task UpdateCategory_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "CATS-UPDATE-002: UpdateCategory_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "CATS-UPDATE-002: valid data returns 200")]
     public async Task UpdateCategory_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         updated.Icon.ShouldBe("🏷️");
     }
 
-    [Fact(DisplayName = "CATS-UPDATE-003: UpdateCategory_WithOnlyIcon_ReturnsOkAndKeepsName")]
+    [Fact(DisplayName = "CATS-UPDATE-003: only icon returns 200 and keeps name")]
     public async Task UpdateCategory_WithOnlyIcon_ReturnsOkAndKeepsName()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         updated.Icon.ShouldBe("✏️");
     }
 
-    [Fact(DisplayName = "CATS-UPDATE-004: UpdateCategory_WithSystemCategory_ReturnsForbidden")]
+    [Fact(DisplayName = "CATS-UPDATE-004: system category returns 403")]
     public async Task UpdateCategory_WithSystemCategory_ReturnsForbidden()
     {
         // Arrange
@@ -119,7 +119,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "CATS-UPDATE-005: UpdateCategory_WithOtherUsersCategory_ReturnsNotFound")]
+    [Fact(DisplayName = "CATS-UPDATE-005: other user's category returns 404")]
     public async Task UpdateCategory_WithOtherUsersCategory_ReturnsNotFound()
     {
         // Arrange
@@ -141,7 +141,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "CATS-UPDATE-006: UpdateCategory_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "CATS-UPDATE-006: unknown id returns 404")]
     public async Task UpdateCategory_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -158,7 +158,7 @@ public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "CATS-UPDATE-007: UpdateCategory_WithEmptyId_ReturnsBadRequest")]
+    [Fact(DisplayName = "CATS-UPDATE-007: empty id returns 400")]
     public async Task UpdateCategory_WithEmptyId_ReturnsBadRequest()
     {
         // Arrange

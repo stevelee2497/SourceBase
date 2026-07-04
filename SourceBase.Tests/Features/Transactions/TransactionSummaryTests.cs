@@ -24,7 +24,7 @@ namespace SourceBase.Tests.Features.Transactions;
     })]
 public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TXN-SUMMARY-001: GetTransactionSummary_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TXN-SUMMARY-001: missing token returns 401")]
     public async Task GetTransactionSummary_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebA
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TXN-SUMMARY-002: GetTransactionSummary_WithPeriod_ReturnsTotalIncomeAndExpense")]
+    [Fact(DisplayName = "TXN-SUMMARY-002: period returns total income and expense")]
     public async Task GetTransactionSummary_WithPeriod_ReturnsTotalIncomeAndExpense()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebA
         body.TotalExpense.ShouldBe(40m);
     }
 
-    [Fact(DisplayName = "TXN-SUMMARY-003: GetTransactionSummary_WithTotals_ReturnsNetBalance")]
+    [Fact(DisplayName = "TXN-SUMMARY-003: get transaction summary with totals returns net balance")]
     public async Task GetTransactionSummary_WithTotals_ReturnsNetBalance()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebA
         body!.NetBalance.ShouldBe(60m);
     }
 
-    [Fact(DisplayName = "TXN-SUMMARY-004: GetTransactionSummary_WithWalletFilter_ReturnsWalletTotalsOnly")]
+    [Fact(DisplayName = "TXN-SUMMARY-004: get transaction summary with wallet filter returns wallet totals only")]
     public async Task GetTransactionSummary_WithWalletFilter_ReturnsWalletTotalsOnly()
     {
         // Arrange
@@ -140,7 +140,7 @@ public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebA
         body.NetBalance.ShouldBe(100m);
     }
 
-    [Fact(DisplayName = "TXN-SUMMARY-005: GetTransactionSummary_WithDateRange_ReturnsTransactionsWithinRange")]
+    [Fact(DisplayName = "TXN-SUMMARY-005: get transaction summary with date range returns transactions within range")]
     public async Task GetTransactionSummary_WithDateRange_ReturnsTransactionsWithinRange()
     {
         // Arrange
@@ -175,7 +175,7 @@ public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebA
         body.TotalExpense.ShouldBe(0m);
     }
 
-    [Fact(DisplayName = "TXN-SUMMARY-006: GetTransactionSummary_ByCategory_ReturnsGroupedTotals")]
+    [Fact(DisplayName = "TXN-SUMMARY-006: get transaction summary by category returns grouped totals")]
     public async Task GetTransactionSummary_ByCategory_ReturnsGroupedTotals()
     {
         // Arrange
@@ -210,7 +210,7 @@ public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebA
         body.ByCategory.ShouldContain(x => x.CategoryId == foodCategory.Id && x.Total == 50m && x.Type == TransactionType.Expense);
     }
 
-    [Fact(DisplayName = "TXN-SUMMARY-007: GetTransactionSummary_WithMultipleUsers_ExcludesOtherUsersTransactions")]
+    [Fact(DisplayName = "TXN-SUMMARY-007: get transaction summary with multiple users excludes other users transactions")]
     public async Task GetTransactionSummary_WithMultipleUsers_ExcludesOtherUsersTransactions()
     {
         // Arrange

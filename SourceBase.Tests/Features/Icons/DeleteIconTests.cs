@@ -23,7 +23,7 @@ namespace SourceBase.Tests.Features.Icons;
     })]
 public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "ICONS-DELETE-001: DeleteIcon_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "ICONS-DELETE-001: without token returns 401")]
     public async Task DeleteIcon_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "ICONS-DELETE-002: DeleteIcon_WithValidId_ReturnsSuccess")]
+    [Fact(DisplayName = "ICONS-DELETE-002: valid id returns 200")]
     public async Task DeleteIcon_WithValidId_ReturnsSuccess()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         body!.Success.ShouldBeTrue();
     }
 
-    [Fact(DisplayName = "ICONS-DELETE-003: DeleteIcon_RemovedFromGetIcons")]
+    [Fact(DisplayName = "ICONS-DELETE-003: deleted icon removed from list")]
     public async Task DeleteIcon_RemovedFromGetIcons()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         icons!.ShouldNotContain(i => i.Id == created.Id);
     }
 
-    [Fact(DisplayName = "ICONS-DELETE-004: DeleteIcon_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "ICONS-DELETE-004: unknown id returns 404")]
     public async Task DeleteIcon_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -98,7 +98,7 @@ public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "ICONS-DELETE-005: DeleteIcon_OnSystemIcon_ReturnsForbidden")]
+    [Fact(DisplayName = "ICONS-DELETE-005: system icon returns 403")]
     public async Task DeleteIcon_OnSystemIcon_ReturnsForbidden()
     {
         // Arrange

@@ -22,7 +22,7 @@ namespace SourceBase.Tests.Features.TodoLists;
     })]
 public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TODOLISTS-DELETE-001: DeleteTodoList_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TODOLISTS-DELETE-001: without token returns 401")]
     public async Task DeleteTodoList_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TODOLISTS-DELETE-002: DeleteTodoList_WithValidId_ReturnsOk")]
+    [Fact(DisplayName = "TODOLISTS-DELETE-002: valid id returns 200")]
     public async Task DeleteTodoList_WithValidId_ReturnsOk()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body!.Success.ShouldBeTrue();
     }
 
-    [Fact(DisplayName = "TODOLISTS-DELETE-003: DeleteTodoList_OwnedByAnotherUser_ReturnsNotFound")]
+    [Fact(DisplayName = "TODOLISTS-DELETE-003: owned by another user returns 404")]
     public async Task DeleteTodoList_OwnedByAnotherUser_ReturnsNotFound()
     {
         // Arrange

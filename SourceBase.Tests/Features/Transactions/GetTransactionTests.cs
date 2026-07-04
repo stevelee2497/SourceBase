@@ -25,7 +25,7 @@ namespace SourceBase.Tests.Features.Transactions;
     })]
 public class GetTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TXN-GET-001: GetTransaction_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TXN-GET-001: missing token return 401")]
     public async Task GetTransaction_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class GetTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TXN-GET-002: GetTransaction_WithOwnedTransaction_ReturnsTransactionData")]
+    [Fact(DisplayName = "TXN-GET-002: owned transaction returns 200 and transaction data")]
     public async Task GetTransaction_WithOwnedTransaction_ReturnsTransactionData()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class GetTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body.IsTransfer.ShouldBeFalse();
     }
 
-    [Fact(DisplayName = "TXN-GET-003: GetTransaction_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "TXN-GET-003: unknown id return 404")]
     public async Task GetTransaction_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class GetTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TXN-GET-004: GetTransaction_WithOtherUsersTransaction_ReturnsNotFound")]
+    [Fact(DisplayName = "TXN-GET-004: get transaction with other users transaction return 404")]
     public async Task GetTransaction_WithOtherUsersTransaction_ReturnsNotFound()
     {
         // Arrange

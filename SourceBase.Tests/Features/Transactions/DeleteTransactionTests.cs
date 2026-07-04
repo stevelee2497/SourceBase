@@ -26,7 +26,7 @@ namespace SourceBase.Tests.Features.Transactions;
     })]
 public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TXN-DELETE-001: DeleteTransaction_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TXN-DELETE-001: missing token returns 401")]
     public async Task DeleteTransaction_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TXN-DELETE-002: DeleteTransaction_WithIncomeTransaction_RecomputesWalletBalance")]
+    [Fact(DisplayName = "TXN-DELETE-002: income transaction deletion recomputes wallet balance")]
     public async Task DeleteTransaction_WithIncomeTransaction_RecomputesWalletBalance()
     {
         // Arrange
@@ -66,7 +66,7 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         walletData!.Balance.ShouldBe(100m);
     }
 
-    [Fact(DisplayName = "TXN-DELETE-003: DeleteTransaction_WithExpenseTransaction_RecomputesWalletBalance")]
+    [Fact(DisplayName = "TXN-DELETE-003: expense transaction deletion recomputes wallet balance")]
     public async Task DeleteTransaction_WithExpenseTransaction_RecomputesWalletBalance()
     {
         // Arrange
@@ -93,7 +93,7 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         walletData!.Balance.ShouldBe(100m);
     }
 
-    [Fact(DisplayName = "TXN-DELETE-004: DeleteTransaction_WithTransferTransaction_ReturnsBadRequest")]
+    [Fact(DisplayName = "TXN-DELETE-004: transfer transaction deletion returns 400")]
     public async Task DeleteTransaction_WithTransferTransaction_ReturnsBadRequest()
     {
         // Arrange
@@ -119,7 +119,7 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         content.ShouldContain("Transfer transactions cannot be deleted directly");
     }
 
-    [Fact(DisplayName = "TXN-DELETE-005: DeleteTransaction_WithUnknownId_ReturnsNotFound")]
+    [Fact(DisplayName = "TXN-DELETE-005: unknown transaction id returns 404")]
     public async Task DeleteTransaction_WithUnknownId_ReturnsNotFound()
     {
         // Arrange
@@ -132,7 +132,7 @@ public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TXN-DELETE-006: DeleteTransaction_WithOtherUsersTransaction_ReturnsNotFound")]
+    [Fact(DisplayName = "TXN-DELETE-006: other user's transaction returns 404")]
     public async Task DeleteTransaction_WithOtherUsersTransaction_ReturnsNotFound()
     {
         // Arrange

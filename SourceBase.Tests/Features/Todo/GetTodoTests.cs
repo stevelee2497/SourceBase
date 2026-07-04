@@ -23,7 +23,7 @@ namespace SourceBase.Tests.Features.Todo;
     })]
 public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TODOS-GET-001: GetTodo_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TODOS-GET-001: missing token returns 401")]
     public async Task GetTodo_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TODOS-GET-002: GetTodo_AfterCreate_ReturnsCorrectData")]
+    [Fact(DisplayName = "TODOS-GET-002: returns correct data after creation")]
     public async Task GetTodo_AfterCreate_ReturnsCorrectData()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.Date.ShouldBe(new DateOnly(2025, 7, 15));
     }
 
-    [Fact(DisplayName = "TODOS-GET-003: GetTodo_NonExistentId_ReturnsNotFound")]
+    [Fact(DisplayName = "TODOS-GET-003: nonexistent id returns 404")]
     public async Task GetTodo_NonExistentId_ReturnsNotFound()
     {
         // Arrange
@@ -74,7 +74,7 @@ public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact(DisplayName = "TODOS-GET-004: GetTodo_WithOtherUsersTodo_ReturnsNotFound")]
+    [Fact(DisplayName = "TODOS-GET-004: other user's todo returns 404")]
     public async Task GetTodo_WithOtherUsersTodo_ReturnsNotFound()
     {
         // Arrange

@@ -23,7 +23,7 @@ namespace SourceBase.Tests.Features.Auth;
     })]
 public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "LOGIN-001: Login_WithValidCredentials_ReturnsOkAndAccessToken")]
+    [Fact(DisplayName = "CODE-001: valid credentials return 200 and access token")]
     public async Task Login_WithValidCredentials_ReturnsOkAndAccessToken()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body.RefreshToken.ShouldNotBeNullOrEmpty();
     }
 
-    [Fact(DisplayName = "LOGIN-002: Login_WithWrongPassword_ReturnsUnauthorized")]
+    [Fact(DisplayName = "CODE-002: wrong password return 401")]
     public async Task Login_WithWrongPassword_ReturnsUnauthorized()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "LOGIN-003: Login_WithUnknownEmail_ReturnsUnauthorized")]
+    [Fact(DisplayName = "CODE-003: unknown email return 401")]
     public async Task Login_WithUnknownEmail_ReturnsUnauthorized()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "LOGIN-004: Login_WithUnconfirmedEmail_ReturnsUnauthorized")]
+    [Fact(DisplayName = "CODE-004: unconfirmed email return 401")]
     public async Task Login_WithUnconfirmedEmail_ReturnsUnauthorized()
     {
         // Arrange
@@ -103,7 +103,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "LOGIN-005: Login_AfterEmailConfirmed_ReturnsOkAndAccessToken")]
+    [Fact(DisplayName = "CODE-005: email confirmed return 200 and access token")]
     public async Task Login_AfterEmailConfirmed_ReturnsOkAndAccessToken()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         body!.AccessToken.ShouldNotBeNullOrEmpty();
     }
 
-    [Fact(DisplayName = "LOGIN-006: Login_WithMissingPassword_ReturnsBadRequest")]
+    [Fact(DisplayName = "CODE-006: missing password return 400")]
     public async Task Login_WithMissingPassword_ReturnsBadRequest()
     {
         // Arrange
@@ -150,7 +150,7 @@ public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "LOGIN-007: Login_ExpiresIn_ReflectsConfiguredAccessTokenLifetime")]
+    [Fact(DisplayName = "CODE-007: expiresIn reflects configured token lifetime")]
     public async Task Login_ExpiresIn_ReflectsConfiguredAccessTokenLifetime()
     {
         // Arrange

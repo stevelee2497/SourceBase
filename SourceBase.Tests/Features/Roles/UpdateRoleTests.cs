@@ -23,7 +23,7 @@ namespace SourceBase.Tests.Features.Roles;
     })]
 public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "ROLES-UPDATE-001: UpdateRole_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "ROLES-UPDATE-001: without token return 401")]
     public async Task UpdateRole_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "ROLES-UPDATE-002: UpdateRole_WithNonAdminUser_ReturnsForbidden")]
+    [Fact(DisplayName = "ROLES-UPDATE-002: non-admin user return 403")]
     public async Task UpdateRole_WithNonAdminUser_ReturnsForbidden()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact(DisplayName = "ROLES-UPDATE-003: UpdateRole_WithValidData_ReturnsOk")]
+    [Fact(DisplayName = "ROLES-UPDATE-003: valid data return 200")]
     public async Task UpdateRole_WithValidData_ReturnsOk()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         roles!.Items.ShouldContain(x => x.Id == createBody.Id && x.Name == updatedRoleName && x.Description == "After update");
     }
 
-    [Fact(DisplayName = "ROLES-UPDATE-004: UpdateRole_WithDuplicateNameIgnoringCase_ReturnsBadRequest")]
+    [Fact(DisplayName = "ROLES-UPDATE-004: duplicate name (case-insensitive) return 400")]
     public async Task UpdateRole_WithDuplicateNameIgnoringCase_ReturnsBadRequest()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "ROLES-UPDATE-005: UpdateRole_WithAdminRole_ReturnsBadRequest")]
+    [Fact(DisplayName = "ROLES-UPDATE-005: admin role cannot be updated return 400")]
     public async Task UpdateRole_WithAdminRole_ReturnsBadRequest()
     {
         // Arrange
@@ -145,7 +145,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "ROLES-UPDATE-006: UpdateRole_WithSameNameOnSameRole_ReturnsOk")]
+    [Fact(DisplayName = "ROLES-UPDATE-006: same name on same role return 200")]
     public async Task UpdateRole_WithSameNameOnSameRole_ReturnsOk()
     {
         // Arrange
@@ -169,7 +169,7 @@ public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactor
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
-    [Fact(DisplayName = "ROLES-UPDATE-007: UpdateRole_WithEmptyId_ReturnsBadRequest")]
+    [Fact(DisplayName = "ROLES-UPDATE-007: empty id return 400")]
     public async Task UpdateRole_WithEmptyId_ReturnsBadRequest()
     {
         // Arrange

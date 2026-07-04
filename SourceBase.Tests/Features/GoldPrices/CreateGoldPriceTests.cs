@@ -22,7 +22,7 @@ namespace SourceBase.Tests.Features.GoldPrices;
     })]
 public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "GOLDPRICE-CREATE-001: CreateGoldPrice_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "GOLDPRICE-CREATE-001: without token returns 401")]
     public async Task CreateGoldPrice_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-CREATE-002: CreateGoldPrice_WithValidSjcData_ReturnsOkAndIds")]
+    [Fact(DisplayName = "GOLDPRICE-CREATE-002: valid SJC data returns 200 and IDs")]
     public async Task CreateGoldPrice_WithValidSjcData_ReturnsOkAndIds()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Ids[0].ShouldNotBe(Guid.Empty);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-CREATE-003: CreateGoldPrice_WithMissingSource_ReturnsBadRequest")]
+    [Fact(DisplayName = "GOLDPRICE-CREATE-003: missing source returns 400")]
     public async Task CreateGoldPrice_WithMissingSource_ReturnsBadRequest()
     {
         // Arrange
@@ -82,7 +82,7 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-CREATE-004: CreateGoldPrice_WithZeroBuyPrice_ReturnsBadRequest")]
+    [Fact(DisplayName = "GOLDPRICE-CREATE-004: zero buy price returns 400")]
     public async Task CreateGoldPrice_WithZeroBuyPrice_ReturnsBadRequest()
     {
         // Arrange
@@ -101,7 +101,7 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-CREATE-005: CreateGoldPrice_WithNegativeSellPrice_ReturnsBadRequest")]
+    [Fact(DisplayName = "GOLDPRICE-CREATE-005: negative sell price returns 400")]
     public async Task CreateGoldPrice_WithNegativeSellPrice_ReturnsBadRequest()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-CREATE-006: CreateGoldPrice_WithAllFourSources_ReturnsOkWithFourIds")]
+    [Fact(DisplayName = "GOLDPRICE-CREATE-006: all four sources returns 200 with four IDs")]
     public async Task CreateGoldPrice_WithAllFourSources_ReturnsOkWithFourIds()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Ids.ShouldAllBe(id => id != Guid.Empty);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-CREATE-007: CreateGoldPrice_WithMinutesInRecordedAt_StoresFlooredToHour")]
+    [Fact(DisplayName = "GOLDPRICE-CREATE-007: recorded at with minutes floors to hour")]
     public async Task CreateGoldPrice_WithMinutesInRecordedAt_StoresFlooredToHour()
     {
         // Arrange
@@ -173,7 +173,7 @@ public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppF
         body.Items.ShouldAllBe(x => x.RecordedAt.Minute == 0 && x.RecordedAt.Second == 0);
     }
 
-    [Fact(DisplayName = "GOLDPRICE-CREATE-008: CreateGoldPrice_WithDuplicateSourceAndHour_UpdatesPricesAndReturnsSameId")]
+    [Fact(DisplayName = "GOLDPRICE-CREATE-008: duplicate source and hour updates prices and returns same ID")]
     public async Task CreateGoldPrice_WithDuplicateSourceAndHour_UpdatesPricesAndReturnsSameId()
     {
         // Arrange

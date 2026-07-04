@@ -22,7 +22,7 @@ namespace SourceBase.Tests.Features.TimeSheets;
     })]
 public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [Fact(DisplayName = "TIMESHEET-GET-ALL-001: GetTimeSheets_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "TIMESHEET-GET-ALL-001: without token returns 401")]
     public async Task GetTimeSheets_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [Fact(DisplayName = "TIMESHEET-GET-ALL-002: GetTimeSheets_Authenticated_ReturnsOk")]
+    [Fact(DisplayName = "TIMESHEET-GET-ALL-002: authenticated user returns 200")]
     public async Task GetTimeSheets_Authenticated_ReturnsOk()
     {
         // Arrange
@@ -51,7 +51,7 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body!.Items.ShouldNotBeNull();
     }
 
-    [Fact(DisplayName = "TIMESHEET-GET-ALL-003: GetTimeSheets_WithYearAndMonthFilter_ReturnsMatchingItems")]
+    [Fact(DisplayName = "TIMESHEET-GET-ALL-003: year and month filter returns matching items")]
     public async Task GetTimeSheets_WithYearAndMonthFilter_ReturnsMatchingItems()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.Items.ShouldNotContain(x => x.Project == "JulyProject");
     }
 
-    [Fact(DisplayName = "TIMESHEET-GET-ALL-004: GetTimeSheets_WithDateFilter_ReturnsMatchingItems")]
+    [Fact(DisplayName = "TIMESHEET-GET-ALL-004: date filter returns matching items")]
     public async Task GetTimeSheets_WithDateFilter_ReturnsMatchingItems()
     {
         // Arrange
@@ -105,7 +105,7 @@ public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFac
         body.Items.ShouldNotContain(x => x.Project == "OtherDayProject");
     }
 
-    [Fact(DisplayName = "TIMESHEET-GET-ALL-005: GetTimeSheets_WithMultipleUsers_ReturnsOnlyCurrentUsersItems")]
+    [Fact(DisplayName = "TIMESHEET-GET-ALL-005: multiple users returns only current user's items")]
     public async Task GetTimeSheets_WithMultipleUsers_ReturnsOnlyCurrentUsersItems()
     {
         // Arrange

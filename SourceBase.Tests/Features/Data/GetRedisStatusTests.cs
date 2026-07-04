@@ -10,7 +10,7 @@ namespace SourceBase.Tests.Features.Data;
 public class GetRedisStatusTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
 
-    [Fact(DisplayName = "REDIS-STATUS-001: GetRedisStatus_WithoutToken_ReturnsUnauthorized")]
+    [Fact(DisplayName = "REDIS-STATUS-001: without token returns 401")]
     public async Task GetRedisStatus_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class GetRedisStatusTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [RequiresRedisFact(DisplayName = "REDIS-STATUS-002: GetRedisStatus_WhenRedisContainerIsRunning_ReturnsIsOnlineTrue")]
+    [RequiresRedisFact(DisplayName = "REDIS-STATUS-002: redis container running returns online status true")]
     public async Task GetRedisStatus_WhenRedisContainerIsRunning_ReturnsIsOnlineTrue()
     {
         // Arrange
