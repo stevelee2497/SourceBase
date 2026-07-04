@@ -9,6 +9,7 @@ on:
       - 'SourceBase.Infrastructure/**'
       - 'SourceBase.Domain/**'
       - 'SourceBase.Tests/**'
+      - 'SourceBase.ReportGenerator/**'
       - 'Dockerfile'
       - 'docker-compose.yml'
       - '.github/workflows/api-publish.yml'
@@ -31,7 +32,25 @@ jobs:
         env:
           USE_POSTGRES: 'true'
           USE_REDIS: 'true'
-        run: dotnet test SourceBase.Tests --verbosity normal
+        run: >
+          dotnet test SourceBase.Tests --verbosity normal
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory ./SourceBase.Tests/TestResults
+
+      - name: Generate HTML test report
+        if: always()
+        run: >
+          dotnet run --project SourceBase.ReportGenerator --
+          --trx SourceBase.Tests/TestResults/test-results.trx
+          --test-assembly SourceBase.Tests/bin/Debug/net10.0/SourceBase.Tests.dll
+          --output test-report.html
+
+      - name: Upload test report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: test-report.html
 
   version:
     name: Calculate Version
@@ -69,6 +88,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+
+      - name: Download test report artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: test-report
+          path: .
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v4
