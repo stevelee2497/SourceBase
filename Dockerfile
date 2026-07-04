@@ -20,4 +20,7 @@ RUN dotnet publish SourceBase.Api/SourceBase.Api.csproj -c Release -o /app/publi
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
+# test-report.html is produced by CI before `docker build` runs (see api-publish.yml);
+# a placeholder is checked into the repo root so local `docker build .` still works.
+COPY test-report.html ./wwwroot/test-report.html
 ENTRYPOINT ["dotnet", "SourceBase.Api.dll"]
