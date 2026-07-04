@@ -84,8 +84,8 @@ else
         
     </div>
 
-    <!-- Wallets grid (6 per row) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2 mb-6">
+    <!-- Wallets grid (2 per row mobile, 6 per row desktop) -->
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2 mb-6">
         @foreach (var wallet in _wallets)
         {
             var isSelected = _selectedWalletIds.Contains(wallet.Id);
@@ -155,14 +155,14 @@ else
                 </div>
                 @if (_selectedWallet is not null)
                 {
-                    <div class="flex gap-2 flex-wrap">
-                        <button class="btn-primary btn-sm" @onclick="OpenCreateTransaction">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="btn-primary btn-sm w-full" @onclick="OpenCreateTransaction">
                             <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
                             Add Transaction
                         </button>
-                        <button class="btn-secondary btn-sm" @onclick="OpenCreateTransfer">
+                        <button class="btn-secondary btn-sm w-full" @onclick="OpenCreateTransfer">
                             <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l-4-4m4 4l4-4" />
                             </svg>
@@ -187,29 +187,27 @@ else
             }
 
             <!-- Filters -->
-            <div class="card mb-4 bg-gray-50 border-gray-100">
-                <div class="flex flex-col gap-3">
-                    <div class="flex flex-wrap gap-2">
-                        <button class="@TypeFilterClass(string.Empty)" @onclick="SelectAllTypes">All</button>
-                        <button class="@TypeFilterClass(IncomeType)" @onclick="SelectIncomeType">Income</button>
-                        <button class="@TypeFilterClass(ExpenseType)" @onclick="SelectExpenseType">Expense</button>
+            <div class="mb-4 flex flex-col gap-3">
+                <div class="flex flex-wrap gap-2">
+                    <button class="@TypeFilterClass(string.Empty)" @onclick="SelectAllTypes">All</button>
+                    <button class="@TypeFilterClass(IncomeType)" @onclick="SelectIncomeType">Income</button>
+                    <button class="@TypeFilterClass(ExpenseType)" @onclick="SelectExpenseType">Expense</button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="form-label">Date From</label>
+                        <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div>
-                            <label class="form-label">Date From</label>
-                            <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
-                        </div>
-                        <div>
-                            <label class="form-label">Date To</label>
-                            <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
-                        </div>
-                        <div>
-                            <label class="form-label">Category</label>
-                            <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
-                        </div>
-                        <div class="flex items-end">
-                            <button class="btn-secondary w-full" @onclick="ResetFiltersAsync">Clear</button>
-                        </div>
+                    <div>
+                        <label class="form-label">Date To</label>
+                        <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
+                    </div>
+                    <div>
+                        <label class="form-label">Category</label>
+                        <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
+                    </div>
+                    <div class="flex items-end">
+                        <button class="btn-secondary w-full" @onclick="ResetFiltersAsync">Clear</button>
                     </div>
                 </div>
             </div>
@@ -234,8 +232,8 @@ else
                     <div class="@(_loadingTransactions ? "blur-sm pointer-events-none select-none" : "") flex flex-col divide-y divide-gray-100">
                         @foreach (var transaction in _transactions)
                         {
-                            <div class="py-4 flex flex-col sm:flex-row sm:items-center gap-3">
-                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                            <div class="py-2 flex flex-col sm:flex-row sm:items-center gap-2">
+                                <div class="flex items-start gap-2 flex-1 min-w-0">
                                     <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">
                                         @{
                                             var txIcon = TransactionIcon(transaction);
@@ -252,7 +250,7 @@ else
                                     <div class="min-w-0 flex-1">
                                         <div class="font-medium text-gray-900 truncate">@TransactionCategoryLabel(transaction)</div>
                                         <div class="text-sm text-gray-500 truncate">@TransactionTitle(transaction)</div>
-                                        <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                                        <div class="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-gray-400">
                                             <span>@FormatDisplayDate(transaction.Date)</span>
                                             <span>•</span>
                                             <span>@transaction.WalletName</span>
@@ -263,7 +261,7 @@ else
                                         </div>
                                     </div>
                                 </div>
-                                <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                                <div class="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
                                     <div class="font-semibold @TransactionAmountClass(transaction.Type)">@SignedAmount(transaction.Amount, transaction.Type)</div>
                                     @if (!transaction.IsTransfer)
                                     {
@@ -348,25 +346,29 @@ else
                 <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_transactionFormError</div>
             }
             <div class="space-y-4">
-                <div>
-                    <label class="form-label">Amount *</label>
-                    <CurrencyInput @bind-Value="_transactionAmount" Class="form-input" />
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Amount *</label>
+                        <CurrencyInput @bind-Value="_transactionAmount" Class="form-input" />
+                    </div>
+                    <div>
+                        <label class="form-label">Date *</label>
+                        <input @bind="_transactionDate" class="form-input" type="date" />
+                    </div>
                 </div>
-                <div>
-                    <label class="form-label">Type</label>
-                    <SelectInput @bind-Value="_transactionType" @bind-Value:after="OnTransactionTypeAfterChange" Options="TransactionTypeOptions" />
-                </div>
-                <div>
-                    <label class="form-label">Date *</label>
-                    <input @bind="_transactionDate" class="form-input" type="date" />
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Type</label>
+                        <SelectInput @bind-Value="_transactionType" @bind-Value:after="OnTransactionTypeAfterChange" Options="TransactionTypeOptions" />
+                    </div>
+                    <div>
+                        <label class="form-label">Category *</label>
+                        <SelectInput @bind-Value="_transactionCategoryId" Options="TransactionCategoryOptions" />
+                    </div>
                 </div>
                 <div>
                     <label class="form-label">Note</label>
-                    <input @bind="_transactionNote" class="form-input" placeholder="Optional description" />
-                </div>
-                <div>
-                    <label class="form-label">Category *</label>
-                    <SelectInput @bind-Value="_transactionCategoryId" Options="TransactionCategoryOptions" />
+                    <textarea @bind="_transactionNote" class="form-input" rows="2" placeholder="Optional description"></textarea>
                 </div>
                 @if (_editingTransaction is not null)
                 {
