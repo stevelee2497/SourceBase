@@ -79,15 +79,15 @@
         else
         {
             <!-- Back button (mobile only) -->
-            <button class="lg:hidden btn-secondary btn-sm self-start" @onclick="GoBackToLists">
-                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Back to Lists
-            </button>
+
 
             <div class="flex items-center justify-between gap-3 flex-wrap">
-                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">@(_lists.FirstOrDefault(l => l.Id == _selectedListId)?.Name ?? "Todos")</h2>
+                <button class="lg:hidden btn-secondary btn self-start" @onclick="GoBackToLists">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                <h2 class="text-sm  font-semibold text-gray-700 uppercase tracking-wider">@(_lists.FirstOrDefault(l => l.Id == _selectedListId)?.Name ?? "Todos")</h2>
                 <div class="flex justify-end gap-2 flex-wrap">
                     <SelectInput @bind-Value="_sortBy" @bind-Value:after="LoadTodosAsync" Options="SortByOptions" Class="w-auto" />
                     @if (!string.IsNullOrEmpty(_sortBy))
@@ -107,14 +107,15 @@
                             }
                         </button>
                     }
-                    <button class="btn-primary btn-sm" @onclick="OpenCreateTodo">
-                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Todo
-                    </button>
                 </div>
             </div>
+
+            <button class="btn-primary btn" @onclick="OpenCreateTodo">
+                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Todo
+            </button>
 
             @if (_loadingTodos)
             {
