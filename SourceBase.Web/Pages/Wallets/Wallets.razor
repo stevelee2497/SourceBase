@@ -232,8 +232,8 @@ else
                     <div class="@(_loadingTransactions ? "blur-sm pointer-events-none select-none" : "") flex flex-col divide-y divide-gray-100">
                         @foreach (var transaction in _transactions)
                         {
-                            <div class="py-4 flex flex-col sm:flex-row sm:items-center gap-3">
-                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                            <div class="py-2 flex flex-col sm:flex-row sm:items-center gap-2">
+                                <div class="flex items-start gap-2 flex-1 min-w-0">
                                     <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">
                                         @{
                                             var txIcon = TransactionIcon(transaction);
@@ -250,7 +250,7 @@ else
                                     <div class="min-w-0 flex-1">
                                         <div class="font-medium text-gray-900 truncate">@TransactionCategoryLabel(transaction)</div>
                                         <div class="text-sm text-gray-500 truncate">@TransactionTitle(transaction)</div>
-                                        <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                                        <div class="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-gray-400">
                                             <span>@FormatDisplayDate(transaction.Date)</span>
                                             <span>•</span>
                                             <span>@transaction.WalletName</span>
@@ -261,7 +261,7 @@ else
                                         </div>
                                     </div>
                                 </div>
-                                <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                                <div class="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
                                     <div class="font-semibold @TransactionAmountClass(transaction.Type)">@SignedAmount(transaction.Amount, transaction.Type)</div>
                                     @if (!transaction.IsTransfer)
                                     {
