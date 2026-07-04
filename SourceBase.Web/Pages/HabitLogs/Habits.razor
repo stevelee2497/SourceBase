@@ -43,18 +43,14 @@ else
                             </div>
                             <div class="min-w-0">
                                 <div class="font-medium text-gray-900 truncate">@habit.Name</div>
-                                @if (habit.IsSystem)
-                                {
-                                    <span class="badge-blue text-xs">System</span>
-                                }
                             </div>
                         </div>
                         <div class="flex items-center gap-2 shrink-0">
                             @if (habit.IsSystem)
                             {
-                                <span class="text-gray-300" title="System habit — cannot be modified">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 10-8 0v4h8z" />
+                                <span class="text-green-500" title="system">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
                                     </svg>
                                 </span>
                             }

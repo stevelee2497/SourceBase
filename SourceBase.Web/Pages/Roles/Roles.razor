@@ -43,14 +43,18 @@ else if (_data is not null)
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3">
                                 <span class="font-medium text-md text-gray-900">@role.Name</span>
-                                @if (role.Name == "Admin")
-                                {
-                                    <span class="ml-2 badge-blue">System</span>
-                                }
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-500">@(role.Description ?? "—")</td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex items-center justify-end gap-3">
+                                    @if (role.Name == "Admin")
+                                    {
+                                        <span class="text-green-500" title="system">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                                            </svg>
+                                        </span>
+                                    }
                                     <button class="text-gray-400 hover:text-indigo-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled="@(role.Name == "Admin")" @onclick="OpenEdit(role)" title="Edit">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
