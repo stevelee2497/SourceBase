@@ -249,7 +249,8 @@ else
                                         <div class="font-medium text-gray-900 truncate">@TransactionCategoryLabel(transaction)</div>
                                         <div class="text-sm text-gray-500 truncate flex">
                                             @TransactionTitle(transaction)
-                                            <div class="ml-2 flex flex-wrap items-center gap-1 text-xs text-gray-400">
+                                            <div class="ml-1 flex flex-wrap items-center gap-1 text-xs italic text-gray-400">
+                                                <span>•</span>
                                                 <span>@FormatDisplayDate(transaction.Date)</span>
                                                 @if (transaction.IsTransfer)
                                                 {
@@ -818,7 +819,7 @@ else
     private static string FormatAmount(decimal amount) => amount.ToString("N0");
     private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N0}" : $"-{amount:N0}";
     private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600" : "text-red-600";
-    private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MM") : value;
+    private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MMM") : value;
     private static string? EmptyToNull(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
     private static string? FormatDateFilter(DateOnly? value) => value?.ToString("yyyy-MM-dd");
     private static Guid? ParseGuid(string value) => Guid.TryParse(value, out var parsed) ? parsed : null;
