@@ -131,10 +131,10 @@
 
 <!-- Wallets -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4">
-    <div>
+    <div class="flex flex-col">
         <!-- Left: Wallets distribution -->
         <a href="/wallets" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4 mb-2">Wallets</a>
-        <div class="flex flex-col gap-2 p-2 md:p-4">
+        <div class="card flex flex-col gap-2 p-2 md:p-4 flex-1">
 
             @if (_walletsLoading)
             {
@@ -197,10 +197,10 @@
             }
         </div>
     </div>
-    <div>
+    <div class="flex flex-col">
         <!-- Right: Default todo list -->
         <a href="/todos" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4 mb-2">Todo</a>
-        <div class="card flex flex-col gap-2 py-2 px-1 md:p-4">
+        <div class="card flex flex-col gap-2 py-1 px-2 flex-1">
 
             @if (_todosLoading)
             {
