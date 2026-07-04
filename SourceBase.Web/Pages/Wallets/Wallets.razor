@@ -13,127 +13,121 @@
 }
 else
 {
-    <!-- Top summary row: Total Balance + Pie Chart + Add Wallet -->
+    <!-- Layout: 1 columns as default, 2 when md screen -->
     <div class="flex flex-col lg:flex-row gap-4 mb-6">
-        <!-- Total Balance card (clickable to deselect all wallets) -->
-        <div class="card shrink-0 lg:w-72 bg-linear-to-r from-indigo-600 to-indigo-500 text-white cursor-pointer transition-all @(_selectedWalletIds.Count == 0 ? "ring-4 ring-white/40" : "hover:opacity-90")" @onclick="SelectAllWallets">
-            <div class="text-sm font-medium text-indigo-100 mb-8">Total Balance</div>
-            <div class="text-3xl sm:text-4xl font-bold">@FormatAmount(_totalBalance)</div>
-        </div>
+        <div class="flex flex-1 flex-col gap-4">
+            <!-- Total Balance card (clickable to deselect all wallets) -->
+            <div class="card bg-linear-to-r from-indigo-600 to-indigo-500 text-white cursor-pointer transition-all @(_selectedWalletIds.Count == 0 ? "ring-4 ring-white/40" : "hover:opacity-90")" @onclick="SelectAllWallets">
+                <div class="text-sm font-medium text-indigo-100 mb-2">Total Balance</div>
+                <div class="text-3xl sm:text-4xl font-bold">@FormatAmount(_totalBalance)</div>
+            </div>
 
-        <!-- Pie chart -->
-        @if (_wallets.Count > 0)
-        {
-            <div class="card flex-1 flex flex-col sm:flex-row items-center gap-4 p-3 sm:gap-8">
-                <div class="shrink-0">
-                    @{
-                        var pieData = BuildPieData();
-                    }
-                    <svg width="140" height="140" viewBox="-1 -1 2 2" style="transform: rotate(-90deg)">
-                        @if (pieData.Count == 1)
-                        {
-                            <circle cx="0" cy="0" r="1" fill="@pieData[0].Color" />
-                        }
-                        else
-                        {
-                            double cumulative = 0;
-                            foreach (var slice in pieData)
-                            {
-                                var startAngle = cumulative * 2 * Math.PI;
-                                cumulative += slice.Fraction;
-                                var endAngle = cumulative * 2 * Math.PI;
-                                var x1 = Math.Cos(startAngle);
-                                var y1 = Math.Sin(startAngle);
-                                var x2 = Math.Cos(endAngle);
-                                var y2 = Math.Sin(endAngle);
-                                var largeArc = slice.Fraction > 0.5 ? 1 : 0;
-                                var pathD = $"M 0 0 L {x1:F4} {y1:F4} A 1 1 0 {largeArc} 1 {x2:F4} {y2:F4} Z";
-                                <path d="@pathD" fill="@slice.Color" stroke="white" stroke-width="0.02" />
-                            }
-                        }
-                    </svg>
-                </div>
-                <div class="flex flex-col gap-3 flex-1 justify-center items-center">
-                    <div class="flex flex-wrap gap-x-4 gap-y-1 justify-center">
+            <!-- Pie chart -->
+            @if (_wallets.Count > 0)
+            {
+                <div class="card flex flex-col sm:flex-row items-center gap-4 py-3 px-5">
+                    <div class="shrink-0">
                         @{
-                            var legendData = BuildPieData();
+                            var pieData = BuildPieData();
                         }
-                        @foreach (var slice in legendData)
-                        {
-                            <div class="flex items-center gap-1.5 text-xs">
-                                <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: @slice.Color"></div>
-                                <span class="text-gray-700 font-medium">@slice.Name</span>
-                                <span class="text-gray-400">@((slice.Fraction * 100).ToString("F1"))%</span>
-                            </div>
+                        <svg width="140" height="140" viewBox="-1 -1 2 2" style="transform: rotate(-90deg)">
+                            @if (pieData.Count == 1)
+                            {
+                                <circle cx="0" cy="0" r="1" fill="@pieData[0].Color" />
+                            }
+                            else
+                            {
+                                double cumulative = 0;
+                                foreach (var slice in pieData)
+                                {
+                                    var startAngle = cumulative * 2 * Math.PI;
+                                    cumulative += slice.Fraction;
+                                    var endAngle = cumulative * 2 * Math.PI;
+                                    var x1 = Math.Cos(startAngle);
+                                    var y1 = Math.Sin(startAngle);
+                                    var x2 = Math.Cos(endAngle);
+                                    var y2 = Math.Sin(endAngle);
+                                    var largeArc = slice.Fraction > 0.5 ? 1 : 0;
+                                    var pathD = $"M 0 0 L {x1:F4} {y1:F4} A 1 1 0 {largeArc} 1 {x2:F4} {y2:F4} Z";
+                                    <path d="@pathD" fill="@slice.Color" stroke="white" stroke-width="0.02" />
+                                }
+                            }
+                        </svg>
+                    </div>
+                    <div class="flex flex-col gap-3 flex-1 justify-center items-center">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1 justify-center">
+                            @{
+                                var legendData = BuildPieData();
+                            }
+                            @foreach (var slice in legendData)
+                            {
+                                <div class="flex items-center gap-1.5 text-xs">
+                                    <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: @slice.Color"></div>
+                                    <span class="text-gray-700 font-medium">@slice.Name</span>
+                                    <span class="text-gray-400">@((slice.Fraction * 100).ToString("F1"))%</span>
+                                </div>
+                            }
+                        </div>
+                        @{
+                            var selectedWalletList = _selectedWalletIds.Count > 0 ? _wallets.Where(w => _selectedWalletIds.Contains(w.Id)).ToList() : _wallets;
+                            var selectedBalance = selectedWalletList.Sum(w => w.Balance);
                         }
+                        <div class="border-t border-gray-100 w-full text-center">
+                            <div class="text-sm text-gray-400 mt-1">@(_selectedWalletIds.Count > 0 ? "Selected balance" : "Total balance")</div>
+                            <div class="text-lg font-bold text-gray-900">@FormatAmount(selectedBalance)</div>
+                        </div>
                     </div>
-                    @{
-                        var selectedWalletList = _selectedWalletIds.Count > 0
-                            ? _wallets.Where(w => _selectedWalletIds.Contains(w.Id)).ToList()
-                            : _wallets;
-                        var selectedBalance = selectedWalletList.Sum(w => w.Balance);
-                    }
-                    <div class="border-t border-gray-100 w-full text-center">
-                        <div class="text-sm text-gray-400 mt-1">@(_selectedWalletIds.Count > 0 ? "Selected balance" : "Total balance")</div>
-                        <div class="text-lg font-bold text-gray-900">@FormatAmount(selectedBalance)</div>
+                </div>
+            }
+
+            <!-- Wallets grid (2 per row mobile, 6 per row desktop) -->
+            <div class="grid grid-cols-2 gap-2 mb-6">
+                @foreach (var wallet in _wallets)
+                {
+                    var isSelected = _selectedWalletIds.Contains(wallet.Id);
+                    <div class="relative rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50") cursor-pointer transition-all p-2 px-4 md:p-3 flex flex-col gap-1 md:gap-1.5" @onclick="SelectWallet(wallet.Id)">
+                        <div class="absolute top-1.5 right-1.5 flex gap-1">
+                            <button class="text-gray-400 hover:text-indigo-600" @onclick:stopPropagation @onclick="OpenEditWallet(wallet)" title="Edit">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                            <button class="text-gray-400 hover:text-red-600" @onclick:stopPropagation @onclick="ConfirmDeleteWallet(wallet)" title="Delete">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-start gap-1">
+                            <span class="text-xl leading-none">
+                                @if (wallet.Icon?.StartsWith("http") == true)
+                                {
+                                    <img src="@wallet.Icon" class="w-6 h-6 object-contain" alt="wallet icon" />
+                                }
+                                else if (wallet.Icon?.TrimStart().StartsWith("<") == true)
+                                {
+                                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">@((MarkupString)wallet.Icon)</svg>
+                                }
+                                else
+                                {
+                                    @(string.IsNullOrWhiteSpace(wallet.Icon) ? "👛" : wallet.Icon)
+                                }
+                            </span>
+                        </div>
+                        <div class="text-xs font-semibold @(isSelected ? "text-indigo-700" : "text-gray-700") truncate">@wallet.Name</div>
+                        <div class="text-sm font-bold @(isSelected ? "text-indigo-700" : "text-gray-900")">@FormatAmount(wallet.Balance)</div>
                     </div>
+                }
+                <div class="rounded-lg border-2 border-dashed border-gray-300 bg-white hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition-all p-3 flex flex-col items-center justify-center gap-1.5 text-gray-400 hover:text-indigo-500" @onclick="OpenCreateWallet">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span class="text-xs font-medium">Add Wallet</span>
                 </div>
             </div>
-        }
-
-        
-    </div>
-
-    <!-- Wallets grid (2 per row mobile, 6 per row desktop) -->
-    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2 mb-6">
-        @foreach (var wallet in _wallets)
-        {
-            var isSelected = _selectedWalletIds.Contains(wallet.Id);
-            <div class="relative rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50") cursor-pointer transition-all p-2 px-4 md:p-3 flex flex-col gap-1 md:gap-1.5" @onclick="SelectWallet(wallet.Id)">
-                <div class="absolute top-1.5 right-1.5 flex gap-1">
-                    <button class="text-gray-400 hover:text-indigo-600" @onclick:stopPropagation @onclick="OpenEditWallet(wallet)" title="Edit">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </button>
-                    <button class="text-gray-400 hover:text-red-600" @onclick:stopPropagation @onclick="ConfirmDeleteWallet(wallet)" title="Delete">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex items-center justify-start gap-1">
-                    <span class="text-xl leading-none">
-                        @if (wallet.Icon?.StartsWith("http") == true)
-                        {
-                            <img src="@wallet.Icon" class="w-6 h-6 object-contain" alt="wallet icon" />
-                        }
-                        else if (wallet.Icon?.TrimStart().StartsWith("<") == true)
-                        {
-                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">@((MarkupString)wallet.Icon)</svg>
-                        }
-                        else
-                        {
-                            @(string.IsNullOrWhiteSpace(wallet.Icon) ? "👛" : wallet.Icon)
-                        }
-                    </span>
-                </div>
-                <div class="text-xs font-semibold @(isSelected ? "text-indigo-700" : "text-gray-700") truncate">@wallet.Name</div>
-                <div class="text-sm font-bold @(isSelected ? "text-indigo-700" : "text-gray-900")">@FormatAmount(wallet.Balance)</div>
-            </div>
-        }
-        <div class="rounded-lg border-2 border-dashed border-gray-300 bg-white hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition-all p-3 flex flex-col items-center justify-center gap-1.5 text-gray-400 hover:text-indigo-500" @onclick="OpenCreateWallet">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            <span class="text-xs font-medium">Add Wallet</span>
         </div>
-    </div>
-
-    <!-- Inline detail panel -->
-    @if (_wallets.Count > 0 || _selectedWalletIds.Count == 0)
-    {
-        <div class="">
+        <div class="flex-1">
+            <!-- Summary -->
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div>
                     @if (_selectedWalletIds.Count == 0)
@@ -152,25 +146,7 @@ else
                         <div class="text-sm text-gray-500">Showing transactions for @_selectedWalletIds.Count wallets</div>
                     }
                 </div>
-                @if (_selectedWallet is not null)
-                {
-                    <div class="grid grid-cols-2 gap-2">
-                        <button class="btn-primary btn-sm w-full" @onclick="OpenCreateTransaction">
-                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            Add Transaction
-                        </button>
-                        <button class="btn-secondary btn-sm w-full" @onclick="OpenCreateTransfer">
-                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l-4-4m4 4l4-4" />
-                            </svg>
-                            Transfer
-                        </button>
-                    </div>
-                }
             </div>
-
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div class="rounded-lg bg-green-50 px-4 py-3">
                     <div class="text-xs text-green-600 font-medium mb-0.5">Monthly Income</div>
@@ -207,68 +183,85 @@ else
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card px-3 py-1">
-            @if (_loadingTransactions && _transactions.Count == 0)
-            {
-                <LoadingSpinner />
-            }
-            else if (!_loadingTransactions && _transactions.Count == 0)
-            {
-                <div class="text-sm text-gray-400 py-8 text-center">No transactions found.</div>
-            }
-            else if (_transactions.Count > 0)
-            {
-                <div class="relative">
-                    @if (_loadingTransactions)
-                    {
-                        <div class="absolute inset-0 z-10 flex items-start justify-center pt-10 bg-white/40 rounded">
-                            <LoadingSpinner />
-                        </div>
-                    }
-                    <div class="@(_loadingTransactions ? "blur-sm pointer-events-none select-none" : "") flex flex-col divide-y divide-gray-100">
-                        @foreach (var transaction in _transactions)
+            <!-- Buttons -->
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <button class="btn-primary btn w-full" @onclick="OpenCreateTransaction">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Transaction
+                </button>
+                <button class="btn-secondary btn w-full" @onclick="OpenCreateTransfer">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l-4-4m4 4l4-4" />
+                    </svg>
+                    Transfer
+                </button>
+            </div>
+
+            <!-- Transactions -->
+            <div class="card px-3 py-1">
+                @if (_loadingTransactions && _transactions.Count == 0)
+                {
+                    <LoadingSpinner />
+                }
+                else if (!_loadingTransactions && _transactions.Count == 0)
+                {
+                    <div class="text-sm text-gray-400 py-8 text-center">No transactions found.</div>
+                }
+                else if (_transactions.Count > 0)
+                {
+                    <div class="relative">
+                        @if (_loadingTransactions)
                         {
-                            <div class="py-2 flex flex-col sm:flex-row sm:items-center gap-2 @(!transaction.IsTransfer ? "cursor-pointer hover:bg-gray-50" : "")" @onclick="RowClick(transaction)">
-                                <div class="flex items-center gap-2 flex-1 min-w-0">
-                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">
-                                        @{
-                                            var txIcon = TransactionIcon(transaction);
-                                        }
-                                        @if (txIcon.StartsWith("http"))
-                                        {
-                                            <img src="@txIcon" class="w-6 h-6 object-contain" alt="category icon" />
-                                        }
-                                        else
-                                        {
-                                            @((MarkupString)txIcon)
-                                        }
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <div class="font-medium text-gray-900 truncate">@TransactionCategoryLabel(transaction)</div>
-                                        <div class="text-sm text-gray-500 truncate flex">
-                                            @TransactionTitle(transaction)
-                                            <div class="ml-1 flex flex-wrap items-center gap-1 text-xs italic text-gray-400">
-                                                <span>•</span>
-                                                <span>@FormatDisplayDate(transaction.Date)</span>
-                                                @if (transaction.IsTransfer)
-                                                {
-                                                    <span class="badge-blue">Transfer</span>
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="font-semibold @TransactionAmountClass(transaction.Type)">@SignedAmount(transaction.Amount, transaction.Type)</div>
-                                </div>
+                            <div class="absolute inset-0 z-10 flex items-start justify-center pt-10 bg-white/40 rounded">
+                                <LoadingSpinner />
                             </div>
                         }
+                        <div class="@(_loadingTransactions ? "blur-sm pointer-events-none select-none" : "") flex flex-col divide-y divide-gray-100">
+                            @foreach (var transaction in _transactions)
+                            {
+                                <div class="py-2 flex flex-col sm:flex-row sm:items-center gap-2 @(!transaction.IsTransfer ? "cursor-pointer hover:bg-gray-50" : "")" @onclick="RowClick(transaction)">
+                                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">
+                                            @{
+                                                var txIcon = TransactionIcon(transaction);
+                                            }
+                                            @if (txIcon.StartsWith("http"))
+                                            {
+                                                <img src="@txIcon" class="w-6 h-6 object-contain" alt="category icon" />
+                                            }
+                                            else
+                                            {
+                                                @((MarkupString)txIcon)
+                                            }
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="font-medium text-gray-900 truncate">@TransactionCategoryLabel(transaction)</div>
+                                            <div class="text-sm text-gray-500 truncate flex">
+                                                @TransactionTitle(transaction)
+                                                <div class="ml-1 flex flex-wrap items-center gap-1 text-xs italic text-gray-400">
+                                                    <span>•</span>
+                                                    <span>@FormatDisplayDate(transaction.Date)</span>
+                                                    @if (transaction.IsTransfer)
+                                                    {
+                                                        <span class="badge-blue">Transfer</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="font-semibold @TransactionAmountClass(transaction.Type)">@SignedAmount(transaction.Amount, transaction.Type)</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <Pagination CurrentPage="_transactionsPage" TotalItems="_transactionsTotal" PageSize="_transactionsPageSize" OnPageChanged="ChangeTransactionsPage" />
                     </div>
-                    <Pagination CurrentPage="_transactionsPage" TotalItems="_transactionsTotal" PageSize="_transactionsPageSize" OnPageChanged="ChangeTransactionsPage" />
-                </div>
-            }
+                }
+            </div>
         </div>
-    }
+    </div>
 }
 
 <!-- Wallet Form Modal -->
@@ -352,13 +345,10 @@ else
                     <label class="form-label">Note</label>
                     <textarea @bind="_transactionNote" class="form-input" rows="2" placeholder="Optional description"></textarea>
                 </div>
-                @if (_editingTransaction is not null)
-                {
-                    <div>
-                        <label class="form-label">Wallet</label>
-                        <SelectInput @bind-Value="_transactionWalletId" Options="TransactionWalletOptions" />
-                    </div>
-                }
+                <div>
+                    <label class="form-label">Wallet</label>
+                    <SelectInput @bind-Value="_transactionWalletId" Options="TransactionWalletOptions" />
+                </div>
             </div>
             <div class="flex justify-between gap-3 mt-5">
                 @if (_editingTransaction is not null)
@@ -702,6 +692,7 @@ else
         _transactionCategoryId = string.Empty;
         _transactionFormError = null;
         _showTransactionForm = true;
+        _transactionWalletId = _selectedWallet is not null ? _selectedWallet.Id.ToString() : _wallets.FirstOrDefault()?.Id.ToString() ?? string.Empty;
     }
 
     private Action RowClick(TransactionResponse transaction) => transaction.IsTransfer ? () => { } : OpenEditTransaction(transaction);
