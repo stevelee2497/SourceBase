@@ -10,6 +10,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Wallets;
 
+[EndpointFact(
+    Feature = "Wallets",
+    Name = "Get Wallet",
+    Route = "GET /api/wallets/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve the details of a specific wallet, so that I can view its current balance and metadata.",
+    Description = new[]
+    {
+        "Client provides the wallet `id` (route).",
+        "If the wallet doesn't exist or belongs to a different user → `404 Not Found`.",
+        "Returns the wallet's full details.",
+    })]
 public class GetWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "WALLETS-GET-001: GetWallet_WithoutToken_ReturnsUnauthorized")]

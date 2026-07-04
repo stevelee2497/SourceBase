@@ -11,6 +11,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transactions;
 
+[EndpointFact(
+    Feature = "Transactions",
+    Name = "Get Transaction",
+    Route = "GET /api/transactions/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve the details of a specific transaction, so that I can review its full information.",
+    Description = new[]
+    {
+        "Client provides the transaction `id` (route).",
+        "If the transaction doesn't exist or belongs to a different user → `404 Not Found`.",
+        "Returns full transaction details including wallet name, category name, and whether it is part of a transfer.",
+    })]
 public class GetTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TXN-GET-001: GetTransaction_WithoutToken_ReturnsUnauthorized")]

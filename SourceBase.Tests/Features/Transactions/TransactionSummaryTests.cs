@@ -10,6 +10,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transactions;
 
+[EndpointFact(
+    Feature = "Transactions",
+    Name = "Get Transaction Summary",
+    Route = "GET /api/transactions/summary",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to see an income vs expense summary for a given period (optionally filtered by wallet), so that I can understand my spending patterns.",
+    Description = new[]
+    {
+        "Client sends optional `walletId`, `dateFrom`, `dateTo`.",
+        "Returns `totalIncome`, `totalExpense`, `netBalance` (income − expense) for the period.",
+        "Returns a `byCategory` breakdown: each entry has `categoryId`, `categoryName`, `type`, `total` — for rendering a pie chart.",
+    })]
 public class TransactionSummaryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TXN-SUMMARY-001: GetTransactionSummary_WithoutToken_ReturnsUnauthorized")]

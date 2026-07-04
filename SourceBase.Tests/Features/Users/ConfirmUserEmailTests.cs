@@ -9,6 +9,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Users;
 
+[EndpointFact(
+    Feature = "Users",
+    Name = "Confirm User Email",
+    Route = "POST /api/users/{id}/confirmEmail",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to manually confirm a user's email, so that I can unblock accounts without requiring the user to go through the email verification flow.",
+    Description = new[]
+    {
+        "Admin provides the target user `id` (route).",
+        "If the user doesn't exist → `404 Not Found`.",
+        "`EmailConfirmed` is set to `true` on the user record.",
+    })]
 public class ConfirmUserEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "USERS-CONFIRM-EMAIL-001: ConfirmUserEmail_WithoutToken_ReturnsUnauthorized")]

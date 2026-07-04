@@ -7,6 +7,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Confirm Email",
+    Route = "POST /api/auth/confirmEmail",
+    Auth = "Anonymous",
+    UseCase = "As a newly registered user, I want to confirm my email with the OTP code I received, so that I can unlock login access to my account.",
+    Description = new[]
+    {
+        "Client sends `email` and `code` (6-character OTP).",
+        "The server looks up the user by email — if not found → `401 Unauthorized`.",
+        "The OTP code is validated against the stored code and its expiry timestamp.",
+        "If invalid or expired → `401 Unauthorized`.",
+        "On success, `EmailConfirmed` is set to `true` and the default `User` role is assigned to the account.",
+    })]
 public class ConfirmEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "CONFIRM-EMAIL-001: ConfirmEmail_WithValidCode_ReturnsOk")]

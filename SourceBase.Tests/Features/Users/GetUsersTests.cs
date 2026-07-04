@@ -8,6 +8,17 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Users;
 
+[EndpointFact(
+    Feature = "Users",
+    Name = "Get Users",
+    Route = "GET /api/users",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to list all registered users with paging and ordering, so that I can manage and audit user accounts.",
+    Description = new[]
+    {
+        "Admin sends optional paging parameters (`page`, `limit`, `order`, `orderBy`).",
+        "Returns a paginated list of users with their profile fields and roles.",
+    })]
 public class GetUsersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "USERS-GET-001: GetUsers_WithoutToken_ReturnsUnauthorized")]

@@ -9,6 +9,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Get User Info",
+    Route = "GET /api/auth/info",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve my profile information, so that I can display or use my account details in the application.",
+    Description = new[]
+    {
+        "Client calls the endpoint with a valid access token.",
+        "The server reads the current user ID from the JWT claims and loads the user from the database.",
+        "Returns `id`, `userName`, `email`, `firstName`, `lastName`, `phoneNumber`, and `roles` (from the current token claims).",
+    })]
 public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "GET-INFO-001: GetUserInfo_WithValidToken_ReturnsOk")]

@@ -8,6 +8,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Refresh Token",
+    Route = "POST /api/auth/refresh",
+    Auth = "Anonymous",
+    UseCase = "As an authenticated user whose access token has expired, I want to exchange my refresh token for a new access token, so that I can continue using the app without re-entering my credentials.",
+    Description = new[]
+    {
+        "Client sends the `token` (refresh token string).",
+        "The server parses the refresh token and extracts `userId` and `securityStamp`.",
+        "The user is loaded from the database; if not found → `401 Unauthorized`.",
+        "The stored security stamp is compared with the one in the token — mismatch → `401 Unauthorized` (covers logged-out or password-changed scenarios).",
+        "On success, a new access token (and refresh token) are issued via the JWT middleware.",
+    })]
 public class RefreshTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "REFRESH-001: RefreshToken_WithValidToken_PreservesRoles")]

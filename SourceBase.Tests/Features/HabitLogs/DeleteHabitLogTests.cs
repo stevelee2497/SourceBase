@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.HabitLogs;
 
+[EndpointFact(
+    Feature = "HabitLogs",
+    Name = "Delete Habit Log",
+    Route = "DELETE /api/habit-logs/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete a habit log entry, so that I can remove an incorrect or unwanted log from my history.",
+    Description = new[]
+    {
+        "Client provides the habit log `id` (route).",
+        "If the log doesn't exist or belongs to a different user → `404 Not Found`.",
+        "The log entry is removed from the database.",
+    })]
 public class DeleteHabitLogTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "HLOG-DELETE-001: DeleteHabitLog_WithoutToken_ReturnsUnauthorized")]

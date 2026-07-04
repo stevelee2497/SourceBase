@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Todo;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Delete Todo",
+    Route = "DELETE /api/todos/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete a todo item, so that I can remove tasks I no longer need to track.",
+    Description = new[]
+    {
+        "Client provides the todo `id` (route).",
+        "If the item doesn't exist or belongs to a different user → `404 Not Found`.",
+        "The item is removed from the database.",
+    })]
 public class DeleteTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TODOS-DELETE-001: DeleteTodo_WithoutToken_ReturnsUnauthorized")]

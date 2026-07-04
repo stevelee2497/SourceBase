@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Categories;
 
+[EndpointFact(
+    Feature = "Categories",
+    Name = "Get Categories",
+    Route = "GET /api/categories",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve the list of transaction categories, so that I can assign categories when creating transactions.",
+    Description = new[]
+    {
+        "Client calls the endpoint with optional `type` filter (`Income` or `Expense`).",
+        "Returns system-default categories (seeded, `IsSystem = true`) plus the current user's custom categories.",
+        "Each category includes `id`, `name`, `type`, `icon`, `isSystem`.",
+    })]
 public class GetCategoriesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "CATS-GET-001: GetCategories_WithoutToken_ReturnsUnauthorized")]

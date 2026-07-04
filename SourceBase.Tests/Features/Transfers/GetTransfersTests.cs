@@ -9,6 +9,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transfers;
 
+[EndpointFact(
+    Feature = "Transfers",
+    Name = "Get Transfers",
+    Route = "GET /api/transfers",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to view my transfer history, so that I can track money movements between my wallets.",
+    Description = new[]
+    {
+        "Client sends optional `walletId` (filter by either from or to wallet), `dateFrom`, `dateTo`, plus paging parameters.",
+        "Returns only transfers belonging to the authenticated user.",
+        "Results are ordered by `date` descending.",
+        "Each item includes from/to wallet names and amount.",
+    })]
 public class GetTransfersTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TRANSFER-GET-001: GetTransfers_WithoutToken_ReturnsUnauthorized")]

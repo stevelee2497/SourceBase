@@ -8,6 +8,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Logout",
+    Route = "POST /api/auth/logout",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to log out, so that my access and refresh tokens are immediately invalidated on the server.",
+    Description = new[]
+    {
+        "Client calls the endpoint with a valid access token.",
+        "The server loads the current user and rotates their security stamp (a new `Guid`).",
+        "Any previously issued tokens that embed the old security stamp are rejected on next use.",
+        "Returns `{ success: true }`.",
+    })]
 public class LogoutTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "LOGOUT-001: Logout_WithValidToken_ReturnsOk")]

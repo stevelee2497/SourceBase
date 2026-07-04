@@ -8,6 +8,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Login Rate Limiting",
+    Route = "POST /api/auth/login",
+    Auth = "Anonymous",
+    UseCase = "As the system, I want to enforce a strict per-IP rate limit on sensitive anonymous auth endpoints, so that bot abuse, credential stuffing, and email-spam attacks are mitigated.",
+    Description = new[]
+    {
+        "The `strict` policy applies a tighter per-IP limit (default 10 requests / 60 s) to sensitive anonymous auth endpoints, including `auth/login`, `auth/register`, and `auth/forgotPassword`.",
+        "Exceeding the strict limit on `auth/login` returns `429 Too Many Requests` with a `Retry-After` header.",
+        "Exceeding the strict limit on `auth/register` returns `429 Too Many Requests`.",
+        "Exceeding the strict limit on `auth/forgotPassword` returns `429 Too Many Requests`.",
+        "The 429 response body follows the standard `GlobalExceptionMiddleware` JSON error format (`traceId`, `code`, `message`, `errors`).",
+    })]
 public class RateLimitTests(RateLimitWebAppFactory factory) : IClassFixture<RateLimitWebAppFactory>
 {
     [Fact(DisplayName = "RATE-LIMIT-001: Login_ExceedsStrictLimit_Returns429")]

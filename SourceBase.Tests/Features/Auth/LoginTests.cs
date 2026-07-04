@@ -7,6 +7,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Login",
+    Route = "POST /api/auth/login",
+    Auth = "Anonymous",
+    UseCase = "As a registered user, I want to log in with my email and password, so that I can receive an access token and refresh token to make authenticated requests.",
+    Description = new[]
+    {
+        "Client sends `email` and `password`.",
+        "The server looks up the user by email.",
+        "If the user doesn't exist, the email is not confirmed, or the password is wrong → `401 Unauthorized`.",
+        "On success, the JWT middleware issues an access token (JWT) and a refresh token in the response.",
+        "The response includes `expiresIn` (seconds), which reflects the configured `AccessTokenExpirationMinutes` in `AppSettings`.",
+    })]
 public class LoginTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "LOGIN-001: Login_WithValidCredentials_ReturnsOkAndAccessToken")]

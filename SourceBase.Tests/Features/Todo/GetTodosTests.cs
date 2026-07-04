@@ -9,6 +9,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Todo;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Get Todos",
+    Route = "GET /api/todos",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to list my todo items with filtering, paging, and ordering, so that I can view and navigate my tasks efficiently.",
+    Description = new[]
+    {
+        "Client sends optional filters: `status`, `date`, `todoListId`, plus paging parameters.",
+        "Returns only todo items belonging to the authenticated user.",
+        "Filters are applied as AND conditions — only items matching all provided filters are returned.",
+    })]
 public class GetTodosTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TODOS-GET-ALL-001: GetTodos_WithoutToken_ReturnsUnauthorized")]

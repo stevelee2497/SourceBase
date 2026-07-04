@@ -8,6 +8,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Resend Confirmation Email",
+    Route = "POST /api/auth/resendConfirmationEmail",
+    Auth = "Anonymous",
+    UseCase = "As a user whose confirmation email expired or was lost, I want to request a new confirmation code, so that I can complete my email verification.",
+    Description = new[]
+    {
+        "Client sends their registered `email`.",
+        "If the user is not found → `404 Not Found`.",
+        "If the email is already confirmed → `400 Bad Request`.",
+        "A new OTP code is generated and stored with a fresh expiry timestamp.",
+        "A new confirmation email is sent to the user.",
+    })]
 public class ResendConfirmationEmailTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "RESEND-CONF-001: ResendConfirmationEmail_WithValidEmail_ReturnsOk")]

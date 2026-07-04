@@ -9,6 +9,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Users;
 
+[EndpointFact(
+    Feature = "Users",
+    Name = "Reset User Password",
+    Route = "POST /api/users/{id}/resetPassword",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to reset a user's password to a new random value and notify them by email, so that I can help users who are locked out of their accounts.",
+    Description = new[]
+    {
+        "Admin provides the target user `id` (route) and a `newPassword`.",
+        "If the user doesn't exist → `404 Not Found`.",
+        "The password must meet the minimum length requirement (6 characters) → `400 Bad Request` otherwise.",
+        "The user's password is updated and the security stamp is rotated.",
+        "An email is sent to the user notifying them of their new password.",
+    })]
 public class ResetUserPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "USERS-RESET-PWD-001: ResetUserPassword_WithoutToken_ReturnsUnauthorized")]

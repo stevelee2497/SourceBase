@@ -8,6 +8,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Register",
+    Route = "POST /api/auth/register",
+    Auth = "Anonymous",
+    UseCase = "As a new user, I want to register an account with my username, email, and password, so that I can access the application after confirming my email.",
+    Description = new[]
+    {
+        "Client sends `userName`, `email`, and `password`.",
+        "Username and email are trimmed of surrounding whitespace before processing.",
+        "If the username or email is already taken → `400 Bad Request`.",
+        "A new user is created with a hashed password and a 6-digit OTP confirmation code.",
+        "A confirmation email containing the OTP code is sent to the user's email address.",
+        "Returns the new user's `Id`.",
+    })]
 public class RegisterTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "REGISTER-001: Register_WithValidData_ReturnsOk")]

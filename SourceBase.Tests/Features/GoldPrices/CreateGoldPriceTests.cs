@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.GoldPrices;
 
+[EndpointFact(
+    Feature = "GoldPrices",
+    Name = "Create Gold Price",
+    Route = "POST /api/gold-prices",
+    Auth = "Required",
+    UseCase = "As an authenticated user or background service, I want to record a gold price entry for a specific source and timestamp, so that price history is captured in the database.",
+    Description = new[]
+    {
+        "Client sends `source` (required, one of: `\"SJC\"`, `\"PNJ\"`, `\"GiaVang\"`, `\"KimKhanhVietHung\"`), `buyPrice` (required, greater than 0), `sellPrice` (required, greater than 0), `recordedAt` (required, UTC DateTime).",
+        "A new `GoldPriceEntity` is created and saved.",
+        "Returns the new record's `Id`.",
+    })]
 public class CreateGoldPriceTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "GOLDPRICE-CREATE-001: CreateGoldPrice_WithoutToken_ReturnsUnauthorized")]

@@ -10,6 +10,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.HabitLogs;
 
+[EndpointFact(
+    Feature = "HabitLogs",
+    Name = "Get Habit Logs",
+    Route = "GET /api/habit-logs",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to list my habit log entries with filtering and pagination, so that I can review my habit activity history.",
+    Description = new[]
+    {
+        "Client sends optional filters: `action`, `ignore` (actions to exclude), `from`/date range, plus paging parameters (`page`, `limit`).",
+        "Returns only habit log entries belonging to the authenticated user.",
+        "Each item includes `id`, `habitId`, `habitName`, `action`, and `occurredAt`.",
+    })]
 public class GetHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "HLOG-GET-001: GetHabitLogs_WithoutToken_ReturnsUnauthorized")]

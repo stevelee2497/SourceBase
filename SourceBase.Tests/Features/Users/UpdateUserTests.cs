@@ -10,6 +10,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Users;
 
+[EndpointFact(
+    Feature = "Users",
+    Name = "Update User",
+    Route = "PUT /api/users/{id}",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to update a user's profile and role assignments, so that I can correct information or adjust permissions.",
+    Description = new[]
+    {
+        "Admin sends the target user `id` (route) plus updated `userName`, `email`, optional profile fields, and `roles`.",
+        "If the email is changed, `EmailConfirmed` is set to `false`, a new OTP code is issued, and a re-confirmation email is sent.",
+        "If the roles list is changed, the user's security stamp is rotated, invalidating their existing tokens.",
+        "Duplicate email (case-insensitive) → `400 Bad Request`. Unknown role → `400 Bad Request`.",
+    })]
 public class UpdateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "USERS-UPDATE-001: UpdateUser_WithoutToken_ReturnsUnauthorized")]

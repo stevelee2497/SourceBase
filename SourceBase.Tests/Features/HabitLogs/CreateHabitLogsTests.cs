@@ -9,6 +9,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.HabitLogs;
 
+[EndpointFact(
+    Feature = "HabitLogs",
+    Name = "Create Habit Logs",
+    Route = "POST /api/habit-logs",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to record one or more habit log entries in a single batch, so that I can track habit-related events (started, dismissed, snoozed, etc.) without a separate request per entry.",
+    Description = new[]
+    {
+        "Client sends `entries` (required, non-empty array), each with `action` (required), `occurredAt` (required), and optional `habitId`/`habitName`.",
+        "If `entries` is empty, or any entry is missing `occurredAt`, the request returns `400 Bad Request`.",
+        "Each log entry is created and associated with the authenticated user.",
+        "Returns the new log entries' `Ids` (one per submitted entry, in order).",
+    })]
 public class CreateHabitLogsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "HLOG-CREATE-001: CreateHabitLogs_WithoutToken_ReturnsUnauthorized")]

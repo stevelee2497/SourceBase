@@ -9,6 +9,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Wallets;
 
+[EndpointFact(
+    Feature = "Wallets",
+    Name = "Create Wallet",
+    Route = "POST /api/wallets",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to create a named wallet with an initial balance and currency, so that I can start tracking my finances separately per account (e.g. cash, bank, savings).",
+    Description = new[]
+    {
+        "Client sends `name` (required, max 100 characters), `initialBalance` (required, default `0`), `currency` (required, e.g. `\"USD\"`), and optionally `icon` (emoji or icon name string).",
+        "The wallet is created and associated with the authenticated user.",
+        "Returns the new wallet's `Id`.",
+    })]
 public class CreateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "WALLETS-CREATE-001: CreateWallet_WithoutToken_ReturnsUnauthorized")]

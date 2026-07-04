@@ -11,6 +11,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Notifications;
 
+[EndpointFact(
+    Feature = "Notifications",
+    Name = "Mark All Notifications As Read",
+    Route = "PUT /api/notifications/read-all",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to mark all my notifications as read at once, so that I can quickly clear the unread indicator without clicking each notification individually.",
+    Description = new[]
+    {
+        "Finds all unread notifications belonging to the current user.",
+        "Sets `IsRead = true` on all of them in a single update.",
+        "Returns `{ success: true }`.",
+    })]
 public class MarkAllNotificationsAsReadTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "NOTIF-MARK-ALL-READ-001: MarkAllNotificationsAsRead_WithUnreadNotifications_MarksAllAsRead")]

@@ -9,6 +9,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Todo;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Update Todo",
+    Route = "PATCH /api/todos/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to partially update a todo item's title, date, or status, so that I can keep my task list current without sending all fields.",
+    Description = new[]
+    {
+        "Client sends the todo `id` (route) and any subset of: `title`, `date`, `status`. All fields are optional — only provided (non-null) fields are updated.",
+        "If the item doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If `title` is provided but empty → `400 Bad Request`.",
+    })]
 public class UpdateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TODOS-UPDATE-001: UpdateTodo_WithoutToken_ReturnsUnauthorized")]

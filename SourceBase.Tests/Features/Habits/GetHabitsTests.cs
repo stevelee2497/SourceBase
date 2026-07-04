@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Habits;
 
+[EndpointFact(
+    Feature = "Habits",
+    Name = "Get Habits",
+    Route = "GET /api/habits",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve my habits along with their log counts, so that I can see which habits I've been keeping up with and in what order.",
+    Description = new[]
+    {
+        "Client calls the endpoint with a valid access token.",
+        "Returns the authenticated user's habits, each including a computed `LogCount` (number of associated habit logs).",
+        "Habits are ordered by `LogCount` descending, so the most-logged habits appear first.",
+    })]
 public class GetHabitsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "HABITS-GET-001: GetHabits_WithoutToken_ReturnsUnauthorized")]

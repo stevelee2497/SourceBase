@@ -8,6 +8,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Icons;
 
+[EndpointFact(
+    Feature = "Icons",
+    Name = "Update Icon",
+    Route = "PATCH /api/icons/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to partially update a custom icon's value, name, group, or sort order, so that I can correct or reorganise it without resending all fields.",
+    Description = new[]
+    {
+        "Client sends the icon `id` (route) and any subset of: `value`, `name`, `group`, `sortOrder`. All fields are optional — only provided (non-null) fields are updated.",
+        "If the icon doesn't exist → `404 Not Found`.",
+        "If the icon is a system icon (`IsSystem = true`) → `403 Forbidden`.",
+        "If `value` or `name` is provided but empty → `400 Bad Request`.",
+        "Returns the updated icon's `Id`.",
+    })]
 public class UpdateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "ICONS-UPDATE-001: UpdateIcon_WithoutToken_ReturnsUnauthorized")]

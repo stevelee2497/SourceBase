@@ -8,6 +8,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Roles;
 
+[EndpointFact(
+    Feature = "Roles",
+    Name = "Delete Role",
+    Route = "DELETE /api/roles/{id}",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to delete a role that is no longer needed, so that I can keep the role list clean and accurate.",
+    Description = new[]
+    {
+        "Admin provides the role `id` (route).",
+        "If the role doesn't exist → `400 Bad Request`.",
+        "The `Admin` role is protected and cannot be deleted → `400 Bad Request`.",
+        "The role is removed from the database.",
+    })]
 public class DeleteRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "ROLES-DELETE-001: DeleteRole_WithoutToken_ReturnsUnauthorized")]

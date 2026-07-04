@@ -9,6 +9,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.TimeSheets;
 
+[EndpointFact(
+    Feature = "TimeSheets",
+    Name = "Bulk Upsert Time Sheets",
+    Route = "POST /api/time-sheets",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to log one or more time entries for specific dates and projects in a single request, so that I can record or update my work hours efficiently.",
+    Description = new[]
+    {
+        "Client sends a list of items, each with `date` (ISO 8601), `project` (required, non-empty string), and `hours` (decimal, > 0, ≤ 24).",
+        "For each item, if an entry for the same `(user, date, project)` combination already exists, its `hours` value is updated (upsert).",
+        "If no matching entry exists, a new record is created.",
+        "Returns a list of affected entry IDs (either newly created or updated).",
+        "After saving, a notification is created for the submitting user with title \"Time Sheets Submitted\".",
+    })]
 public class CreateTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TIMESHEET-CREATE-001: CreateTimeSheet_WithoutToken_ReturnsUnauthorized")]

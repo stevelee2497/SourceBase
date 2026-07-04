@@ -7,6 +7,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Icons;
 
+[EndpointFact(
+    Feature = "Icons",
+    Name = "Upload Icon Image",
+    Route = "POST /api/icons/upload-image",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to upload an image file as an icon so that I can use a custom image in the icon picker.",
+    Description = new[]
+    {
+        "Client sends `fileName` (required) with a supported extension: `jpg`, `jpeg`, `png`, `gif`, `webp`, or `svg`.",
+        "The API generates a presigned upload URL pointing to Cloudflare R2 storage and returns the final public `iconUrl` and `contentType`.",
+        "Client uploads the file directly to the presigned URL (PUT request), then uses the returned `iconUrl` as the icon `value` when creating an icon.",
+    })]
 public class UploadIconImageTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "ICONS-UPLOAD-001: UploadIconImage_WithoutToken_ReturnsUnauthorized")]

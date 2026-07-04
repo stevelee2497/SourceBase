@@ -7,6 +7,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Data;
 
+[EndpointFact(
+    Feature = "Data",
+    Name = "Get Stats",
+    Route = "GET /api/data/stats",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to view application-wide statistics, so that I can get a quick overview of users, tasks, and completion rates.",
+    Description = new[]
+    {
+        "Client calls the endpoint with a valid access token.",
+        "Returns four aggregate counts from the database:",
+        "`userCount` — total number of registered users",
+        "`totalTodoLists` — total number of todo lists",
+        "`totalTodoItems` — total number of todo items",
+        "`completedTodoItems` — count of items with status `Completed`",
+    })]
 public class GetStatsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "DATA-STATS-001: GetStats_WithoutToken_ReturnsUnauthorized")]

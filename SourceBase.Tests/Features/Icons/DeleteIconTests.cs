@@ -8,6 +8,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Icons;
 
+[EndpointFact(
+    Feature = "Icons",
+    Name = "Delete Icon",
+    Route = "DELETE /api/icons/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete a custom icon I no longer need.",
+    Description = new[]
+    {
+        "Client provides the icon `id` (route).",
+        "If the icon doesn't exist → `404 Not Found`.",
+        "If the icon is a system icon → `403 Forbidden`.",
+        "The icon is removed.",
+    })]
 public class DeleteIconTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "ICONS-DELETE-001: DeleteIcon_WithoutToken_ReturnsUnauthorized")]

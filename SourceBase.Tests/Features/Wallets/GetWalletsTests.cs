@@ -9,6 +9,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Wallets;
 
+[EndpointFact(
+    Feature = "Wallets",
+    Name = "Get Wallets",
+    Route = "GET /api/wallets",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve all my wallets with their current balances and a grand total, so that I can see my overall financial position at a glance.",
+    Description = new[]
+    {
+        "Client calls the endpoint with a valid access token.",
+        "Returns only wallets belonging to the authenticated user.",
+        "Response includes each wallet's `id`, `name`, `balance`, `currency`, `icon`, plus a computed `totalBalance` (sum of all wallet balances, regardless of currency).",
+    })]
 public class GetWalletsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "WALLETS-GET-ALL-001: GetWallets_WithoutToken_ReturnsUnauthorized")]

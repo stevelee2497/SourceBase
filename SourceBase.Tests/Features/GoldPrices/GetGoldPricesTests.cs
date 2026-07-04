@@ -8,6 +8,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.GoldPrices;
 
+[EndpointFact(
+    Feature = "GoldPrices",
+    Name = "Get Gold Prices",
+    Route = "GET /api/gold-prices",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve a paginated and filterable list of gold price records, so that I can view price history and build charts. I can also request the latest record per source to display a summary dashboard.",
+    Description = new[]
+    {
+        "Client sends optional query parameters: `source` (GoldSource), `dateFrom` (DateTime), `dateTo` (DateTime), `latest` (bool), `page` (default 1), `limit` (default 20), `order` (Asc / Desc, default Desc), `orderBy` (RecordedAt / BuyPrice / SellPrice / Source, default RecordedAt).",
+        "If `latest=true`: returns one record per source (the most recent `RecordedAt` for each source). Pagination params are ignored; `page=1`, `limit=items.Count`, `total=items.Count`.",
+        "Otherwise: results are filtered by the provided parameters and paginated.",
+        "Returns `{ items, page, limit, total }`.",
+    })]
 public class GetGoldPricesTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "GOLDPRICE-GET-ALL-001: GetGoldPrices_WithoutToken_ReturnsUnauthorized")]

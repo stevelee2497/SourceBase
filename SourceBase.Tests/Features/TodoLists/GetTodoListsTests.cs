@@ -8,6 +8,17 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.TodoLists;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Get Todo Lists",
+    Route = "GET /api/todo-lists",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve my todo lists, so that I can navigate to and manage my task collections.",
+    Description = new[]
+    {
+        "Client calls the endpoint with a valid access token.",
+        "Returns only the todo lists that belong to the authenticated user — other users' lists are never included.",
+    })]
 public class GetTodoListsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TODOLISTS-GET-001: GetTodoLists_WithoutToken_ReturnsUnauthorized")]

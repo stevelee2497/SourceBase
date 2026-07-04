@@ -11,6 +11,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Data;
 
+[EndpointFact(
+    Feature = "Data",
+    Name = "Get Audits",
+    Route = "GET /api/data/audits",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to view the audit history of all data changes in the system, so that I can trace who changed what and when for compliance and debugging.",
+    Description = new[]
+    {
+        "Admin sends optional paging parameters (`page`, `limit`, `order`).",
+        "Results are sorted by `ActionOn` (most recent first by default).",
+        "Each entry includes `author`, `action`, `entityType`, `entityId`, and JSON snapshots of the `current`, `original`, and `changes` state.",
+        "Audit records are written automatically by `ApplicationDbContextAuditInterceptor` on every save — this endpoint only reads them.",
+    })]
 public class GetAuditsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "DATA-AUDITS-001: GetAudits_WithoutToken_ReturnsUnauthorized")]

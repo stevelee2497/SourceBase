@@ -8,6 +8,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Roles;
 
+[EndpointFact(
+    Feature = "Roles",
+    Name = "Create Role",
+    Route = "POST /api/roles",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to create a new role, so that I can define custom permission levels and assign them to users.",
+    Description = new[]
+    {
+        "Admin sends `name` and `description`.",
+        "Role names are compared case-insensitively — if a role with the same name already exists → `400 Bad Request`.",
+        "The name is trimmed of surrounding whitespace before persisting.",
+        "A new role is saved and its `Id` is returned.",
+    })]
 public class CreateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "ROLES-CREATE-001: CreateRole_WithoutToken_ReturnsUnauthorized")]

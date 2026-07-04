@@ -11,6 +11,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transactions;
 
+[EndpointFact(
+    Feature = "Transactions",
+    Name = "Delete Transaction",
+    Route = "DELETE /api/transactions/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete an incorrect transaction, so that it no longer affects my wallet balance.",
+    Description = new[]
+    {
+        "Client provides the transaction `id` (route).",
+        "If the transaction doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If the transaction is part of a transfer → `400 Bad Request` (delete the transfer instead).",
+        "The transaction is removed. The wallet's computed balance automatically reflects the deletion on next query.",
+    })]
 public class DeleteTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TXN-DELETE-001: DeleteTransaction_WithoutToken_ReturnsUnauthorized")]

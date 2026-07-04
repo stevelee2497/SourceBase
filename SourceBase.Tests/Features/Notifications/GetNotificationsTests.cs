@@ -10,6 +10,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Notifications;
 
+[EndpointFact(
+    Feature = "Notifications",
+    Name = "Get Notifications",
+    Route = "GET /api/notifications",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve my notifications, so that I can stay informed about important events that occurred while I was away or before I connected via SignalR.",
+    Description = new[]
+    {
+        "Client may provide optional query parameters: `page`, `limit`, and `unreadOnly` (boolean).",
+        "Returns a paginated list of the current user's notifications ordered by creation date descending.",
+        "Each notification includes `id`, `title`, `message`, `isRead`, and `createdOn`.",
+        "Notifications from other users are never included.",
+    })]
 public class GetNotificationsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "NOTIF-GET-001: GetNotifications_WithNoNotifications_ReturnsEmptyList")]

@@ -10,6 +10,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Todo;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Create Todo",
+    Route = "POST /api/todos",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to create a todo item with a title, date, and status, so that I can track individual tasks.",
+    Description = new[]
+    {
+        "Client sends `title` (required), `date` (required), `status`, and an optional `todoListId`.",
+        "If `todoListId` is provided but doesn't exist or doesn't belong to the current user → `404 Not Found`.",
+        "The todo item is created and associated with the authenticated user and optionally a todo list.",
+        "Returns the new item's `Id`.",
+    })]
 public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TODOS-CREATE-001: CreateTodo_WithoutToken_ReturnsUnauthorized")]

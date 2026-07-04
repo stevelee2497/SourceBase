@@ -10,6 +10,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transfers;
 
+[EndpointFact(
+    Feature = "Transfers",
+    Name = "Delete Transfer",
+    Route = "DELETE /api/transfers/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete an incorrect transfer, so that the linked transactions are removed and both wallet balances are recomputed correctly.",
+    Description = new[]
+    {
+        "Client provides the transfer `id` (route).",
+        "If the transfer doesn't exist or belongs to a different user → `404 Not Found`.",
+        "Both linked transactions are deleted. The wallet computed balances automatically reflect the deletion on next query.",
+    })]
 public class DeleteTransferTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TRANSFER-DELETE-001: DeleteTransfer_WithoutToken_ReturnsUnauthorized")]

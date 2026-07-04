@@ -10,6 +10,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transactions;
 
+[EndpointFact(
+    Feature = "Transactions",
+    Name = "Create Transaction",
+    Route = "POST /api/transactions",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to record an income or expense transaction on one of my wallets, so that my wallet balance stays accurate and I can track where my money goes.",
+    Description = new[]
+    {
+        "Client sends `walletId` (required), `amount` (required, positive decimal), `type` (required: `Income` or `Expense`), `date` (required), optional `note`, optional `categoryId`.",
+        "If `walletId` doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If `categoryId` is provided but doesn't exist or belongs to a different user → `404 Not Found`.",
+        "The transaction is created and associated with the authenticated user.",
+        "Returns the new transaction's `Id`.",
+    })]
 public class CreateTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TXN-CREATE-001: CreateTransaction_WithoutToken_ReturnsUnauthorized")]

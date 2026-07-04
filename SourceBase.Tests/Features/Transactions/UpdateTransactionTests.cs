@@ -12,6 +12,22 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transactions;
 
+[EndpointFact(
+    Feature = "Transactions",
+    Name = "Update Transaction",
+    Route = "PATCH /api/transactions/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to partially update a transaction's amount, type, date, note, category, or wallet, so that I can correct mistakes, add missing details, or move a transaction to a different wallet.",
+    Description = new[]
+    {
+        "Client sends the transaction `id` (route) and any subset of: `amount`, `type`, `date`, `note`, `categoryId`, `walletId`. All fields are optional — only provided (non-null) fields are updated.",
+        "If the transaction doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If the transaction is part of a transfer → `400 Bad Request` (edit the transfer instead).",
+        "If a `walletId` is provided but doesn't exist or belongs to a different user → `400 Bad Request`.",
+        "If a `categoryId` is provided but doesn't exist or isn't accessible to the user → `400 Bad Request`.",
+        "The transaction fields are updated. Both the old and new wallet's computed balance automatically reflect the change on next query.",
+        "Returns the updated transaction's `Id`.",
+    })]
 public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TXN-UPDATE-001: UpdateTransaction_WithoutToken_ReturnsUnauthorized")]

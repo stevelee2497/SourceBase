@@ -9,6 +9,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Todo;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Get Todo",
+    Route = "GET /api/todos/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve the details of a specific todo item, so that I can view its full information.",
+    Description = new[]
+    {
+        "Client provides the todo `id` (route).",
+        "If the item doesn't exist or belongs to a different user → `404 Not Found`.",
+        "Returns the full todo item details.",
+    })]
 public class GetTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TODOS-GET-001: GetTodo_WithoutToken_ReturnsUnauthorized")]

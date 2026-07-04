@@ -8,6 +8,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Forgot Password",
+    Route = "POST /api/auth/forgotPassword",
+    Auth = "Anonymous",
+    UseCase = "As a user who forgot their password, I want to request a password reset code by email, so that I can set a new password.",
+    Description = new[]
+    {
+        "Client sends their registered `email`.",
+        "If the user is not found → `404 Not Found`.",
+        "A new 6-digit OTP code is generated and stored on the user record with an expiry timestamp.",
+        "An email containing the reset code is sent to the user.",
+        "Returns `{ success: true }`.",
+    })]
 public class ForgotPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "FORGOT-PWD-001: ForgotPassword_WithValidEmail_ReturnsOk")]

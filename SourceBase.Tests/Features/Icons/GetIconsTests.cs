@@ -7,6 +7,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Icons;
 
+[EndpointFact(
+    Feature = "Icons",
+    Name = "Get Icons",
+    Route = "GET /api/icons",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve the available icons so that I can pick one when creating or editing a wallet or category.",
+    Description = new[]
+    {
+        "Client calls the endpoint with an optional `group` query parameter (`Wallet`, `Category`, or `General`).",
+        "If `group` is provided, returns icons of that group plus all `General` icons. If `group` is omitted or unrecognised, returns all icons.",
+        "Results are ordered by `SortOrder` ascending within each group.",
+        "Each icon includes `id`, `value`, `name`, `group`, `sortOrder`, `isSystem`.",
+    })]
 public class GetIconsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "ICONS-GET-001: GetIcons_WithoutToken_ReturnsUnauthorized")]

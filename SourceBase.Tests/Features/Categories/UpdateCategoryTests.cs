@@ -8,6 +8,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Categories;
 
+[EndpointFact(
+    Feature = "Categories",
+    Name = "Update Category",
+    Route = "PATCH /api/categories/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to partially update a custom category's name or icon, so that I can keep my organisation up to date without resending all fields.",
+    Description = new[]
+    {
+        "Client sends the category `id` (route) and any subset of: `name`, `icon`. All fields are optional — only provided (non-null) fields are updated.",
+        "If the category doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If the category is a system category (`IsSystem = true`) → `403 Forbidden`.",
+        "If `name` is provided but empty → `400 Bad Request`.",
+        "Returns the updated category's `Id`.",
+    })]
 public class UpdateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "CATS-UPDATE-001: UpdateCategory_WithoutToken_ReturnsUnauthorized")]

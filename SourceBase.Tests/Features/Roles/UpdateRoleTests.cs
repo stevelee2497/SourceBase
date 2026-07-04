@@ -8,6 +8,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Roles;
 
+[EndpointFact(
+    Feature = "Roles",
+    Name = "Update Role",
+    Route = "PATCH /api/roles/{id}",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to partially update a role's name or description, so that I can keep role definitions accurate without resending all fields.",
+    Description = new[]
+    {
+        "Admin sends the role `id` (route) and any subset of: `name`, `description`. All fields are optional — only provided (non-null) fields are updated.",
+        "The `Admin` role is protected and cannot be modified → `400 Bad Request`.",
+        "If `name` is provided and already used by a different role → `400 Bad Request`.",
+        "Updating a role to its current name (no-op rename) is valid and returns 200.",
+    })]
 public class UpdateRoleTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "ROLES-UPDATE-001: UpdateRole_WithoutToken_ReturnsUnauthorized")]

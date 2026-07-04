@@ -9,6 +9,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Users;
 
+[EndpointFact(
+    Feature = "Users",
+    Name = "Delete User",
+    Route = "DELETE /api/users/{id}",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to delete a user account, so that I can remove deactivated or unwanted accounts from the system.",
+    Description = new[]
+    {
+        "Admin provides the target user `id` (route).",
+        "If the user doesn't exist → `404 Not Found`.",
+        "The user record is deleted from the database.",
+        "Any existing tokens issued to that user are implicitly invalidated because the user no longer exists.",
+    })]
 public class DeleteUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "USERS-DELETE-001: DeleteUser_WithoutToken_ReturnsUnauthorized")]

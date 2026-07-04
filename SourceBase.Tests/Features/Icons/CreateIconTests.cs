@@ -7,6 +7,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Icons;
 
+[EndpointFact(
+    Feature = "Icons",
+    Name = "Create Icon",
+    Route = "POST /api/icons",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to add a custom icon so that wallets and categories can display it.",
+    Description = new[]
+    {
+        "Client sends `value` (required, max 2000 characters — emoji, SVG markup, or image URL), `name` (required, max 100 characters), `group` (required: `Wallet`, `Category`, or `General`), and `sortOrder` (required).",
+        "The icon is created with `IsSystem = false`.",
+        "Returns the new icon's `Id`.",
+    })]
 public class CreateIconTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "ICONS-CREATE-001: CreateIcon_WithoutToken_ReturnsUnauthorized")]

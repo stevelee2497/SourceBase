@@ -10,6 +10,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Categories;
 
+[EndpointFact(
+    Feature = "Categories",
+    Name = "Delete Category",
+    Route = "DELETE /api/categories/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete one of my custom categories, so that I can remove categories I no longer use.",
+    Description = new[]
+    {
+        "Client provides the category `id` (route).",
+        "If the category doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If the category is a system category → `403 Forbidden`.",
+        "If any transaction references this category → `400 Bad Request` with message `\"Category is in use by transactions\"`.",
+        "The category is deleted.",
+    })]
 public class DeleteCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "CATS-DELETE-001: DeleteCategory_WithoutToken_ReturnsUnauthorized")]

@@ -10,6 +10,20 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Wallets;
 
+[EndpointFact(
+    Feature = "Wallets",
+    Name = "Update Wallet",
+    Route = "PATCH /api/wallets/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to partially update a wallet's name or icon, so that I can keep it organised without resending all fields.",
+    Description = new[]
+    {
+        "Client sends the wallet `id` (route) and any subset of: `name`, `icon`. All fields are optional — only provided (non-null) fields are updated. Sending `null` for a field keeps the existing value.",
+        "If the wallet doesn't exist or belongs to a different user → `404 Not Found`.",
+        "If `name` is provided but empty → `400 Bad Request`.",
+        "Only metadata fields (`name`, `icon`) are updated; computed balance is unaffected.",
+        "Returns the updated wallet's `Id`.",
+    })]
 public class UpdateWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "WALLETS-UPDATE-001: UpdateWallet_WithoutToken_ReturnsUnauthorized")]

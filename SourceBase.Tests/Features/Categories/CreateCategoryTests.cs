@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Categories;
 
+[EndpointFact(
+    Feature = "Categories",
+    Name = "Create Category",
+    Route = "POST /api/categories",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to create a custom transaction category, so that I can organise my transactions beyond the default categories.",
+    Description = new[]
+    {
+        "Client sends `name` (required, max 100 characters), `type` (required: `Income` or `Expense`), and optionally `icon`.",
+        "The category is created as a user-owned (non-system) category.",
+        "Returns the new category's `Id`.",
+    })]
 public class CreateCategoryTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "CATS-CREATE-001: CreateCategory_WithoutToken_ReturnsUnauthorized")]

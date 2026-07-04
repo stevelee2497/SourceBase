@@ -10,6 +10,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Wallets;
 
+[EndpointFact(
+    Feature = "Wallets",
+    Name = "Delete Wallet",
+    Route = "DELETE /api/wallets/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete one of my wallets, so that I can remove accounts I no longer use.",
+    Description = new[]
+    {
+        "Client provides the wallet `id` (route).",
+        "If the wallet doesn't exist or belongs to a different user → `404 Not Found`.",
+        "The wallet and all its associated transactions are deleted. Any transfer records that reference this wallet are also deleted.",
+    })]
 public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "WALLETS-DELETE-001: DeleteWallet_WithoutToken_ReturnsUnauthorized")]

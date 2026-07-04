@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.TimeSheets;
 
+[EndpointFact(
+    Feature = "TimeSheets",
+    Name = "List Time Sheets",
+    Route = "GET /api/time-sheets",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve my time entries for a given date or month, so that I can review or manage my logged hours.",
+    Description = new[]
+    {
+        "Client may filter by `date` (exact day), `year`, or `month` query parameters.",
+        "Returns only entries belonging to the authenticated user — other users' entries are never included.",
+        "Supports pagination via `page` and `limit` query parameters.",
+    })]
 public class GetTimeSheetsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TIMESHEET-GET-ALL-001: GetTimeSheets_WithoutToken_ReturnsUnauthorized")]

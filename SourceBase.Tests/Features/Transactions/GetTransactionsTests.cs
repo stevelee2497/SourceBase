@@ -11,6 +11,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transactions;
 
+[EndpointFact(
+    Feature = "Transactions",
+    Name = "Get Transactions",
+    Route = "GET /api/transactions",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to list my transactions with filtering and pagination, so that I can browse and analyse my transaction history.",
+    Description = new[]
+    {
+        "Client sends optional filters: `walletId`, `type`, `categoryId`, `dateFrom`, `dateTo`, plus paging parameters (`page`, `pageSize`).",
+        "Returns only transactions belonging to the authenticated user.",
+        "Results are ordered by `date` descending, then by `CreatedOn` descending.",
+        "Each item includes wallet name and category name for display.",
+    })]
 public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TXN-GET-ALL-001: GetTransactions_WithoutToken_ReturnsUnauthorized")]

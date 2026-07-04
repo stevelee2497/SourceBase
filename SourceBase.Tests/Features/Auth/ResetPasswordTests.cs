@@ -8,6 +8,19 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Reset Password",
+    Route = "POST /api/auth/resetPassword",
+    Auth = "Anonymous",
+    UseCase = "As a user, I want to reset my password using the OTP code I received by email, so that I can regain access to my account.",
+    Description = new[]
+    {
+        "Client sends `email`, `code` (OTP), and `newPassword`.",
+        "The server looks up the user by email — if not found → `404 Not Found`.",
+        "The OTP code is validated against the stored code and its expiry timestamp — if invalid or expired → `400 Bad Request`.",
+        "On success, the password is updated, the OTP fields are cleared, `EmailConfirmed` is set to `true` (so users who never confirmed their email regain access), and the security stamp is rotated (invalidating all existing tokens).",
+    })]
 public class ResetPasswordTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "RESET-PWD-001: ResetPassword_WithValidToken_ReturnsOk")]

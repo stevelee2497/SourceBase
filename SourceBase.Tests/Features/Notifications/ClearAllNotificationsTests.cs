@@ -11,6 +11,17 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Notifications;
 
+[EndpointFact(
+    Feature = "Notifications",
+    Name = "Clear All Notifications",
+    Route = "DELETE /api/notifications",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to clear all my notifications, so that I can keep my notification list clean and remove events I no longer care about.",
+    Description = new[]
+    {
+        "Deletes all notifications belonging to the current user.",
+        "Returns `{ success: true }`.",
+    })]
 public class ClearAllNotificationsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "NOTIF-CLEAR-001: ClearAllNotifications_WithExistingNotifications_DeletesAll")]

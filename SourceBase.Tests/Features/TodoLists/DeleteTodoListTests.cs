@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.TodoLists;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Delete Todo List",
+    Route = "DELETE /api/todo-lists/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete one of my todo lists, so that I can remove collections I no longer need.",
+    Description = new[]
+    {
+        "Client provides the list `id` (route).",
+        "If the list doesn't exist or belongs to a different user → `404 Not Found`.",
+        "The list is deleted from the database.",
+    })]
 public class DeleteTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TODOLISTS-DELETE-001: DeleteTodoList_WithoutToken_ReturnsUnauthorized")]

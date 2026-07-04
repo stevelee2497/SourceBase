@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.TimeSheets;
 
+[EndpointFact(
+    Feature = "TimeSheets",
+    Name = "Get Time Sheet",
+    Route = "GET /api/time-sheets/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to retrieve the details of a specific time entry by its ID, so that I can inspect or edit it.",
+    Description = new[]
+    {
+        "Client provides the entry `id` as a route parameter.",
+        "If the entry does not exist or belongs to a different user → `404 Not Found`.",
+        "Returns the full entry: `id`, `date`, `project`, `hours`, and audit fields.",
+    })]
 public class GetTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TIMESHEET-GET-001: GetTimeSheet_WithoutToken_ReturnsUnauthorized")]

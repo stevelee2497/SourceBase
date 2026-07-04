@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.TodoLists;
 
+[EndpointFact(
+    Feature = "Todos",
+    Name = "Create Todo List",
+    Route = "POST /api/todo-lists",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to create a named todo list, so that I can organise my tasks into logical groups.",
+    Description = new[]
+    {
+        "Client sends `name` (required, max 200 characters).",
+        "The todo list is created and associated with the authenticated user's ID.",
+        "Returns the new list's `Id`.",
+    })]
 public class CreateTodoListTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TODOLISTS-CREATE-001: CreateTodoList_WithoutToken_ReturnsUnauthorized")]

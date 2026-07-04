@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.TimeSheets;
 
+[EndpointFact(
+    Feature = "TimeSheets",
+    Name = "Delete Time Sheet",
+    Route = "DELETE /api/time-sheets/{id}",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to delete a time entry I no longer need, so that my records remain accurate.",
+    Description = new[]
+    {
+        "Client provides the entry `id` as a route parameter.",
+        "If the entry does not exist or belongs to a different user → `404 Not Found`.",
+        "The entry is permanently removed from the database.",
+    })]
 public class DeleteTimeSheetTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TIMESHEET-DELETE-001: DeleteTimeSheet_WithoutToken_ReturnsUnauthorized")]

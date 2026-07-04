@@ -9,6 +9,23 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Users;
 
+[EndpointFact(
+    Feature = "Users",
+    Name = "Create User",
+    Route = "POST /api/users",
+    Auth = "Admin only",
+    UseCase = "As an admin, I want to create user accounts on behalf of others, so that I can onboard new users without requiring them to self-register.",
+    Description = new[]
+    {
+        "Admin sends `userName`, `email`, `password`, optional `firstName`, `lastName`, `phoneNumber`, and an optional list of `roles`.",
+        "If the username or email is already taken → `400 Bad Request`.",
+        "If any specified role does not exist in the database → `400 Bad Request`.",
+        "Role names are normalised (trimmed, case-insensitive de-duplicated) before assignment.",
+        "A new user is created with a hashed password, an OTP confirmation code, and the requested roles.",
+        "A confirmation email is sent to the new user.",
+        "Returns the new user's `Id`.",
+        "A notification is created for every admin user with title \"New User Registered\" and message containing the new user's email.",
+    })]
 public class CreateUserTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "USERS-CREATE-001: CreateUser_WithoutToken_ReturnsUnauthorized")]

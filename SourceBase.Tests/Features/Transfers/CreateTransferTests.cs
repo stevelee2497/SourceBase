@@ -11,6 +11,21 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Transfers;
 
+[EndpointFact(
+    Feature = "Transfers",
+    Name = "Create Transfer",
+    Route = "POST /api/transfers",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to record a transfer of money between two of my wallets, so that it is not counted as income or expense and both wallet balances are correctly computed.",
+    Description = new[]
+    {
+        "Client sends `fromWalletId` (required), `toWalletId` (required), `amount` (required, positive), `date` (required), optional `note`.",
+        "`fromWalletId` and `toWalletId` must be different → `400 Bad Request` otherwise.",
+        "Both wallets must exist and belong to the current user → `404 Not Found` otherwise.",
+        "Two linked transactions are created internally: an Expense in `fromWallet` and an Income in `toWallet`. Both are flagged as transfer transactions (not editable or deletable directly).",
+        "A `TransferEntity` record is created linking both transactions.",
+        "Returns the new transfer's `Id`.",
+    })]
 public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "TRANSFER-CREATE-001: CreateTransfer_WithoutToken_ReturnsUnauthorized")]

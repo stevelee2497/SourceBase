@@ -8,6 +8,18 @@ using Xunit;
 
 namespace SourceBase.Tests.Features.Auth;
 
+[EndpointFact(
+    Feature = "Auth",
+    Name = "Update User Info",
+    Route = "PUT /api/auth/info",
+    Auth = "Required",
+    UseCase = "As an authenticated user, I want to update my profile information (first name, last name, phone number), so that I can keep my personal details current.",
+    Description = new[]
+    {
+        "Client sends `firstName`, `lastName`, and/or `phoneNumber` with a valid access token.",
+        "The server loads the current user and updates the provided fields.",
+        "Returns the user's `id`.",
+    })]
 public class UpdateUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     [Fact(DisplayName = "UPDATE-INFO-001: UpdateUserInfo_WithoutToken_ReturnsUnauthorized")]
