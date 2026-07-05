@@ -30,12 +30,12 @@ public class CreateMachineHandler(IDbContext dbContext, ICurrentUser currentUser
 
         if (machine == null)
         {
-            machine = new MachineEntity { Name = request.Name, UserId = currentUser.UserId, Status = request.Status ?? MachineStatus.Active, LastReportedOn = request.Status is not null ? dateTime.UtcNow : null };
+            machine = new MachineEntity { Name = request.Name, UserId = currentUser.UserId, Status = request.Status ?? MachineStatus.Active, LastReportedOn = dateTime.UtcNow };
             dbContext.Machines.Add(machine);
         }
-        else if (request.Status.HasValue)
+        else
         {
-            machine.Status = request.Status.Value;
+            machine.Status = request.Status ?? machine.Status;
             machine.LastReportedOn = dateTime.UtcNow;
         }
 
