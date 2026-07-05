@@ -1,10 +1,15 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Machines;
 
-public record CreateMachineRequest(string Name);
+/// <summary>
+/// Create or update a machine. If a machine with the same name exists for the user, updates its status and LastReportedOn.
+/// Otherwise, creates a new machine. Status is required for upsert semantics.
+/// </summary>
+public record CreateMachineRequest(string Name, MachineStatus? Status = null);
 
 public record CreateMachineResponse(Guid Id);
 
@@ -17,12 +22,23 @@ public class CreateMachineEndpoint : IEndpoint
         .WithTags("Machines");
 }
 
-public class CreateMachineHandler(IDbContext dbContext, ICurrentUser currentUser) : IRequestHandler<CreateMachineRequest, CreateMachineResponse>
+public class CreateMachineHandler(IDbContext dbContext, ICurrentUser currentUser, IDateTime dateTime) : IRequestHandler<CreateMachineRequest, CreateMachineResponse>
 {
     public async Task<CreateMachineResponse> Handle(CreateMachineRequest request, CancellationToken ct)
     {
-        var machine = new MachineEntity { Name = request.Name, UserId = currentUser.UserId, Status = MachineStatus.Active };
-        dbContext.Machines.Add(machine);
+        var machine = await dbContext.Machines.FirstOrDefaultAsync(x => x.UserId == currentUser.UserId && x.Name == request.Name, ct);
+
+        if (machine == null)
+        {
+            machine = new MachineEntity { Name = request.Name, UserId = currentUser.UserId, Status = request.Status ?? MachineStatus.Active, LastReportedOn = request.Status is not null ? dateTime.UtcNow : null };
+            dbContext.Machines.Add(machine);
+        }
+        else if (request.Status.HasValue)
+        {
+            machine.Status = request.Status.Value;
+            machine.LastReportedOn = dateTime.UtcNow;
+        }
+
         await dbContext.SaveChangesAsync(ct);
         return new CreateMachineResponse(machine.Id);
     }

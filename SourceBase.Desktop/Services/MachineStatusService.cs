@@ -8,7 +8,7 @@ using SourceBase.Desktop.Models;
 namespace SourceBase.Desktop.Services;
 
 /// <summary>
-/// Reports machine status (Active/Inactive) to the SourceBase API via POST /api/machines/heartbeat.
+/// Reports machine status (Active/Inactive) to the SourceBase API via POST /api/machines.
 /// Fire-and-forget client that silently no-ops when ApiBaseUrl/ApiToken are not configured or the API is unreachable.
 /// Automatically refreshes the access token via ApiRefreshToken on 401 and retries once.
 /// </summary>
@@ -18,7 +18,8 @@ public sealed class MachineStatusService(Func<AppSettings> settings, Action onSa
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     /// <summary>
-    /// Reports the machine's current status (Active/Inactive) to the API.
+    /// Reports the machine's current status (Active/Inactive) to the API by posting to /api/machines.
+    /// If a machine with the same name exists, updates it; otherwise creates a new one.
     /// Returns true if successful, false silently on any error.
     /// Automatically refreshes the access token on 401 and retries once.
     /// </summary>
@@ -30,9 +31,9 @@ public sealed class MachineStatusService(Func<AppSettings> settings, Action onSa
         try
         {
             var body = JsonSerializer.Serialize(
-                new { name = Environment.MachineName, alias = s.MachineAlias, status },
+                new { name = Environment.MachineName, status = status.ToLower() == "active" ? "Active" : "Inactive" },
                 JsonOpts);
-            var url = $"{s.ApiBaseUrl.TrimEnd('/')}/api/machines/heartbeat";
+            var url = $"{s.ApiBaseUrl.TrimEnd('/')}/api/machines";
 
             var resp = await PostAsync(url, body, s.ApiToken);
 

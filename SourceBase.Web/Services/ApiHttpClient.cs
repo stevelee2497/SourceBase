@@ -433,8 +433,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
     public Task<(PagingResponse<MachineResponse>? data, ErrorResponse? error)> GetMachinesAsync(int page = 1, int limit = 50) =>
         ExecuteAsync<PagingResponse<MachineResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/machines?page={page}&limit={limit}"));
 
-    public Task<ErrorResponse?> CreateMachineAsync(string name) =>
-        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/machines", new { name }));
+    public Task<ErrorResponse?> CreateMachineAsync(string name, string? status = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/machines", new { name, status }));
 
     public Task<ErrorResponse?> UpdateMachineAsync(Guid id, string? alias, string? status) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Patch, $"/api/machines/{id}", new { alias, status }));
