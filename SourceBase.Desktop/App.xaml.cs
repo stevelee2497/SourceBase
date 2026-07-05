@@ -18,6 +18,8 @@ public partial class App : Application
     private TaskbarIcon? _tray;
     private RestScheduler? _scheduler;
     private HabitLogService? _habitLogService;
+    private MachineStatusService? _machineStatusService;
+    private MachineReportScheduler? _machineReportScheduler;
     private GlobalHotkeyService? _hotkeyService;
     private OverlayWindow? _activeOverlay;
     private Icon? _trayIcon;
@@ -58,7 +60,12 @@ public partial class App : Application
         _hotkeyService = new GlobalHotkeyService(() => _store.Current);
         _hotkeyService.Pressed += (_, _) => ShowOverlay();
 
+        _machineStatusService = new MachineStatusService(() => _store.Current, _store.Save);
+        _machineReportScheduler = new MachineReportScheduler(() => _machineStatusService.ReportStatusAsync("Active"));
+        _machineReportScheduler.Start();
+
         _ = Task.Run(UpdateService.CheckAsync);
+        _ = ReportMachineStartupAsync();
         _ = SyncHabitsAsync();
     }
 
@@ -188,14 +195,28 @@ public partial class App : Application
         _store.Save();
     }
 
+    private async Task ReportMachineStartupAsync()
+    {
+        if (_machineStatusService is null) return;
+        await _machineStatusService.ReportStatusAsync("Active");
+    }
+
     private void OnExitClicked(object sender, RoutedEventArgs e) => Shutdown();
 
     private void OnExit(object sender, ExitEventArgs e)
     {
+        _machineReportScheduler?.Stop();
+        ReportMachineShutdownAsync().GetAwaiter().GetResult(); // sync wait for shutdown report
         _scheduler?.Stop();
         _hotkeyService?.Dispose();
         _tray?.Dispose();
         _trayIcon?.Dispose();
         _mutex?.Dispose();
+    }
+
+    private async Task ReportMachineShutdownAsync()
+    {
+        if (_machineStatusService is null) return;
+        await _machineStatusService.ReportStatusAsync("Inactive");
     }
 }
