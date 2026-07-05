@@ -1,0 +1,195 @@
+@page "/machines"
+@attribute [Authorize]
+@inject ApiHttpClient Api
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+}
+
+@if (!string.IsNullOrEmpty(_successMessage))
+{
+    <div class="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">@_successMessage</div>
+}
+
+<div class="flex flex-col gap-4">
+    <div class="flex items-center justify-between">
+        <h1 class="text-lg font-bold text-gray-900">Machines</h1>
+        <button class="btn-primary btn-sm" @onclick="OpenCreateForm">
+            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Machine
+        </button>
+    </div>
+
+    @if (_loading)
+    {
+        <LoadingSpinner />
+    }
+    else if (_machines == null || _machines.Count == 0)
+    {
+        <div class="card p-8 text-center">
+            <p class="text-sm text-gray-400">No machines yet. Add your first machine to get started.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            @foreach (var machine in _machines)
+            {
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="flex items-start gap-2 flex-1 min-w-0">
+                            <svg class="w-5 h-5 text-gray-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2h-4m-6 0v2m0-6v2m0-6v2m0-6V7m0 0h6" />
+                            </svg>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-medium text-gray-900 truncate">@machine.Name</h3>
+                                @if (!string.IsNullOrEmpty(machine.Alias))
+                                {
+                                    <p class="text-xs text-gray-500 truncate">@machine.Alias</p>
+                                }
+                            </div>
+                        </div>
+                        <span class="@GetStatusBadgeClass(machine.Status) text-xs font-medium px-2 py-0.5 rounded-full shrink-0">@machine.Status</span>
+                    </div>
+
+                    @if (machine.LastReportedOn.HasValue)
+                    {
+                        <p class="text-xs text-gray-500 mb-3">Last seen: @FormatTime(machine.LastReportedOn.Value)</p>
+                    }
+
+                    <div class="flex gap-1">
+                        <button class="btn-secondary btn-sm flex-1 text-xs" @onclick="OpenEditForm(machine)">Edit</button>
+                        <button class="btn-danger btn-sm text-xs px-2" title="Restart" @onclick="ConfirmRestart(machine)">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </button>
+                        <button class="btn-danger btn-sm text-xs px-2" title="Shutdown" @onclick="ConfirmShutdown(machine)">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (_totalPages > 1)
+        {
+            <Pagination CurrentPage="_page" TotalItems="_totalItems" PageSize="_pageSize" OnPageChanged="ChangePage" />
+        }
+    }
+</div>
+
+<ConfirmDialog @bind-IsOpen="_showConfirmDialog" Title="@_confirmTitle" Message="@_confirmMessage" OnConfirm="ExecuteConfirmedAction" />
+
+@code {
+    private List<MachineResponse> _machines = [];
+    private bool _loading = true;
+    private string? _error;
+    private string? _successMessage;
+    private int _page = 1;
+    private int _totalItems = 0;
+    private int _totalPages = 0;
+    private const int _pageSize = 12;
+    private bool _showConfirmDialog = false;
+    private string _confirmTitle = "";
+    private string _confirmMessage = "";
+    private MachineResponse? _pendingMachine;
+    private string? _pendingAction;
+
+    protected override async Task OnInitializedAsync() => await LoadMachinesAsync();
+
+    private async Task LoadMachinesAsync()
+    {
+        _loading = true;
+        _error = null;
+        _successMessage = null;
+        var (data, error) = await Api.GetMachinesAsync(_page, _pageSize);
+
+        if (error != null)
+        {
+            _error = error.Message;
+            _machines = [];
+        }
+        else if (data != null)
+        {
+            _machines = data.Items;
+            _totalItems = data.Total;
+            _totalPages = (data.Total + _pageSize - 1) / _pageSize;
+        }
+
+        _loading = false;
+    }
+
+    private void OpenCreateForm() => _error = "Create machine form not yet implemented";
+
+    private Action OpenEditForm(MachineResponse machine) => () =>
+        _error = $"Edit machine: {machine.Name}";
+
+    private Action ConfirmRestart(MachineResponse machine) => () =>
+    {
+        _pendingMachine = machine;
+        _pendingAction = "restart";
+        _confirmTitle = "Restart Machine?";
+        _confirmMessage = $"Send restart command to {machine.Name}?";
+        _showConfirmDialog = true;
+    };
+
+    private Action ConfirmShutdown(MachineResponse machine) => () =>
+    {
+        _pendingMachine = machine;
+        _pendingAction = "shutdown";
+        _confirmTitle = "Shutdown Machine?";
+        _confirmMessage = $"Send shutdown command to {machine.Name}?";
+        _showConfirmDialog = true;
+    };
+
+    private async Task ExecuteConfirmedAction()
+    {
+        if (_pendingMachine == null || _pendingAction == null) return;
+
+        ErrorResponse? error = null;
+        if (_pendingAction == "restart")
+            error = await Api.RestartMachineAsync(_pendingMachine.Id);
+        else if (_pendingAction == "shutdown")
+            error = await Api.ShutdownMachineAsync(_pendingMachine.Id);
+
+        if (error != null)
+            _error = error.Message;
+        else
+            _successMessage = $"Command sent to {_pendingMachine.Name}";
+
+        _pendingMachine = null;
+        _pendingAction = null;
+        await LoadMachinesAsync();
+    }
+
+    private async Task ChangePage(int page)
+    {
+        _page = page;
+        await LoadMachinesAsync();
+    }
+
+    private static string GetStatusBadgeClass(string status) => status switch
+    {
+        "Active" => "badge badge-green",
+        "Inactive" => "badge badge-gray",
+        "Maintenance" => "badge badge-blue",
+        _ => "badge badge-gray",
+    };
+
+    private static string FormatTime(DateTime dateTime)
+    {
+        var now = DateTime.UtcNow;
+        var diff = now - dateTime;
+
+        return diff.TotalSeconds < 60 ? "now"
+            : diff.TotalMinutes < 60 ? $"{(int)diff.TotalMinutes}m ago"
+            : diff.TotalHours < 24 ? $"{(int)diff.TotalHours}h ago"
+            : $"{(int)diff.TotalDays}d ago";
+    }
+}
