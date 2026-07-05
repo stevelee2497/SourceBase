@@ -29,7 +29,7 @@
     }
     else
     {
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
             @foreach (var machine in _machines)
             {
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 hover:shadow-md transition-shadow">
@@ -85,7 +85,7 @@
     }
 </div>
 
-<ConfirmDialog IsVisible="@_showConfirmDialog" Title="@_confirmTitle" Message="@_confirmMessage" OnConfirm="ExecuteConfirmedAction" OnCancel="() => _showConfirmDialog = false" />
+<ConfirmDialog IsVisible="@_showConfirmDialog" Title="@_confirmTitle" Message="@_confirmMessage" ConfirmLabel="@_confirmLabel" OnConfirm="ExecuteConfirmedAction" OnCancel="() => _showConfirmDialog = false" />
 <MachineModal IsVisible="_showMachineModal" Machine="_editingMachine" OnClose="CloseMachineModal" OnSaved="SaveMachineAndReload" />
 
 @code {
@@ -103,6 +103,7 @@
     private MachineResponse? _pendingMachine;
     private string? _pendingAction;
     private bool _showMachineModal = false;
+    private string _confirmLabel = "Confirm";
     private MachineResponse? _editingMachine;
 
     protected override async Task OnInitializedAsync() => await LoadMachinesAsync();
@@ -154,6 +155,7 @@
         _pendingAction = "restart";
         _confirmTitle = "Restart Machine?";
         _confirmMessage = $"Send restart command to {(!string.IsNullOrEmpty(machine.Alias) ? machine.Alias : machine.Name)}?";
+        _confirmLabel = "Restart";
         _showConfirmDialog = true;
     };
 
@@ -163,6 +165,7 @@
         _pendingAction = "shutdown";
         _confirmTitle = "Shutdown Machine?";
         _confirmMessage = $"Send shutdown command to {(!string.IsNullOrEmpty(machine.Alias) ? machine.Alias : machine.Name)}?";
+        _confirmLabel = "Shutdown";
         _showConfirmDialog = true;
     };
 
