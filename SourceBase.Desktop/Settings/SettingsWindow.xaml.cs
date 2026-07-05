@@ -58,7 +58,6 @@ public partial class SettingsWindow : Window
         _hotkeyKey = _settings.HotkeyKey;
         UpdateHotkeyLabel();
         HotkeyBox.PreviewKeyDown += OnHotkeyPreviewKeyDown;
-        ApiUrlBox.Text = _settings.ApiBaseUrl ?? string.Empty;
         UsernameBox.Text = _settings.ApiUsername ?? string.Empty;
         PasswordBox.Password = _settings.ApiPassword ?? string.Empty;
 
