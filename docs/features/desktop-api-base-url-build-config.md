@@ -2,7 +2,7 @@
 
 ## Goal
 
-Ship Jupiter with a sensible default `ApiBaseUrl` (`https://api.quoctran.qzz.io`) so a fresh install talks to the production API without the user hand-editing `settings.json` — **without hardcoding the URL literal in C# source**. The value is injected at build time from a GitHub Actions environment variable.
+Ship Jupiter with a sensible default `ApiBaseUrl` so a fresh install talks to the production API without the user hand-editing `settings.json` — **without hardcoding the URL literal in C# source**. The value is injected at build time from a GitHub Actions environment variable.
 
 ## Behavior
 
