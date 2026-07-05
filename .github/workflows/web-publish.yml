@@ -67,7 +67,7 @@ jobs:
         run: dotnet publish SourceBase.Web/SourceBase.Web.csproj -c Release -o ./web-publish
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
