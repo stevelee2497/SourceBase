@@ -427,6 +427,26 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
         if (latest is not null) url += $"&latest={latest.Value.ToString().ToLowerInvariant()}";
         return ExecuteAsync<PagingResponse<GoldPriceResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
     }
+
+    // ── Machines ──────────────────────────────────────────────────────────────
+
+    public Task<(PagingResponse<MachineResponse>? data, ErrorResponse? error)> GetMachinesAsync(int page = 1, int limit = 50) =>
+        ExecuteAsync<PagingResponse<MachineResponse>>(() => AuthorizedRequest(HttpMethod.Get, $"/api/machines?page={page}&limit={limit}"));
+
+    public Task<ErrorResponse?> CreateMachineAsync(string name, string? status = null) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/machines", new { name, status }));
+
+    public Task<ErrorResponse?> UpdateMachineAsync(Guid id, string? alias, string? status) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Patch, $"/api/machines/{id}", new { alias, status }));
+
+    public Task<ErrorResponse?> DeleteMachineAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, $"/api/machines/{id}"));
+
+    public Task<ErrorResponse?> ShutdownMachineAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, $"/api/machines/{id}/shutdown", new { }));
+
+    public Task<ErrorResponse?> RestartMachineAsync(Guid id) =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, $"/api/machines/{id}/restart", new { }));
 }
 
 public sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
@@ -460,3 +480,4 @@ public sealed record IconUploadUrlResponse(string UploadUrl, string IconUrl, str
 public sealed record GoldPriceResponse(Guid Id, string Source, decimal BuyPrice, decimal SellPrice, DateTime RecordedAt);
 public sealed record HabitLogResponse(Guid Id, string? HabitId, string? HabitName, string Action, DateTime OccurredAt, DateTime? CreatedOn);
 public sealed record HabitItemResponse(Guid Id, string Name, string? Icon, bool IsSystem, int LogCount);
+public sealed record MachineResponse(Guid Id, string Name, string? Alias, string Status, DateTime? LastReportedOn);

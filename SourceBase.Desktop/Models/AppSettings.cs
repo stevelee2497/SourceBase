@@ -50,6 +50,9 @@ public sealed class AppSettings
     /// <summary>Result of the last API call; drives the connected/reconnect indicator in Settings.</summary>
     public ApiConnectionStatus ApiStatus { get; set; } = ApiConnectionStatus.None;
 
+    /// <summary>Friendly alias for this machine (e.g. "Work Laptop", "Gaming PC"). Used in heartbeat reporting to the API.</summary>
+    public string? MachineAlias { get; set; } = Environment.MachineName;
+
     /// <summary>When true, suppress the overlay while a fullscreen / video app is active.</summary>
     public bool PauseDuringVideo { get; set; } = true;
 

@@ -26,6 +26,7 @@
 		<!-- Modern WPF tray-icon library (NOTIFYICON). Hardcodet.NotifyIcon.Wpf is the classic
 		alternative. -->
 		<PackageReference Include="H.NotifyIcon.Wpf" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
 	</ItemGroup>
 
 	<!-- Copy a local .env (if present) next to the exe so Config.DotEnv finds it. Git-ignored;

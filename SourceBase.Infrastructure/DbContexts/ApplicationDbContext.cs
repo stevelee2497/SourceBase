@@ -42,6 +42,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<HabitEntity> Habits { get; set; }
 
+    public DbSet<MachineEntity> Machines { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(new ApplicationDbContextHistoryInterceptor(currentUser, dateTime));
@@ -83,6 +85,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(l => l.HabitId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<MachineEntity>()
+            .HasIndex(x => new { x.UserId, x.Name })
+            .IsUnique();
 
     }
 
