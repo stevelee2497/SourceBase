@@ -48,9 +48,7 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Publish
-        env:
-          API_URL: ${{ vars.API_URL }}
-        run: dotnet publish SourceBase.Desktop/SourceBase.Desktop.csproj -c Release /p:Version=${{ needs.version.outputs.version_number }}
+        run: dotnet publish SourceBase.Desktop/SourceBase.Desktop.csproj -c Release /p:Version=${{ needs.version.outputs.version_number }} /p:ApiUrl=${{ vars.API_URL }}
 
       - name: Rename artifact
         run: Rename-Item "SourceBase.Desktop/Artifacts/Jupiter.exe" "Jupiter-v${{ needs.version.outputs.version_number }}.exe"
