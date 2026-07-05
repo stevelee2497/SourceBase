@@ -58,7 +58,6 @@ public partial class SettingsWindow : Window
         _hotkeyKey = _settings.HotkeyKey;
         UpdateHotkeyLabel();
         HotkeyBox.PreviewKeyDown += OnHotkeyPreviewKeyDown;
-        ApiUrlBox.Text = _settings.ApiBaseUrl ?? string.Empty;
         UsernameBox.Text = _settings.ApiUsername ?? string.Empty;
         PasswordBox.Password = _settings.ApiPassword ?? string.Empty;
 
@@ -120,7 +119,7 @@ public partial class SettingsWindow : Window
 
     private void ApplyApiUiState()
     {
-        ApiUrlRow.Visibility = _showCredentials ? Visibility.Visible : Visibility.Collapsed;
+        // API URL row stays hidden — the URL is configured at build time / via .env, not by the user.
         CredentialsPanel.Visibility = _showCredentials ? Visibility.Visible : Visibility.Collapsed;
         ApiNoCredentialSpacer.Visibility = _showCredentials ? Visibility.Collapsed : Visibility.Visible;
         TestButton.Visibility = _showCredentials ? Visibility.Visible : Visibility.Collapsed;
@@ -155,7 +154,8 @@ public partial class SettingsWindow : Window
 
         if (_showCredentials)
         {
-            var url = NullIfEmpty(ApiUrlBox.Text);
+            // URL is resolved from config (build/env), not user-entered — see Config.ApiUrl.
+            var url = _settings.ApiBaseUrl;
             var username = NullIfEmpty(UsernameBox.Text);
             var password = NullIfEmpty(PasswordBox.Password);
 
@@ -182,20 +182,8 @@ public partial class SettingsWindow : Window
                 _settings.ApiStatus = ApiConnectionStatus.None;
             }
 
-            _settings.ApiBaseUrl = url;
             _settings.ApiUsername = username;
             _settings.ApiPassword = password;
-        }
-        else
-        {
-            var newUrl = NullIfEmpty(ApiUrlBox.Text);
-            if (newUrl != _settings.ApiBaseUrl)
-            {
-                _settings.ApiBaseUrl = newUrl;
-                _settings.ApiToken = null;
-                _settings.ApiRefreshToken = null;
-                _settings.ApiStatus = ApiConnectionStatus.None;
-            }
         }
 
         _settings.WorkingHourStart = start;
@@ -216,13 +204,19 @@ public partial class SettingsWindow : Window
 
     private async void OnTestConnection(object sender, RoutedEventArgs e)
     {
-        var url = NullIfEmpty(ApiUrlBox.Text);
+        var url = _settings.ApiBaseUrl;
         var username = NullIfEmpty(UsernameBox.Text);
         var password = NullIfEmpty(PasswordBox.Password);
 
-        if (url is null || username is null || password is null)
+        if (url is null)
         {
-            SetTestResult("Enter API URL, username and password first.", success: false);
+            SetTestResult("API URL is not configured for this build.", success: false);
+            return;
+        }
+
+        if (username is null || password is null)
+        {
+            SetTestResult("Enter username and password first.", success: false);
             return;
         }
 

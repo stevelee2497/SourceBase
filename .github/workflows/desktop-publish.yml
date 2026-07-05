@@ -48,6 +48,8 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Publish
+        env:
+          API_URL: ${{ vars.API_URL }}
         run: dotnet publish SourceBase.Desktop/SourceBase.Desktop.csproj -c Release /p:Version=${{ needs.version.outputs.version_number }}
 
       - name: Rename artifact

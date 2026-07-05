@@ -28,4 +28,11 @@
 		<PackageReference Include="H.NotifyIcon.Wpf" />
 	</ItemGroup>
 
+	<!-- Copy a local .env (if present) next to the exe so Config.DotEnv finds it. Git-ignored;
+	     never present in CI, so published builds ship no .env — the URL comes from the API_URL
+	     env var (set by vars.API_URL in desktop-publish.yml). -->
+	<ItemGroup>
+		<None Include=".env" Condition="Exists('.env')" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
 </Project>

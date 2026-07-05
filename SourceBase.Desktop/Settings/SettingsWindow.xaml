@@ -336,17 +336,7 @@
             <TextBlock Text="Sync habit logs with the SourceBase web app."
                        FontSize="12" Foreground="#9CA3AF" Margin="0,-4,0,16"/>
 
-            <StackPanel x:Name="ApiUrlRow">
-                <Grid Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="110"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="API URL" Grid.Column="0" VerticalAlignment="Center"
-                               FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
-                    <TextBox x:Name="ApiUrlBox" Grid.Column="1" Style="{StaticResource TextField}"/>
-                </Grid>
-            </StackPanel>
+            <!-- API URL is configured via the API_URL env var (.env in dev), not by the user — no field. -->
 
             <!-- Credentials panel — shown on first use or when reconnecting -->
             <StackPanel x:Name="CredentialsPanel">

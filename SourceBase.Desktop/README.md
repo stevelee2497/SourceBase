@@ -6,7 +6,7 @@ centered modal telling you to step away for ~5 minutes and pick a habit to do �
 shown as emoji/image cards.
 
 This is **Phase 1: local only, no API.** Phase 2 syncs with the SourceBase habit
-tracker submodule (`api.quoctran.qzz.io`).
+tracker submodule (`api.domain.com`).
 
 ## Why a tray app, not a Windows Service
 
@@ -43,6 +43,30 @@ Stored at `%AppData%\SourceBase.Desktop\settings.json`. Defaults:
   Short Walk 🚶, Deep Breaths 🌬️
 
 Each habit can use an emoji or an `imagePath` (image takes priority).
+
+### API URL (not user-editable)
+
+The API base URL is **configuration, not a user setting** — the field is hidden
+from the Settings window. It's resolved at runtime by `Config.ApiUrl` from the
+`API_URL` environment variable (a bare host is normalized to `https://`; blank /
+unset → `null`, which leaves API sync disabled). No compiled-in constant, no
+config packages.
+
+**Local development** — copy `.env.example` to `.env` (git-ignored) in the
+`SourceBase.Desktop/` folder:
+
+```
+API_URL=api.domain.com
+```
+
+`dotnet run` / `dotnet build` copies `.env` next to the exe; `Config.DotEnv`
+loads it into the process environment at startup. No shell exports, no rebuild
+needed to change the URL.
+
+**CI** — `desktop-publish.yml` passes the existing GitHub repo variable
+`vars.API_URL` (shared with `api-publish.yml` / `web-publish.yml`) into the
+Publish step as the `API_URL` env var; the app reads it at runtime. No `.env` is
+shipped in published builds.
 
 ## Project layout
 
