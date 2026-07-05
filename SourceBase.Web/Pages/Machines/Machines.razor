@@ -85,7 +85,7 @@
     }
 </div>
 
-<ConfirmDialog @bind-IsOpen="_showConfirmDialog" Title="@_confirmTitle" Message="@_confirmMessage" OnConfirm="ExecuteConfirmedAction" />
+<ConfirmDialog IsVisible="@_showConfirmDialog" Title="@_confirmTitle" Message="@_confirmMessage" OnConfirm="ExecuteConfirmedAction" OnCancel="() => _showConfirmDialog = false" />
 <MachineModal IsVisible="_showMachineModal" Machine="_editingMachine" OnClose="CloseMachineModal" OnSaved="SaveMachineAndReload" />
 
 @code {
@@ -181,6 +181,7 @@
         else
             _successMessage = $"Command sent to {(!string.IsNullOrEmpty(_pendingMachine.Alias) ? _pendingMachine.Alias : _pendingMachine.Name)} successfully.";
 
+        _showConfirmDialog = false;
         _pendingMachine = null;
         _pendingAction = null;
         await LoadMachinesAsync();
