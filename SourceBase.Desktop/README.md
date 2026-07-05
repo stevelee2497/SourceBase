@@ -6,7 +6,7 @@ centered modal telling you to step away for ~5 minutes and pick a habit to do â€
 shown as emoji/image cards.
 
 This is **Phase 1: local only, no API.** Phase 2 syncs with the SourceBase habit
-tracker submodule (`api.quoctran.qzz.io`).
+tracker submodule (`api.domain.com`).
 
 ## Why a tray app, not a Windows Service
 
@@ -59,7 +59,7 @@ leaves API sync disabled):
 `SourceBase.Desktop/` folder:
 
 ```
-API_URL=api.quoctran.qzz.io
+API_URL=api.domain.com
 ```
 
 `dotnet run` / `dotnet build` copies `.env` next to the exe; `Config.DotEnv`

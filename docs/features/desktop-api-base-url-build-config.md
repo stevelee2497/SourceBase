@@ -19,13 +19,13 @@ Ship Jupiter with a sensible default `ApiBaseUrl` so a fresh install talks to th
 
 ## Local development
 
-- Copy `SourceBase.Desktop/.env.example` → `.env` (git-ignored) with `API_URL=api.quoctran.qzz.io`.
+- Copy `SourceBase.Desktop/.env.example` → `.env` (git-ignored) with `API_URL=api.domain.com`.
 - `Config.DotEnv.Load()` (called first in `App.OnStartup`) reads it; the csproj copies `.env` next to the exe. No shell exports, no rebuild to change the URL.
 
 ## Pipeline
 
 - `desktop-publish.yml` sets `API_URL: ${{ vars.API_URL }}` as an env var on the Publish step.
-- Reuses the existing repo variable `API_URL` (`api.quoctran.qzz.io`), already shared by `api-publish.yml` and `web-publish.yml` — no new variable needed. No `.env` ships in published builds.
+- Reuses the existing repo variable `API_URL` (`api.domain.com`), already shared by `api-publish.yml` and `web-publish.yml` — no new variable needed. No `.env` ships in published builds.
 
 ## Failure / offline modes
 
