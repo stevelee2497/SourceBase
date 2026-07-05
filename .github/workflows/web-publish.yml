@@ -52,7 +52,7 @@ jobs:
         with:
           dotnet-version: '10.x'
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
 
@@ -67,13 +67,11 @@ jobs:
         run: dotnet publish SourceBase.Web/SourceBase.Web.csproj -c Release -o ./web-publish
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          projectName: ${{ vars.CF_PROJECT_NAME }}
-          directory: ./web-publish/wwwroot
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy ./web-publish/wwwroot --project-name=${{ vars.CF_PROJECT_NAME }}
 
   tag-release:
     name: Tag Release
