@@ -20,6 +20,7 @@ public partial class App : Application
     private HabitLogService? _habitLogService;
     private MachineStatusService? _machineStatusService;
     private MachineReportScheduler? _machineReportScheduler;
+    private MachineCommandListener? _machineCommandListener;
     private GlobalHotkeyService? _hotkeyService;
     private OverlayWindow? _activeOverlay;
     private Icon? _trayIcon;
@@ -63,6 +64,14 @@ public partial class App : Application
         _machineStatusService = new MachineStatusService(() => _store.Current, _store.Save);
         _machineReportScheduler = new MachineReportScheduler(() => _machineStatusService.ReportStatusAsync("Active"));
         _machineReportScheduler.Start();
+
+        _machineCommandListener = new MachineCommandListener(() => _store.Current);
+        _machineCommandListener.CommandReceived += (_, command) =>
+        {
+            if (command == "Shutdown") PowerActionService.Shutdown();
+            else if (command == "Restart") PowerActionService.Restart();
+        };
+        _ = _machineCommandListener.StartAsync();
 
         _ = Task.Run(UpdateService.CheckAsync);
         _ = ReportMachineStartupAsync();
@@ -207,6 +216,7 @@ public partial class App : Application
     {
         _machineReportScheduler?.Stop();
         ReportMachineShutdownAsync().GetAwaiter().GetResult(); // sync wait for shutdown report
+        _machineCommandListener?.DisposeAsync().GetAwaiter().GetResult(); // cleanup listener
         _scheduler?.Stop();
         _hotkeyService?.Dispose();
         _tray?.Dispose();
