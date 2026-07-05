@@ -1,0 +1,126 @@
+@inject ApiHttpClient Api
+
+@if (IsVisible)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="HandleClose"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_isCreate ? "Create Machine" : "Edit Machine")</h2>
+
+            @if (!string.IsNullOrEmpty(_error))
+            {
+                <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+            }
+
+            <div class="space-y-4">
+                @if (_isCreate)
+                {
+                    <div>
+                        <label class="form-label">Machine Name *</label>
+                        <input @bind="_form.Name" class="form-input" placeholder="Desktop-01" />
+                    </div>
+                }
+                else
+                {
+                    <div>
+                        <label class="form-label">Machine Name</label>
+                        <input value="@Machine?.Name" class="form-input" readonly />
+                    </div>
+                }
+                <div>
+                    <label class="form-label">Alias</label>
+                    <input @bind="_form.Alias" class="form-input" placeholder="Living Room PC" />
+                </div>
+                <div>
+                    <label class="form-label">Status *</label>
+                    <select @bind="_form.Status" class="form-select">
+                        <option value="">-- Select Status --</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Maintenance">Maintenance</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button class="btn-secondary" @onclick="HandleClose">Cancel</button>
+                <button class="btn-primary" @onclick="SubmitAsync" disabled="@_submitting">
+                    @(_submitting ? "Saving…" : (_isCreate ? "Create" : "Update"))
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public bool IsVisible { get; set; }
+    [Parameter] public MachineResponse? Machine { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    private bool _prevIsVisible;
+    private bool _isCreate;
+    private string? _error;
+    private bool _submitting;
+    private MachineFormModel _form = new();
+
+    private class MachineFormModel
+    {
+        public string Name { get; set; } = "";
+        public string? Alias { get; set; }
+        public string Status { get; set; } = "Active";
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (IsVisible && !_prevIsVisible)
+        {
+            _isCreate = Machine == null;
+            if (_isCreate)
+            {
+                _form = new MachineFormModel();
+            }
+            else
+            {
+                _form = new MachineFormModel { Name = Machine!.Name, Alias = Machine.Alias, Status = Machine.Status };
+            }
+            _error = null;
+        }
+        _prevIsVisible = IsVisible;
+    }
+
+    private async Task SubmitAsync()
+    {
+        _error = null;
+
+        if (string.IsNullOrWhiteSpace(_form.Name))
+        {
+            _error = "Machine name is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_form.Status))
+        {
+            _error = "Status is required.";
+            return;
+        }
+
+        _submitting = true;
+
+        ErrorResponse? error = _isCreate
+            ? await Api.CreateMachineAsync(_form.Name, _form.Status)
+            : await Api.UpdateMachineAsync(Machine!.Id, _form.Alias, _form.Status);
+
+        if (error is not null)
+        {
+            _error = error.Message ?? "Operation failed. Please try again.";
+            _submitting = false;
+            return;
+        }
+
+        _submitting = false;
+        await OnSaved.InvokeAsync();
+    }
+
+    private Task HandleClose() => OnClose.InvokeAsync();
+}

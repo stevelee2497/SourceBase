@@ -15,12 +15,6 @@
 <div class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
         <h1 class="text-lg font-bold text-gray-900">Machines</h1>
-        <button class="btn-primary btn-sm" @onclick="OpenCreateForm">
-            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Machine
-        </button>
     </div>
 
     @if (_loading)
@@ -35,7 +29,7 @@
     }
     else
     {
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
             @foreach (var machine in _machines)
             {
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 hover:shadow-md transition-shadow">
@@ -85,6 +79,7 @@
 </div>
 
 <ConfirmDialog @bind-IsOpen="_showConfirmDialog" Title="@_confirmTitle" Message="@_confirmMessage" OnConfirm="ExecuteConfirmedAction" />
+<MachineModal IsVisible="_showMachineModal" Machine="_editingMachine" OnClose="CloseMachineModal" OnSaved="SaveMachineAndReload" />
 
 @code {
     private List<MachineResponse> _machines = [];
@@ -100,6 +95,8 @@
     private string _confirmMessage = "";
     private MachineResponse? _pendingMachine;
     private string? _pendingAction;
+    private bool _showMachineModal = false;
+    private MachineResponse? _editingMachine;
 
     protected override async Task OnInitializedAsync() => await LoadMachinesAsync();
 
@@ -125,10 +122,24 @@
         _loading = false;
     }
 
-    private void OpenCreateForm() => _error = "Create machine form not yet implemented";
-
     private Action OpenEditForm(MachineResponse machine) => () =>
-        _error = $"Edit machine: {machine.Name}";
+    {
+        _editingMachine = machine;
+        _showMachineModal = true;
+    };
+
+    private void CloseMachineModal()
+    {
+        _showMachineModal = false;
+        _editingMachine = null;
+    }
+
+    private async Task SaveMachineAndReload()
+    {
+        CloseMachineModal();
+        _successMessage = _editingMachine == null ? "Machine created successfully!" : "Machine updated successfully!";
+        await LoadMachinesAsync();
+    }
 
     private Action ConfirmRestart(MachineResponse machine) => () =>
     {
