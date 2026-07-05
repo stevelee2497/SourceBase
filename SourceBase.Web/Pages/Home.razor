@@ -87,14 +87,14 @@
         {
             var habit = _habits[i];
             var cardText = HabitCardTextColors[i % HabitCardTextColors.Length];
-            <div class="flex flex-col items-center gap-1">
+            <button class="flex flex-col items-center gap-1 hover:opacity-75 transition-opacity disabled:opacity-50" @onclick="LogHabit(habit)" disabled="@_loggingHabitId.HasValue" title="Log @habit.Name">
                 <div class="w-9 h-9 md:w-14 md:h-14 rounded-full bg-white/70 flex items-center justify-center text-xl md:text-3xl shrink-0">
                     @(string.IsNullOrEmpty(habit.Icon) ? "💪" : habit.Icon)
                 </div>
                 <div class="flex items-center justify-center gap-1 w-full min-w-0">
                     <span class="text-xs md:text-lg font-medium text-center @cardText truncate">@habit.LogCount @habit.Name.ToLower()</span>
                 </div>
-            </div>
+            </button>
         }
     }
 </div>
@@ -263,6 +263,7 @@
 
     private List<HabitItemResponse> _habits = [];
     private bool _habitsLoading = true;
+    private Guid? _loggingHabitId;
 
     private static readonly string[] HabitCardTextColors = ["text-indigo-700", "text-amber-700", "text-green-700", "text-rose-700", "text-purple-700", "text-teal-700", "text-blue-700", "text-orange-700"];
 
@@ -360,6 +361,14 @@
         var error = await Api.UpdateTodoAsync(todo.Id, todo.Title, dateStr, "Completed");
         if (error is null)
             _defaultTodos.Remove(todo);
+    };
+
+    private Func<Task> LogHabit(HabitItemResponse habit) => async () =>
+    {
+        _loggingHabitId = habit.Id;
+        await Api.LogHabitAsync(habit.Id, habit.Name, "HabitStarted");
+        _loggingHabitId = null;
+        await LoadHabitsAsync();
     };
 
     private List<PieSlice> BuildWalletPieData()
