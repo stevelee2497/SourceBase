@@ -47,10 +47,11 @@ Each habit can use an emoji or an `imagePath` (image takes priority).
 ### API URL (not user-editable)
 
 The API base URL is **configuration, not a user setting** — the field is hidden
-from the Settings window. It's resolved at runtime by `Config.ApiUrl` from the
-`API_URL` environment variable (a bare host is normalized to `https://`; blank /
-unset → `null`, which leaves API sync disabled). No compiled-in constant, no
-config packages.
+from the Settings window. It's resolved at runtime by `Config.ApiUrl`, which
+prefers the `API_URL` environment variable (dev override) and otherwise falls
+back to a value **embedded into the assembly at publish time** (a bare host is
+normalized to `https://`; blank / unset → `null`, which leaves API sync
+disabled). No hardcoded literal in tracked source, no config packages.
 
 **Local development** — copy `.env.example` to `.env` (git-ignored) in the
 `SourceBase.Desktop/` folder:
@@ -64,9 +65,10 @@ loads it into the process environment at startup. No shell exports, no rebuild
 needed to change the URL.
 
 **CI** — `desktop-publish.yml` passes the existing GitHub repo variable
-`vars.API_URL` (shared with `api-publish.yml` / `web-publish.yml`) into the
-Publish step as the `API_URL` env var; the app reads it at runtime. No `.env` is
-shipped in published builds.
+`vars.API_URL` (shared with `api-publish.yml` / `web-publish.yml`) to
+`dotnet publish` as `/p:ApiUrl=...`; MSBuild embeds it as `[AssemblyMetadata]` so
+the value reaches the user's machine at runtime. No `.env` is shipped in
+published builds.
 
 ## Project layout
 

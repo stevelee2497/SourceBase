@@ -29,10 +29,18 @@
 	</ItemGroup>
 
 	<!-- Copy a local .env (if present) next to the exe so Config.DotEnv finds it. Git-ignored;
-	     never present in CI, so published builds ship no .env — the URL comes from the API_URL
-	     env var (set by vars.API_URL in desktop-publish.yml). -->
+	     never present in CI, so published builds ship no .env — the URL comes from the embedded
+	     ApiUrl metadata below (set by /p:ApiUrl=${{ vars.API_URL }} in desktop-publish.yml). -->
 	<ItemGroup>
 		<None Include=".env" Condition="Exists('.env')" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<!-- Embed the API URL into the assembly at publish time. Passed as /p:ApiUrl=... by the
+	     pipeline; the literal never lives in tracked source. Config.ApiUrl.Resolve() reads it
+	     via AssemblyMetadata as the fallback when the API_URL env var / .env is unset. Empty
+	     ApiUrl (a plain dotnet build) emits no attribute — resolution falls back to env only. -->
+	<ItemGroup Condition="'$(ApiUrl)' != ''">
+		<AssemblyMetadata Include="ApiUrl" Value="$(ApiUrl)" />
 	</ItemGroup>
 
 </Project>

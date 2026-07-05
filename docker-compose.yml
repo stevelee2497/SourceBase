@@ -77,7 +77,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: sourcebase-api-${IMAGE_TAG:-latest}
+    container_name: sourcebase-${IMAGE_TAG:-latest}
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
