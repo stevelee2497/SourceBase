@@ -68,6 +68,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailHelper, EmailHelper>();
         services.AddScoped<IStorageService, CloudflareR2StorageService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IMachineCommandService, MachineCommandService>();
         services.AddScoped<IOtpHelper, OtpHelper>();
         services.AddHttpClient(Constants.HttpClientName, client =>
         {
