@@ -10,6 +10,7 @@ on:
       - 'SourceBase.Domain/**'
       - 'SourceBase.Tests/**'
       - 'SourceBase.ReportGenerator/**'
+      - 'backup/**'
       - 'Dockerfile'
       - 'docker-compose.yml'
       - '.github/workflows/api-publish.yml'
