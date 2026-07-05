@@ -336,7 +336,8 @@
             <TextBlock Text="Sync habit logs with the SourceBase web app."
                        FontSize="12" Foreground="#9CA3AF" Margin="0,-4,0,16"/>
 
-            <StackPanel x:Name="ApiUrlRow">
+            <!-- API URL is configured at build time (or via .env in dev), not by the user — hidden. -->
+            <StackPanel x:Name="ApiUrlRow" Visibility="Collapsed">
                 <Grid Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="110"/>

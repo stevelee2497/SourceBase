@@ -37,6 +37,8 @@ public sealed class SettingsStore
                     // Guard against an empty habit list from a hand-edited file.
                     if (loaded.Habits.Count == 0)
                         loaded.Habits = AppSettings.DefaultHabits();
+                    // API URL comes from build/env config, not the file — always re-resolve.
+                    loaded.ApiBaseUrl = Config.ApiUrl.Resolve();
                     Current = loaded;
                 }
             }

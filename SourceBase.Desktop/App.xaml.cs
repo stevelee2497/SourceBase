@@ -31,6 +31,7 @@ public partial class App : Application
             return;
         }
 
+        Config.DotEnv.Load(); // local dev: pick up API_URL from a git-ignored .env
         _store.Load();
         _habitLogService = new HabitLogService(() => _store.Current, _store.Save);
 

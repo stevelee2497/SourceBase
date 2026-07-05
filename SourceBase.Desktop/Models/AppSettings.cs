@@ -31,8 +31,9 @@ public sealed class AppSettings
     /// <summary>Key for the global "show rest overlay" hotkey. Default L. Null disables the hotkey.</summary>
     public Key? HotkeyKey { get; set; } = Key.L;
 
-    /// <summary>Base URL of the SourceBase API (e.g. https://api.example.com). Leave null to disable logging.</summary>
-    public string? ApiBaseUrl { get; set; }
+    /// <summary>Base URL of the SourceBase API. Resolved from config (build-time API_URL, or the
+    /// API_URL env var / .env in local dev) — not user-editable. See <see cref="Config.ApiUrl"/>.</summary>
+    public string? ApiBaseUrl { get; set; } = Config.ApiUrl.Resolve();
 
     /// <summary>Username (email) used to authenticate with the API.</summary>
     public string? ApiUsername { get; set; }
