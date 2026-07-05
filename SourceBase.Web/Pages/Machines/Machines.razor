@@ -15,12 +15,6 @@
 <div class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
         <h1 class="text-lg font-bold text-gray-900">Machines</h1>
-        <button class="btn-primary btn-sm" @onclick="OpenCreateForm">
-            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Machine
-        </button>
     </div>
 
     @if (_loading)
@@ -35,7 +29,7 @@
     }
     else
     {
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
             @foreach (var machine in _machines)
             {
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 hover:shadow-md transition-shadow">
@@ -45,10 +39,10 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2h-4m-6 0v2m0-6v2m0-6v2m0-6V7m0 0h6" />
                             </svg>
                             <div class="flex-1 min-w-0">
-                                <h3 class="text-sm font-medium text-gray-900 truncate">@machine.Name</h3>
+                                <h3 class="text-sm font-medium text-gray-900 truncate">@(!string.IsNullOrEmpty(machine.Alias) ? machine.Alias : machine.Name)</h3>
                                 @if (!string.IsNullOrEmpty(machine.Alias))
                                 {
-                                    <p class="text-xs text-gray-500 truncate">@machine.Alias</p>
+                                    <p class="text-xs text-gray-500 truncate">@machine.Name</p>
                                 }
                             </div>
                         </div>
@@ -61,16 +55,23 @@
                     }
 
                     <div class="flex gap-1">
-                        <button class="btn-secondary btn-sm flex-1 text-xs" @onclick="OpenEditForm(machine)">Edit</button>
-                        <button class="btn-danger btn-sm text-xs px-2" title="Restart" @onclick="ConfirmRestart(machine)">
+                        <button class="btn-secondary btn-sm text-xs" @onclick="OpenEditForm(machine)">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span class="px-2">Edit</span>
+                        </button>
+                        <button class="btn-primary btn-sm text-xs px-2" title="Restart" @onclick="ConfirmRestart(machine)">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
+                            <span class="px-2">Restart</span>
                         </button>
                         <button class="btn-danger btn-sm text-xs px-2" title="Shutdown" @onclick="ConfirmShutdown(machine)">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
+                            <span class="px-2">Shutdown</span>
                         </button>
                     </div>
                 </div>
@@ -85,6 +86,7 @@
 </div>
 
 <ConfirmDialog @bind-IsOpen="_showConfirmDialog" Title="@_confirmTitle" Message="@_confirmMessage" OnConfirm="ExecuteConfirmedAction" />
+<MachineModal IsVisible="_showMachineModal" Machine="_editingMachine" OnClose="CloseMachineModal" OnSaved="SaveMachineAndReload" />
 
 @code {
     private List<MachineResponse> _machines = [];
@@ -100,6 +102,8 @@
     private string _confirmMessage = "";
     private MachineResponse? _pendingMachine;
     private string? _pendingAction;
+    private bool _showMachineModal = false;
+    private MachineResponse? _editingMachine;
 
     protected override async Task OnInitializedAsync() => await LoadMachinesAsync();
 
@@ -125,17 +129,31 @@
         _loading = false;
     }
 
-    private void OpenCreateForm() => _error = "Create machine form not yet implemented";
-
     private Action OpenEditForm(MachineResponse machine) => () =>
-        _error = $"Edit machine: {machine.Name}";
+    {
+        _editingMachine = machine;
+        _showMachineModal = true;
+    };
+
+    private void CloseMachineModal()
+    {
+        _showMachineModal = false;
+        _editingMachine = null;
+    }
+
+    private async Task SaveMachineAndReload()
+    {
+        CloseMachineModal();
+        _successMessage = _editingMachine == null ? "Machine created successfully!" : "Machine updated successfully!";
+        await LoadMachinesAsync();
+    }
 
     private Action ConfirmRestart(MachineResponse machine) => () =>
     {
         _pendingMachine = machine;
         _pendingAction = "restart";
         _confirmTitle = "Restart Machine?";
-        _confirmMessage = $"Send restart command to {machine.Name}?";
+        _confirmMessage = $"Send restart command to {(!string.IsNullOrEmpty(machine.Alias) ? machine.Alias : machine.Name)}?";
         _showConfirmDialog = true;
     };
 
@@ -144,7 +162,7 @@
         _pendingMachine = machine;
         _pendingAction = "shutdown";
         _confirmTitle = "Shutdown Machine?";
-        _confirmMessage = $"Send shutdown command to {machine.Name}?";
+        _confirmMessage = $"Send shutdown command to {(!string.IsNullOrEmpty(machine.Alias) ? machine.Alias : machine.Name)}?";
         _showConfirmDialog = true;
     };
 
@@ -161,7 +179,7 @@
         if (error != null)
             _error = error.Message;
         else
-            _successMessage = $"Command sent to {_pendingMachine.Name}";
+            _successMessage = $"Command sent to {(!string.IsNullOrEmpty(_pendingMachine.Alias) ? _pendingMachine.Alias : _pendingMachine.Name)} successfully.";
 
         _pendingMachine = null;
         _pendingAction = null;
