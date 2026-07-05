@@ -40,6 +40,7 @@ jobs:
     name: Build Desktop App
     runs-on: windows-latest
     needs: version
+    environment: Production
     steps:
       - uses: actions/checkout@v5
 

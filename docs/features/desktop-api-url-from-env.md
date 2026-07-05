@@ -30,7 +30,8 @@ A build-time `env: API_URL` on the Publish step is gone by the time a user launc
 ## Pipeline
 
 - `desktop-publish.yml` passes `/p:ApiUrl=${{ vars.API_URL }}` to `dotnet publish`; MSBuild embeds it as assembly metadata that the app reads at runtime.
-- Reuses the existing repo variable `API_URL`, already shared by `api-publish.yml` and `web-publish.yml` — no new variable needed. No `.env` ships in published builds.
+- `API_URL` is scoped to the **`Production` GitHub environment** (same as `api-publish.yml`'s deploy job), not a repo-level variable — so the `build` job **must** declare `environment: Production` or `vars.API_URL` resolves to empty. The build fails fast (guard step) if it's empty, rather than silently shipping a URL-less binary.
+- Reuses the existing `API_URL`, already shared by `api-publish.yml` and `web-publish.yml` — no new variable needed. No `.env` ships in published builds.
 
 ## Diagnostics
 
