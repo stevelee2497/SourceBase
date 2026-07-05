@@ -210,9 +210,12 @@ public partial class SettingsWindow : Window
 
         if (url is null)
         {
+            Config.Log.Warn("Test connection: ApiBaseUrl is null — API URL not configured for this build.");
             SetTestResult("API URL is not configured for this build.", success: false);
             return;
         }
+
+        Config.Log.Info($"Test connection starting against {url}");
 
         if (username is null || password is null)
         {
@@ -228,8 +231,8 @@ public partial class SettingsWindow : Window
         var (_, _, error) = await LoginAsync(url, username, password);
 
         TestButton.IsEnabled = true;
-        if (error is null) SetTestResult("Connected ✓", success: true);
-        else SetTestResult(error, success: false);
+        if (error is null) { Config.Log.Info("Test connection succeeded."); SetTestResult("Connected ✓", success: true); }
+        else { Config.Log.Warn($"Test connection failed: {error}"); SetTestResult(error, success: false); }
     }
 
     private void SetTestResult(string text, bool success)
@@ -362,19 +365,26 @@ public partial class SettingsWindow : Window
             {
                 Content = new StringContent(payload, Encoding.UTF8, "application/json"),
             };
+            var endpoint = $"{url.TrimEnd('/')}/api/auth/login";
             var resp = await Http.SendAsync(req);
             if (!resp.IsSuccessStatusCode)
+            {
+                Config.Log.Warn($"Login POST {endpoint} returned {(int)resp.StatusCode} {resp.ReasonPhrase}");
                 return (null, null, $"Login failed ({(int)resp.StatusCode})");
+            }
 
             var body = await JsonSerializer.DeserializeAsync<LoginResponse>(
                 await resp.Content.ReadAsStreamAsync(), JsonOpts);
             if (body is null || string.IsNullOrWhiteSpace(body.AccessToken))
+            {
+                Config.Log.Warn($"Login POST {endpoint} succeeded but response had no access token.");
                 return (null, null, "Invalid response from server");
+            }
 
             return (body.AccessToken, body.RefreshToken, null);
         }
-        catch (TaskCanceledException) { return (null, null, "Connection timed out"); }
-        catch (Exception ex) { return (null, null, ex.Message); }
+        catch (TaskCanceledException) { Config.Log.Warn($"Login to {url} timed out after 5s."); return (null, null, "Connection timed out"); }
+        catch (Exception ex) { Config.Log.Error($"Login to {url} threw", ex); return (null, null, ex.Message); }
     }
 
     private static int SelectedHour(ComboBox box) => (int)((ComboBoxItem)box.SelectedItem).Tag!;

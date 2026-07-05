@@ -47,8 +47,14 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: Verify API_URL is configured
+        if: ${{ vars.API_URL == '' }}
+        run: |
+          echo "::error::vars.API_URL is empty — the published app will have no embedded API URL and API sync will be disabled. Set the API_URL repo variable."
+          exit 1
+
       - name: Publish
-        run: dotnet publish SourceBase.Desktop/SourceBase.Desktop.csproj -c Release /p:Version=${{ needs.version.outputs.version_number }} /p:ApiUrl=${{ vars.API_URL }}
+        run: dotnet publish SourceBase.Desktop/SourceBase.Desktop.csproj -c Release /p:Version=${{ needs.version.outputs.version_number }} "/p:ApiUrl=${{ vars.API_URL }}"
 
       - name: Rename artifact
         run: Rename-Item "SourceBase.Desktop/Artifacts/Jupiter.exe" "Jupiter-v${{ needs.version.outputs.version_number }}.exe"

@@ -14,8 +14,25 @@ internal static class ApiUrl
 {
     public const string MetadataKey = "ApiUrl";
 
-    public static string? Resolve() =>
-        Normalize(Environment.GetEnvironmentVariable("API_URL")) ?? Normalize(Embedded());
+    public static string? Resolve()
+    {
+        var env = Normalize(Environment.GetEnvironmentVariable("API_URL"));
+        if (env is not null)
+        {
+            Log.Info($"ApiUrl resolved from API_URL env var: {env}");
+            return env;
+        }
+
+        var embedded = Normalize(Embedded());
+        if (embedded is not null)
+        {
+            Log.Info($"ApiUrl resolved from embedded assembly metadata: {embedded}");
+            return embedded;
+        }
+
+        Log.Warn("ApiUrl unresolved — no API_URL env var and no embedded metadata; API sync disabled.");
+        return null;
+    }
 
     private static string? Embedded() =>
         Assembly.GetExecutingAssembly()

@@ -31,8 +31,12 @@ public partial class App : Application
             return;
         }
 
+        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        Config.Log.Info($"Jupiter starting — version {version}");
+
         Config.DotEnv.Load(); // local dev: pick up API_URL from a git-ignored .env
         _store.Load();
+        Config.Log.Info($"Startup resolved ApiBaseUrl: {_store.Current.ApiBaseUrl ?? "(null — sync disabled)"}");
         _habitLogService = new HabitLogService(() => _store.Current, _store.Save);
 
         _trayIcon = CreateTrayIcon(TrayGlyph.Mug);

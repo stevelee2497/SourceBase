@@ -32,6 +32,13 @@ A build-time `env: API_URL` on the Publish step is gone by the time a user launc
 - `desktop-publish.yml` passes `/p:ApiUrl=${{ vars.API_URL }}` to `dotnet publish`; MSBuild embeds it as assembly metadata that the app reads at runtime.
 - Reuses the existing repo variable `API_URL`, already shared by `api-publish.yml` and `web-publish.yml` — no new variable needed. No `.env` ships in published builds.
 
+## Diagnostics
+
+- `Config.Log` writes to `%AppData%\Jupiter\logs\jupiter.log` (rotates to `jupiter.log.1` past ~1 MB), silent-failing.
+- Logged events: app version at startup, the resolved `ApiBaseUrl` and which source won (env var vs embedded metadata vs unresolved), and every test-connection / login attempt with the endpoint, HTTP status, or exception.
+- For an "after upgrade, test connection fails" report, the first two lines of the log say whether the URL was embedded at all — distinguishing a CI-embed gap from a reachable-but-rejecting API.
+- `desktop-publish.yml` fails the build if `vars.API_URL` is empty, so a release can never ship with no embedded URL.
+
 ## Failure / offline modes
 
 Unchanged: empty/unset URL → API calls no-op; unreachable API → silent failure per existing `HabitLogService` behavior.
