@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Shouldly;
 using SourceBase.Application.Features.Machines;
+using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
 using Xunit;
 
@@ -24,7 +25,7 @@ public class DeleteMachineTests(WebAppFactory factory) : IClassFixture<WebAppFac
     public async Task DeleteMachine_WithoutToken_ReturnsUnauthorized()
     {
         var client = factory.CreateClient();
-        var response = await client.DeleteAsync($"machines/{Guid.NewGuid()}");
+        var response = await client.DeleteAsync(DeleteMachineEndpoint.Route.WithId(Guid.NewGuid()));
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
@@ -34,7 +35,7 @@ public class DeleteMachineTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var client = await factory.CreateAuthorizedClient();
         var createResponse = await client.PostAsJsonAsync(CreateMachineEndpoint.Route, new { name = "DeleteTestMachine" });
         var created = await createResponse.Content.ReadFromJsonAsync<CreateMachineResponse>();
-        var response = await client.DeleteAsync($"machines/{created!.Id}");
+        var response = await client.DeleteAsync(DeleteMachineEndpoint.Route.WithId(created!.Id));
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
@@ -42,7 +43,7 @@ public class DeleteMachineTests(WebAppFactory factory) : IClassFixture<WebAppFac
     public async Task DeleteMachine_WithNonExistentId_ReturnsNotFound()
     {
         var client = await factory.CreateAuthorizedClient();
-        var response = await client.DeleteAsync($"machines/{Guid.NewGuid()}");
+        var response = await client.DeleteAsync(DeleteMachineEndpoint.Route.WithId(Guid.NewGuid()));
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
@@ -53,7 +54,7 @@ public class DeleteMachineTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var user2 = await factory.CreateAuthorizedClient($"{Guid.NewGuid():N}@test.com", "Test@1234!");
         var createResponse = await user1.PostAsJsonAsync(CreateMachineEndpoint.Route, new { name = "User1Machine" });
         var created = await createResponse.Content.ReadFromJsonAsync<CreateMachineResponse>();
-        var response = await user2.DeleteAsync($"machines/{created!.Id}");
+        var response = await user2.DeleteAsync(DeleteMachineEndpoint.Route.WithId(created!.Id));
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }

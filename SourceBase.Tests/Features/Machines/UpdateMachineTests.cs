@@ -26,7 +26,7 @@ public class UpdateMachineTests(WebAppFactory factory) : IClassFixture<WebAppFac
     public async Task UpdateMachine_WithoutToken_ReturnsUnauthorized()
     {
         var client = factory.CreateClient();
-        var response = await client.PatchAsJsonAsync($"machines/{Guid.NewGuid()}", new { alias = "NewAlias" });
+        var response = await client.PatchAsJsonAsync(UpdateMachineEndpoint.Route.WithId(Guid.NewGuid()), new { alias = "NewAlias" });
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
@@ -36,7 +36,7 @@ public class UpdateMachineTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var client = await factory.CreateAuthorizedClient();
         var createResponse = await client.PostAsJsonAsync(CreateMachineEndpoint.Route, new { name = "UpdateTestMachine" });
         var created = await createResponse.Content.ReadFromJsonAsync<CreateMachineResponse>();
-        var response = await client.PatchAsJsonAsync($"machines/{created!.Id}", new { alias = "MyLaptop" });
+        var response = await client.PatchAsJsonAsync(UpdateMachineEndpoint.Route.WithId(created!.Id), new { alias = "MyLaptop" });
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var getResponse = await client.GetAsync(GetMachinesEndpoint.Route);
         var machines = await getResponse.Content.ReadFromJsonAsync<PagingResponse<GetMachineResponse>>();
@@ -48,7 +48,7 @@ public class UpdateMachineTests(WebAppFactory factory) : IClassFixture<WebAppFac
     public async Task UpdateMachine_WithNonExistentId_ReturnsNotFound()
     {
         var client = await factory.CreateAuthorizedClient();
-        var response = await client.PatchAsJsonAsync($"machines/{Guid.NewGuid()}", new { alias = "Fake" });
+        var response = await client.PatchAsJsonAsync(UpdateMachineEndpoint.Route.WithId(Guid.NewGuid()), new { alias = "Fake" });
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }
