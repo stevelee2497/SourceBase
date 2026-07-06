@@ -27,7 +27,7 @@
                 </svg>
             </button>
             <nav class="flex-1 flex items-center gap-1 md:gap-2 min-w-0 overflow-x-auto">
-                @foreach (var navPage in AppSettings.Pages)
+                @foreach (var navPage in AppSettings.Pages.Where(p => TopBarUrls.Contains(p.Url)))
                 {
                     if (navPage.Roles.Count() == 0 || navPage.Roles.Any(role => AuthStateProvider.UserInfo?.Roles.Contains(role) == true))
                     {
@@ -185,6 +185,8 @@
         await AuthStateProvider.SignOutAsync();
         Navigation.NavigateTo("/login");
     }
+
+    private static readonly string[] TopBarUrls = ["/", "/todos", "/wallets"];
 
     private static NavLinkMatch GetNavLinkMatch(string url) => url == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix;
 }
