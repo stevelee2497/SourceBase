@@ -27,7 +27,7 @@
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         @((MarkupString)navPage.Icon)
                     </svg>
-                    @navPage.Title
+                    <span class="mt-0.5">@navPage.Title</span>
                 </NavLink>
                 @foreach (var sub in navPage.SubPages)
                 {
@@ -35,7 +35,7 @@
                         <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             @((MarkupString)sub.Icon)
                         </svg>
-                        @sub.Title
+                        <span class="mt-0.5">@sub.Title</span>
                     </NavLink>
                 }
             }
