@@ -7,6 +7,9 @@
     <base href="/" />
     <script type="importmap"></script>
     <link rel="stylesheet" href="app.min.css" />
+    <script>
+      if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+    </script>
   </head>
 
   <body>
