@@ -4,11 +4,11 @@
 @inject ApiHttpClient Api
 @inject NavigationManager Navigation
 
-<h2 class="text-xl font-semibold text-gray-900 mb-6">Create an account</h2>
+<h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Create an account</h2>
 
 @if (!string.IsNullOrEmpty(_error))
 {
-    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+    <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
 }
 
 <EditForm Model="_model" OnValidSubmit="SubmitAsync">
@@ -16,15 +16,15 @@
 
     <div class="space-y-4">
         <div>
-            <label class="form-label">Username <span class="text-red-500">*</span></label>
+            <label class="form-label">Username <span class="text-red-500 dark:text-red-400">*</span></label>
             <InputText @bind-Value="_model.UserName" class="form-input" placeholder="johndoe" autocomplete="username" />
         </div>
         <div>
-            <label class="form-label">Email <span class="text-red-500">*</span></label>
+            <label class="form-label">Email <span class="text-red-500 dark:text-red-400">*</span></label>
             <InputText @bind-Value="_model.Email" class="form-input" type="email" placeholder="you@example.com" autocomplete="email" />
         </div>
         <div>
-            <label class="form-label">Password <span class="text-red-500">*</span></label>
+            <label class="form-label">Password <span class="text-red-500 dark:text-red-400">*</span></label>
             <InputText @bind-Value="_model.Password" class="form-input" type="password" placeholder="••••••••" autocomplete="new-password" />
         </div>
         <div class="grid grid-cols-2 gap-3">
@@ -53,8 +53,8 @@
     </div>
 </EditForm>
 
-<p class="mt-4 text-center text-sm text-gray-500">
-    Already have an account? <a href="/login" class="text-indigo-600 hover:text-indigo-500">Sign in</a>
+<p class="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+    Already have an account? <a href="/login" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">Sign in</a>
 </p>
 
 @code {

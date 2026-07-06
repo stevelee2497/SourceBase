@@ -7,7 +7,7 @@
 
 @if (!string.IsNullOrEmpty(_error))
 {
-    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+    <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
 }
 
 <div class="flex flex-col gap-6">
@@ -23,7 +23,7 @@
     }
     else if (_chartData.Count == 0)
     {
-        <p class="text-sm text-gray-400 text-center py-6">No data to display.</p>
+        <p class="text-sm text-gray-400 dark:text-gray-500 text-center py-6">No data to display.</p>
     }
     else
     {
@@ -34,15 +34,15 @@
     <div class="card p-4">
         <div class="flex flex-wrap gap-3 items-end">
             <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-500">Source</label>
+                <label class="text-xs font-medium text-gray-500 dark:text-gray-400">Source</label>
                 <SelectInput @bind-Value="_sourceFilter" @bind-Value:after="ApplyFiltersAsync" Options="SourceOptions" Class="min-w-36" />
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-500">From</label>
+                <label class="text-xs font-medium text-gray-500 dark:text-gray-400">From</label>
                 <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input text-sm h-9" />
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-500">To</label>
+                <label class="text-xs font-medium text-gray-500 dark:text-gray-400">To</label>
                 <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input text-sm h-9" />
             </div>
             <button class="btn-secondary btn-sm h-9" @onclick="ResetFiltersAsync">Clear</button>
@@ -58,33 +58,33 @@
     {
         <div class="card p-0 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Buy Price</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sell Price</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Recorded At</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Source</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Buy Price</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sell Price</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Recorded At</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                         @if (_tableData.Items.Count == 0)
                         {
                             <tr>
-                                <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-400">No gold price records found.</td>
+                                <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-400 dark:text-gray-500">No gold price records found.</td>
                             </tr>
                         }
                         else
                         {
                             @foreach (var item in _tableData.Items)
                             {
-                                <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                     <td class="px-4 py-3">
                                         <span class="@GetSourceBadgeClass(item.Source) text-xs font-medium px-2 py-0.5 rounded-full">@item.Source</span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-right font-mono text-gray-800">@item.BuyPrice.ToString("N0")</td>
-                                    <td class="px-4 py-3 text-sm text-right font-mono text-gray-800">@item.SellPrice.ToString("N0")</td>
-                                    <td class="px-4 py-3 text-sm text-right font-mono text-gray-800 whitespace-nowrap">@TimeZoneService.ToLocalTime(item.RecordedAt).ToString("dd MMM yyyy HH:mm")</td>
+                                    <td class="px-4 py-3 text-sm text-right font-mono text-gray-800 dark:text-gray-200">@item.BuyPrice.ToString("N0")</td>
+                                    <td class="px-4 py-3 text-sm text-right font-mono text-gray-800 dark:text-gray-200">@item.SellPrice.ToString("N0")</td>
+                                    <td class="px-4 py-3 text-sm text-right font-mono text-gray-800 dark:text-gray-200 whitespace-nowrap">@TimeZoneService.ToLocalTime(item.RecordedAt).ToString("dd MMM yyyy HH:mm")</td>
                                 </tr>
                             }
                         }
@@ -261,11 +261,11 @@
 
     private static string GetSourceBadgeClass(string source) => source switch
     {
-        "SJC" => "bg-indigo-100 text-indigo-700",
-        "PNJ" => "bg-amber-100 text-amber-700",
-        "GiaVang" => "bg-green-100 text-green-700",
-        "KimKhanhVietHung" => "bg-rose-100 text-rose-700",
-        "NgocThinh" => "bg-purple-100 text-purple-700",
-        _ => "bg-gray-100 text-gray-700",
+        "SJC" => "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400",
+        "PNJ" => "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400",
+        "GiaVang" => "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400",
+        "KimKhanhVietHung" => "bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400",
+        "NgocThinh" => "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400",
+        _ => "bg-gray-100 dark:bg-gray-700/50 text-gray-700 dark:text-gray-200",
     };
 }

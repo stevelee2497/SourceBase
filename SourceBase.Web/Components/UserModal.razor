@@ -4,12 +4,12 @@
 {
     <div class="fixed inset-0 z-40 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" @onclick="HandleClose"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_isCreate ? "Create User" : "Edit User")</h2>
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">@(_isCreate ? "Create User" : "Edit User")</h2>
 
             @if (!string.IsNullOrEmpty(_error))
             {
-                <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+                <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
             }
 
             <div class="space-y-4">
@@ -18,23 +18,23 @@
                     <div>
                         <label class="form-label">Avatar</label>
                         <div class="flex items-center gap-4 mt-1">
-                            <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center shrink-0">
+                            <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center shrink-0">
                                 @if (!string.IsNullOrEmpty(_form.AvatarUrl))
                                 {
                                     <img src="@_form.AvatarUrl" alt="Avatar" class="w-full h-full object-cover" />
                                 }
                                 else
                                 {
-                                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 }
                             </div>
                             <div class="flex-1">
-                                <InputFile OnChange="UploadAvatarAsync" accept="image/jpeg,image/png,image/gif,image/webp" class="block w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" disabled="@_uploadingAvatar" />
+                                <InputFile OnChange="UploadAvatarAsync" accept="image/jpeg,image/png,image/gif,image/webp" class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-400 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/40" disabled="@_uploadingAvatar" />
                                 @if (_uploadingAvatar)
                                 {
-                                    <p class="text-xs text-indigo-600 mt-1">Uploading…</p>
+                                    <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-1">Uploading…</p>
                                 }
                             </div>
                         </div>
@@ -77,8 +77,8 @@
                             @foreach (var role in AllRoles)
                             {
                                 var roleName = role.Name;
-                                <label class="flex items-center gap-1.5 text-sm text-gray-700">
-                                    <input type="checkbox" class="rounded border-gray-300 text-indigo-600" checked="@_form.SelectedRoles.Contains(roleName)" @onchange="e => ToggleRole(roleName, (bool)e.Value!)" />
+                                <label class="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-200">
+                                    <input type="checkbox" class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:bg-gray-700" checked="@_form.SelectedRoles.Contains(roleName)" @onchange="e => ToggleRole(roleName, (bool)e.Value!)" />
                                     @roleName
                                 </label>
                             }

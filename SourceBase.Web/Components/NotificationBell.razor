@@ -3,7 +3,7 @@
 @implements IAsyncDisposable
 
 <div class="relative">
-    <button class="relative z-50 p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors" @onclick="ToggleDropdown" aria-label="Notifications">
+    <button class="relative z-50 p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" @onclick="ToggleDropdown" aria-label="Notifications">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
@@ -16,17 +16,17 @@
     @if (_open)
     {
         <div class="fixed inset-0 z-40" @onclick="CloseDropdown"></div>
-        <div class="absolute right-0 top-full mt-1 w-80 bg-white rounded-md shadow-lg border border-gray-200 z-50">
-            <div class="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
-                <span class="text-sm font-semibold text-gray-800">Notifications</span>
+        <div class="absolute right-0 top-full mt-1 w-80 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+            <div class="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 dark:border-gray-700">
+                <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Notifications</span>
                 <div class="flex gap-2">
                     @if (NotificationService.UnreadCount > 0)
                     {
-                        <button class="text-xs text-indigo-600 hover:text-indigo-800 transition-colors" @onclick="MarkAllReadAsync">Mark all read</button>
+                        <button class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors" @onclick="MarkAllReadAsync">Mark all read</button>
                     }
                     @if (NotificationService.Notifications.Count > 0)
                     {
-                        <button class="text-xs text-red-500 hover:text-red-700 transition-colors" @onclick="ClearAllAsync">Clear all</button>
+                        <button class="text-xs text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors" @onclick="ClearAllAsync">Clear all</button>
                     }
                 </div>
             </div>
@@ -34,13 +34,13 @@
             <div class="max-h-80 overflow-y-auto">
                 @if (NotificationService.Notifications.Count == 0)
                 {
-                    <div class="px-4 py-6 text-center text-sm text-gray-400">No notifications</div>
+                    <div class="px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">No notifications</div>
                 }
                 else
                 {
                     @foreach (var notification in NotificationService.Notifications)
                     {
-                        <button class="@NotificationClass(notification) w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0" @onclick="MarkReadAsync(notification)">
+                        <button class="@NotificationClass(notification) w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-50 dark:border-gray-700 last:border-0" @onclick="MarkReadAsync(notification)">
                             <div class="flex items-start gap-2">
                                 @if (!notification.IsRead)
                                 {
@@ -51,9 +51,9 @@
                                     <span class="mt-1.5 w-2 h-2 shrink-0"></span>
                                 }
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900 truncate">@notification.Title</p>
-                                    <p class="text-xs text-gray-500 mt-0.5">@notification.Message</p>
-                                    <p class="text-xs text-gray-400 mt-1">@FormatTime(notification.CreatedOn)</p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">@notification.Title</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">@notification.Message</p>
+                                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">@FormatTime(notification.CreatedOn)</p>
                                 </div>
                             </div>
                         </button>
@@ -102,7 +102,7 @@
     private void OnNotifChanged() => InvokeAsync(StateHasChanged);
 
     private static string NotificationClass(NotificationResponse n) =>
-        n.IsRead ? "opacity-70" : "bg-indigo-50/40";
+        n.IsRead ? "opacity-70" : "bg-indigo-50/40 dark:bg-indigo-900/30";
 
     private static string FormatTime(DateTime? dt) =>
         dt is null ? string.Empty : dt.Value.ToLocalTime().ToString("MMM d, HH:mm");

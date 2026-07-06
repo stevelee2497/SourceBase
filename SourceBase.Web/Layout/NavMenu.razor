@@ -1,6 +1,7 @@
 @inject AppSettings AppSettings
 @inject BlazorAuthStateProvider Auth
 @inject IConfiguration Configuration
+@inject IJSRuntime JS
 
 <!-- Mobile overlay backdrop -->
 @if (MobileOpen)
@@ -8,10 +9,10 @@
     <div class="fixed inset-0 z-40 bg-black/50 md:hidden" @onclick="CloseMenu"></div>
 }
 
-<aside class="@AsideClass md:w-56 bg-white border-r border-gray-200 flex-col shrink-0">
-    <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-        <span class="text-xl font-bold text-indigo-600">SourceBase</span>
-        <button class="md:hidden p-1 rounded text-gray-400 hover:text-gray-600" @onclick="CloseMenu" aria-label="Close menu">
+<aside class="@AsideClass md:w-56 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-col shrink-0">
+    <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+        <span class="text-xl font-bold text-indigo-600 dark:text-indigo-400">SourceBase</span>
+        <button class="md:hidden p-1 rounded text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400" @onclick="CloseMenu" aria-label="Close menu">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -23,7 +24,7 @@
         {
             if (navPage.Roles.Count() == 0 || navPage.Roles.Any(role => Auth.UserInfo?.Roles.Contains(role) == true))
             {
-                <NavLink href="@navPage.Url" Match="@GetNavLinkMatch(navPage.Url)" class="flex items-center px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors w-full" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
+                <NavLink href="@navPage.Url" Match="@GetNavLinkMatch(navPage.Url)" class="flex items-center px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors w-full" ActiveClass="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         @((MarkupString)navPage.Icon)
                     </svg>
@@ -31,7 +32,7 @@
                 </NavLink>
                 @foreach (var sub in navPage.SubPages)
                 {
-                    <NavLink href="@sub.Url" class="flex items-center pr-3 py-1.5 rounded-md text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors w-full" style="padding-left: 25px;" ActiveClass="bg-indigo-50 text-indigo-700 font-medium">
+                    <NavLink href="@sub.Url" class="flex items-center pr-3 py-1.5 rounded-md text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors w-full" style="padding-left: 25px;" ActiveClass="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium">
                         <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             @((MarkupString)sub.Icon)
                         </svg>
@@ -42,8 +43,22 @@
         }
     </nav>
 
-    <div class="py-3 border-t border-gray-100 text-center">
-        <span class="text-xs text-gray-400">version @(Configuration["AppVersion"] ?? "1.1")</span>
+    <div class="py-3 px-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-center gap-3">
+        <span class="text-xs text-gray-400 dark:text-gray-500">version @(Configuration["AppVersion"] ?? "1.1")</span>
+        <button @onclick="ToggleThemeAsync" class="p-1.5 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label="Toggle dark mode" title="@(_isDark ? "Switch to light mode" : "Switch to dark mode")">
+            @if (_isDark)
+            {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            }
+            else
+            {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            }
+        </button>
     </div>
 </aside>
 
@@ -52,7 +67,22 @@
     [Parameter] public bool Collapsed { get; set; }
     [Parameter] public EventCallback OnMobileClose { get; set; }
 
+    private bool _isDark;
+
     private string AsideClass => MobileOpen ? "fixed inset-y-0 left-0 z-50 flex" : Collapsed ? "hidden" : "hidden md:flex";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _isDark = await JS.InvokeAsync<string>("getTheme") == "dark";
+        StateHasChanged();
+    }
+
+    private async Task ToggleThemeAsync()
+    {
+        _isDark = !_isDark;
+        await JS.InvokeVoidAsync("setTheme", _isDark ? "dark" : "light");
+    }
 
     private static NavLinkMatch GetNavLinkMatch(string url) => url == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix;
 

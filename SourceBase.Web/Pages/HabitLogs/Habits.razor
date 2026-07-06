@@ -4,13 +4,13 @@
 
 @if (!string.IsNullOrEmpty(_error))
 {
-    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+    <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
 }
 
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Habits</h1>
-        <div class="text-sm text-gray-500 mt-1">Manage your habit types for quick logging.</div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Habits</h1>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your habit types for quick logging.</div>
     </div>
     <button class="btn-primary self-start sm:self-auto" @onclick="OpenCreate">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,26 +29,26 @@ else
     <div class="card !p-0 overflow-hidden">
         @if (_habits.Count == 0)
         {
-            <div class="text-sm text-gray-400 py-10 text-center">No habits yet. Add one to get started.</div>
+            <div class="text-sm text-gray-400 dark:text-gray-500 py-10 text-center">No habits yet. Add one to get started.</div>
         }
         else
         {
-            <div class="divide-y divide-gray-100">
+            <div class="divide-y divide-gray-100 dark:divide-gray-700">
                 @foreach (var habit in _habits)
                 {
                     <div class="flex items-center justify-between gap-3 px-4 py-3">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-xl shrink-0">
+                            <div class="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
                                 @HabitIcon(habit.Icon)
                             </div>
                             <div class="min-w-0">
-                                <div class="font-medium text-gray-900 truncate">@habit.Name</div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100 truncate">@habit.Name</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 shrink-0">
                             @if (habit.IsSystem)
                             {
-                                <span class="text-green-500" title="system">
+                                <span class="text-green-500 dark:text-green-400" title="system">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
                                     </svg>
@@ -56,12 +56,12 @@ else
                             }
                             else
                             {
-                                <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEdit(habit)" title="Edit">
+                                <button class="text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" @onclick="OpenEdit(habit)" title="Edit">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </button>
-                                <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDelete(habit)" title="Delete">
+                                <button class="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors" @onclick="ConfirmDelete(habit)" title="Delete">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
@@ -79,11 +79,11 @@ else
 {
     <div class="fixed inset-0 z-40 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" @onclick="CloseForm"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editing is null ? "Add Habit" : "Edit Habit")</h2>
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">@(_editing is null ? "Add Habit" : "Edit Habit")</h2>
             @if (!string.IsNullOrEmpty(_formError))
             {
-                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_formError</div>
+                <div class="mb-3 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 px-3 py-2 text-sm text-red-700 dark:text-red-400">@_formError</div>
             }
             <div class="space-y-4">
                 <div>
@@ -93,7 +93,7 @@ else
                 <div>
                     <label class="form-label">Icon (emoji)</label>
                     <input @bind="_icon" class="form-input" placeholder="e.g. 🏃" maxlength="8" />
-                    <div class="text-xs text-gray-400 mt-1">Paste any emoji to use as the habit icon.</div>
+                    <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Paste any emoji to use as the habit icon.</div>
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-5">

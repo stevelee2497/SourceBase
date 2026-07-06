@@ -53,6 +53,16 @@ function loadApexCharts(callback) {
   document.head.appendChild(s);
 }
 
+window.getTheme = function () {
+  return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
+};
+
+window.setTheme = function (theme) {
+  var isDark = theme === 'dark';
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  document.documentElement.classList.toggle('dark', isDark);
+};
+
 window.getBrowserTimeZone = function () {
   var tz = localStorage.getItem('userTimeZone');
   if (tz) return tz;

@@ -4,16 +4,16 @@
 
 @if (!string.IsNullOrEmpty(_error))
 {
-    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+    <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
 }
 
 <div class="flex flex-col gap-6">
 
     <div class="flex items-center justify-between">
-        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Time Sheets</h2>
+        <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Time Sheets</h2>
         <div class="flex items-center gap-2">
             <button class="btn-secondary btn-sm" @onclick="PrevMonth">&#8249;</button>
-            <span class="text-sm font-medium text-gray-700 min-w-32.5 text-center">@_currentDate.ToString("MMMM yyyy")</span>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200 min-w-32.5 text-center">@_currentDate.ToString("MMMM yyyy")</span>
             <button class="btn-secondary btn-sm" @onclick="NextMonth">&#8250;</button>
         </div>
     </div>
@@ -28,7 +28,7 @@
             <div class="grid grid-cols-7 gap-1 mb-1">
                 @foreach (var dayName in new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" })
                 {
-                    <div class="text-xs text-center font-medium text-gray-500 py-1">@dayName</div>
+                    <div class="text-xs text-center font-medium text-gray-500 dark:text-gray-400 py-1">@dayName</div>
                 }
             </div>
             <div class="grid grid-cols-7 gap-1">
@@ -67,15 +67,15 @@
 {
     <div class="fixed inset-0 z-40 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" @onclick="CloseDayModal"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 flex flex-col max-h-[80vh]">
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 flex flex-col max-h-[80vh]">
 
             <!-- Modal header -->
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
                 <div>
-                    <h2 class="text-base font-semibold text-gray-900">@_selectedDate.Value.ToString("dddd, MMMM d")</h2>
-                    <p class="text-xs text-gray-400 mt-0.5">@_selectedDate.Value.Year</p>
+                    <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100">@_selectedDate.Value.ToString("dddd, MMMM d")</h2>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">@_selectedDate.Value.Year</p>
                 </div>
-                <button class="text-gray-400 hover:text-gray-600 transition-colors" @onclick="CloseDayModal">
+                <button class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors" @onclick="CloseDayModal">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -90,30 +90,30 @@
                 }
                 else if (_dayEntries.Count == 0)
                 {
-                    <p class="text-sm text-gray-400 py-2 text-center">No entries yet. Add one below.</p>
+                    <p class="text-sm text-gray-400 dark:text-gray-500 py-2 text-center">No entries yet. Add one below.</p>
                 }
                 else
                 {
                     @foreach (var entry in _dayEntries)
                     {
-                        <div class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
-                            <span class="flex-1 text-sm text-gray-800">@entry.Project</span>
-                            <span class="text-sm font-medium text-gray-500 shrink-0">@entry.Hours h</span>
-                            <button class="text-xs text-gray-400 hover:text-indigo-600 transition-colors shrink-0" @onclick="StartEdit(entry)">Edit</button>
-                            <button class="text-xs text-gray-400 hover:text-red-600 transition-colors shrink-0" @onclick="DeleteEntry(entry.Id)">Delete</button>
+                        <div class="flex items-center gap-3 py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                            <span class="flex-1 text-sm text-gray-800 dark:text-gray-200">@entry.Project</span>
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400 shrink-0">@entry.Hours h</span>
+                            <button class="text-xs text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shrink-0" @onclick="StartEdit(entry)">Edit</button>
+                            <button class="text-xs text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors shrink-0" @onclick="DeleteEntry(entry.Id)">Delete</button>
                         </div>
                     }
                 }
             </div>
 
             <!-- Add / Edit form -->
-            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-lg">
-                <p class="text-xs font-medium text-gray-500 mb-3">
+            <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
+                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3">
                     @(_editingEntry is null ? "New entry" : $"Editing: {_editingEntry.Project}")
                 </p>
                 @if (!string.IsNullOrEmpty(_formError))
                 {
-                    <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_formError</div>
+                    <div class="mb-3 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-3 py-2 text-sm text-red-700 dark:text-red-400">@_formError</div>
                 }
                 <div class="flex gap-2">
                     <input @bind="_formProject" class="form-input flex-1" placeholder="Project name" />
@@ -282,9 +282,9 @@
     private string GetCellClass(DateOnly date, TimeSheetSummaryDayResponse? summary)
     {
         if (summary is not null)
-            return "h-12 md:h-16 rounded border flex flex-col items-center justify-center p-1 overflow-hidden transition-all cursor-pointer bg-green-50 border-green-200 text-green-800 hover:bg-green-100 hover:shadow-sm";
+            return "h-12 md:h-16 rounded border flex flex-col items-center justify-center p-1 overflow-hidden transition-all cursor-pointer bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40 hover:shadow-sm";
         if (IsSos(date, summary))
-            return "h-12 md:h-16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:shadow-sm";
-        return "h-12 md:h-16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:shadow-sm";
+            return "h-12 md:h-16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:shadow-sm";
+        return "h-12 md:h-16 rounded border flex flex-col items-center justify-center p-1 transition-all cursor-pointer bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm";
     }
 }

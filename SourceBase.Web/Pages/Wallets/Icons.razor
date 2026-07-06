@@ -4,13 +4,13 @@
 
 @if (!string.IsNullOrEmpty(_error))
 {
-    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+    <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
 }
 
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Icons</h1>
-        <div class="text-sm text-gray-500 mt-1">Browse and manage icons for wallets and categories.</div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Icons</h1>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Browse and manage icons for wallets and categories.</div>
     </div>
     <button class="btn-primary self-start sm:self-auto" @onclick="OpenCreateIcon">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,26 +29,26 @@ else
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <section class="card">
             <div class="flex items-center justify-between gap-3 mb-4">
-                <h2 class="text-lg font-semibold text-gray-900">Wallet Icons</h2>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Wallet Icons</h2>
                 <span class="badge-blue">@WalletIcons.Count</span>
             </div>
             @if (WalletIcons.Count == 0)
             {
-                <div class="text-sm text-gray-400 py-6 text-center">No wallet icons yet.</div>
+                <div class="text-sm text-gray-400 dark:text-gray-500 py-6 text-center">No wallet icons yet.</div>
             }
             else
             {
                 <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
                     @foreach (var icon in WalletIcons)
                     {
-                        <div class="relative group flex flex-col items-center gap-1 rounded-lg border border-gray-100 p-2 hover:border-gray-300 transition-colors">
-                            <div class="w-10 h-10 flex items-center justify-center text-gray-700">
+                        <div class="relative group flex flex-col items-center gap-1 rounded-lg border border-gray-100 dark:border-gray-700 p-2 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+                            <div class="w-10 h-10 flex items-center justify-center text-gray-700 dark:text-gray-200">
                                 @RenderIconDisplay(icon.Value)
                             </div>
-                            <span class="text-xs text-gray-500 text-center leading-tight truncate w-full text-center">@icon.Name</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 text-center leading-tight truncate w-full text-center">@icon.Name</span>
                             @if (icon.IsSystem)
                             {
-                                <span class="absolute top-1 right-1 text-gray-300" title="System icon">
+                                <span class="absolute top-1 right-1 text-gray-300 dark:text-gray-500" title="System icon">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 10-8 0v4h8z" />
                                     </svg>
@@ -57,12 +57,12 @@ else
                             else
                             {
                                 <div class="absolute top-1 right-1 hidden group-hover:flex gap-0.5">
-                                    <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEditIcon(icon)" title="Edit">
+                                    <button class="text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" @onclick="OpenEditIcon(icon)" title="Edit">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDeleteIcon(icon)" title="Delete">
+                                    <button class="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors" @onclick="ConfirmDeleteIcon(icon)" title="Delete">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -77,26 +77,26 @@ else
 
         <section class="card">
             <div class="flex items-center justify-between gap-3 mb-4">
-                <h2 class="text-lg font-semibold text-gray-900">Category Icons</h2>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Category Icons</h2>
                 <span class="badge-green">@CategoryIcons.Count</span>
             </div>
             @if (CategoryIcons.Count == 0)
             {
-                <div class="text-sm text-gray-400 py-6 text-center">No category icons yet.</div>
+                <div class="text-sm text-gray-400 dark:text-gray-500 py-6 text-center">No category icons yet.</div>
             }
             else
             {
                 <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
                     @foreach (var icon in CategoryIcons)
                     {
-                        <div class="relative group flex flex-col items-center gap-1 rounded-lg border border-gray-100 p-2 hover:border-gray-300 transition-colors">
-                            <div class="w-10 h-10 flex items-center justify-center text-gray-700">
+                        <div class="relative group flex flex-col items-center gap-1 rounded-lg border border-gray-100 dark:border-gray-700 p-2 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+                            <div class="w-10 h-10 flex items-center justify-center text-gray-700 dark:text-gray-200">
                                 @RenderIconDisplay(icon.Value)
                             </div>
-                            <span class="text-xs text-gray-500 text-center leading-tight truncate w-full text-center">@icon.Name</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 text-center leading-tight truncate w-full text-center">@icon.Name</span>
                             @if (icon.IsSystem)
                             {
-                                <span class="absolute top-1 right-1 text-gray-300" title="System icon">
+                                <span class="absolute top-1 right-1 text-gray-300 dark:text-gray-500" title="System icon">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 10-8 0v4h8z" />
                                     </svg>
@@ -105,12 +105,12 @@ else
                             else
                             {
                                 <div class="absolute top-1 right-1 hidden group-hover:flex gap-0.5">
-                                    <button class="text-gray-400 hover:text-indigo-600 transition-colors" @onclick="OpenEditIcon(icon)" title="Edit">
+                                    <button class="text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" @onclick="OpenEditIcon(icon)" title="Edit">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    <button class="text-gray-400 hover:text-red-600 transition-colors" @onclick="ConfirmDeleteIcon(icon)" title="Delete">
+                                    <button class="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors" @onclick="ConfirmDeleteIcon(icon)" title="Delete">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -129,11 +129,11 @@ else
 {
     <div class="fixed inset-0 z-40 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" @onclick="CloseIconForm"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 overflow-y-auto" style="max-height:90vh">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingIcon is null ? "Add Icon" : "Edit Icon")</h2>
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 overflow-y-auto" style="max-height:90vh">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">@(_editingIcon is null ? "Add Icon" : "Edit Icon")</h2>
             @if (!string.IsNullOrEmpty(_formError))
             {
-                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_formError</div>
+                <div class="mb-3 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-3 py-2 text-sm text-red-700 dark:text-red-400">@_formError</div>
             }
             <div class="space-y-4">
                 <div>
@@ -151,9 +151,9 @@ else
                 <div>
                     <label class="form-label">Icon Value</label>
                     <div class="flex gap-2 mb-2">
-                        <button type="button" class="text-xs px-2 py-1 rounded border @(_inputMode == "emoji" ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-gray-300 text-gray-600 hover:border-gray-400")" @onclick="SetModeEmoji">Emoji</button>
-                        <button type="button" class="text-xs px-2 py-1 rounded border @(_inputMode == "svg" ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-gray-300 text-gray-600 hover:border-gray-400")" @onclick="SetModeSvg">SVG Path</button>
-                        <button type="button" class="text-xs px-2 py-1 rounded border @(_inputMode == "image" ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-gray-300 text-gray-600 hover:border-gray-400")" @onclick="SetModeImage">Image Upload</button>
+                        <button type="button" class="text-xs px-2 py-1 rounded border @(_inputMode == "emoji" ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400" : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500")" @onclick="SetModeEmoji">Emoji</button>
+                        <button type="button" class="text-xs px-2 py-1 rounded border @(_inputMode == "svg" ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400" : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500")" @onclick="SetModeSvg">SVG Path</button>
+                        <button type="button" class="text-xs px-2 py-1 rounded border @(_inputMode == "image" ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400" : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500")" @onclick="SetModeImage">Image Upload</button>
                     </div>
                     @if (_inputMode == "emoji")
                     {
@@ -162,28 +162,28 @@ else
                     else if (_inputMode == "svg")
                     {
                         <textarea @bind="_iconValue" class="form-input font-mono text-xs" rows="4" placeholder="<path stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; stroke-width=&quot;2&quot; d=&quot;M...&quot; />"></textarea>
-                        <div class="text-xs text-gray-400 mt-1">Paste the <code>&lt;path&gt;</code> content from a 24×24 SVG (e.g. Heroicons).</div>
+                        <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Paste the <code>&lt;path&gt;</code> content from a 24×24 SVG (e.g. Heroicons).</div>
                     }
                     else
                     {
                         @if (_uploadingImage)
                         {
-                            <div class="text-sm text-gray-500 py-2">Uploading…</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400 py-2">Uploading…</div>
                         }
                         else
                         {
-                            <InputFile OnChange="HandleImageUpload" accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml" class="block w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-gray-300 file:text-sm file:bg-white file:text-gray-700 hover:file:border-gray-400" />
+                            <InputFile OnChange="HandleImageUpload" accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml" class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-gray-300 dark:file:border-gray-600 file:text-sm file:bg-white dark:file:bg-gray-800 file:text-gray-700 dark:file:text-gray-200 hover:file:border-gray-400 dark:hover:file:border-gray-500" />
                         }
                         @if (!string.IsNullOrEmpty(_iconValue) && _iconValue.StartsWith("http"))
                         {
-                            <div class="mt-2 text-xs text-gray-500 truncate">@_iconValue</div>
+                            <div class="mt-2 text-xs text-gray-500 dark:text-gray-400 truncate">@_iconValue</div>
                         }
                     }
                     @if (!string.IsNullOrEmpty(_iconValue))
                     {
                         <div class="mt-3 flex items-center gap-3">
-                            <span class="text-xs text-gray-500">Preview:</span>
-                            <div class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-700">
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Preview:</span>
+                            <div class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
                                 @RenderIconDisplay(_iconValue)
                             </div>
                         </div>

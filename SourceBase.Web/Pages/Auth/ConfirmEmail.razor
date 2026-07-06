@@ -5,18 +5,18 @@
 @inject ApiHttpClient Api
 @inject IJSRuntime JS
 
-<h2 class="text-xl font-semibold text-gray-900 mb-2">Check your email</h2>
-<p class="text-sm text-gray-500 mb-6">
+<h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Check your email</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
     Enter the 6-digit code sent to <strong>@Email</strong>
 </p>
 
 @if (_success)
 {
-    <div class="rounded-md bg-green-50 border border-green-200 px-4 py-4 text-sm text-green-700">
+    <div class="rounded-md bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 px-4 py-4 text-sm text-green-700 dark:text-green-400">
         <p class="font-medium">Email confirmed successfully!</p>
         <p class="mt-1">Your account is now active. You can sign in.</p>
         <div class="mt-3">
-            <a href="/login" class="text-indigo-600 hover:text-indigo-500 font-medium">Sign in →</a>
+            <a href="/login" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">Sign in →</a>
         </div>
     </div>
 }
@@ -24,7 +24,7 @@ else
 {
     @if (!string.IsNullOrEmpty(_error))
     {
-        <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+        <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
     }
 
     <div class="flex justify-center gap-2 mb-6" @ref="_container">
@@ -40,7 +40,7 @@ else
                 @oninput="HandleInput(idx)"
                 @onkeydown="HandleKeyDown(idx)"
                 @ref="_inputs[idx]"
-                class="w-11 h-14 text-center text-xl font-semibold border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+                class="w-11 h-14 text-center text-xl font-semibold border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
         }
     </div>
 
@@ -49,7 +49,7 @@ else
     </button>
 
     <div class="mt-4 text-center">
-        <a href="/login" class="text-sm text-indigo-600 hover:text-indigo-500">← Back to sign in</a>
+        <a href="/login" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">← Back to sign in</a>
     </div>
 }
 

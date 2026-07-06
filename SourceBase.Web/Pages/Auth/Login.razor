@@ -5,11 +5,11 @@
 @inject BlazorAuthStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 
-<h2 class="text-xl font-semibold text-gray-900 mb-6">Sign in to your account</h2>
+<h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Sign in to your account</h2>
 
 @if (!string.IsNullOrEmpty(_error))
 {
-    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+    <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
 }
 
 <EditForm Model="_model" OnValidSubmit="SubmitAsync">
@@ -37,8 +37,8 @@
 </EditForm>
 
 <div class="mt-4 flex flex-col gap-2 text-center text-sm">
-    <a href="/forgot-password" class="text-indigo-600 hover:text-indigo-500">Forgot your password?</a>
-    <span class="text-gray-500">No account? <a href="/register" class="text-indigo-600 hover:text-indigo-500">Sign
+    <a href="/forgot-password" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">Forgot your password?</a>
+    <span class="text-gray-500 dark:text-gray-400">No account? <a href="/register" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">Sign
         up</a></span>
     </div>
 
