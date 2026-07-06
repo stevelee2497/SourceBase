@@ -8,15 +8,15 @@
 {
     <div class="mb-5">
         <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Quick Log</span>
-            <a href="/habit-logs/habits" class="text-xs text-indigo-500 hover:text-indigo-700">Manage habits</a>
+            <span class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Quick Log</span>
+            <a href="/habit-logs/habits" class="text-xs text-indigo-500 dark:text-indigo-400 hover:text-indigo-700">Manage habits</a>
         </div>
         <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
             @foreach (var habit in _habits)
             {
-                <button class="flex flex-col items-center justify-center gap-1.5 lg:gap-3 px-2 py-3 lg:py-7 md:px-4 rounded-2xl border border-gray-200 bg-white hover:border-indigo-400 hover:bg-indigo-50 transition-colors disabled:opacity-50 w-full" @onclick="LogHabit(habit)" disabled="@_loggingHabitId.HasValue" title="Log @habit.Name">
+                <button class="flex flex-col items-center justify-center gap-1.5 lg:gap-3 px-2 py-3 lg:py-7 md:px-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50 w-full" @onclick="LogHabit(habit)" disabled="@_loggingHabitId.HasValue" title="Log @habit.Name">
                     <span class="text-2xl md:text-5xl leading-none">@HabitIcon(habit.Icon)</span>
-                    <span class="text-[11px] md:text-base font-semibold text-gray-700 text-center line-clamp-2 leading-tight">@habit.Name</span>
+                    <span class="text-[11px] md:text-base font-semibold text-gray-700 dark:text-gray-200 text-center line-clamp-2 leading-tight">@habit.Name</span>
                 </button>
             }
         </div>
@@ -24,14 +24,14 @@
 }
 else if (!_loading && _habitsLoaded)
 {
-    <div class="mb-5 p-3 rounded-xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
-        No habits configured. <a href="/habit-logs/habits" class="text-indigo-500 hover:underline">Add some habits</a> to enable quick logging.
+    <div class="mb-5 p-3 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 text-center text-sm text-gray-400 dark:text-gray-500">
+        No habits configured. <a href="/habit-logs/habits" class="text-indigo-500 dark:text-indigo-400 hover:underline">Add some habits</a> to enable quick logging.
     </div>
 }
 
 <!-- Header -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-    <h1 class="text-xl font-bold text-gray-900">Habit Logs</h1>
+    <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">Habit Logs</h1>
     <div class="flex items-center gap-2">
         @if (_weekOffset != 0)
         {
@@ -42,7 +42,7 @@ else if (!_loading && _habitsLoaded)
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
         </button>
-        <span class="text-sm font-medium text-gray-700 whitespace-nowrap min-w-40 text-center">@WeekRangeLabel()</span>
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap min-w-40 text-center">@WeekRangeLabel()</span>
         <button class="btn-secondary btn-sm" @onclick="NextWeek" title="Next week">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -57,36 +57,36 @@ else if (!_loading && _habitsLoaded)
 }
 else if (_error is not null)
 {
-    <div class="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+    <div class="rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
 }
 else
 {
     <!-- Calendar — 30-min time-block grid, always shows 7 days -->
-    <div class="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         <div id="@GridScrollId" class="max-h-[70vh] overflow-y-auto">
 
             <!-- Day header row -->
-            <div class="grid grid-cols-[32px_repeat(7,1fr)] bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                <div class="border-r border-gray-200"></div>
+            <div class="grid grid-cols-[32px_repeat(7,1fr)] bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+                <div class="border-r border-gray-200 dark:border-gray-700"></div>
                 @for (var d = 0; d < 7; d++)
                 {
                     var day = WeekStart.AddDays(d);
                     var isToday = day.Date == DateTime.Today;
-                    <div class="flex flex-col items-center justify-center py-1.5 border-r last:border-r-0 border-gray-200 @(isToday ? "bg-indigo-50" : "")">
-                        <span class="text-[9px] font-semibold uppercase tracking-wide @(isToday ? "text-indigo-500" : "text-gray-400")">@day.ToString("ddd")</span>
-                        <span class="text-xs font-bold mt-0.5 @(isToday ? "text-indigo-700" : "text-gray-700")">@day.Day</span>
+                    <div class="flex flex-col items-center justify-center py-1.5 border-r last:border-r-0 border-gray-200 dark:border-gray-700 @(isToday ? "bg-indigo-50 dark:bg-indigo-900/30" : "")">
+                        <span class="text-[9px] font-semibold uppercase tracking-wide @(isToday ? "text-indigo-500 dark:text-indigo-400" : "text-gray-400 dark:text-gray-500")">@day.ToString("ddd")</span>
+                        <span class="text-xs font-bold mt-0.5 @(isToday ? "text-indigo-700 dark:text-indigo-400" : "text-gray-700 dark:text-gray-200")">@day.Day</span>
                     </div>
                 }
             </div>
 
             <!-- Time rows: one row per 30-min slot -->
-            <div class="bg-white">
+            <div class="bg-white dark:bg-gray-800">
                 @for (var slot = 0; slot < SlotsPerDay; slot++)
                 {
                     var slotIndex = slot;
                     var isHour = slotIndex % 2 == 0;
-                    <div id="@(slotIndex == DefaultStartSlot ? DefaultStartRowId : null)" class="grid grid-cols-[32px_repeat(7,1fr)] @(isHour ? "border-t border-gray-200" : "border-t border-gray-100")">
-                        <div class="flex items-start justify-end pr-0.5 pt-0.5 border-r border-gray-200 text-[8px] text-gray-400 select-none leading-none">
+                    <div id="@(slotIndex == DefaultStartSlot ? DefaultStartRowId : null)" class="grid grid-cols-[32px_repeat(7,1fr)] @(isHour ? "border-t border-gray-200 dark:border-gray-700" : "border-t border-gray-100 dark:border-gray-700/50")">
+                        <div class="flex items-start justify-end pr-0.5 pt-0.5 border-r border-gray-200 dark:border-gray-700 text-[8px] text-gray-400 dark:text-gray-500 select-none leading-none">
                             @if (isHour)
                             {
                                 @SlotLabel(slotIndex)
@@ -97,7 +97,7 @@ else
                             var day = WeekStart.AddDays(d);
                             var isToday = day.Date == DateTime.Today;
                             var entries = LogsForSlot(day, slotIndex);
-                            <div class="min-h-6 px-0.5 py-0.5 border-r last:border-r-0 border-gray-100 @(isToday ? "bg-indigo-50/20" : "")">
+                            <div class="min-h-6 px-0.5 py-0.5 border-r last:border-r-0 border-gray-100 dark:border-gray-700/50 @(isToday ? "bg-indigo-50/20 dark:bg-indigo-900/20" : "")">
                                 <div class="flex flex-wrap gap-0.5">
                                     @foreach (var log in entries.Where(l => l.Action == "HabitStarted"))
                                     {
@@ -118,17 +118,17 @@ else
         <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2">
             @foreach (var g in _logs.GroupBy(l => l.Action).OrderBy(g => g.Key))
             {
-                <div class="flex items-center gap-1.5 text-xs text-gray-500">
+                <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                     <span class="w-2.5 h-2.5 rounded-sm shrink-0 @LegendDotClass(g.Key)"></span>
-                    @ActionGroupLabel(g.Key) — <strong class="text-gray-800 ml-0.5">@g.Count()</strong>
+                    @ActionGroupLabel(g.Key) — <strong class="text-gray-800 dark:text-gray-200 ml-0.5">@g.Count()</strong>
                 </div>
             }
-            <div class="flex items-center gap-1.5 text-xs text-gray-400 ml-auto">Total: <strong class="text-gray-700">@_logs.Count</strong></div>
+            <div class="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 ml-auto">Total: <strong class="text-gray-700 dark:text-gray-200">@_logs.Count</strong></div>
         </div>
     }
     else
     {
-        <div class="mt-4 text-center text-sm text-gray-400">No habit logs for this week.</div>
+        <div class="mt-4 text-center text-sm text-gray-400 dark:text-gray-500">No habit logs for this week.</div>
     }
 }
 
@@ -245,11 +245,11 @@ else
 
     private static string EntryClass(string action) => action switch
     {
-        "HabitStarted" => "bg-emerald-50 border-emerald-200 text-emerald-800",
-        "Dismissed" => "bg-gray-50 border-gray-200 text-gray-500",
-        "Snoozed" => "bg-amber-50 border-amber-200 text-amber-800",
-        "SuppressedVideo" => "bg-violet-50 border-violet-200 text-violet-700",
-        _ => "bg-gray-50 border-gray-200 text-gray-500",
+        "HabitStarted" => "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-300",
+        "Dismissed" => "bg-gray-50 border-gray-200 text-gray-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400",
+        "Snoozed" => "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-300",
+        "SuppressedVideo" => "bg-violet-50 border-violet-200 text-violet-700 dark:bg-violet-900/30 dark:border-violet-800 dark:text-violet-300",
+        _ => "bg-gray-50 border-gray-200 text-gray-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400",
     };
 
     private static string LegendDotClass(string action) => action switch

@@ -4,65 +4,65 @@
 @inject ApiHttpClient Api
 
 <!-- Overall section -->
-<h2 class="text-base font-semibold text-blue-800 mb-2">Overall</h2>
+<h2 class="text-base font-semibold text-blue-800 dark:text-blue-400 mb-2">Overall</h2>
 <!-- Overview row -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-2 md:mb-4">
     <!-- Log time status -->
     <div class="card flex flex-col justify-between gap-0 p-2 md:p-4">
-        <div class="text-sm font-medium text-gray-500">Log Time</div>
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Log Time</div>
         @if (_statsLoading)
         {
-            <div class="text-sm text-gray-400">Loading…</div>
+            <div class="text-sm text-gray-400 dark:text-gray-500">Loading…</div>
         }
         else
         {
             <div class="flex items-center gap-2 justify-center">
                 <div class="w-3 h-3 rounded-full shrink-0 @(_stats?.AllLogged == true ? "bg-green-500" : "bg-red-500")"></div>
-                <span class="text-base md:text-lg font-semibold @(_stats?.AllLogged == true ? "text-green-700" : "text-red-700")">@(_stats?.AllLogged == true ? "Logged" : "Not logged")</span>
+                <span class="text-base md:text-lg font-semibold @(_stats?.AllLogged == true ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400")">@(_stats?.AllLogged == true ? "Logged" : "Not logged")</span>
             </div>
-            <div class="text-xs text-right text-gray-400">@(_stats?.LogTimeDetail)</div>
+            <div class="text-xs text-right text-gray-400 dark:text-gray-500">@(_stats?.LogTimeDetail)</div>
         }
     </div>
 
     <!-- Total users (admin only) -->
     <AuthorizeView Roles="Admin">
         <div class="card flex flex-col justify-between gap-0 p-2 md:p-4">
-            <div class="text-sm font-medium text-gray-500">Total Users</div>
-            <div class="text-2xl font-bold text-center text-indigo-600">@(_stats?.UserCount ?? 0)</div>
-            <a href="/users" class="text-xs text-right text-indigo-500 hover:text-indigo-700">Manage</a>
+            <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</div>
+            <div class="text-2xl font-bold text-center text-indigo-600 dark:text-indigo-400">@(_stats?.UserCount ?? 0)</div>
+            <a href="/users" class="text-xs text-right text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">Manage</a>
         </div>
     </AuthorizeView>
 
     <!-- Total balance -->
     <div class="card flex flex-col gap-0 p-2 md:p-4">
-        <div class="text-sm font-medium text-gray-500">Total Balance</div>
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Balance</div>
         @if (_statsLoading)
         {
-            <div class="text-sm text-gray-400">Loading…</div>
+            <div class="text-sm text-gray-400 dark:text-gray-500">Loading…</div>
         }
         else
         {
-            <div class="text-md md:text-lg text-center font-bold text-green-600 mt-1 md:mt-4">@FormatAmount(_stats?.TotalBalance ?? 0)</div>
+            <div class="text-md md:text-lg text-center font-bold text-green-600 dark:text-green-400 mt-1 md:mt-4">@FormatAmount(_stats?.TotalBalance ?? 0)</div>
         }
     </div>
 
     <!-- Monthly income / expense -->
     <div class="card flex flex-col gap-2 p-2 md:p-4">
-        <div class="text-sm font-medium text-gray-500">This Month</div>
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">This Month</div>
         @if (_statsLoading)
         {
-            <div class="text-sm text-gray-400">Loading…</div>
+            <div class="text-sm text-gray-400 dark:text-gray-500">Loading…</div>
         }
         else
         {
             <div class="flex flex-col gap-1">
                 <div class="flex justify-between items-center">
-                    <span class="text-xs text-gray-500">Income</span>
-                    <span class="text-xs md:text-base font-semibold text-green-600">+@FormatAmount(_stats?.MonthlyIncome ?? 0)</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Income</span>
+                    <span class="text-xs md:text-base font-semibold text-green-600 dark:text-green-400">+@FormatAmount(_stats?.MonthlyIncome ?? 0)</span>
                 </div>
                 <div class="flex justify-between items-center">
-                    <span class="text-xs text-gray-500">Expenses</span>
-                    <span class="text-xs md:text-base font-semibold text-red-600">-@FormatAmount(_stats?.MonthlyExpense ?? 0)</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Expenses</span>
+                    <span class="text-xs md:text-base font-semibold text-red-600 dark:text-red-400">-@FormatAmount(_stats?.MonthlyExpense ?? 0)</span>
                 </div>
             </div>
         }
@@ -70,16 +70,16 @@
 </div>
 
 <!-- Habits section -->
-<a href="/habit-logs" class="block text-base font-semibold text-blue-800 mb-2 hover:text-indigo-600 transition-colors mt-4">Habits</a>
+<a href="/habit-logs" class="block text-base font-semibold text-blue-800 dark:text-blue-400 mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mt-4">Habits</a>
 <!-- Habits cards row -->
 <div class="grid grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
     @if (_habitsLoading)
     {
-        <div class="col-span-4 lg:col-span-5 text-sm text-gray-400">Loading…</div>
+        <div class="col-span-4 lg:col-span-5 text-sm text-gray-400 dark:text-gray-500">Loading…</div>
     }
     else if (_habits.Count == 0)
     {
-        <div class="col-span-4 lg:col-span-5 text-sm text-gray-400 py-2">No habits yet.</div>
+        <div class="col-span-4 lg:col-span-5 text-sm text-gray-400 dark:text-gray-500 py-2">No habits yet.</div>
     }
     else
     {
@@ -88,11 +88,11 @@
             var habit = _habits[i];
             var cardText = HabitCardTextColors[i % HabitCardTextColors.Length];
             <button class="flex flex-col items-center gap-1 hover:opacity-75 transition-opacity disabled:opacity-50" @onclick="LogHabit(habit)" disabled="@_loggingHabitId.HasValue" title="Log @habit.Name">
-                <div class="w-9 h-9 md:w-14 md:h-14 rounded-full bg-white/70 flex items-center justify-center text-xl md:text-3xl shrink-0">
+                <div class="w-9 h-9 md:w-14 md:h-14 rounded-full bg-white/70 dark:bg-gray-800/70 flex items-center justify-center text-xl md:text-3xl shrink-0">
                     @(string.IsNullOrEmpty(habit.Icon) ? "💪" : habit.Icon)
                 </div>
                 <div class="flex items-center justify-center gap-1 w-full min-w-0">
-                    <span class="text-xs md:text-lg font-medium text-center @cardText truncate">@habit.LogCount @habit.Name.ToLower()</span>
+                    <span class="text-xs md:text-lg font-medium text-center @cardText truncate"> @habit.LogCount @habit.Name.ToLower() </span>
                 </div>
             </button>
         }
@@ -100,7 +100,7 @@
 </div>
 
 <!-- Gold section -->
-<a href="/gold-prices" class="block text-base font-semibold text-blue-800 mb-2 hover:text-indigo-600 transition-colors mt-4">Gold</a>
+<a href="/gold-prices" class="block text-base font-semibold text-blue-800 dark:text-blue-400 mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mt-4">Gold</a>
 <!-- Gold price status row -->
 <div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
     @foreach (var source in GoldSources)
@@ -110,20 +110,20 @@
         <div class="card p-2 md:p-4 flex flex-col gap-0 md:gap-2 @GetGoldSourceCardClass(source)">
             <div class="flex items-center justify-between gap-1">
                 <span class="text-xs md:text-base font-bold truncate @GetGoldSourceBadgeClass(source)">@GetGoldSourceDisplayName(source)</span>
-                <span class="text-[10px] text-right @(live ? "text-green-700" : "text-red-700")">@(live ? "🟢" : "🔴")</span>
+                <span class="text-[10px] text-right @(live ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400")">@(live ? "🟢" : "🔴")</span>
             </div>
             @if (_goldPricesLoading)
             {
-                <div class="text-sm text-gray-400">Loading…</div>
+                <div class="text-sm text-gray-400 dark:text-gray-500">Loading…</div>
             }
             else if (record is null)
             {
-                <div class="text-sm text-gray-400">No data</div>
+                <div class="text-sm text-gray-400 dark:text-gray-500">No data</div>
             }
             else
             {
-                <div class="text-sm md:text-2xl text-center font-bold text-emerald-600">@FormatAmount(@record.SellPrice)</div>
-                <div class="text-[11px] md:text-md font-semibold text-right text-red-600">@FormatAmount(@record.BuyPrice)</div>
+                <div class="text-sm md:text-2xl text-center font-bold text-emerald-600 dark:text-emerald-400">@FormatAmount(@record.SellPrice)</div>
+                <div class="text-[11px] md:text-md font-semibold text-right text-red-600 dark:text-red-400">@FormatAmount(@record.BuyPrice)</div>
             }
         </div>
     }
@@ -133,7 +133,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4">
     <div class="flex flex-col">
         <!-- Left: Wallets distribution -->
-        <a href="/wallets" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4 mb-2">Wallets</a>
+        <a href="/wallets" class="block text-base font-semibold text-blue-800 dark:text-blue-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mt-4 mb-2">Wallets</a>
         <div class="card flex flex-col gap-2 p-2 md:p-4 flex-1">
 
             @if (_walletsLoading)
@@ -143,7 +143,7 @@
             else if (_wallets is null || _wallets.Wallets.Count == 0)
             {
                 <div class="py-6 text-center">
-                    <div class="text-sm text-gray-400 mb-2">No wallets yet.</div>
+                    <div class="text-sm text-gray-400 dark:text-gray-500 mb-2">No wallets yet.</div>
                     <a href="/wallets" class="btn-primary btn-sm">Create Wallet</a>
                 </div>
             }
@@ -184,14 +184,14 @@
                             var wallet = _wallets.Wallets.FirstOrDefault(w => w.Name == slice.Name);
                             <div class="flex items-center gap-1.5 text-sm">
                                 <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: @slice.Color"></div>
-                                <span class="text-gray-700 font-medium">@slice.Name</span>
-                                <span class="text-gray-500">@FormatAmount(wallet?.Balance ?? 0)</span>
+                                <span class="text-gray-700 dark:text-gray-200 font-medium">@slice.Name</span>
+                                <span class="text-gray-500 dark:text-gray-400">@FormatAmount(wallet?.Balance ?? 0)</span>
                             </div>
                         }
                     </div>
-                    <div class="flex items-center justify-center gap-1.5 pt-1 border-t border-gray-100">
-                        <span class="text-sm text-gray-500 mt-3">Total</span>
-                        <span class="text-sm font-semibold text-gray-800 mt-3">@FormatAmount(_wallets.TotalBalance)</span>
+                    <div class="flex items-center justify-center gap-1.5 pt-1 border-t border-gray-100 dark:border-gray-700">
+                        <span class="text-sm text-gray-500 dark:text-gray-400 mt-3">Total</span>
+                        <span class="text-sm font-semibold text-gray-800 dark:text-gray-200 mt-3">@FormatAmount(_wallets.TotalBalance)</span>
                     </div>
                 </div>
             }
@@ -199,7 +199,7 @@
     </div>
     <div class="flex flex-col">
         <!-- Right: Default todo list -->
-        <a href="/todos" class="block text-base font-semibold text-blue-800 hover:text-indigo-600 transition-colors mt-4 mb-2">Todo</a>
+        <a href="/todos" class="block text-base font-semibold text-blue-800 dark:text-blue-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mt-4 mb-2">Todo</a>
         <div class="card flex flex-col gap-2 py-1 px-2 flex-1">
 
             @if (_todosLoading)
@@ -209,7 +209,7 @@
             else if (Auth.UserInfo?.DefaultTodoListId is null)
             {
                 <div class="py-6 text-center">
-                    <div class="text-sm text-gray-400 mb-2">No default list set.</div>
+                    <div class="text-sm text-gray-400 dark:text-gray-500 mb-2">No default list set.</div>
                     <a href="/todos" class="btn-primary btn-sm">Go to Todos to star a list</a>
                 </div>
             }
@@ -217,7 +217,7 @@
             {
                 @if (_defaultTodos.Count == 0)
                 {
-                    <div class="text-sm text-gray-400 text-center py-4">No open todos in this list.</div>
+                    <div class="text-sm text-gray-400 dark:text-gray-500 text-center py-4">No open todos in this list.</div>
                 }
                 else
                 {
@@ -226,21 +226,21 @@
                         {
                             @if (index > 0)
                             {
-                                <div class="border-t border-gray-100"></div>
+                                <div class="border-t border-gray-100 dark:border-gray-700"></div>
                             }
                             <div class="flex items-center gap-3 ml-2 py-2">
-                                <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 hover:border-green-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoDone(todo)" title="Mark complete">
+                                <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 dark:border-gray-600 hover:border-green-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoDone(todo)" title="Mark complete">
                                 </button>
                                 <div class="flex-1 min-w-0">
-                                    <div class="text-sm text-gray-800 truncate">@todo.Title</div>
-                                    <div class="text-xs text-gray-400">@todo.Date</div>
+                                    <div class="text-sm text-gray-800 dark:text-gray-200 truncate">@todo.Title</div>
+                                    <div class="text-xs text-gray-400 dark:text-gray-500">@todo.Date</div>
                                 </div>
                             </div>
                         }
                     </div>
                     @if (_defaultTodos.Count > 10)
                     {
-                        <a href="/todos" class="text-xs text-indigo-500 hover:text-indigo-700">+@(_defaultTodos.Count - 10) more →</a>
+                        <a href="/todos" class="text-xs text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">+@(_defaultTodos.Count - 10) more →</a>
                     }
                 }
             }
@@ -265,7 +265,7 @@
     private bool _habitsLoading = true;
     private Guid? _loggingHabitId;
 
-    private static readonly string[] HabitCardTextColors = ["text-indigo-700", "text-amber-700", "text-green-700", "text-rose-700", "text-purple-700", "text-teal-700", "text-blue-700", "text-orange-700"];
+    private static readonly string[] HabitCardTextColors = ["text-indigo-700 dark:text-indigo-400", "text-amber-700 dark:text-amber-400", "text-green-700 dark:text-green-400", "text-rose-700 dark:text-rose-400", "text-purple-700 dark:text-purple-400", "text-teal-700 dark:text-teal-400", "text-blue-700 dark:text-blue-400", "text-orange-700 dark:text-orange-400"];
 
     private static readonly string[] PieColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#a855f7"];
 
@@ -306,21 +306,21 @@
 
     private static string GetGoldSourceBadgeClass(string source) => source switch
     {
-        "SJC" => "text-indigo-700",
-        "PNJ" => "text-amber-700",
-        "GiaVang" => "text-green-700",
-        "KimKhanhVietHung" => "text-rose-700",
-        "NgocThinh" => "text-purple-700",
-        _ => "text-gray-700",
+        "SJC" => "text-indigo-700 dark:text-indigo-400",
+        "PNJ" => "text-amber-700 dark:text-amber-400",
+        "GiaVang" => "text-green-700 dark:text-green-400",
+        "KimKhanhVietHung" => "text-rose-700 dark:text-rose-400",
+        "NgocThinh" => "text-purple-700 dark:text-purple-400",
+        _ => "text-gray-700 dark:text-gray-300",
     };
 
     private static string GetGoldSourceCardClass(string source) => source switch
     {
-        "SJC" => "bg-indigo-50",
-        "PNJ" => "bg-amber-50",
-        "GiaVang" => "bg-green-50",
-        "KimKhanhVietHung" => "bg-rose-50",
-        "NgocThinh" => "bg-purple-50",
+        "SJC" => "bg-indigo-50 dark:bg-indigo-900/30",
+        "PNJ" => "bg-amber-50 dark:bg-amber-900/30",
+        "GiaVang" => "bg-green-50 dark:bg-green-900/30",
+        "KimKhanhVietHung" => "bg-rose-50 dark:bg-rose-900/30",
+        "NgocThinh" => "bg-purple-50 dark:bg-purple-900/30",
         _ => "",
     };
 

@@ -18,7 +18,7 @@
 
 @if (!string.IsNullOrEmpty(_error))
 {
-    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+    <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
 }
 
 @if (_loading)
@@ -29,38 +29,38 @@ else if (_data is not null)
 {
     <div class="card p-0 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-100">
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                     @foreach (var role in _data.Items)
                     {
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                             <td class="px-4 py-3">
-                                <span class="font-medium text-md text-gray-900">@role.Name</span>
+                                <span class="font-medium text-md text-gray-900 dark:text-gray-100">@role.Name</span>
                             </td>
-                            <td class="px-4 py-3 text-sm text-gray-500">@(role.Description ?? "—")</td>
+                            <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">@(role.Description ?? "—")</td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex items-center justify-end gap-3">
                                     @if (role.Name == "Admin")
                                     {
-                                        <span class="text-green-500" title="system">
+                                        <span class="text-green-500 dark:text-green-400" title="system">
                                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
                                             </svg>
                                         </span>
                                     }
-                                    <button class="text-gray-400 hover:text-indigo-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled="@(role.Name == "Admin")" @onclick="OpenEdit(role)" title="Edit">
+                                    <button class="text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled="@(role.Name == "Admin")" @onclick="OpenEdit(role)" title="Edit">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    <button class="text-gray-400 hover:text-red-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled="@(role.Name == "Admin")" @onclick="ConfirmDelete(role)" title="Delete">
+                                    <button class="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled="@(role.Name == "Admin")" @onclick="ConfirmDelete(role)" title="Delete">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -82,12 +82,12 @@ else if (_data is not null)
 {
     <div class="fixed inset-0 z-40 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" @onclick="CloseForm"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingRole is null ? "Create Role" : "Edit Role")</h2>
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">@(_editingRole is null ? "Create Role" : "Edit Role")</h2>
 
             @if (!string.IsNullOrEmpty(_formError))
             {
-                <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_formError</div>
+                <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_formError</div>
             }
 
             <div class="space-y-4">

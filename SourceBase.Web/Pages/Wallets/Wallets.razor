@@ -4,7 +4,7 @@
 
 @if (!string.IsNullOrEmpty(_error))
 {
-    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+    <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
 }
 
 @if (_loading)
@@ -63,8 +63,8 @@ else
                             {
                                 <div class="flex items-center gap-1.5 text-xs">
                                     <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: @slice.Color"></div>
-                                    <span class="text-gray-700 font-medium">@slice.Name</span>
-                                    <span class="text-gray-400">@((slice.Fraction * 100).ToString("F1"))%</span>
+                                    <span class="text-gray-700 dark:text-gray-200 font-medium">@slice.Name</span>
+                                    <span class="text-gray-400 dark:text-gray-500">@((slice.Fraction * 100).ToString("F1"))%</span>
                                 </div>
                             }
                         </div>
@@ -72,9 +72,9 @@ else
                             var selectedWalletList = _selectedWalletIds.Count > 0 ? _wallets.Where(w => _selectedWalletIds.Contains(w.Id)).ToList() : _wallets;
                             var selectedBalance = selectedWalletList.Sum(w => w.Balance);
                         }
-                        <div class="border-t border-gray-100 w-full text-center">
-                            <div class="text-sm text-gray-400 mt-1">@(_selectedWalletIds.Count > 0 ? "Selected balance" : "Total balance")</div>
-                            <div class="text-lg font-bold text-gray-900">@FormatAmount(selectedBalance)</div>
+                        <div class="border-t border-gray-100 dark:border-gray-700 w-full text-center">
+                            <div class="text-sm text-gray-400 dark:text-gray-500 mt-1">@(_selectedWalletIds.Count > 0 ? "Selected balance" : "Total balance")</div>
+                            <div class="text-lg font-bold text-gray-900 dark:text-gray-100">@FormatAmount(selectedBalance)</div>
                         </div>
                     </div>
                 </div>
@@ -85,14 +85,14 @@ else
                 @foreach (var wallet in _wallets)
                 {
                     var isSelected = _selectedWalletIds.Contains(wallet.Id);
-                    <div class="relative rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50") cursor-pointer transition-all p-2 px-4 md:p-3 flex flex-col gap-1 md:gap-1.5" @onclick="SelectWallet(wallet.Id)">
+                    <div class="relative rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-indigo-300 hover:bg-gray-50 dark:hover:bg-gray-700") cursor-pointer transition-all p-2 px-4 md:p-3 flex flex-col gap-1 md:gap-1.5" @onclick="SelectWallet(wallet.Id)">
                         <div class="absolute top-1.5 right-1.5 flex gap-1">
-                            <button class="text-gray-400 hover:text-indigo-600" @onclick:stopPropagation @onclick="OpenEditWallet(wallet)" title="Edit">
+                            <button class="text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400" @onclick:stopPropagation @onclick="OpenEditWallet(wallet)" title="Edit">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </button>
-                            <button class="text-gray-400 hover:text-red-600" @onclick:stopPropagation @onclick="ConfirmDeleteWallet(wallet)" title="Delete">
+                            <button class="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400" @onclick:stopPropagation @onclick="ConfirmDeleteWallet(wallet)" title="Delete">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -114,11 +114,11 @@ else
                                 }
                             </span>
                         </div>
-                        <div class="text-xs font-semibold @(isSelected ? "text-indigo-700" : "text-gray-700") truncate">@wallet.Name</div>
-                        <div class="text-sm font-bold @(isSelected ? "text-indigo-700" : "text-gray-900")">@FormatAmount(wallet.Balance)</div>
+                        <div class="text-xs font-semibold @(isSelected ? "text-indigo-700 dark:text-indigo-400" : "text-gray-700 dark:text-gray-200") truncate">@wallet.Name</div>
+                        <div class="text-sm font-bold @(isSelected ? "text-indigo-700 dark:text-indigo-400" : "text-gray-900 dark:text-gray-100")">@FormatAmount(wallet.Balance)</div>
                     </div>
                 }
-                <div class="rounded-lg border-2 border-dashed border-gray-300 bg-white hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition-all p-3 flex flex-col items-center justify-center gap-1.5 text-gray-400 hover:text-indigo-500" @onclick="OpenCreateWallet">
+                <div class="rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer transition-all p-3 flex flex-col items-center justify-center gap-1.5 text-gray-400 dark:text-gray-500 hover:text-indigo-500 dark:hover:text-indigo-400" @onclick="OpenCreateWallet">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
@@ -132,29 +132,29 @@ else
                 <div>
                     @if (_selectedWalletIds.Count == 0)
                     {
-                        <h2 class="text-lg font-semibold text-gray-900">All Transactions</h2>
-                        <div class="text-sm text-gray-500">Showing transactions across all wallets</div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">All Transactions</h2>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Showing transactions across all wallets</div>
                     }
                     else if (_selectedWallet is not null)
                     {
-                        <h2 class="text-lg font-semibold text-gray-900">@_selectedWallet.Name</h2>
-                        <div class="text-sm text-gray-500">Balance: <span class="font-semibold text-gray-900">@FormatAmount(_selectedWallet.Balance) @_selectedWallet.Currency</span></div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">@_selectedWallet.Name</h2>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Balance: <span class="font-semibold text-gray-900 dark:text-gray-100">@FormatAmount(_selectedWallet.Balance) @_selectedWallet.Currency</span></div>
                     }
                     else
                     {
-                        <h2 class="text-lg font-semibold text-gray-900">Selected Wallets</h2>
-                        <div class="text-sm text-gray-500">Showing transactions for @_selectedWalletIds.Count wallets</div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Selected Wallets</h2>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Showing transactions for @_selectedWalletIds.Count wallets</div>
                     }
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-4 mb-4">
-                <div class="rounded-lg bg-green-50 px-4 py-3">
-                    <div class="text-xs text-green-600 font-medium mb-0.5">Monthly Income</div>
-                    <div class="text-xl font-bold text-green-700">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
+                <div class="rounded-lg bg-green-50 dark:bg-green-900/30 px-4 py-3">
+                    <div class="text-xs text-green-600 dark:text-green-400 font-medium mb-0.5">Monthly Income</div>
+                    <div class="text-xl font-bold text-green-700 dark:text-green-400">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
                 </div>
-                <div class="rounded-lg bg-red-50 px-4 py-3">
-                    <div class="text-xs text-red-600 font-medium mb-0.5">Monthly Expense</div>
-                    <div class="text-xl font-bold text-red-700">@FormatAmount(_summary?.TotalExpense ?? 0)</div>
+                <div class="rounded-lg bg-red-50 dark:bg-red-900/30 px-4 py-3">
+                    <div class="text-xs text-red-600 dark:text-red-400 font-medium mb-0.5">Monthly Expense</div>
+                    <div class="text-xl font-bold text-red-700 dark:text-red-400">@FormatAmount(_summary?.TotalExpense ?? 0)</div>
                 </div>
             </div>
 
@@ -208,23 +208,23 @@ else
                 }
                 else if (!_loadingTransactions && _transactions.Count == 0)
                 {
-                    <div class="text-sm text-gray-400 py-8 text-center">No transactions found.</div>
+                    <div class="text-sm text-gray-400 dark:text-gray-500 py-8 text-center">No transactions found.</div>
                 }
                 else if (_transactions.Count > 0)
                 {
                     <div class="relative">
                         @if (_loadingTransactions)
                         {
-                            <div class="absolute inset-0 z-10 flex items-start justify-center pt-10 bg-white/40 rounded">
+                            <div class="absolute inset-0 z-10 flex items-start justify-center pt-10 bg-white/40 dark:bg-gray-900/40 rounded">
                                 <LoadingSpinner />
                             </div>
                         }
-                        <div class="@(_loadingTransactions ? "blur-sm pointer-events-none select-none" : "") flex flex-col divide-y divide-gray-100">
+                        <div class="@(_loadingTransactions ? "blur-sm pointer-events-none select-none" : "") flex flex-col divide-y divide-gray-100 dark:divide-gray-700">
                             @foreach (var transaction in _transactions)
                             {
-                                <div class="py-2 flex flex-col sm:flex-row sm:items-center gap-2 @(!transaction.IsTransfer ? "cursor-pointer hover:bg-gray-50" : "")" @onclick="RowClick(transaction)">
+                                <div class="py-2 flex flex-col sm:flex-row sm:items-center gap-2 @(!transaction.IsTransfer ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" : "")" @onclick="RowClick(transaction)">
                                     <div class="flex items-center gap-3 flex-1 min-w-0">
-                                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0">
+                                        <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center text-lg shrink-0">
                                             @{
                                                 var txIcon = TransactionIcon(transaction);
                                             }
@@ -238,10 +238,10 @@ else
                                             }
                                         </div>
                                         <div class="min-w-0 flex-1">
-                                            <div class="font-medium text-gray-900 truncate">@TransactionCategoryLabel(transaction)</div>
-                                            <div class="text-sm text-gray-500 truncate flex">
+                                            <div class="font-medium text-gray-900 dark:text-gray-100 truncate">@TransactionCategoryLabel(transaction)</div>
+                                            <div class="text-sm text-gray-500 dark:text-gray-400 truncate flex">
                                                 @TransactionTitle(transaction)
-                                                <div class="ml-1 flex flex-wrap items-center gap-1 text-xs italic text-gray-400">
+                                                <div class="ml-1 flex flex-wrap items-center gap-1 text-xs italic text-gray-400 dark:text-gray-500">
                                                     <span>•</span>
                                                     <span>@FormatDisplayDate(transaction.Date)</span>
                                                     @if (transaction.IsTransfer)
@@ -269,11 +269,11 @@ else
 {
     <div class="fixed inset-0 z-40 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" @onclick="CloseWalletForm"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingWallet is null ? "Add Wallet" : "Edit Wallet")</h2>
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">@(_editingWallet is null ? "Add Wallet" : "Edit Wallet")</h2>
             @if (!string.IsNullOrEmpty(_formError))
             {
-                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_formError</div>
+                <div class="mb-3 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-3 py-2 text-sm text-red-700 dark:text-red-400">@_formError</div>
             }
             <div class="space-y-4">
                 <div>
@@ -285,7 +285,7 @@ else
                     <input @bind="_walletInitialBalance" class="form-input" type="number" step="0.01" disabled="@(_editingWallet is not null)" />
                     @if (_editingWallet is not null)
                     {
-                        <div class="text-xs text-gray-400 mt-1">Opening balance can only be set when the wallet is created.</div>
+                        <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Opening balance can only be set when the wallet is created.</div>
                     }
                 </div>
                 <div>
@@ -293,7 +293,7 @@ else
                     <input @bind="_walletCurrency" class="form-input" placeholder="USD" disabled="@(_editingWallet is not null)" />
                     @if (_editingWallet is not null)
                     {
-                        <div class="text-xs text-gray-400 mt-1">Currency can be changed in wallet settings.</div>
+                        <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Currency can be changed in wallet settings.</div>
                     }
                 </div>
                 <div>
@@ -314,11 +314,11 @@ else
 {
     <div class="fixed inset-0 z-40 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" @onclick="CloseTransactionForm"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-4 md:p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">@(_editingTransaction is null ? "Add Transaction" : "Edit Transaction")</h2>
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-4 md:p-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">@(_editingTransaction is null ? "Add Transaction" : "Edit Transaction")</h2>
             @if (!string.IsNullOrEmpty(_transactionFormError))
             {
-                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_transactionFormError</div>
+                <div class="mb-3 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-3 py-2 text-sm text-red-700 dark:text-red-400">@_transactionFormError</div>
             }
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-2">
@@ -369,11 +369,11 @@ else
 {
     <div class="fixed inset-0 z-40 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" @onclick="CloseTransferForm"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Transfer Funds</h2>
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Transfer Funds</h2>
             @if (!string.IsNullOrEmpty(_transferFormError))
             {
-                <div class="mb-3 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">@_transferFormError</div>
+                <div class="mb-3 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-3 py-2 text-sm text-red-700 dark:text-red-400">@_transferFormError</div>
             }
             <div class="space-y-4">
                 <div>
@@ -809,7 +809,7 @@ else
 
     private static string FormatAmount(decimal amount) => amount.ToString("N0");
     private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N0}" : $"-{amount:N0}";
-    private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600" : "text-red-600";
+    private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
     private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MMM") : value;
     private static string? EmptyToNull(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
     private static string? FormatDateFilter(DateOnly? value) => value?.ToString("yyyy-MM-dd");
