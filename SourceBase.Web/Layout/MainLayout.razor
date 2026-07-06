@@ -29,15 +29,12 @@
             <nav class="flex-1 flex items-center gap-1 md:gap-2 min-w-0 overflow-x-auto">
                 @foreach (var navPage in AppSettings.Pages.Where(p => TopBarUrls.Contains(p.Url)))
                 {
-                    if (navPage.Roles.Count() == 0 || navPage.Roles.Any(role => AuthStateProvider.UserInfo?.Roles.Contains(role) == true))
-                    {
-                        <NavLink href="@navPage.Url" Match="@GetNavLinkMatch(navPage.Url)" class="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors shrink-0" ActiveClass="bg-indigo-50 text-indigo-700 font-medium" title="@navPage.Title">
-                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                @((MarkupString)navPage.Icon)
-                            </svg>
-                            <span class="hidden sm:inline">@navPage.Title</span>
-                        </NavLink>
-                    }
+                    <NavLink href="@navPage.Url" Match="@GetNavLinkMatch(navPage.Url)" class="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors shrink-0" ActiveClass="bg-indigo-50 text-indigo-700 font-medium" title="@navPage.Title">
+                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            @((MarkupString)navPage.Icon)
+                        </svg>
+                        <span class="hidden sm:inline">@navPage.Title</span>
+                    </NavLink>
                 }
             </nav>
             <div class="flex items-center gap-2 md:gap-3 shrink-0">
