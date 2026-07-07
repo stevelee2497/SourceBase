@@ -135,7 +135,7 @@
 
                     @foreach (var todo in openTodos)
                     {
-                        var completing = _completingTodoIds.Contains(todo.Id);
+                        var completing = _togglingTodoIds.Contains(todo.Id);
                         <div class="card flex items-center gap-3 py-3 mb-2 transition-colors duration-300 @(completing ? "bg-green-50 dark:bg-green-900/20" : "")">
                             <button class="shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors duration-200 @(completing ? "border-green-500 bg-green-500 animate-todo-check-pop" : "border-gray-400 dark:border-gray-600 hover:border-indigo-500")" @onclick="ToggleTodoComplete(todo)" title="Mark complete" disabled="@completing">
                                 @if (completing)
@@ -173,14 +173,18 @@
                         </div>
                         @foreach (var todo in completedTodos)
                         {
-                            <div class="card flex items-center gap-3 py-3 mb-2 opacity-70">
-                                <button class="shrink-0 w-5 h-5 rounded-full border-2 border-green-500 bg-green-500 hover:bg-green-400 transition-colors flex items-center justify-center" @onclick="ToggleTodoComplete(todo)" title="Mark incomplete">
-                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                                    </svg>
+                            var uncompleting = _togglingTodoIds.Contains(todo.Id);
+                            <div class="card flex items-center gap-3 py-3 mb-2 transition-all duration-300 @(uncompleting ? "opacity-100 bg-gray-50 dark:bg-gray-800/40" : "opacity-70")">
+                                <button class="shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors duration-200 @(uncompleting ? "border-gray-400 dark:border-gray-600 animate-todo-check-pop" : "border-green-500 bg-green-500 hover:bg-green-400")" @onclick="ToggleTodoComplete(todo)" title="Mark incomplete" disabled="@uncompleting">
+                                    @if (!uncompleting)
+                                    {
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    }
                                 </button>
                                 <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-sm text-gray-500 dark:text-gray-400 truncate line-through">@todo.Title</div>
+                                    <div class="font-medium text-sm truncate transition-colors duration-200 @(uncompleting ? "text-gray-900 dark:text-gray-100" : "text-gray-500 dark:text-gray-400 line-through")">@todo.Title</div>
                                     <div class="text-xs text-gray-400 dark:text-gray-500">@todo.Date</div>
                                 </div>
                                 <div class="flex items-center gap-2 flex-wrap justify-end">
@@ -333,8 +337,8 @@
     private bool _showDeleteTodo;
     private TodoItemResponse? _deletingTodo;
 
-    // Complete animation
-    private readonly HashSet<Guid> _completingTodoIds = [];
+    // Complete/incomplete toggle animation
+    private readonly HashSet<Guid> _togglingTodoIds = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -419,12 +423,9 @@
     {
         var newStatus = todo.Status == "Completed" ? "Open" : "Completed";
 
-        if (newStatus == "Completed")
-        {
-            _completingTodoIds.Add(todo.Id);
-            await Task.Delay(350);
-            _completingTodoIds.Remove(todo.Id);
-        }
+        _togglingTodoIds.Add(todo.Id);
+        await Task.Delay(350);
+        _togglingTodoIds.Remove(todo.Id);
 
         var index = _todos.IndexOf(todo);
 
