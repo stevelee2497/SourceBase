@@ -75,7 +75,8 @@ published builds.
 ```
 Models/        Habit, AppSettings (+ default seed)
 Settings/      SettingsStore — JSON load/save to %AppData%
-Scheduling/    RestScheduler — interval timer + working-hours gate
+Scheduling/    RestScheduler — interval timer + working-hours gate, skips a scheduled
+               reminder if a habit was started in the last 20 min
 Services/      HabitLogService, StartupService, UpdateService, GlobalHotkeyService (RegisterHotKey)
 Overlay/       OverlayWindow — dimmed backdrop, white modal, habit cards, rest countdown
 Assets/        jupiter.ico — app icon (Explorer, taskbar, Alt-Tab), set via <ApplicationIcon>

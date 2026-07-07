@@ -78,6 +78,10 @@ public sealed class AppSettings
     /// <summary>The habits available to pick during a rest.</summary>
     public List<Habit> Habits { get; set; } = DefaultHabits();
 
+    /// <summary>When the user last started a habit from the overlay. Used to skip a scheduled
+    /// reminder that would otherwise fire shortly after. Null until the first habit is started.</summary>
+    public DateTime? LastHabitStartedAt { get; set; }
+
     public static List<Habit> DefaultHabits() =>
     [
         new() { Id = Guid.Empty, Name = "Drink Water",  Emoji = "💧", Accent = "#3B82F6" },

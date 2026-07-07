@@ -10,6 +10,8 @@ namespace SourceBase.Desktop.Scheduling;
 /// </summary>
 public sealed class RestScheduler
 {
+    private const int HabitStartedDebounceMinutes = 20;
+
     private readonly DispatcherTimer _timer;
     private readonly Func<AppSettings> _settings;
     private DateTime _nextDue;
@@ -84,8 +86,14 @@ public sealed class RestScheduler
         _videoSuppressedLogged = false;
 
         ScheduleNext();
+        if (RecentlyStartedHabit(s)) return;
         DueForRest?.Invoke(this, EventArgs.Empty);
     }
+
+    // A habit started just before the reminder came due means the user already took their
+    // break on their own — firing the overlay again this soon would just be nagging.
+    private static bool RecentlyStartedHabit(AppSettings s) =>
+        s.LastHabitStartedAt is { } last && DateTime.Now - last < TimeSpan.FromMinutes(HabitStartedDebounceMinutes);
 
     private static bool IsActiveDay(AppSettings s) =>
         s.ActiveDays.Count == 0 || s.ActiveDays.Contains(DateTime.Now.DayOfWeek);

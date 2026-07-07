@@ -68,9 +68,10 @@
         <!-- Centered white modal - sizes to its content so nothing gets clipped -->
         <Border Width="720"
                 HorizontalAlignment="Center" VerticalAlignment="Center"
-                Background="White" CornerRadius="20" Padding="44,40">
+                Background="White" CornerRadius="20" Padding="44,40"
+                BorderBrush="#14FFFFFF" BorderThickness="1">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="40" ShadowDepth="0" Opacity="0.35" Color="#000000"/>
+                <DropShadowEffect BlurRadius="60" ShadowDepth="0" Opacity="0.28" Color="#000000"/>
             </Border.Effect>
 
             <Border.RenderTransform>

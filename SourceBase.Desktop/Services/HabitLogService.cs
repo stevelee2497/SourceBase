@@ -65,8 +65,15 @@ public sealed class HabitLogService(Func<AppSettings> settings, Action onSave)
     /// </summary>
     public void LogHabitsStarted(IEnumerable<Habit> habits)
     {
+        var list = habits.ToList();
+        if (list.Count == 0) return;
+
+        var s = settings();
+        s.LastHabitStartedAt = DateTime.Now;
+        onSave();
+
         var now = DateTime.UtcNow;
-        var entries = habits
+        var entries = list
             .Where(h => h.Id != Guid.Empty)
             .Select(h => new Entry(h.Id, h.Name, "HabitStarted", now))
             .ToList();
