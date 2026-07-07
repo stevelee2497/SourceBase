@@ -92,7 +92,7 @@ else
             </div>
 
             <!-- Wallets grid (3 per row mobile, 6 per row desktop) -->
-            <div class="grid grid-cols-3 gap-2 mb-6">
+            <div class="grid grid-cols-3 gap-2 mb-3">
                 @foreach (var wallet in _wallets)
                 {
                     var isSelected = _selectedWalletIds.Contains(wallet.Id);
@@ -372,8 +372,8 @@ else
             }
             <div class="space-y-4">
                 <div>
-                    <label class="form-label">From Wallet</label>
-                    <input class="form-input" value="@(_selectedWallet?.Name ?? string.Empty)" disabled />
+                    <label class="form-label">From Wallet *</label>
+                    <SelectInput @bind-Value="_transferFromWalletId" @bind-Value:after="OnTransferFromWalletChanged" Options="TransferFromWalletOptions" />
                 </div>
                 <div>
                     <label class="form-label">To Wallet *</label>
@@ -460,6 +460,7 @@ else
 
     // Transfer form
     private bool _showTransferForm;
+    private string _transferFromWalletId = string.Empty;
     private string _transferToWalletId = string.Empty;
     private decimal _transferAmount;
     private DateOnly _transferDate = DateOnly.FromDateTime(DateTime.Today);
@@ -475,11 +476,12 @@ else
     private Dictionary<string, decimal> _barChartData = [];
 
     private List<CategoryResponse> FilteredTransactionCategories => _categories.Where(c => string.Equals(c.Type, _transactionType, StringComparison.OrdinalIgnoreCase)).ToList();
-    private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != _selectedWalletIds.FirstOrDefault()).ToList();
+    private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != ParseGuid(_transferFromWalletId)).ToList();
 
     private static readonly IReadOnlyList<SelectOption> TransactionTypeOptions = [new("Income", "🪴 Income"), new("Expense", "💸 Expense")];
     private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).Prepend(new SelectOption("", "All categories")).ToList();
     private IReadOnlyList<SelectOption> TransactionCategoryOptions => FilteredTransactionCategories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).Prepend(new SelectOption("", "Select category")).ToList();
+    private IReadOnlyList<SelectOption> TransferFromWalletOptions => _wallets.Where(w => w.Id != ParseGuid(_transferToWalletId)).Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).Prepend(new SelectOption("", "Select wallet")).ToList();
     private IReadOnlyList<SelectOption> TransferWalletOptions => TransferTargets.Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).Prepend(new SelectOption("", "Select wallet")).ToList();
     private IReadOnlyList<SelectOption> TransactionWalletOptions => _wallets.Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).ToList();
 
@@ -734,6 +736,7 @@ else
 
     private void OpenCreateTransfer()
     {
+        _transferFromWalletId = _selectedWallet?.Id.ToString() ?? string.Empty;
         _transferToWalletId = string.Empty;
         _transferAmount = 0;
         _transferDate = DateOnly.FromDateTime(DateTime.Today);
@@ -744,14 +747,20 @@ else
 
     private void CloseTransferForm() => _showTransferForm = false;
 
+    private void OnTransferFromWalletChanged()
+    {
+        if (_transferFromWalletId == _transferToWalletId) _transferToWalletId = string.Empty;
+    }
+
     private async Task SaveTransferAsync()
     {
         _transferFormError = null;
+        if (ParseGuid(_transferFromWalletId) is not Guid fromWalletId) { _transferFormError = "Select a source wallet."; return; }
         if (ParseGuid(_transferToWalletId) is not Guid toWalletId) { _transferFormError = "Select a destination wallet."; return; }
         if (_transferAmount <= 0) { _transferFormError = "Amount must be greater than zero."; return; }
 
         _savingTransfer = true;
-        var error = await Api.CreateTransferAsync(_selectedWalletIds.First(), toWalletId, _transferAmount, _transferDate.ToString("yyyy-MM-dd"), CleanOptional(_transferNote));
+        var error = await Api.CreateTransferAsync(fromWalletId, toWalletId, _transferAmount, _transferDate.ToString("yyyy-MM-dd"), CleanOptional(_transferNote));
         if (error is not null) { _transferFormError = error.Message ?? "Failed to create transfer."; _savingTransfer = false; return; }
 
         _transactionsPage = 1;
