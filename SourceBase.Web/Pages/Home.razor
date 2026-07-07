@@ -2,6 +2,9 @@
 @attribute [Authorize]
 @inject BlazorAuthStateProvider Auth
 @inject ApiHttpClient Api
+@inject HttpClient Http
+@using System.Globalization
+@using System.Net.Http.Json
 
 <!-- Overall section -->
 <h2 class="text-base font-semibold text-blue-800 dark:text-blue-400 mb-2">Overall</h2>
@@ -107,7 +110,6 @@
     {
         var record = _goldPrices.GetValueOrDefault(source);
         var live = IsGoldPriceLive(record);
-        var isBtc = source == "BTC";
         <div class="card p-2 md:p-4 flex flex-col gap-0 md:gap-2 @GetGoldSourceCardClass(source)">
             <div class="flex items-center justify-between gap-1">
                 <span class="text-xs md:text-base font-bold truncate @GetGoldSourceBadgeClass(source)">@GetGoldSourceDisplayName(source)</span>
@@ -123,14 +125,29 @@
             }
             else
             {
-                <div class="text-sm lg:text-2xl text-center font-bold text-emerald-600 dark:text-emerald-400">@(isBtc ? "$" : "")@FormatAmount(record.SellPrice)</div>
-                @if (!isBtc)
-                {
-                    <div class="text-[11px] lg:text-md font-semibold text-right text-red-600 dark:text-red-400">@FormatAmount(record.BuyPrice)</div>
-                }
+                <div class="text-sm lg:text-2xl text-center font-bold text-emerald-600 dark:text-emerald-400">@FormatAmount(@record.SellPrice)</div>
+                <div class="text-[11px] lg:text-md font-semibold text-right text-red-600 dark:text-red-400">@FormatAmount(@record.BuyPrice)</div>
             }
         </div>
     }
+    <div class="card p-2 md:p-4 flex flex-col gap-0 md:gap-2 bg-orange-50 dark:bg-orange-900/30">
+        <div class="flex items-center justify-between gap-1">
+            <span class="text-xs md:text-base font-bold truncate text-orange-700 dark:text-orange-400">BTC/USDT</span>
+            <span class="text-[10px] text-right @(_btcPrice is not null ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400")">@(_btcPrice is not null ? "🟢" : "🔴")</span>
+        </div>
+        @if (_btcPriceLoading)
+        {
+            <div class="text-sm text-gray-400 dark:text-gray-500">Loading…</div>
+        }
+        else if (_btcPrice is null)
+        {
+            <div class="text-sm text-gray-400 dark:text-gray-500">No data</div>
+        }
+        else
+        {
+            <div class="text-sm lg:text-2xl text-center font-bold text-emerald-600 dark:text-emerald-400">$@FormatAmount(_btcPrice.Value)</div>
+        }
+    </div>
 </div>
 
 <!-- Wallets -->
@@ -261,9 +278,12 @@
     private bool _walletsLoading = true;
     private bool _todosLoading = true;
 
-    private static readonly string[] GoldSources = ["SJC", "PNJ", "KimKhanhVietHung", "NgocThinh", "GiaVang", "BTC"];
+    private static readonly string[] GoldSources = ["SJC", "PNJ", "KimKhanhVietHung", "NgocThinh", "GiaVang"];
     private Dictionary<string, GoldPriceResponse?> _goldPrices = new();
     private bool _goldPricesLoading = true;
+
+    private decimal? _btcPrice;
+    private bool _btcPriceLoading = true;
 
     private List<HabitItemResponse> _habits = [];
     private bool _habitsLoading = true;
@@ -278,7 +298,7 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.Yield();
-        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync(), LoadHabitsAsync());
+        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync(), LoadHabitsAsync(), LoadBtcPriceAsync());
     }
 
     private async Task LoadHabitsAsync()
@@ -297,6 +317,23 @@
         _goldPricesLoading = false;
     }
 
+    private async Task LoadBtcPriceAsync()
+    {
+        _btcPriceLoading = true;
+        try
+        {
+            var response = await Http.GetFromJsonAsync<BinanceTickerPriceResponse>("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
+            _btcPrice = decimal.TryParse(response?.Price, NumberStyles.Number, CultureInfo.InvariantCulture, out var price) ? price : null;
+        }
+        catch
+        {
+            _btcPrice = null;
+        }
+        _btcPriceLoading = false;
+    }
+
+    private record BinanceTickerPriceResponse(string Symbol, string Price);
+
     private static bool IsGoldPriceLive(GoldPriceResponse? record) =>
         record is not null && (DateTime.UtcNow - record.RecordedAt).TotalHours < 2;
 
@@ -305,7 +342,6 @@
         "GiaVang" => "Thế giới",
         "KimKhanhVietHung" => "KKVH",
         "NgocThinh" => "Ngọc Thịnh",
-        "BTC" => "BTC/USDT",
         _ => source,
     };
 
@@ -316,7 +352,6 @@
         "GiaVang" => "text-green-700 dark:text-green-400",
         "KimKhanhVietHung" => "text-rose-700 dark:text-rose-400",
         "NgocThinh" => "text-purple-700 dark:text-purple-400",
-        "BTC" => "text-orange-700 dark:text-orange-400",
         _ => "text-gray-700 dark:text-gray-300",
     };
 
@@ -327,7 +362,6 @@
         "GiaVang" => "bg-green-50 dark:bg-green-900/30",
         "KimKhanhVietHung" => "bg-rose-50 dark:bg-rose-900/30",
         "NgocThinh" => "bg-purple-50 dark:bg-purple-900/30",
-        "BTC" => "bg-orange-50 dark:bg-orange-900/30",
         _ => "",
     };
 

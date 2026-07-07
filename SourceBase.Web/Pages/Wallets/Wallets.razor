@@ -13,8 +13,8 @@
 }
 else
 {
-    <!-- Layout: 1 columns as default, 2 when md screen -->
-    <div class="flex flex-col lg:flex-row gap-4 mb-6">
+    <!-- Layout: 1 columns as default, 2 when lg screen -->
+    <div class="flex flex-col lg:flex-row gap-0 lg:gap-4 mb-6">
         <div class="flex flex-1 flex-col gap-4">
             <!-- Total Balance card (clickable to deselect all wallets) -->
             <div class="card bg-linear-to-r from-indigo-600 to-indigo-500 text-white cursor-pointer transition-all @(_selectedWalletIds.Count == 0 ? "ring-4 ring-white/40" : "hover:opacity-90")" @onclick="SelectAllWallets">
@@ -80,12 +80,23 @@ else
                 </div>
             }
 
-            <!-- Wallets grid (2 per row mobile, 6 per row desktop) -->
-            <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <div class="rounded-lg bg-green-50 dark:bg-green-900/30 px-4 py-3">
+                    <div class="text-xs text-green-600 dark:text-green-400 font-medium mb-0.5">Monthly Income</div>
+                    <div class="text-xl font-bold text-green-700 dark:text-green-400">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
+                </div>
+                <div class="rounded-lg bg-red-50 dark:bg-red-900/30 px-4 py-3">
+                    <div class="text-xs text-red-600 dark:text-red-400 font-medium mb-0.5">Monthly Expense</div>
+                    <div class="text-xl font-bold text-red-700 dark:text-red-400">@FormatAmount(_summary?.TotalExpense ?? 0)</div>
+                </div>
+            </div>
+
+            <!-- Wallets grid (3 per row mobile, 6 per row desktop) -->
+            <div class="grid grid-cols-3 gap-2 mb-6">
                 @foreach (var wallet in _wallets)
                 {
                     var isSelected = _selectedWalletIds.Contains(wallet.Id);
-                    <div class="relative rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-indigo-300 hover:bg-gray-50 dark:hover:bg-gray-700") cursor-pointer transition-all p-2 px-4 md:p-3 flex flex-col gap-1 md:gap-1.5" @onclick="SelectWallet(wallet.Id)">
+                    <div class="relative rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-indigo-300 hover:bg-gray-50 dark:hover:bg-gray-700") cursor-pointer transition-all p-2 md:p-3 flex flex-col gap-1 md:gap-1.5" @onclick="SelectWallet(wallet.Id)">
                         <div class="absolute top-1.5 right-1.5 flex gap-1">
                             <button class="text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400" @onclick:stopPropagation @onclick="OpenEditWallet(wallet)" title="Edit">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,16 +156,6 @@ else
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Selected Wallets</h2>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Showing transactions for @_selectedWalletIds.Count wallets</div>
                     }
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-2 mb-4">
-                <div class="rounded-lg bg-green-50 dark:bg-green-900/30 px-4 py-3">
-                    <div class="text-xs text-green-600 dark:text-green-400 font-medium mb-0.5">Monthly Income</div>
-                    <div class="text-xl font-bold text-green-700 dark:text-green-400">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
-                </div>
-                <div class="rounded-lg bg-red-50 dark:bg-red-900/30 px-4 py-3">
-                    <div class="text-xs text-red-600 dark:text-red-400 font-medium mb-0.5">Monthly Expense</div>
-                    <div class="text-xl font-bold text-red-700 dark:text-red-400">@FormatAmount(_summary?.TotalExpense ?? 0)</div>
                 </div>
             </div>
 
@@ -246,7 +247,7 @@ else
                                                     <span>@FormatDisplayDate(transaction.Date)</span>
                                                     @if (transaction.IsTransfer)
                                                     {
-                                                        <span class="badge-blue">Transfer</span>
+                                                        <span class="badge-blue hidden lg:block">Transfer</span>
                                                     }
                                                 </div>
                                             </div>

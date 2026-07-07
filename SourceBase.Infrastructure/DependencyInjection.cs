@@ -80,7 +80,6 @@ public static class DependencyInjection
         services.AddSingleton<IGoldPriceScraper, GiaVangGoldPriceScraper>();
         services.AddSingleton<IGoldPriceScraper, KimKhanhVietHungGoldPriceScraper>();
         services.AddSingleton<IGoldPriceScraper, NgocThinhGoldPriceScraper>();
-        services.AddSingleton<IGoldPriceScraper, BtcPriceScraper>();
         services.AddHostedService<GoldPriceScraperService>();
     }
 
