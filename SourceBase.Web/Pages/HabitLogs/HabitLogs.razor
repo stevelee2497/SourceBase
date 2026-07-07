@@ -96,8 +96,10 @@ else
                         {
                             var day = WeekStart.AddDays(d);
                             var isToday = day.Date == DateTime.Today;
+                            var isCurrentSlot = isToday && slotIndex == CurrentSlot;
                             var entries = LogsForSlot(day, slotIndex);
-                            <div class="min-h-6 px-0.5 py-0.5 border-r last:border-r-0 border-gray-100 dark:border-gray-700/50 @(isToday ? "bg-indigo-50/20 dark:bg-indigo-900/20" : "")">
+                            var hasStarted = entries.Any(l => l.Action == "HabitStarted");
+                            <div class="min-h-6 px-0.5 py-0.5 border-r last:border-r-0 border-gray-100 dark:border-gray-700/50 @(isCurrentSlot ? "bg-yellow-100 dark:bg-yellow-900/30" : hasStarted ? "bg-green-50 dark:bg-green-900/20" : isToday ? "bg-indigo-50/20 dark:bg-indigo-900/20" : "")">
                                 <div class="flex flex-wrap gap-0.5">
                                     @foreach (var log in entries.Where(l => l.Action == "HabitStarted"))
                                     {
@@ -215,6 +217,8 @@ else
     private static string HabitIcon(string? icon) => string.IsNullOrWhiteSpace(icon) ? "💪" : icon;
 
     private const int SlotsPerDay = 48; // 24h × two 30-min slots
+
+    private static int CurrentSlot => (DateTime.Now.Hour * 60 + DateTime.Now.Minute) / 30;
 
     private static string SlotLabel(int slot) => TimeSpan.FromMinutes(slot * 30).ToString(@"hh\:mm");
 
