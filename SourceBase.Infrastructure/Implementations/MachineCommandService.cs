@@ -9,6 +9,6 @@ public class MachineCommandService(IHubContext<NotificationHub> hubContext) : IM
 {
     public async Task SendCommandAsync(Guid userId, Guid machineId, MachineCommandType type, CancellationToken ct)
     {
-        await hubContext.Clients.Group(userId.ToString()).SendAsync("MachineCommand", new { machineId, type }, ct);
+        await hubContext.Clients.Group(userId.ToString()).SendAsync("MachineCommandEvent", type.ToString(), ct);
     }
 }

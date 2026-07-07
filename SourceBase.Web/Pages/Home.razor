@@ -249,11 +249,18 @@
                             {
                                 <div class="border-t border-gray-100 dark:border-gray-700"></div>
                             }
-                            <div class="flex items-center gap-3 ml-2 py-2">
-                                <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 dark:border-gray-600 hover:border-green-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoDone(todo)" title="Mark complete">
+                            var completing = _completingTodoIds.Contains(todo.Id);
+                            <div class="flex items-center gap-3 ml-2 py-2 transition-opacity duration-300 @(completing ? "opacity-0" : "opacity-100")">
+                                <button class="shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors duration-200 @(completing ? "border-green-500 bg-green-500 animate-todo-check-pop" : "border-gray-400 dark:border-gray-600 hover:border-green-500")" @onclick="ToggleTodoDone(todo)" title="Mark complete" disabled="@completing">
+                                    @if (completing)
+                                    {
+                                        <svg class="w-3 h-3 text-white animate-todo-check-draw" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    }
                                 </button>
                                 <div class="flex-1 min-w-0">
-                                    <div class="text-sm text-gray-800 dark:text-gray-200 truncate">@todo.Title</div>
+                                    <div class="text-sm truncate transition-colors duration-200 @(completing ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-200")">@todo.Title</div>
                                     <div class="text-xs text-gray-400 dark:text-gray-500">@todo.Date</div>
                                 </div>
                             </div>
@@ -274,6 +281,7 @@
     private StatsResponse? _stats;
     private GetWalletsResponse? _wallets;
     private List<TodoItemResponse> _defaultTodos = [];
+    private readonly HashSet<Guid> _completingTodoIds = [];
     private bool _statsLoading = true;
     private bool _walletsLoading = true;
     private bool _todosLoading = true;
@@ -398,6 +406,10 @@
 
     private Func<Task> ToggleTodoDone(TodoItemResponse todo) => async () =>
     {
+        _completingTodoIds.Add(todo.Id);
+        await Task.Delay(350);
+        _completingTodoIds.Remove(todo.Id);
+
         var dateStr = DateOnly.TryParse(todo.Date, out var d) ? d.ToString("yyyy-MM-dd") : todo.Date;
         var error = await Api.UpdateTodoAsync(todo.Id, todo.Title, dateStr, "Completed");
         if (error is null)

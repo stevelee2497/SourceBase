@@ -39,17 +39,17 @@ public partial class OverlayWindow : Window
         BuildCards();
 
         StartButton.Click += (_, _) => StartRest();
-        SnoozeButton.Click += (_, _) => { Snoozed?.Invoke(this, EventArgs.Empty); Close(); };
+        SnoozeButton.Click += (_, _) => { Snoozed?.Invoke(this, EventArgs.Empty); AnimateOutAndClose(); };
         DismissButton.Click += (_, _) =>
         {
             if (!_restStarted) Dismissed?.Invoke(this, EventArgs.Empty);
-            Close();
+            AnimateOutAndClose();
         };
         KeyDown += (_, e) =>
         {
             if (e.Key != System.Windows.Input.Key.Escape) return;
             if (!_restStarted) Dismissed?.Invoke(this, EventArgs.Empty);
-            Close();
+            AnimateOutAndClose();
         };
 
         _restTimer.Tick += OnRestTick;
@@ -73,6 +73,21 @@ public partial class OverlayWindow : Window
 
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
         var scale = new DoubleAnimation(0.96, 1, TimeSpan.FromMilliseconds(260)) { EasingFunction = ease };
+        ModalScale.BeginAnimation(ScaleTransform.ScaleXProperty, scale);
+        ModalScale.BeginAnimation(ScaleTransform.ScaleYProperty, scale);
+    }
+
+    /// <summary>Mirrors <see cref="FadeIn"/> so the overlay settles out instead of vanishing abruptly.</summary>
+    private void AnimateOutAndClose()
+    {
+        _restTimer.Stop();
+
+        var ease = new CubicEase { EasingMode = EasingMode.EaseIn };
+        var fadeOut = new DoubleAnimation(Opacity, 0, TimeSpan.FromMilliseconds(180)) { EasingFunction = ease };
+        var scale = new DoubleAnimation(1, 0.96, TimeSpan.FromMilliseconds(180)) { EasingFunction = ease };
+
+        fadeOut.Completed += (_, _) => Close();
+        BeginAnimation(OpacityProperty, fadeOut);
         ModalScale.BeginAnimation(ScaleTransform.ScaleXProperty, scale);
         ModalScale.BeginAnimation(ScaleTransform.ScaleYProperty, scale);
     }
@@ -235,8 +250,7 @@ public partial class OverlayWindow : Window
         _remaining = _remaining.Subtract(TimeSpan.FromSeconds(1));
         if (_remaining <= TimeSpan.Zero)
         {
-            _restTimer.Stop();
-            Close();
+            AnimateOutAndClose();
             return;
         }
         UpdateCountdown();
