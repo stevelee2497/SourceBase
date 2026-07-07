@@ -20,5 +20,6 @@ public enum GoldSource
     PNJ,
     GiaVang,
     KimKhanhVietHung,
-    NgocThinh
+    NgocThinh,
+    BTC
 }

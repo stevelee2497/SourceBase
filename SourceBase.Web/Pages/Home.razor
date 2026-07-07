@@ -102,11 +102,12 @@
 <!-- Gold section -->
 <a href="/gold-prices" class="block text-base font-semibold text-blue-800 dark:text-blue-400 mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mt-4">Gold</a>
 <!-- Gold price status row -->
-<div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
+<div class="grid grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 mb-2 md:mb-4">
     @foreach (var source in GoldSources)
     {
         var record = _goldPrices.GetValueOrDefault(source);
         var live = IsGoldPriceLive(record);
+        var isBtc = source == "BTC";
         <div class="card p-2 md:p-4 flex flex-col gap-0 md:gap-2 @GetGoldSourceCardClass(source)">
             <div class="flex items-center justify-between gap-1">
                 <span class="text-xs md:text-base font-bold truncate @GetGoldSourceBadgeClass(source)">@GetGoldSourceDisplayName(source)</span>
@@ -119,6 +120,10 @@
             else if (record is null)
             {
                 <div class="text-sm text-gray-400 dark:text-gray-500">No data</div>
+            }
+            else if (isBtc)
+            {
+                <div class="text-sm lg:text-2xl text-center font-bold text-emerald-600 dark:text-emerald-400">$@FormatAmount(record.SellPrice)</div>
             }
             else
             {
@@ -257,7 +262,7 @@
     private bool _walletsLoading = true;
     private bool _todosLoading = true;
 
-    private static readonly string[] GoldSources = ["SJC", "PNJ", "KimKhanhVietHung", "NgocThinh", "GiaVang"];
+    private static readonly string[] GoldSources = ["SJC", "PNJ", "KimKhanhVietHung", "NgocThinh", "GiaVang", "BTC"];
     private Dictionary<string, GoldPriceResponse?> _goldPrices = new();
     private bool _goldPricesLoading = true;
 
@@ -301,6 +306,7 @@
         "GiaVang" => "Thế giới",
         "KimKhanhVietHung" => "KKVH",
         "NgocThinh" => "Ngọc Thịnh",
+        "BTC" => "BTC/USDT",
         _ => source,
     };
 
@@ -311,6 +317,7 @@
         "GiaVang" => "text-green-700 dark:text-green-400",
         "KimKhanhVietHung" => "text-rose-700 dark:text-rose-400",
         "NgocThinh" => "text-purple-700 dark:text-purple-400",
+        "BTC" => "text-orange-700 dark:text-orange-400",
         _ => "text-gray-700 dark:text-gray-300",
     };
 
@@ -321,6 +328,7 @@
         "GiaVang" => "bg-green-50 dark:bg-green-900/30",
         "KimKhanhVietHung" => "bg-rose-50 dark:bg-rose-900/30",
         "NgocThinh" => "bg-purple-50 dark:bg-purple-900/30",
+        "BTC" => "bg-orange-50 dark:bg-orange-900/30",
         _ => "",
     };
 
