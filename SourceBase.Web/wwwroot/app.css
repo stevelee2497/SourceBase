@@ -100,3 +100,24 @@
 @keyframes sb-spin {
     to { transform: rotate(360deg); }
 }
+
+@keyframes sb-check-pop {
+    0% { transform: scale(0.75); }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+@keyframes sb-check-draw {
+    from { stroke-dashoffset: 20; }
+    to { stroke-dashoffset: 0; }
+}
+
+.animate-todo-check-pop {
+    animation: sb-check-pop 0.3s ease-out;
+}
+
+.animate-todo-check-draw {
+    stroke-dasharray: 20;
+    stroke-dashoffset: 20;
+    animation: sb-check-draw 0.25s 0.05s ease-out forwards;
+}

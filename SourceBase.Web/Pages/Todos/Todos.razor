@@ -135,11 +135,18 @@
 
                     @foreach (var todo in openTodos)
                     {
-                        <div class="card flex items-center gap-3 py-3 mb-2">
-                            <button class="shrink-0 w-5 h-5 rounded-full border-2 border-gray-400 dark:border-gray-600 hover:border-indigo-500 transition-colors flex items-center justify-center" @onclick="ToggleTodoComplete(todo)" title="Mark complete">
+                        var completing = _completingTodoIds.Contains(todo.Id);
+                        <div class="card flex items-center gap-3 py-3 mb-2 transition-colors duration-300 @(completing ? "bg-green-50 dark:bg-green-900/20" : "")">
+                            <button class="shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors duration-200 @(completing ? "border-green-500 bg-green-500 animate-todo-check-pop" : "border-gray-400 dark:border-gray-600 hover:border-indigo-500")" @onclick="ToggleTodoComplete(todo)" title="Mark complete" disabled="@completing">
+                                @if (completing)
+                                {
+                                    <svg class="w-3 h-3 text-white animate-todo-check-draw" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                }
                             </button>
                             <div class="flex-1 min-w-0">
-                                <div class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">@todo.Title</div>
+                                <div class="font-medium text-sm truncate transition-colors duration-200 @(completing ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-900 dark:text-gray-100")">@todo.Title</div>
                                 <div class="text-xs text-gray-400 dark:text-gray-500">@todo.Date</div>
                             </div>
                             <div class="flex items-center gap-2 flex-wrap justify-end">
@@ -326,6 +333,9 @@
     private bool _showDeleteTodo;
     private TodoItemResponse? _deletingTodo;
 
+    // Complete animation
+    private readonly HashSet<Guid> _completingTodoIds = [];
+
     protected override async Task OnInitializedAsync()
     {
         Notifications.OnTodoUpdated += HandleTodoUpdated;
@@ -408,6 +418,14 @@
     private Func<Task> ToggleTodoComplete(TodoItemResponse todo) => async () =>
     {
         var newStatus = todo.Status == "Completed" ? "Open" : "Completed";
+
+        if (newStatus == "Completed")
+        {
+            _completingTodoIds.Add(todo.Id);
+            await Task.Delay(350);
+            _completingTodoIds.Remove(todo.Id);
+        }
+
         var index = _todos.IndexOf(todo);
 
         // Optimistic update — apply immediately so SignalR echo is a no-op
