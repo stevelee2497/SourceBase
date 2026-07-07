@@ -13,8 +13,8 @@
 }
 else
 {
-    <!-- Layout: 1 columns as default, 2 when md screen -->
-    <div class="flex flex-col lg:flex-row gap-4 mb-6">
+    <!-- Layout: 1 columns as default, 2 when lg screen -->
+    <div class="flex flex-col lg:flex-row gap-0 lg:gap-4 mb-6">
         <div class="flex flex-1 flex-col gap-4">
             <!-- Total Balance card (clickable to deselect all wallets) -->
             <div class="card bg-linear-to-r from-indigo-600 to-indigo-500 text-white cursor-pointer transition-all @(_selectedWalletIds.Count == 0 ? "ring-4 ring-white/40" : "hover:opacity-90")" @onclick="SelectAllWallets">
@@ -80,12 +80,23 @@ else
                 </div>
             }
 
-            <!-- Wallets grid (2 per row mobile, 6 per row desktop) -->
-            <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="grid grid-cols-2 gap-2">
+                <div class="rounded-lg bg-green-50 dark:bg-green-900/30 px-4 py-3">
+                    <div class="text-xs text-green-600 dark:text-green-400 font-medium mb-0.5">Monthly Income</div>
+                    <div class="text-xl font-bold text-green-700 dark:text-green-400">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
+                </div>
+                <div class="rounded-lg bg-red-50 dark:bg-red-900/30 px-4 py-3">
+                    <div class="text-xs text-red-600 dark:text-red-400 font-medium mb-0.5">Monthly Expense</div>
+                    <div class="text-xl font-bold text-red-700 dark:text-red-400">@FormatAmount(_summary?.TotalExpense ?? 0)</div>
+                </div>
+            </div>
+
+            <!-- Wallets grid (3 per row mobile, 6 per row desktop) -->
+            <div class="grid grid-cols-3 gap-2 mb-3">
                 @foreach (var wallet in _wallets)
                 {
                     var isSelected = _selectedWalletIds.Contains(wallet.Id);
-                    <div class="relative rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-indigo-300 hover:bg-gray-50 dark:hover:bg-gray-700") cursor-pointer transition-all p-2 px-4 md:p-3 flex flex-col gap-1 md:gap-1.5" @onclick="SelectWallet(wallet.Id)">
+                    <div class="relative rounded-lg border-2 @(isSelected ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-indigo-300 hover:bg-gray-50 dark:hover:bg-gray-700") cursor-pointer transition-all p-2 md:p-3 flex flex-col gap-1 md:gap-1.5" @onclick="SelectWallet(wallet.Id)">
                         <div class="absolute top-1.5 right-1.5 flex gap-1">
                             <button class="text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400" @onclick:stopPropagation @onclick="OpenEditWallet(wallet)" title="Edit">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,39 +158,23 @@ else
                     }
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-2 mb-4">
-                <div class="rounded-lg bg-green-50 dark:bg-green-900/30 px-4 py-3">
-                    <div class="text-xs text-green-600 dark:text-green-400 font-medium mb-0.5">Monthly Income</div>
-                    <div class="text-xl font-bold text-green-700 dark:text-green-400">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
-                </div>
-                <div class="rounded-lg bg-red-50 dark:bg-red-900/30 px-4 py-3">
-                    <div class="text-xs text-red-600 dark:text-red-400 font-medium mb-0.5">Monthly Expense</div>
-                    <div class="text-xl font-bold text-red-700 dark:text-red-400">@FormatAmount(_summary?.TotalExpense ?? 0)</div>
-                </div>
-            </div>
 
             <!-- Filters -->
             <div class="mb-4 flex flex-col gap-3">
                 <div class="flex flex-wrap gap-2">
-                    <button class="@TypeFilterClass(string.Empty)" @onclick="SelectAllTypes">All</button>
+                    <button class="@TypeFilterClass(string.Empty)" @onclick="ResetFiltersAsync">All</button>
                     <button class="@TypeFilterClass(IncomeType)" @onclick="SelectIncomeType">Income</button>
                     <button class="@TypeFilterClass(ExpenseType)" @onclick="SelectExpenseType">Expense</button>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <div>
-                        <label class="form-label">Date From</label>
-                        <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
-                    </div>
-                    <div>
-                        <label class="form-label">Date To</label>
-                        <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
-                    </div>
-                    <div>
-                        <label class="form-label">Category</label>
-                        <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
-                    </div>
                     <div class="flex items-end">
-                        <button class="btn-secondary w-full" @onclick="ResetFiltersAsync">Clear</button>
+                        <div class="w-full">
+                            <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
+                        </div>
+                    </div>
+                    <div>
+                        <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input h-9.5" />
+                    </div>
+                    <div>
+                        <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input h-9.5" />
                     </div>
                 </div>
             </div>
@@ -246,7 +241,7 @@ else
                                                     <span>@FormatDisplayDate(transaction.Date)</span>
                                                     @if (transaction.IsTransfer)
                                                     {
-                                                        <span class="badge-blue">Transfer</span>
+                                                        <span class="badge-blue hidden lg:block">Transfer</span>
                                                     }
                                                 </div>
                                             </div>
@@ -377,8 +372,8 @@ else
             }
             <div class="space-y-4">
                 <div>
-                    <label class="form-label">From Wallet</label>
-                    <input class="form-input" value="@(_selectedWallet?.Name ?? string.Empty)" disabled />
+                    <label class="form-label">From Wallet *</label>
+                    <SelectInput @bind-Value="_transferFromWalletId" @bind-Value:after="OnTransferFromWalletChanged" Options="TransferFromWalletOptions" />
                 </div>
                 <div>
                     <label class="form-label">To Wallet *</label>
@@ -465,6 +460,7 @@ else
 
     // Transfer form
     private bool _showTransferForm;
+    private string _transferFromWalletId = string.Empty;
     private string _transferToWalletId = string.Empty;
     private decimal _transferAmount;
     private DateOnly _transferDate = DateOnly.FromDateTime(DateTime.Today);
@@ -480,11 +476,12 @@ else
     private Dictionary<string, decimal> _barChartData = [];
 
     private List<CategoryResponse> FilteredTransactionCategories => _categories.Where(c => string.Equals(c.Type, _transactionType, StringComparison.OrdinalIgnoreCase)).ToList();
-    private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != _selectedWalletIds.FirstOrDefault()).ToList();
+    private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != ParseGuid(_transferFromWalletId)).ToList();
 
     private static readonly IReadOnlyList<SelectOption> TransactionTypeOptions = [new("Income", "🪴 Income"), new("Expense", "💸 Expense")];
     private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).Prepend(new SelectOption("", "All categories")).ToList();
     private IReadOnlyList<SelectOption> TransactionCategoryOptions => FilteredTransactionCategories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).Prepend(new SelectOption("", "Select category")).ToList();
+    private IReadOnlyList<SelectOption> TransferFromWalletOptions => _wallets.Where(w => w.Id != ParseGuid(_transferToWalletId)).Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).Prepend(new SelectOption("", "Select wallet")).ToList();
     private IReadOnlyList<SelectOption> TransferWalletOptions => TransferTargets.Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).Prepend(new SelectOption("", "Select wallet")).ToList();
     private IReadOnlyList<SelectOption> TransactionWalletOptions => _wallets.Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).ToList();
 
@@ -739,6 +736,7 @@ else
 
     private void OpenCreateTransfer()
     {
+        _transferFromWalletId = _selectedWallet?.Id.ToString() ?? string.Empty;
         _transferToWalletId = string.Empty;
         _transferAmount = 0;
         _transferDate = DateOnly.FromDateTime(DateTime.Today);
@@ -749,14 +747,20 @@ else
 
     private void CloseTransferForm() => _showTransferForm = false;
 
+    private void OnTransferFromWalletChanged()
+    {
+        if (_transferFromWalletId == _transferToWalletId) _transferToWalletId = string.Empty;
+    }
+
     private async Task SaveTransferAsync()
     {
         _transferFormError = null;
+        if (ParseGuid(_transferFromWalletId) is not Guid fromWalletId) { _transferFormError = "Select a source wallet."; return; }
         if (ParseGuid(_transferToWalletId) is not Guid toWalletId) { _transferFormError = "Select a destination wallet."; return; }
         if (_transferAmount <= 0) { _transferFormError = "Amount must be greater than zero."; return; }
 
         _savingTransfer = true;
-        var error = await Api.CreateTransferAsync(_selectedWalletIds.First(), toWalletId, _transferAmount, _transferDate.ToString("yyyy-MM-dd"), CleanOptional(_transferNote));
+        var error = await Api.CreateTransferAsync(fromWalletId, toWalletId, _transferAmount, _transferDate.ToString("yyyy-MM-dd"), CleanOptional(_transferNote));
         if (error is not null) { _transferFormError = error.Message ?? "Failed to create transfer."; _savingTransfer = false; return; }
 
         _transactionsPage = 1;

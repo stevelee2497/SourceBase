@@ -2,6 +2,9 @@
 @attribute [Authorize]
 @inject BlazorAuthStateProvider Auth
 @inject ApiHttpClient Api
+@inject HttpClient Http
+@using System.Globalization
+@using System.Net.Http.Json
 
 <!-- Overall section -->
 <h2 class="text-base font-semibold text-blue-800 dark:text-blue-400 mb-2">Overall</h2>
@@ -102,7 +105,7 @@
 <!-- Gold section -->
 <a href="/gold-prices" class="block text-base font-semibold text-blue-800 dark:text-blue-400 mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mt-4">Gold</a>
 <!-- Gold price status row -->
-<div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 mb-2 md:mb-4">
+<div class="grid grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 mb-2 md:mb-4">
     @foreach (var source in GoldSources)
     {
         var record = _goldPrices.GetValueOrDefault(source);
@@ -127,6 +130,24 @@
             }
         </div>
     }
+    <div class="card p-2 md:p-4 flex flex-col gap-0 md:gap-2 bg-orange-50 dark:bg-orange-900/30">
+        <div class="flex items-center justify-between gap-1">
+            <span class="text-xs md:text-base font-bold truncate text-orange-700 dark:text-orange-400">BTC/USDT</span>
+            <span class="text-[10px] text-right @(_btcPrice is not null ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400")">@(_btcPrice is not null ? "🟢" : "🔴")</span>
+        </div>
+        @if (_btcPriceLoading)
+        {
+            <div class="text-sm text-gray-400 dark:text-gray-500">Loading…</div>
+        }
+        else if (_btcPrice is null)
+        {
+            <div class="text-sm text-gray-400 dark:text-gray-500">No data</div>
+        }
+        else
+        {
+            <div class="text-sm lg:text-2xl text-center font-bold text-emerald-600 dark:text-emerald-400">$@FormatAmount(_btcPrice.Value)</div>
+        }
+    </div>
 </div>
 
 <!-- Wallets -->
@@ -261,6 +282,9 @@
     private Dictionary<string, GoldPriceResponse?> _goldPrices = new();
     private bool _goldPricesLoading = true;
 
+    private decimal? _btcPrice;
+    private bool _btcPriceLoading = true;
+
     private List<HabitItemResponse> _habits = [];
     private bool _habitsLoading = true;
     private Guid? _loggingHabitId;
@@ -274,7 +298,7 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.Yield();
-        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync(), LoadHabitsAsync());
+        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync(), LoadHabitsAsync(), LoadBtcPriceAsync());
     }
 
     private async Task LoadHabitsAsync()
@@ -292,6 +316,23 @@
         _goldPrices = result?.Items.ToDictionary(r => r.Source, r => (GoldPriceResponse?)r) ?? new();
         _goldPricesLoading = false;
     }
+
+    private async Task LoadBtcPriceAsync()
+    {
+        _btcPriceLoading = true;
+        try
+        {
+            var response = await Http.GetFromJsonAsync<BinanceTickerPriceResponse>("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
+            _btcPrice = decimal.TryParse(response?.Price, NumberStyles.Number, CultureInfo.InvariantCulture, out var price) ? price : null;
+        }
+        catch
+        {
+            _btcPrice = null;
+        }
+        _btcPriceLoading = false;
+    }
+
+    private record BinanceTickerPriceResponse(string Symbol, string Price);
 
     private static bool IsGoldPriceLive(GoldPriceResponse? record) =>
         record is not null && (DateTime.UtcNow - record.RecordedAt).TotalHours < 2;
