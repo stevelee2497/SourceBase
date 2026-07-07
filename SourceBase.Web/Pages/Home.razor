@@ -121,14 +121,13 @@
             {
                 <div class="text-sm text-gray-400 dark:text-gray-500">No data</div>
             }
-            else if (isBtc)
-            {
-                <div class="text-sm lg:text-2xl text-center font-bold text-emerald-600 dark:text-emerald-400">$@FormatAmount(record.SellPrice)</div>
-            }
             else
             {
-                <div class="text-sm lg:text-2xl text-center font-bold text-emerald-600 dark:text-emerald-400">@FormatAmount(@record.SellPrice)</div>
-                <div class="text-[11px] lg:text-md font-semibold text-right text-red-600 dark:text-red-400">@FormatAmount(@record.BuyPrice)</div>
+                <div class="text-sm lg:text-2xl text-center font-bold text-emerald-600 dark:text-emerald-400">@(isBtc ? "$" : "")@FormatAmount(record.SellPrice)</div>
+                @if (!isBtc)
+                {
+                    <div class="text-[11px] lg:text-md font-semibold text-right text-red-600 dark:text-red-400">@FormatAmount(record.BuyPrice)</div>
+                }
             }
         </div>
     }
