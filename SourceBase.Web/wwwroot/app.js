@@ -63,6 +63,14 @@ window.setTheme = function (theme) {
   document.documentElement.classList.toggle('dark', isDark);
 };
 
+window.getNavCollapsed = function () {
+  return localStorage.getItem('navCollapsed') === 'true';
+};
+
+window.setNavCollapsed = function (collapsed) {
+  localStorage.setItem('navCollapsed', collapsed ? 'true' : 'false');
+};
+
 window.getBrowserTimeZone = function () {
   var tz = localStorage.getItem('userTimeZone');
   if (tz) return tz;

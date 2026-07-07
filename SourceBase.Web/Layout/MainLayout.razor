@@ -21,7 +21,7 @@
                 </svg>
             </button>
             <!-- Nav toggle (desktop only) -->
-            <button class="hidden md:flex p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" @onclick="ToggleNav" aria-label="Toggle navigation">
+            <button class="hidden md:flex p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" @onclick="ToggleNavAsync" aria-label="Toggle navigation">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
@@ -105,7 +105,11 @@
 
     private void OpenMobileMenu() => _mobileMenuOpen = true;
     private void CloseMobileMenu() => _mobileMenuOpen = false;
-    private void ToggleNav() => _navCollapsed = !_navCollapsed;
+    private async Task ToggleNavAsync()
+    {
+        _navCollapsed = !_navCollapsed;
+        await JS.InvokeVoidAsync("setNavCollapsed", _navCollapsed);
+    }
     private void ToggleProfile() => _profileOpen = !_profileOpen;
     private void CloseProfile() => _profileOpen = false;
     private void CloseEditCurrentUser() => _showEditCurrentUser = false;
@@ -137,11 +141,13 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            var tzId = await JS.InvokeAsync<string>("getBrowserTimeZone");
-            TimeZoneService.SetTimeZone(tzId);
-        }
+        if (!firstRender) return;
+
+        var tzId = await JS.InvokeAsync<string>("getBrowserTimeZone");
+        TimeZoneService.SetTimeZone(tzId);
+
+        _navCollapsed = await JS.InvokeAsync<bool>("getNavCollapsed");
+        StateHasChanged();
     }
 
     public void Dispose()
