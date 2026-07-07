@@ -80,7 +80,7 @@ else
                 </div>
             }
 
-            <div class="grid grid-cols-2 gap-2 mb-4">
+            <div class="grid grid-cols-2 gap-2">
                 <div class="rounded-lg bg-green-50 dark:bg-green-900/30 px-4 py-3">
                     <div class="text-xs text-green-600 dark:text-green-400 font-medium mb-0.5">Monthly Income</div>
                     <div class="text-xl font-bold text-green-700 dark:text-green-400">@FormatAmount(_summary?.TotalIncome ?? 0)</div>
@@ -162,25 +162,19 @@ else
             <!-- Filters -->
             <div class="mb-4 flex flex-col gap-3">
                 <div class="flex flex-wrap gap-2">
-                    <button class="@TypeFilterClass(string.Empty)" @onclick="SelectAllTypes">All</button>
+                    <button class="@TypeFilterClass(string.Empty)" @onclick="ResetFiltersAsync">All</button>
                     <button class="@TypeFilterClass(IncomeType)" @onclick="SelectIncomeType">Income</button>
                     <button class="@TypeFilterClass(ExpenseType)" @onclick="SelectExpenseType">Expense</button>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <div>
-                        <label class="form-label">Date From</label>
-                        <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
-                    </div>
-                    <div>
-                        <label class="form-label">Date To</label>
-                        <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input" />
-                    </div>
-                    <div>
-                        <label class="form-label">Category</label>
-                        <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
-                    </div>
                     <div class="flex items-end">
-                        <button class="btn-secondary w-full" @onclick="ResetFiltersAsync">Clear</button>
+                        <div class="w-full">
+                            <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
+                        </div>
+                    </div>
+                    <div>
+                        <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input h-9.5" />
+                    </div>
+                    <div>
+                        <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input h-9.5" />
                     </div>
                 </div>
             </div>
