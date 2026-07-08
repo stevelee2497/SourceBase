@@ -23,6 +23,7 @@ public partial class App : Application
     private MachineCommandListener? _machineCommandListener;
     private GlobalHotkeyService? _hotkeyService;
     private OverlayWindow? _activeOverlay;
+    private readonly List<OverlayBackdropWindow> _overlayBackdrops = [];
     private Icon? _trayIcon;
 
     private void OnStartup(object sender, StartupEventArgs e)
@@ -167,13 +168,28 @@ public partial class App : Application
     {
         if (_activeOverlay is not null) return;
 
-        var overlay = new OverlayWindow(_store.Current);
+        var monitors = MonitorHelper.GetAllMonitors();
+        var primary = monitors.FirstOrDefault(m => m.IsPrimary, monitors[0]);
+
+        var overlay = new OverlayWindow(_store.Current, primary);
         _activeOverlay = overlay;
+
+        foreach (var monitor in monitors.Where(m => !m.IsPrimary))
+        {
+            var backdrop = new OverlayBackdropWindow(monitor);
+            _overlayBackdrops.Add(backdrop);
+            backdrop.Show();
+        }
 
         overlay.Snoozed += (_, _) => { _scheduler?.Snooze(); _habitLogService?.LogSnoozed(); };
         overlay.Dismissed += (_, _) => _habitLogService?.LogDismissed();
         overlay.HabitsStarted += (_, habits) => _habitLogService?.LogHabitsStarted(habits);
-        overlay.Closed += (_, _) => _activeOverlay = null;
+        overlay.Closed += (_, _) =>
+        {
+            _activeOverlay = null;
+            foreach (var backdrop in _overlayBackdrops) backdrop.Close();
+            _overlayBackdrops.Clear();
+        };
 
         overlay.Show();
         overlay.Activate();

@@ -27,7 +27,7 @@ public partial class OverlayWindow : Window
     /// <summary>Fires with all selected habits at once when the rest starts.</summary>
     public event EventHandler<IReadOnlyList<Habit>>? HabitsStarted;
 
-    public OverlayWindow(AppSettings settings)
+    public OverlayWindow(AppSettings settings, MonitorHelper.MonitorBounds? screen = null)
     {
         InitializeComponent();
         _settings = settings;
@@ -35,7 +35,7 @@ public partial class OverlayWindow : Window
         SubtitleText.Text = $"Step away for {settings.RestMinutes} minutes. Pick what you'll do.";
         SnoozeButton.Content = $"Snooze {settings.SnoozeMinutes} min";
 
-        CoverPrimaryScreen();
+        CoverScreen(screen);
         BuildCards();
 
         StartButton.Click += (_, _) => StartRest();
@@ -56,12 +56,16 @@ public partial class OverlayWindow : Window
         Loaded += (_, _) => FadeIn();
     }
 
-    private void CoverPrimaryScreen()
+    private void CoverScreen(MonitorHelper.MonitorBounds? screen)
     {
-        Left = SystemParameters.VirtualScreenLeft;
-        Top = SystemParameters.VirtualScreenTop;
-        Width = SystemParameters.PrimaryScreenWidth;
-        Height = SystemParameters.PrimaryScreenHeight;
+        var bounds = screen ?? new MonitorHelper.MonitorBounds(
+            SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenTop,
+            SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight, true);
+
+        Left = bounds.Left;
+        Top = bounds.Top;
+        Width = bounds.Width;
+        Height = bounds.Height;
         WindowState = WindowState.Normal;
     }
 
