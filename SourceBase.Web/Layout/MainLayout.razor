@@ -92,7 +92,7 @@
     </div>
 </div>
 
-<UserModal IsVisible="@_showEditCurrentUser" User="@AuthStateProvider.UserInfo" AllRoles="@_allRoles" OnClose="CloseEditCurrentUser" OnSaved="OnCurrentUserSavedAsync" />
+<UserModal IsVisible="@_showEditCurrentUser" IsSelfEdit="true" User="@AuthStateProvider.UserInfo" AllRoles="@_allRoles" OnClose="CloseEditCurrentUser" OnSaved="OnCurrentUserSavedAsync" />
 <ToastContainer />
 
 @code {

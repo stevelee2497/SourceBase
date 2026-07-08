@@ -57,7 +57,19 @@ public static class DependencyInjection
                         return Task.CompletedTask;
                     }
                 };
-            });
+            })
+            .AddCookie(Constants.ExternalScheme);
+
+        if (!string.IsNullOrEmpty(appSettings.GoogleOAuth.ClientId))
+        {
+            services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    options.ClientId = appSettings.GoogleOAuth.ClientId;
+                    options.ClientSecret = appSettings.GoogleOAuth.ClientSecret;
+                    options.SignInScheme = Constants.ExternalScheme;
+                });
+        }
 
         services.AddSignalR();
         services.AddSingleton<IDateTime, DateTimeProvider>();

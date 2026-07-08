@@ -55,6 +55,16 @@ public static class Utilities
         {
             return self.Replace("{id:guid}", id.ToString(), StringComparison.Ordinal);
         }
+
+        public string WithCode(string code)
+        {
+            return self.Replace("{code}", code, StringComparison.Ordinal);
+        }
+
+        public string WithState(string state)
+        {
+            return self.Replace("{state}", state, StringComparison.Ordinal);
+        }
     }
 
     extension(ClaimsPrincipal claimsPrincipal)

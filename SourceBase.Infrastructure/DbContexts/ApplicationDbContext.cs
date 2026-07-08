@@ -90,6 +90,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasIndex(x => new { x.UserId, x.Name })
             .IsUnique();
 
+        modelBuilder.Entity<UserEntity>()
+            .HasIndex(x => x.GoogleId)
+            .IsUnique()
+            .HasFilter("\"GoogleId\" IS NOT NULL");
+
     }
 
     private static void SeedHabits(DbContext context)

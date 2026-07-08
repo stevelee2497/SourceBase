@@ -8,7 +8,9 @@ public class UserEntity : BaseAuditableEntity
 
     public bool EmailConfirmed { get; set; }
 
-    public required string PasswordHash { get; set; }
+    public string? PasswordHash { get; set; }
+
+    public string? GoogleId { get; set; }
 
     public required string SecurityStamp { get; set; }
 

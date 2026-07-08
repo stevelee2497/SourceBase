@@ -1,0 +1,61 @@
+@page "/auth/google/callback"
+@layout AuthLayout
+@attribute [AllowAnonymous]
+@inject ApiHttpClient Api
+@inject BlazorAuthStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+@if (_loading)
+{
+    <div class="flex flex-col items-center gap-3 py-8">
+        <svg class="animate-spin w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Signing you in…</p>
+    </div>
+}
+else if (!string.IsNullOrEmpty(_error))
+{
+    <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Sign-in failed</h2>
+    <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 px-4 py-3 text-sm text-red-700 dark:text-red-400">@_error</div>
+    <a href="/login" class="btn-primary w-full text-center block">Back to sign in</a>
+}
+
+@code {
+    [SupplyParameterFromQuery] public string? Code { get; set; }
+
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Code))
+        {
+            _error = "Invalid callback link. Please try signing in again.";
+            _loading = false;
+            return;
+        }
+
+        var (tokens, tokenError) = await Api.ExchangeGoogleCodeAsync(Code);
+        if (tokenError is not null || tokens is null)
+        {
+            _error = tokenError?.Message ?? "Sign-in failed. Please try again.";
+            _loading = false;
+            return;
+        }
+
+        await AuthStateProvider.SetTokensAsync(tokens);
+
+        var (userInfo, userInfoError) = await Api.GetUserInfoAsync();
+        if (userInfoError is not null || userInfo is null)
+        {
+            _error = userInfoError?.Message ?? "An unexpected error occurred. Please try again.";
+            _loading = false;
+            return;
+        }
+
+        AuthStateProvider.SetUserInfo(userInfo);
+        Navigation.NavigateTo("/");
+    }
+}

@@ -4,16 +4,25 @@
 <div class="fixed top-4 right-4 z-100 flex flex-col gap-2 w-80 max-w-[calc(100vw-2rem)] pointer-events-none">
     @foreach (var toast in Toast.Toasts)
     {
-        <div class="bg-white dark:bg-gray-800 border border-red-200 dark:border-red-900/40 rounded-lg shadow-lg p-3 pointer-events-auto flex flex-col gap-1.5 animate-in" @key="toast.Id">
+        <div class="bg-white dark:bg-gray-800 border @(toast.Type == "success" ? "border-green-200 dark:border-green-900/40" : "border-red-200 dark:border-red-900/40") rounded-lg shadow-lg p-3 pointer-events-auto flex flex-col gap-1.5 animate-in" @key="toast.Id">
             <div class="flex items-start gap-2">
                 <div class="shrink-0 mt-0.5">
-                    <svg class="w-4 h-4 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    @if (toast.Type == "success")
+                    {
+                        <svg class="w-4 h-4 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg class="w-4 h-4 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    }
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-1.5 flex-wrap">
-                        <span class="badge bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400">@toast.Code</span>
+                        <span class="badge @(toast.Type == "success" ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400" : "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400")">@toast.Code</span>
                         <span class="text-sm font-medium text-gray-800 dark:text-gray-200 wrap-break-word">@toast.Message</span>
                     </div>
                     @if (!string.IsNullOrEmpty(toast.TraceId))

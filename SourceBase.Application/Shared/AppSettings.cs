@@ -18,6 +18,15 @@ public class AppSettings
 
     public string[] AllowedSpecificOrigins { get; set; } = [];
     public string BetterStackSourceToken { get; set; } = string.Empty;
+
+    public GoogleOAuthSettings GoogleOAuth { get; set; } = new();
+}
+
+public class GoogleOAuthSettings
+{
+    public string ClientId { get; set; } = string.Empty;
+    public string ClientSecret { get; set; } = string.Empty;
+    public string FrontendUrl { get; set; } = string.Empty;
 }
 
 public class R2Settings
