@@ -54,9 +54,6 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
             {
                 ["AdminEmail"] = AdminEmail,
                 ["AdminPassword"] = AdminPassword,
-                ["GoogleOAuth:ClientId"] = "test-client-id",
-                ["GoogleOAuth:ClientSecret"] = "test-client-secret",
-                ["GoogleOAuth:FrontendUrl"] = "http://localhost:3000",
             };
 
             if (UseRedis && redisContainer != null)
