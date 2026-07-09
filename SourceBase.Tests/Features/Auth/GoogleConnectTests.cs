@@ -23,7 +23,7 @@ namespace SourceBase.Tests.Features.Auth;
     })]
 public class GoogleConnectTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    [RequiresRedisFact(DisplayName = "GOOGLE-CONNECT-001: authenticated user gets state token")]
+    [Fact(DisplayName = "GOOGLE-CONNECT-001: authenticated user gets state token")]
     public async Task PrepareConnect_AuthenticatedUser_ReturnsStateToken()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class GoogleConnectTests(WebAppFactory factory) : IClassFixture<WebAppFac
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [RequiresRedisFact(DisplayName = "GOOGLE-CONNECT-003: each prepare call returns a unique state token")]
+    [Fact(DisplayName = "GOOGLE-CONNECT-003: each prepare call returns a unique state token")]
     public async Task PrepareConnect_CalledTwice_ReturnsDifferentStates()
     {
         // Arrange

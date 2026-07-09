@@ -85,7 +85,7 @@ public class GoogleDisconnectTests(WebAppFactory factory) : IClassFixture<WebApp
         body!.Success.ShouldBeTrue();
     }
 
-    [RequiresRedisFact(DisplayName = "GOOGLE-DISCONNECT-004: Google-only user (no password) cannot disconnect — returns 400")]
+    [Fact(DisplayName = "GOOGLE-DISCONNECT-004: Google-only user (no password) cannot disconnect — returns 400")]
     public async Task Disconnect_GoogleOnlyUser_Returns400()
     {
         // Arrange — seed Google-only user then obtain a token via exchange code

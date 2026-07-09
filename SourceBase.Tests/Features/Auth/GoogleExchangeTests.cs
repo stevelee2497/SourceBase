@@ -57,7 +57,7 @@ public class GoogleExchangeTests(WebAppFactory factory) : IClassFixture<WebAppFa
         return (code, factory.CreateClient());
     }
 
-    [RequiresRedisFact(DisplayName = "GOOGLE-EXCHANGE-001: valid code returns 200 with access token")]
+    [Fact(DisplayName = "GOOGLE-EXCHANGE-001: valid code returns 200 with access token")]
     public async Task Exchange_ValidCode_Returns200WithAccessToken()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class GoogleExchangeTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body!.AccessToken.ShouldNotBeNullOrEmpty();
     }
 
-    [RequiresRedisFact(DisplayName = "GOOGLE-EXCHANGE-002: exchange response includes refresh token and token type")]
+    [Fact(DisplayName = "GOOGLE-EXCHANGE-002: exchange response includes refresh token and token type")]
     public async Task Exchange_ValidCode_ResponseIncludesFullTokenShape()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class GoogleExchangeTests(WebAppFactory factory) : IClassFixture<WebAppFa
         body.ExpiresIn.ShouldBeGreaterThan(0);
     }
 
-    [RequiresRedisFact(DisplayName = "GOOGLE-EXCHANGE-003: code is one-time-use — second call returns 401")]
+    [Fact(DisplayName = "GOOGLE-EXCHANGE-003: code is one-time-use — second call returns 401")]
     public async Task Exchange_SameCodeTwice_SecondCallReturns401()
     {
         // Arrange

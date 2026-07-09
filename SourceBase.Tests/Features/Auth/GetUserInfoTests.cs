@@ -128,7 +128,7 @@ public class GetUserInfoTests(WebAppFactory factory) : IClassFixture<WebAppFacto
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [RequiresRedisFact(DisplayName = "GET-INFO-005: caches result and serves stale data before invalidation")]
+    [Fact(DisplayName = "GET-INFO-005: caches result and serves stale data before invalidation")]
     public async Task GetUserInfo_CachesResult_ServesStaleDataBeforeCacheIsInvalidated()
     {
         // Arrange — register and log in as a fresh user
