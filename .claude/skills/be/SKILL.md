@@ -103,6 +103,25 @@ public class CreateTodoRequestValidator : AbstractValidator<CreateTodoRequest>
 }
 ```
 
+#### **Key rules:** Conventions For backend code:
+
+- Apply ## Key rules & Code conventions from CLAUDE.md to all backend code.
+- `IEndpoint` and `IRequestHandler<TRequest, TResponse>` are auto-discovered via `AddApplication()` — no manual registration.
+- All endpoints are mounted under `/api` with `RequireAuthorization()` by default; use `.AllowAnonymous()` to opt out.
+- Keep `MapEndpoint` chains on separate lines: `.MapXxx(...)`, then `.AllowAnonymous()` / `.RequireAuthorization(...)`, then `.WithTags(...)`.
+- Record/handler/constructor parameters on one line; avoid multi-line parameter lists.
+- For update endpoints the `Id` is a route parameter, marked `[property: SwaggerIgnore]` and `[property: FromRoute]` in the request record to hide it from the OpenAPI schema and bind value from the route.
+- DI wiring: `AddApplication()` in `SourceBase.Application/DependencyInjection.cs`; `AddInfrastructure()` in `SourceBase.Infrastructure/DependencyInjection.cs`.
+- Interfaces belong in `SourceBase.Application/Shared/Interfaces/`; implementations in `SourceBase.Infrastructure/Implementations/`.
+- Pagination: define `OrderBy` enums per feature and use `PagingRequest` base class. Apply `.PaginateAsync()` on `IQueryable`.
+- **Update endpoints use `PATCH` with partial update semantics.** All request fields are nullable; only provided (non-null) fields are applied. Handler uses null-coalescing: `entity.Field = request.Field ?? entity.Field`. Validator rules are guarded with `.When(x => x.Field is not null)`. Sending `null` keeps the existing value — it does not clear a field.
+- **DB-level validation (e.g. existence checks) belongs in the handler**, not the validator.
+- Enums stored as strings via `EnumToStringConverter`. -**Entities** — inherit `BaseAuditableEntity` (`Id`, `CreatedOn/By`, `UpdatedOn/By`). Audit fields set automatically by `ApplicationDbContextAuditInterceptor` — never set manually.
+- **Config** — add new settings to `AppSettings.cs` and `appsettings.json`. Inject as `IOptions<AppSettings>` or singleton `AppSettings`.
+- **Errors** — throw typed exceptions; `GlobalExceptionMiddleware` maps them:
+  - `NotFoundException` → 404 · `UnAuthorizedException` → 401 · `ForbiddenException` → 403
+  - `BadRequestException` → 400 · `ValidationException` → 400 (field errors) · `ApiInternalException` → 500
+
 ### Tests
 
 - `WebAppFactory` — full app with an isolated in-memory SQLite database per test run, seeded with an admin user (`AdminEmail` / `AdminPassword` from config).
@@ -155,27 +174,11 @@ public class CreateTodoTests(WebAppFactory factory) : IClassFixture<WebAppFactor
 
 ```
 
-## **Key rules:** Conventions
-
-- Apply ## Key rules & Code conventions from CLAUDE.md to all backend code.
-- `IEndpoint` and `IRequestHandler<TRequest, TResponse>` are auto-discovered via `AddApplication()` — no manual registration.
-- All endpoints are mounted under `/api` with `RequireAuthorization()` by default; use `.AllowAnonymous()` to opt out.
-- Keep `MapEndpoint` chains on separate lines: `.MapXxx(...)`, then `.AllowAnonymous()` / `.RequireAuthorization(...)`, then `.WithTags(...)`.
-- Record/handler/constructor parameters on one line; avoid multi-line parameter lists.
-- For update endpoints the `Id` is a route parameter, marked `[property: SwaggerIgnore]` and `[property: FromRoute]` in the request record to hide it from the OpenAPI schema and bind value from the route.
-- DI wiring: `AddApplication()` in `SourceBase.Application/DependencyInjection.cs`; `AddInfrastructure()` in `SourceBase.Infrastructure/DependencyInjection.cs`.
-- Interfaces belong in `SourceBase.Application/Shared/Interfaces/`; implementations in `SourceBase.Infrastructure/Implementations/`.
-- Pagination: define `OrderBy` enums per feature and use `PagingRequest` base class. Apply `.PaginateAsync()` on `IQueryable`.
-- **Update endpoints use `PATCH` with partial update semantics.** All request fields are nullable; only provided (non-null) fields are applied. Handler uses null-coalescing: `entity.Field = request.Field ?? entity.Field`. Validator rules are guarded with `.When(x => x.Field is not null)`. Sending `null` keeps the existing value — it does not clear a field.
-- **DB-level validation (e.g. existence checks) belongs in the handler**, not the validator.
-- Enums stored as strings via `EnumToStringConverter`. -**Entities** — inherit `BaseAuditableEntity` (`Id`, `CreatedOn/By`, `UpdatedOn/By`). Audit fields set automatically by `ApplicationDbContextAuditInterceptor` — never set manually.
-- **Config** — add new settings to `AppSettings.cs` and `appsettings.json`. Inject as `IOptions<AppSettings>` or singleton `AppSettings`.
-- **Errors** — throw typed exceptions; `GlobalExceptionMiddleware` maps them:
-  - `NotFoundException` → 404 · `UnAuthorizedException` → 401 · `ForbiddenException` → 403
-  - `BadRequestException` → 400 · `ValidationException` → 400 (field errors) · `ApiInternalException` → 500
+#### **Key rules:** Conventions for backend tests:
 
 - Test case **Naming:** for test methods, use the pattern `MethodName_WithCondition_ReturnsExpected`
 - **Test case IDs:** `{FEATURE}-{ACTION}-{NNN}` in `DisplayName` (e.g. `TODOS-CREATE-001`)
 - All test payload data defined inline — no helper methods that hide intent.
 - All API calls must use strong-typed Route constants (e.g. `CreateTodoEndpoint.Route`) — never hardcoded strings.
 - Avoid `WithDbContextAsync` in tests unless asserting on a DB field not exposed by the API response.
+- Should use AAA pattern (Arrange, Act, Assert) for clarity.
