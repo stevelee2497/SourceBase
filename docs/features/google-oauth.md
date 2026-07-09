@@ -26,6 +26,48 @@ Frontend → GET /api/auth/google (full-page redirect)
          → Frontend: SetTokensAsync → GetUserInfoAsync → SetUserInfo → navigate /
 ```
 
+```mermaid
+sequenceDiagram
+    actor User
+    participant FE as Frontend
+    participant API as API
+    participant Cache as Redis Cache
+    participant DB as Database
+    participant Google as Google OAuth
+
+    User->>FE: Click "Continue with Google"
+    FE->>API: GET /api/auth/google (full-page redirect)
+    API->>Google: ChallengeAsync("Google")
+    Google-->>User: Google consent screen
+    User->>Google: Grant permission
+    Google->>API: GET /signin-google?code=...
+    API->>API: Exchange code → ExternalLogin cookie
+
+    API->>API: GET /api/auth/google/complete
+    API->>DB: Find user by GoogleId or email
+    alt Match by GoogleId
+        DB-->>API: User found (no DB write)
+    else Match by email
+        DB-->>API: User found
+        API->>DB: Set GoogleId, save
+    else No match
+        API->>DB: Create new UserEntity (GoogleId, EmailConfirmed=true, PasswordHash=null)
+    end
+    API->>Cache: Store code → userId (2-min TTL)
+    API->>API: SignOutAsync(ExternalLogin)
+    API-->>FE: 302 {FrontendUrl}/auth/google/callback?code={uuid}
+
+    FE->>API: GET /api/auth/google/exchange?code={uuid}
+    API->>Cache: Lookup & delete code
+    Cache-->>API: userId
+    API->>API: SignInAsync(BearerScheme) → middleware emits tokens
+    API-->>FE: 200 OK (bearer tokens in body)
+    FE->>FE: SetTokensAsync
+    FE->>API: GET /api/auth/info
+    API-->>FE: UserInfo
+    FE->>FE: SetUserInfo → navigate /
+```
+
 **Find-or-create logic (in `/complete`, login mode):**
 1. Match by `GoogleId` → direct login (no DB write)
 2. Match by verified Google email → set `GoogleId`, save, login
@@ -48,6 +90,44 @@ Frontend → POST /api/auth/google/connect/prepare (Bearer)
          → Home page shows success toast
 ```
 
+```mermaid
+sequenceDiagram
+    actor User
+    participant FE as Frontend
+    participant API as API
+    participant Cache as Redis Cache
+    participant DB as Database
+    participant Google as Google OAuth
+
+    User->>FE: Click "Connect Google" (logged in)
+    FE->>API: POST /api/auth/google/connect/prepare (Bearer)
+    API->>Cache: Store state → userId
+    API-->>FE: 200 OK { state: "<uuid>" }
+
+    FE->>API: GET /api/auth/google/connect?state={uuid} (full-page redirect)
+    API->>Cache: Validate state
+    Cache-->>API: Valid
+    API->>Google: ChallengeAsync("Google") with state in AuthenticationProperties
+    Google-->>User: Google consent screen
+    User->>Google: Grant permission
+    Google->>API: GET /signin-google?code=...
+    API->>API: Exchange code → ExternalLogin cookie
+
+    API->>API: GET /api/auth/google/complete (connect-mode)
+    API->>Cache: Lookup userId from state
+    Cache-->>API: userId
+    API->>DB: Check if GoogleId already belongs to another user
+    alt GoogleId already linked elsewhere
+        API-->>FE: 302 {FrontendUrl}/login?google_error=already_linked
+        FE-->>User: Error toast
+    else GoogleId free
+        API->>DB: Set user.GoogleId, save
+        API->>Cache: Invalidate user-info cache
+        API-->>FE: 302 {FrontendUrl}/?google_connected=true
+        FE-->>User: Success toast
+    end
+```
+
 ### Disconnect Google
 
 ```
@@ -56,6 +136,29 @@ DELETE /api/auth/google/disconnect (Bearer)
   - set user.GoogleId = null, save
   - invalidate user-info cache
   → 200 { success: true }
+```
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant FE as Frontend
+    participant API as API
+    participant Cache as Redis Cache
+    participant DB as Database
+
+    User->>FE: Click "Disconnect Google"
+    FE->>API: DELETE /api/auth/google/disconnect (Bearer)
+    API->>DB: Load user
+    DB-->>API: UserEntity
+    alt PasswordHash is null
+        API-->>FE: 400 BadRequest ("Cannot disconnect Google when no password is set")
+        FE-->>User: Error toast
+    else PasswordHash is set
+        API->>DB: Set user.GoogleId = null, save
+        API->>Cache: Invalidate user-info cache
+        API-->>FE: 200 OK { success: true }
+        FE-->>User: Success toast
+    end
 ```
 
 ---
