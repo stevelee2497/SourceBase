@@ -124,8 +124,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
     public Task<ErrorResponse?> LogoutAsync() =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/auth/logout"));
 
-    public Task<(PrepareGoogleConnectResponse? data, ErrorResponse? error)> PrepareGoogleConnectAsync() =>
-        ExecuteAsync<PrepareGoogleConnectResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/auth/google/connect/prepare"));
+    public Task<(GooglePrepareConnectResponse? data, ErrorResponse? error)> GooglePrepareConnectAsync() =>
+        ExecuteAsync<GooglePrepareConnectResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/auth/google/connect/prepare"));
 
     public Task<ErrorResponse?> DisconnectGoogleAsync() =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, "/api/auth/google/disconnect"));
@@ -490,4 +490,4 @@ public sealed record GoldPriceResponse(Guid Id, string Source, decimal BuyPrice,
 public sealed record HabitLogResponse(Guid Id, string? HabitId, string? HabitName, string Action, DateTime OccurredAt, DateTime? CreatedOn);
 public sealed record HabitItemResponse(Guid Id, string Name, string? Icon, bool IsSystem, int LogCount);
 public sealed record MachineResponse(Guid Id, string Name, string? Alias, string Status, DateTime? LastReportedOn);
-public sealed record PrepareGoogleConnectResponse(string State);
+public sealed record GooglePrepareConnectResponse(string State);

@@ -191,7 +191,7 @@ public class GoogleConnectTests(WebAppFactory factory) : IClassFixture<WebAppFac
         var client = await factory.CreateAuthorizedClient();
         var response = await client.PostAsync("/api/auth/google/connect/prepare", null);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<PrepareGoogleConnectResponse>();
+        var body = await response.Content.ReadFromJsonAsync<GooglePrepareConnectResponse>();
         body.ShouldNotBeNull();
         body!.State.ShouldNotBeNullOrEmpty();
     }
