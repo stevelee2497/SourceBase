@@ -75,7 +75,7 @@ public static class Utilities
 
         public string? UserName => claimsPrincipal.FindFirstValue(ClaimTypes.Name);
 
-        public string? SecurityStamp => claimsPrincipal.FindFirstValue(Constants.SecurityStampClaimType);
+        public string? SecurityStamp => claimsPrincipal.FindFirstValue(CustomClaimTypes.SecurityStamp);
 
         public IEnumerable<string> Roles => claimsPrincipal.FindAll(ClaimTypes.Role).Select(x => x.Value);
     }

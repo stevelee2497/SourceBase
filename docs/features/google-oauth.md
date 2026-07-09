@@ -251,6 +251,43 @@ Secrets injected via CI/CD environment variables (same pattern as `R2` settings)
 
 ---
 
+## Architecture Notes
+
+### Why Redis is Required
+
+Redis is needed because the OAuth flow is **redirect-based** — the browser hops between your API and Google, so you can't hold state in memory or pass it directly in the response.
+
+**Exchange Code (Login flow):** After `/complete` verifies the Google identity, it can't directly return tokens — the browser is mid-redirect. So it stores `code → userId` in Redis with a 2-min TTL, then redirects the frontend to `/auth/google/callback?code={uuid}`. The frontend calls `/exchange?code=...` to claim the tokens. The code acts as a short-lived, one-time bridge between the OAuth callback and token issuance.
+
+**Connect State (Connect flow):** When a logged-in user initiates a Google connect, the API needs to know *which user* triggered it once Google redirects back — because the redirect loses the original Bearer token context. So it stores `state → userId` in Redis before the redirect and reads it back in `/complete`.
+
+A database would work functionally but Redis is the right fit here: these are **ephemeral entries** (2-min TTL) with automatic cleanup, not domain data worth persisting.
+
+### The `/signin-google` Endpoint
+
+`/signin-google` is **not** a custom endpoint in the codebase. It is the **default `CallbackPath`** automatically registered by ASP.NET Core's Google OAuth middleware when calling `.AddGoogle(...)` in `DependencyInjection.cs`:
+
+```csharp
+.AddGoogle(options =>
+{
+    options.ClientId = appSettings.GoogleOAuth.ClientId;
+    options.ClientSecret = appSettings.GoogleOAuth.ClientSecret;
+    options.SignInScheme = Constants.ExternalScheme;
+    // options.CallbackPath defaults to "/signin-google"
+});
+```
+
+The middleware intercepts `GET /signin-google` internally before any controller or minimal API route sees it. It:
+1. Validates the `code` + `state` params received from Google
+2. Exchanges the code for an access token with Google's token endpoint
+3. Builds a `ClaimsPrincipal` from Google's user info
+4. Signs in under the `ExternalLogin` scheme → sets the ExternalLogin cookie
+5. Redirects to your `/api/auth/google/complete`
+
+This is why it appears in the sequence diagram but has no corresponding file in the repository.
+
+---
+
 ## Open Decisions
 
 - **Local dev without Redis:** exchange-code and connect-state cache lookups silently return null, so the flow fails. Requirement: Redis must be running locally (`RedisEnabled: true`) to test Google OAuth end-to-end.

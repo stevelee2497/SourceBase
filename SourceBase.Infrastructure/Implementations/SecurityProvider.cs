@@ -21,7 +21,7 @@ public class SecurityProvider(IOptionsMonitor<BearerTokenOptions> bearerTokenOpt
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
             new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-            new Claim(Constants.SecurityStampClaimType, user.SecurityStamp ?? string.Empty),
+            new Claim(CustomClaimTypes.SecurityStamp, user.SecurityStamp ?? string.Empty),
             ..user.Roles.Select(role => new Claim(ClaimTypes.Role, role.Name ?? string.Empty)),
             ..additionalClaims ?? []
         ];

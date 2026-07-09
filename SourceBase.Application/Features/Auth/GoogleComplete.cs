@@ -33,10 +33,6 @@ public class GoogleCompleteHandler(IDbContext dbContext, ICacheService cacheServ
 
         var principal = result.Principal;
         var googleId = principal.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var email = principal.FindFirstValue(ClaimTypes.Email);
-        var isEmailVerified = principal.FindFirstValue("email_verified") == "true"
-            || principal.HasClaim(c => c.Type == "email_verified" && c.Value == "True");
-
         await ctx.SignOutAsync(Constants.ExternalScheme);
 
         // ── Connect mode ──────────────────────────────────────────────────────
@@ -70,18 +66,17 @@ public class GoogleCompleteHandler(IDbContext dbContext, ICacheService cacheServ
         }
 
         // ── Login mode ────────────────────────────────────────────────────────
-        var existingUser = await dbContext.Users.Include(u => u.Roles)
-            .FirstOrDefaultAsync(u => u.GoogleId == googleId, ct);
 
-        if (existingUser is null && isEmailVerified && email is not null)
-            existingUser = await dbContext.Users.Include(u => u.Roles)
-                .FirstOrDefaultAsync(u => u.Email == email, ct);
+        var email = principal.FindFirstValue(ClaimTypes.Email);
+        var emailVerified = principal.FindFirstValue(CustomClaimTypes.EmailVerified) == "true" || principal.HasClaim(c => c.Type == CustomClaimTypes.EmailVerified && c.Value == "True");
 
+        var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.GoogleId == googleId || (emailVerified && u.Email == email), ct);
         if (existingUser is null)
         {
             existingUser = await CreateGoogleUserAsync(googleId, email, ct);
         }
-        else if (existingUser.GoogleId != googleId)
+
+        if (existingUser.GoogleId != googleId)
         {
             existingUser.GoogleId = googleId;
             await dbContext.SaveChangesAsync(ct);
@@ -96,26 +91,20 @@ public class GoogleCompleteHandler(IDbContext dbContext, ICacheService cacheServ
 
     private async Task<UserEntity> CreateGoogleUserAsync(string googleId, string? email, CancellationToken ct)
     {
-        var baseUserName = email is not null
-            ? email.Split('@')[0].Replace(".", "").Replace("+", "").ToLower()
-            : "user";
+        var baseUserName = email?.Split('@')[0].Replace(".", "").Replace("+", "").ToLower() ?? "user";
 
-        var userName = baseUserName;
-        if (await dbContext.Users.AnyAsync(u => u.UserName == userName, ct))
-            userName = $"{baseUserName}-{Guid.NewGuid().ToString("N")[..4]}";
-
-        var userRole = await dbContext.Roles.FirstOrDefaultAsync(r => r.Name == AppRoles.User, ct);
+        var userRole = await dbContext.Roles.FirstOrDefaultAsync(r => r.Name == AppRoles.User, ct) ?? throw new ApiInternalException("Default user role not found. Please ensure the database is seeded correctly.");
 
         var user = new UserEntity
         {
             GoogleId = googleId,
             Email = email,
-            UserName = userName,
+            UserName = $"{baseUserName}-{Guid.NewGuid().ToString("N")[..4]}",
             EmailConfirmed = true,
             PasswordHash = null,
             SecurityStamp = Guid.NewGuid().ToString(),
+            Roles = [userRole]
         };
-        if (userRole is not null) user.Roles.Add(userRole);
 
         dbContext.Users.Add(user);
         await dbContext.SaveChangesAsync(ct);
