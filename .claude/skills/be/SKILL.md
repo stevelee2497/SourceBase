@@ -10,13 +10,14 @@ Backend coding conventions and architecture for SourceBase.
 
 ## Superpowers Workflow
 
-This skill operates under the [Superpowers](https://github.com/obra/Superpowers) methodology. Before writing backend code, follow these conventions — they are mandatory workflows, not suggestions.
+Before writing backend code, follow these conventions — they are mandatory workflows, not suggestions.
 
 ### Before coding (spec-first)
 
 - **Write the spec to /docs/features first**. Before any code, capture the agreed design as a spec document in the docs/ folder (e.g. docs/features /<feature-name>.md): use case, request/response shape, validation rules, failure modes, and any DB/migration impact. This is the source of truth the implementation is reviewed against.
 - **Brainstorm before building.** For any non-trivial feature, don't jump to code. Tease out the spec first: what use case, what request/response shape, what validation rules, what failure modes. Present the design in small chunks for sign-off before implementing.
 - **YAGNI.** Build only the slice the current use case needs. No speculative interfaces, no "we might need this later" abstractions. One file per use case (request, response, endpoint, handler, validator) — nothing more.
+- Create branch and commit the docs.
 
 ### While coding (TDD)
 
@@ -26,6 +27,7 @@ This skill operates under the [Superpowers](https://github.com/obra/Superpowers)
   3. Refactor with tests green.
 - **Delete code written before its test.** If implementation exists without a failing test that drove it, remove it and restart the cycle.
 - Test the handler's behavior (happy path, validation failures, NotFound/Forbidden paths), not EF Core internals.
+- Commit after each slice is green, not after the whole feature is done. Each commit should be a small, self-contained slice of functionality that passes its tests.
 
 ### After coding (verify, don't claim)
 
@@ -40,9 +42,6 @@ This skill operates under the [Superpowers](https://github.com/obra/Superpowers)
 ## Commands
 
 ```sh
-# Development
-sh run.sh                                  # API + Web
-
 # Build & test
 dotnet build
 dotnet test
