@@ -721,12 +721,12 @@ else
         if (_transactionAmount <= 0) { _transactionFormError = "Amount must be greater than zero."; return; }
         if (ParseGuid(_transactionCategoryId) is not Guid categoryId) { _transactionFormError = "Category is required."; return; }
 
-        if (_selectedWalletIds.Count == 0) { _transactionFormError = "Please select a wallet first."; return; }
+        if (ParseGuid(_transactionWalletId) is not Guid walletId) { _transactionFormError = "Wallet is required."; return; }
 
         _savingTransaction = true;
         var error = _editingTransaction is null
-            ? await Api.CreateTransactionAsync(_selectedWalletIds.First(), _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId)
-            : await Api.UpdateTransactionAsync(_editingTransaction.Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId, ParseGuid(_transactionWalletId));
+            ? await Api.CreateTransactionAsync(walletId, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId)
+            : await Api.UpdateTransactionAsync(_editingTransaction.Id, _transactionAmount, _transactionType, _transactionDate.ToString("yyyy-MM-dd"), CleanOptional(_transactionNote), categoryId, walletId);
 
         if (error is not null) { _transactionFormError = error.Message ?? "Failed to save transaction."; _savingTransaction = false; return; }
 
