@@ -125,8 +125,22 @@
             }
             else
             {
-                <div class="text-sm lg:text-2xl text-center font-bold text-emerald-600 dark:text-emerald-400">@FormatAmount(@record.SellPrice)</div>
-                <div class="text-[11px] lg:text-md font-semibold text-right text-red-600 dark:text-red-400">@FormatAmount(@record.BuyPrice)</div>
+                <div class="text-sm lg:text-lg text-center font-bold text-emerald-600 dark:text-emerald-400">@FormatAmount(@record.SellPrice)</div>
+                @if (source == "GiaVang")
+                {
+                    @if (_goldUsdPriceLoading)
+                    {
+                        <div class="text-[11px] lg:text-md font-semibold text-right text-orange-500 dark:text-orange-400">Loading…</div>
+                    }
+                    else
+                    {
+                        <div class="text-[11px] lg:text-md font-semibold text-right text-orange-500 dark:text-orange-400">$@(_goldUsdPrice.HasValue ? _goldUsdPrice.Value.ToString("N0") : "—")/oz</div>
+                    }
+                }
+                else
+                {
+                    <div class="text-[11px] lg:text-md font-semibold text-right text-red-600 dark:text-red-400">@FormatAmount(@record.BuyPrice)</div>
+                }
             }
         </div>
     }
@@ -293,6 +307,9 @@
     private decimal? _btcPrice;
     private bool _btcPriceLoading = true;
 
+    private decimal? _goldUsdPrice;
+    private bool _goldUsdPriceLoading = true;
+
     private List<HabitItemResponse> _habits = [];
     private bool _habitsLoading = true;
     private Guid? _loggingHabitId;
@@ -306,7 +323,7 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.Yield();
-        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync(), LoadHabitsAsync(), LoadBtcPriceAsync());
+        await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync(), LoadHabitsAsync(), LoadBtcPriceAsync(), LoadGoldUsdPriceAsync());
     }
 
     private async Task LoadHabitsAsync()
@@ -340,7 +357,23 @@
         _btcPriceLoading = false;
     }
 
+    private async Task LoadGoldUsdPriceAsync()
+    {
+        _goldUsdPriceLoading = true;
+        try
+        {
+            var response = await Http.GetFromJsonAsync<GoldApiPriceResponse>("https://api.gold-api.com/price/XAU");
+            _goldUsdPrice = response?.Price is > 0 ? (decimal)response.Price : null;
+        }
+        catch
+        {
+            _goldUsdPrice = null;
+        }
+        _goldUsdPriceLoading = false;
+    }
+
     private record BinanceTickerPriceResponse(string Symbol, string Price);
+    private record GoldApiPriceResponse(string Symbol, double Price);
 
     private static bool IsGoldPriceLive(GoldPriceResponse? record) =>
         record is not null && (DateTime.UtcNow - record.RecordedAt).TotalHours < 2;
