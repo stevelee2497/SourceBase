@@ -4,6 +4,7 @@ using Shouldly;
 using SourceBase.Domain.Entities;
 using SourceBase.Application.Features.Categories;
 using SourceBase.Application.Features.Transactions;
+using SourceBase.Application.Features.Transfers;
 using SourceBase.Application.Features.Wallets;
 using SourceBase.Application.Shared;
 using SourceBase.Tests.Infrastructure;
@@ -371,5 +372,59 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         body!.Total.ShouldBe(3);
         body.Items.Count.ShouldBe(1);
         body.Items[0].Id.ShouldBe(second!.Id);
+    }
+
+    [Fact(DisplayName = "TXN-GET-ALL-013: exclude=Transfer hides transfer transactions")]
+    public async Task GetTransactions_WithExcludeTransfer_ExcludesTransferTransactions()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var walletAResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
+        var walletA = await walletAResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var walletBResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
+        var walletB = await walletBResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var catResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Income");
+        var categories = await catResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();
+        var incomeCategoryId = categories!.First(x => x.IsSystem).Id;
+
+        var txnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = walletA!.Id, amount = 50m, type = "Income", date = "2025-03-01", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
+        var txn = await txnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
+
+        await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = walletA.Id, toWalletId = walletB!.Id, amount = 30m, date = "2025-03-02" });
+
+        // Act
+        var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?limit=50&exclude=Transfer");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
+        body!.Items.ShouldAllBe(t => !t.IsTransfer);
+        body.Items.ShouldContain(t => t.Id == txn!.Id);
+    }
+
+    [Fact(DisplayName = "TXN-GET-ALL-014: without exclude flag includes transfer transactions")]
+    public async Task GetTransactions_WithoutExcludeFlag_IncludesTransferTransactions()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var walletAResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 100m, currency = "USD", icon = "💳" });
+        var walletA = await walletAResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var walletBResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
+        var walletB = await walletBResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        await client.PostAsJsonAsync(CreateTransferEndpoint.Route, new { fromWalletId = walletA!.Id, toWalletId = walletB!.Id, amount = 40m, date = "2025-04-01" });
+
+        // Act
+        var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?limit=50");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
+        body!.Items.ShouldContain(t => t.IsTransfer);
     }
 }

@@ -79,11 +79,17 @@ else
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="form-label">Date From</label>
-                    <InputDate @bind-Value="_dateFrom" class="form-input" />
+                    <div class="relative">
+                        <InputDate @bind-Value="_dateFrom" class="@DateFilterClass(_dateFrom)" />
+                        @if (_dateFrom == null) { <span class="absolute inset-y-0 left-3 flex items-center text-sm text-gray-400 dark:text-gray-500 pointer-events-none">From</span> }
+                    </div>
                 </div>
                 <div>
                     <label class="form-label">Date To</label>
-                    <InputDate @bind-Value="_dateTo" class="form-input" />
+                    <div class="relative">
+                        <InputDate @bind-Value="_dateTo" class="@DateFilterClass(_dateTo)" />
+                        @if (_dateTo == null) { <span class="absolute inset-y-0 left-3 flex items-center text-sm text-gray-400 dark:text-gray-500 pointer-events-none">To</span> }
+                    </div>
                 </div>
                 <div>
                     <label class="form-label">Category</label>
@@ -388,7 +394,7 @@ else
     private async Task LoadTransactionsAsync()
     {
         _loadingTransactions = true;
-        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, new[] { Id }, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId));
+        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, new[] { Id }, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId), !string.IsNullOrEmpty(_typeFilter));
         if (error is not null)
         {
             _transactions = [];
@@ -622,6 +628,7 @@ else
     private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MMM yyyy") : value;
 
     private string TypeFilterClass(string type) => _typeFilter == type ? "btn-primary btn-sm" : "btn-secondary btn-sm";
+    private static string DateFilterClass(DateOnly? value) => $"form-input date-filter {(value == null ? "date-empty" : "")}".Trim();
 
     private static (string start, string end) CurrentMonthRange()
     {

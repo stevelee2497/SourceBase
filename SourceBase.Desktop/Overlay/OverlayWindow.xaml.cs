@@ -15,7 +15,7 @@ public partial class OverlayWindow : Window
 
     private readonly AppSettings _settings;
     private readonly DispatcherTimer _restTimer = new() { Interval = TimeSpan.FromSeconds(1) };
-    private readonly HashSet<Habit> _selected = [];
+    private Habit? _selected;
     private TimeSpan _remaining;
     private bool _restStarted;
 
@@ -38,7 +38,6 @@ public partial class OverlayWindow : Window
         CoverScreen(screen);
         BuildCards();
 
-        StartButton.Click += (_, _) => StartRest();
         SnoozeButton.Click += (_, _) => { Snoozed?.Invoke(this, EventArgs.Empty); AnimateOutAndClose(); };
         DismissButton.Click += (_, _) =>
         {
@@ -128,31 +127,8 @@ public partial class OverlayWindow : Window
         stack.Children.Add(visual);
         stack.Children.Add(label);
 
-        // Checkmark badge (top-right), hidden until selected.
-        var check = new Border
-        {
-            Width = 24,
-            Height = 24,
-            CornerRadius = new CornerRadius(12),
-            Background = new SolidColorBrush(accent),
-            HorizontalAlignment = HorizontalAlignment.Right,
-            VerticalAlignment = VerticalAlignment.Top,
-            Margin = new Thickness(0, 8, 8, 0),
-            Visibility = Visibility.Collapsed,
-            Child = new TextBlock
-            {
-                Text = "\u2713",
-                Foreground = Brushes.White,
-                FontSize = 13,
-                FontWeight = FontWeights.Bold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-            },
-        };
-
         var content = new Grid();
         content.Children.Add(stack);
-        content.Children.Add(check);
 
         var card = new Border
         {
@@ -168,43 +144,18 @@ public partial class OverlayWindow : Window
             Tag = habit,
         };
 
-        card.MouseLeftButtonUp += (_, _) => ToggleCard(card, check, habit, accent);
-        card.MouseEnter += (_, _) =>
-        {
-            if (!_selected.Contains(habit))
-                card.BorderBrush = new SolidColorBrush(accent);
-        };
-        card.MouseLeave += (_, _) =>
-        {
-            if (!_selected.Contains(habit))
-                card.BorderBrush = new SolidColorBrush(Color.FromRgb(0xEC, 0xEE, 0xF1));
-        };
+        card.MouseLeftButtonUp += (_, _) => SelectAndStart(habit);
+        card.MouseEnter += (_, _) => card.BorderBrush = new SolidColorBrush(accent);
+        card.MouseLeave += (_, _) => card.BorderBrush = new SolidColorBrush(Color.FromRgb(0xEC, 0xEE, 0xF1));
 
         return card;
     }
 
-    private void ToggleCard(Border card, Border check, Habit habit, Color accent)
+    private void SelectAndStart(Habit habit)
     {
         if (_restStarted) return;
-
-        if (_selected.Add(habit))
-        {
-            card.BorderBrush = new SolidColorBrush(accent);
-            card.BorderThickness = new Thickness(2);
-            card.Background = new SolidColorBrush(Color.FromArgb(0x14, accent.R, accent.G, accent.B));
-            check.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            _selected.Remove(habit);
-            card.BorderBrush = new SolidColorBrush(Color.FromRgb(0xEC, 0xEE, 0xF1));
-            card.BorderThickness = new Thickness(1);
-            card.Background = new SolidColorBrush(Color.FromRgb(0xF9, 0xFA, 0xFB));
-            check.Visibility = Visibility.Collapsed;
-        }
-
-        StartButton.IsEnabled = _selected.Count > 0;
-        StartButton.Content = _selected.Count > 1 ? $"Start rest ({_selected.Count})" : "Start rest";
+        _selected = habit;
+        StartRest();
     }
 
     private UIElement BuildVisual(Habit habit)
@@ -231,18 +182,16 @@ public partial class OverlayWindow : Window
 
     private void StartRest()
     {
-        if (_selected.Count == 0) return;
+        if (_selected is null) return;
 
-        HabitsStarted?.Invoke(this, [.. _selected]);
+        HabitsStarted?.Invoke(this, [_selected]);
 
         _restStarted = true;
         HabitItems.Visibility = Visibility.Collapsed;
-        StartButton.Visibility = Visibility.Collapsed;
         SnoozeButton.Visibility = Visibility.Collapsed;
         DismissButton.Content = "I'm done";
 
-        var names = string.Join("  ", _selected.Select(h => $"{h.Emoji} {h.Name}"));
-        SubtitleText.Text = $"{names} - nice. Take your time.";
+        SubtitleText.Text = $"{_selected.Emoji} {_selected.Name} - nice. Take your time.";
 
         _remaining = TimeSpan.FromMinutes(_settings.RestMinutes);
         UpdateCountdown();
