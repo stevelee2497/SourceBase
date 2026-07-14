@@ -170,11 +170,13 @@ else
                             <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
                         </div>
                     </div>
-                    <div>
-                        <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="form-input h-9.5" />
+                    <div class="relative">
+                        <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="@DateFilterClass(_dateFrom, "h-9.5")" />
+                        @if (_dateFrom == null) { <span class="absolute inset-y-0 left-3 flex items-center text-sm text-gray-400 dark:text-gray-500 pointer-events-none">From</span> }
                     </div>
-                    <div>
-                        <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="form-input h-9.5" />
+                    <div class="relative">
+                        <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="@DateFilterClass(_dateTo, "h-9.5")" />
+                        @if (_dateTo == null) { <span class="absolute inset-y-0 left-3 flex items-center text-sm text-gray-400 dark:text-gray-500 pointer-events-none">To</span> }
                     </div>
                 </div>
             </div>
@@ -823,6 +825,7 @@ else
     private static string? CleanOptional(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     private static DateOnly ParseDate(string value) => DateOnly.TryParse(value, out var date) ? date : DateOnly.FromDateTime(DateTime.Today);
     private string TypeFilterClass(string type) => _typeFilter == type ? "btn-primary btn-sm" : "btn-secondary btn-sm";
+    private static string DateFilterClass(DateOnly? value, string extra = "") => $"form-input date-filter {extra} {(value == null ? "date-empty" : "")}".Trim();
 
     private string TransactionIcon(TransactionResponse transaction)
     {

@@ -49,6 +49,18 @@
         @apply mt-1 text-sm text-red-600 dark:text-red-400;
     }
 
+    .date-filter {
+        color-scheme: light;
+    }
+
+    .dark .date-filter {
+        color-scheme: dark;
+    }
+
+    .date-filter.date-empty:not(:focus)::-webkit-datetime-edit {
+        color: transparent;
+    }
+
     .card {
         @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 dark:bg-gray-800 dark:border-gray-700;
     }
