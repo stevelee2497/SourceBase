@@ -310,7 +310,7 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
         if (categoryId.HasValue)
             url += $"&categoryId={categoryId}";
         if (excludeTransfers)
-            url += "&exclude=transfer";
+            url += $"&exclude=Transfer";
         return ExecuteAsync<PagingResponse<TransactionResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
     }
 
