@@ -77,6 +77,9 @@ public partial class App : Application
         _ = Task.Run(UpdateService.CheckAsync);
         _ = ReportMachineStartupAsync();
         _ = SyncHabitsAsync();
+
+        if (e.Args.Contains("--show-settings"))
+            Dispatcher.BeginInvoke(() => _ = OpenSettingsAsync());
     }
 
     private enum TrayGlyph { Mug, Pause, Leaf, Cup, Droplet }
@@ -197,7 +200,7 @@ public partial class App : Application
 
     private void OnBreakNow(object sender, RoutedEventArgs e) => ShowOverlay();
 
-    private async void OnOpenSettings(object sender, RoutedEventArgs e)
+    private async Task OpenSettingsAsync()
     {
         var window = new SettingsWindow(_store.Current);
         window.ShowDialog();
@@ -210,6 +213,8 @@ public partial class App : Application
             await SyncHabitsAsync();
         }
     }
+
+    private async void OnOpenSettings(object sender, RoutedEventArgs e) => await OpenSettingsAsync();
 
     private async Task SyncHabitsAsync()
     {
@@ -231,8 +236,13 @@ public partial class App : Application
     private void OnExit(object sender, ExitEventArgs e)
     {
         _machineReportScheduler?.Stop();
-        ReportMachineShutdownAsync().GetAwaiter().GetResult(); // sync wait for shutdown report
-        _machineCommandListener?.DisposeAsync().GetAwaiter().GetResult(); // cleanup listener
+        // Run async shutdown work on a thread-pool thread to avoid deadlocking the WPF
+        // dispatcher. Using GetAwaiter().GetResult() directly on the UI thread causes a
+        // classic deadlock because HttpClient/SignalR continuations try to resume on the
+        // captured WPF SynchronizationContext, which is blocked waiting for GetResult().
+        Task.Run(ReportMachineShutdownAsync).Wait(TimeSpan.FromSeconds(3));
+        if (_machineCommandListener is not null)
+            Task.Run(async () => await _machineCommandListener.DisposeAsync()).Wait(TimeSpan.FromSeconds(2));
         _scheduler?.Stop();
         _hotkeyService?.Dispose();
         _tray?.Dispose();

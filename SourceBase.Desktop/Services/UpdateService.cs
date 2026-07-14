@@ -80,11 +80,18 @@ public static class UpdateService
             if (total > 0) onProgress((int)(downloaded * 100 / total));
         }
 
+        var pid = Process.GetCurrentProcess().Id;
+
         File.WriteAllText(batPath,
             $"@echo off\r\n" +
-            $"timeout /t 2 /nobreak >nul\r\n" +
+            $":waitloop\r\n" +
+            $"tasklist /FI \"PID eq {pid}\" 2>nul | findstr /i \"{pid}\" >nul\r\n" +
+            $"if not errorlevel 1 (\r\n" +
+            $"    timeout /t 1 /nobreak >nul\r\n" +
+            $"    goto waitloop\r\n" +
+            $")\r\n" +
             $"move /y \"{tempExe}\" \"{exePath}\"\r\n" +
-            $"start \"\" \"{exePath}\"\r\n" +
+            $"start \"\" \"{exePath}\" --show-settings\r\n" +
             $"del \"%~f0\"\r\n");
 
         Process.Start(new ProcessStartInfo("cmd.exe", $"/c \"{batPath}\"") { WindowStyle = ProcessWindowStyle.Hidden });
