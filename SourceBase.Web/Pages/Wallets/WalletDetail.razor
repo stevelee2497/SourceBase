@@ -388,7 +388,7 @@ else
     private async Task LoadTransactionsAsync()
     {
         _loadingTransactions = true;
-        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, new[] { Id }, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId));
+        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, new[] { Id }, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId), !string.IsNullOrEmpty(_typeFilter));
         if (error is not null)
         {
             _transactions = [];

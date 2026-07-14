@@ -520,7 +520,7 @@ else
     {
         _loadingTransactions = true;
         var walletIds = _selectedWalletIds.Count > 0 ? (IEnumerable<Guid>?)_selectedWalletIds : null;
-        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, walletIds, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId));
+        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, walletIds, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId), !string.IsNullOrEmpty(_typeFilter));
         if (error is not null)
         {
             _transactions = [];
