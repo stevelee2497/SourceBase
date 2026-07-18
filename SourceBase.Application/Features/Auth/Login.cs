@@ -29,7 +29,13 @@ public class LoginHandler(IDbContext dbContext, ISecurityProvider securityProvid
     {
         var user = await dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Email == request.Email, ct);
 
-        if (user == null || !user.EmailConfirmed || !securityProvider.VerifyPassword(user, request.Password))
+        if (user == null || !user.EmailConfirmed)
+            throw new UnAuthorizedException("User info not correct.");
+
+        if (user.PasswordHash is null)
+            throw new UnAuthorizedException("This account uses Google sign-in. Please continue with Google.");
+
+        if (!securityProvider.VerifyPassword(user, request.Password))
             throw new UnAuthorizedException("Invalid credentials");
 
         var claimsPrincipal = securityProvider.CreateClaimsPrincipal(user);

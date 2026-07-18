@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SourceBase.Application.Shared;
 using SourceBase.Application.Shared.Interfaces;
@@ -6,15 +5,14 @@ using StackExchange.Redis;
 
 namespace SourceBase.Infrastructure.Implementations;
 
-public class RedisCacheService(IConfiguration configuration, ILogger<RedisCacheService> logger) : ICacheService
+public class RedisCacheService(AppSettings appSettings, ILogger<RedisCacheService> logger) : ICacheService
 {
     private readonly Lazy<IDatabase?> _db = new(() =>
     {
-        var connectionString = configuration.GetConnectionString("RedisConnection");
-        if (string.IsNullOrWhiteSpace(connectionString)) return null;
+        if (string.IsNullOrWhiteSpace(appSettings.ConnectionStrings.RedisConnection)) return null;
         try
         {
-            var options = ConfigurationOptions.Parse(connectionString);
+            var options = ConfigurationOptions.Parse(appSettings.ConnectionStrings.RedisConnection);
             options.AbortOnConnectFail = false;
             var mux = ConnectionMultiplexer.Connect(options);
             return mux.GetDatabase();

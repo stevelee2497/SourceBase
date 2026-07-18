@@ -5,7 +5,7 @@ namespace SourceBase.Application.Features.Auth;
 
 public record GetUserInfoRequest;
 
-public record GetUserInfoResponse(Guid Id, string? UserName, string? Email, bool EmailConfirmed, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, Guid? DefaultTodoListId, string[] Roles);
+public record GetUserInfoResponse(Guid Id, string? UserName, string? Email, bool EmailConfirmed, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, Guid? DefaultTodoListId, string[] Roles, bool IsGoogleConnected = false);
 
 public class GetUserInfoEndpoint : IEndpoint
 {
@@ -34,7 +34,8 @@ public class GetUserInfoHandler(ICurrentUser currentUser, IDbContext dbContext, 
             PhoneNumber: user.PhoneNumber,
             AvatarUrl: user.AvatarUrl,
             DefaultTodoListId: user.DefaultTodoListId,
-            Roles: currentUser.Roles
+            Roles: currentUser.Roles,
+            IsGoogleConnected: user.GoogleId is not null
         );
         await cacheService.SetAsync(CacheKeys.UserInfo.WithId(currentUser.UserId), result, TimeSpan.FromMinutes(30), ct);
         return result;

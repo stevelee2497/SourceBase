@@ -96,6 +96,9 @@ services:
       - R2__BucketName=general
       - R2__PublicUrl=${CF_PUBLIC_URL}
       - R2__ServiceURL=https://${CF_ACCOUNT_ID}.r2.cloudflarestorage.com
+      - GoogleOAuth__ClientId=${GOOGLE_OAUTH_CLIENT_ID}
+      - GoogleOAuth__ClientSecret=${GOOGLE_OAUTH_CLIENT_SECRET}
+      - GoogleOAuth__FrontendUrl=${WEB_URL}
     volumes:
       - ./logs/api:/app/Logs
     ports:

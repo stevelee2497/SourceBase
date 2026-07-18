@@ -3,10 +3,16 @@ namespace SourceBase.Application.Shared;
 public static class Constants
 {
     public const string BearerScheme = "Identity.Bearer";
-    public const string SecurityStampClaimType = "AspNet.Identity.SecurityStamp";
     public const string GeneralRateLimitPolicy = "general";
     public const string StrictRateLimitPolicy = "strict";
     public const string HttpClientName = "SourceBaseHttpClient";
+    public const string ExternalScheme = "ExternalLogin";
+}
+
+public static class CustomClaimTypes
+{
+    public const string SecurityStamp = "AspNet.Identity.SecurityStamp";
+    public const string EmailVerified = "email_verified";
 }
 
 public static class AppRoles
@@ -20,4 +26,6 @@ public static class CacheKeys
     public const string UserInfo = "user-info:{id:guid}";
     public const string WalletSummary = "wallet-summary:{id:guid}";
     public const string DataProtectionKeys = "data-protection-keys";
+    public const string GoogleExchange = "google-exchange:{code}";
+    public const string GoogleConnectState = "google-connect:{state}";
 }

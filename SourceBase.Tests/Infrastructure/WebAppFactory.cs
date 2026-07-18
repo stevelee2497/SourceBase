@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using SourceBase.Application.Features.Auth;
 using SourceBase.Application.Shared.Interfaces;
 using SourceBase.Infrastructure.BackgroundServices;
+using SourceBase.Infrastructure.Implementations;
 using SourceBase.Infrastructure.DbContexts;
 using Testcontainers.PostgreSql;
 using Testcontainers.Redis;
@@ -79,6 +80,14 @@ public class WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
             // Replace real DateTimeProvider with controllable fake
             services.RemoveAll<IDateTime>();
             services.AddSingleton<IDateTime>(FakeDateTime);
+
+            // Set up memory cache for local tests
+            if (!UseRedis)
+            {
+                services.RemoveAll<ICacheService>();
+                services.AddMemoryCache();
+                services.AddSingleton<ICacheService, MemoryCacheService>();
+            }
 
             // Remove all background services that could interfere with tests
             services.RemoveAll<BackgroundService>();

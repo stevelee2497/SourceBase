@@ -124,6 +124,15 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
     public Task<ErrorResponse?> LogoutAsync() =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/auth/logout"));
 
+    public Task<(GooglePrepareConnectResponse? data, ErrorResponse? error)> GooglePrepareConnectAsync() =>
+        ExecuteAsync<GooglePrepareConnectResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/auth/google/connect/prepare"));
+
+    public Task<ErrorResponse?> DisconnectGoogleAsync() =>
+        ExecuteAsync(() => AuthorizedRequest(HttpMethod.Delete, "/api/auth/google/disconnect"));
+
+    public Task<(LoginResponse? data, ErrorResponse? error)> ExchangeGoogleCodeAsync(string code) =>
+        ExecuteAsync<LoginResponse>(() => Request(HttpMethod.Get, $"/api/auth/google/exchange?code={Uri.EscapeDataString(code)}"), retry: false);
+
     public Task<(AvatarUploadUrlResponse? data, ErrorResponse? error)> GetAvatarUploadUrlAsync(string fileName) =>
         ExecuteAsync<AvatarUploadUrlResponse>(() => AuthorizedRequest(HttpMethod.Post, "/api/files/avatar/upload-url", new { fileName }));
 
@@ -453,7 +462,7 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
 
 public sealed record PagingResponse<T>(List<T> Items, int Page, int Limit, int Total);
 public sealed record AvatarUploadUrlResponse(string UploadUrl, string AvatarUrl, string ContentType);
-public sealed record UserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, Guid? DefaultTodoListId, string[] Roles);
+public sealed record UserInfoResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, string? AvatarUrl, Guid? DefaultTodoListId, string[] Roles, bool IsGoogleConnected = false);
 public sealed record LoginResponse(string AccessToken, string RefreshToken, int ExpiresIn, string TokenType);
 public sealed record RoleResponse(Guid Id, string Name, string? Description);
 public sealed record UserResponse(Guid Id, string? UserName, string? Email, string? FirstName, string? LastName, string? PhoneNumber, bool EmailConfirmed, string? AvatarUrl, IEnumerable<string> Roles);
@@ -483,3 +492,4 @@ public sealed record GoldPriceResponse(Guid Id, string Source, decimal BuyPrice,
 public sealed record HabitLogResponse(Guid Id, string? HabitId, string? HabitName, string Action, DateTime OccurredAt, DateTime? CreatedOn);
 public sealed record HabitItemResponse(Guid Id, string Name, string? Icon, bool IsSystem, int LogCount);
 public sealed record MachineResponse(Guid Id, string Name, string? Alias, string Status, DateTime? LastReportedOn);
+public sealed record GooglePrepareConnectResponse(string State);

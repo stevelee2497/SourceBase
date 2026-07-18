@@ -3,6 +3,7 @@
 @inject BlazorAuthStateProvider Auth
 @inject ApiHttpClient Api
 @inject HttpClient Http
+@inject ToastService Toast
 @using System.Globalization
 @using System.Net.Http.Json
 
@@ -292,6 +293,8 @@
 </div>
 
 @code {
+    [SupplyParameterFromQuery(Name = "google_connected")] public bool GoogleConnected { get; set; }
+
     private StatsResponse? _stats;
     private GetWalletsResponse? _wallets;
     private List<TodoItemResponse> _defaultTodos = [];
@@ -322,6 +325,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (GoogleConnected)
+            Toast.ShowSuccess("Google account connected successfully.");
+
         await Task.Yield();
         await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync(), LoadHabitsAsync(), LoadBtcPriceAsync(), LoadGoldUsdPriceAsync());
     }

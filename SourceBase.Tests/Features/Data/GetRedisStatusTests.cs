@@ -23,7 +23,7 @@ public class GetRedisStatusTests(WebAppFactory factory) : IClassFixture<WebAppFa
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    [RequiresRedisFact(DisplayName = "REDIS-STATUS-002: redis container running returns online status true")]
+    [Fact(DisplayName = "REDIS-STATUS-002: redis container running returns online status true")]
     public async Task GetRedisStatus_WhenRedisContainerIsRunning_ReturnsIsOnlineTrue()
     {
         // Arrange
