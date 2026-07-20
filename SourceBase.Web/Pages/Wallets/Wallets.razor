@@ -165,19 +165,8 @@ else
                     <button class="@TypeFilterClass(string.Empty)" @onclick="ResetFiltersAsync">All</button>
                     <button class="@TypeFilterClass(IncomeType)" @onclick="SelectIncomeType">Income</button>
                     <button class="@TypeFilterClass(ExpenseType)" @onclick="SelectExpenseType">Expense</button>
-                    <div class="flex items-end">
-                        <div class="w-full">
-                            <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
-                        </div>
-                    </div>
-                    <div class="relative">
-                        <InputDate @bind-Value="_dateFrom" @bind-Value:after="ApplyFiltersAsync" class="@DateFilterClass(_dateFrom, "h-9.5")" />
-                        @if (_dateFrom == null) { <span class="absolute inset-y-0 left-3 flex items-center text-sm text-gray-400 dark:text-gray-500 pointer-events-none">From</span> }
-                    </div>
-                    <div class="relative">
-                        <InputDate @bind-Value="_dateTo" @bind-Value:after="ApplyFiltersAsync" class="@DateFilterClass(_dateTo, "h-9.5")" />
-                        @if (_dateTo == null) { <span class="absolute inset-y-0 left-3 flex items-center text-sm text-gray-400 dark:text-gray-500 pointer-events-none">To</span> }
-                    </div>
+                    <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
+                    <SelectInput @bind-Value="_dateRangeFilter" @bind-Value:after="OnDateRangeFilterChangedAsync" Options="DateRangeOptions" />
                 </div>
             </div>
 
@@ -402,11 +391,46 @@ else
     </div>
 }
 
+<!-- Custom Date Range Modal -->
+@if (_showCustomDateRangeModal)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @onclick="CloseCustomDateRangeModal"></div>
+        <div class="relative w-full max-w-md mx-4 rounded-lg bg-white dark:bg-gray-800 p-4 md:p-6 shadow-xl">
+            <h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Custom Date Range</h2>
+            @if (!string.IsNullOrWhiteSpace(_customDateRangeError))
+            {
+                <div class="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">@_customDateRangeError</div>
+            }
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="form-label">From</label>
+                    <InputDate @bind-Value="_customDateFrom" class="form-input" />
+                </div>
+                <div>
+                    <label class="form-label">To</label>
+                    <InputDate @bind-Value="_customDateTo" class="form-input" />
+                </div>
+            </div>
+            <div class="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button class="btn-secondary w-full sm:w-auto" @onclick="CloseCustomDateRangeModal">Cancel</button>
+                <button class="btn-primary w-full sm:w-auto" @onclick="ApplyCustomDateRangeAsync">Apply</button>
+            </div>
+        </div>
+    </div>
+}
+
 <ConfirmDialog IsVisible="_showDeleteWallet" Title="Delete wallet" Message="@($"Delete '{_deletingWallet?.Name}'?")" OnConfirm="DeleteWalletAsync" OnCancel="CancelDeleteWallet" />
 <ConfirmDialog IsVisible="_showDeleteTransaction" Title="Delete transaction" Message="@($"Delete '{_deletingTransaction?.Note ?? _deletingTransaction?.CategoryName ?? "this transaction"}'?")" OnConfirm="DeleteTransactionAsync" OnCancel="CancelDeleteTransaction" />
 
 @code {
     private static readonly string[] PieColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#a855f7"];
+    private const string DateRangeThisMonth = "this-month";
+    private const string DateRangeLastMonth = "last-month";
+    private const string DateRangeLastThreeMonths = "last-3-months";
+    private const string DateRangeThisYear = "this-year";
+    private const string DateRangeAll = "all";
+    private const string DateRangeCustom = "custom";
 
     private List<WalletResponse> _wallets = [];
     private decimal _totalBalance;
@@ -441,9 +465,15 @@ else
     private const string IncomeType = "Income";
     private const string ExpenseType = "Expense";
     private string _typeFilter = string.Empty;
+    private string _dateRangeFilter = DateRangeThisYear;
+    private string _lastAppliedDateRangeFilter = DateRangeThisYear;
     private DateOnly? _dateFrom;
     private DateOnly? _dateTo;
     private string _categoryFilterId = string.Empty;
+    private bool _showCustomDateRangeModal;
+    private DateOnly? _customDateFrom;
+    private DateOnly? _customDateTo;
+    private string? _customDateRangeError;
 
     // Transaction monthly summary (for selected wallet only)
     private GetTransactionSummaryResponse? _summary;
@@ -481,6 +511,15 @@ else
     private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != ParseGuid(_transferFromWalletId)).ToList();
 
     private static readonly IReadOnlyList<SelectOption> TransactionTypeOptions = [new("Income", "🪴 Income"), new("Expense", "💸 Expense")];
+    private static readonly IReadOnlyList<SelectOption> DateRangeOptions =
+    [
+        new(DateRangeThisMonth, "This month"),
+        new(DateRangeLastMonth, "Last Month"),
+        new(DateRangeLastThreeMonths, "Last 3 months"),
+        new(DateRangeThisYear, "This Year"),
+        new(DateRangeAll, "All"),
+        new(DateRangeCustom, "Custom")
+    ];
     private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).Prepend(new SelectOption("", "All categories")).ToList();
     private IReadOnlyList<SelectOption> TransactionCategoryOptions => FilteredTransactionCategories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).Prepend(new SelectOption("", "Select category")).ToList();
     private IReadOnlyList<SelectOption> TransferFromWalletOptions => _wallets.Where(w => w.Id != ParseGuid(_transferToWalletId)).Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).Prepend(new SelectOption("", "Select wallet")).ToList();
@@ -489,6 +528,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        ResetDateRangeToDefault();
         await Task.WhenAll(LoadWalletsAsync(), LoadCategoriesAsync());
         await Task.WhenAll(LoadTransactionsAsync(), LoadBarChartAsync(), LoadSummaryAsync());
     }
@@ -573,8 +613,7 @@ else
             _selectedWalletIds.Add(id);
         _transactionsPage = 1;
         _typeFilter = string.Empty;
-        _dateFrom = null;
-        _dateTo = null;
+        ResetDateRangeToDefault();
         _categoryFilterId = string.Empty;
         await Task.WhenAll(LoadTransactionsAsync(), LoadSummaryAsync());
     };
@@ -584,8 +623,7 @@ else
         _selectedWalletIds.Clear();
         _transactionsPage = 1;
         _typeFilter = string.Empty;
-        _dateFrom = null;
-        _dateTo = null;
+        ResetDateRangeToDefault();
         _categoryFilterId = string.Empty;
         _summary = null;
         await LoadTransactionsAsync();
@@ -601,14 +639,58 @@ else
         await LoadTransactionsAsync();
     }
 
+    private async Task OnDateRangeFilterChangedAsync()
+    {
+        if (_dateRangeFilter == DateRangeCustom)
+        {
+            OpenCustomDateRangeModal();
+            return;
+        }
+
+        _lastAppliedDateRangeFilter = _dateRangeFilter;
+        ApplyDateRangePreset(_dateRangeFilter);
+        await ApplyFiltersAsync();
+    }
+
     private async Task ResetFiltersAsync()
     {
         _typeFilter = string.Empty;
-        _dateFrom = null;
-        _dateTo = null;
+        ResetDateRangeToDefault();
         _categoryFilterId = string.Empty;
         _transactionsPage = 1;
         await LoadTransactionsAsync();
+    }
+
+    private void OpenCustomDateRangeModal()
+    {
+        _customDateRangeError = null;
+        _customDateFrom = _dateFrom;
+        _customDateTo = _dateTo;
+        _showCustomDateRangeModal = true;
+    }
+
+    private void CloseCustomDateRangeModal()
+    {
+        _customDateRangeError = null;
+        _showCustomDateRangeModal = false;
+        _dateRangeFilter = _lastAppliedDateRangeFilter;
+    }
+
+    private async Task ApplyCustomDateRangeAsync()
+    {
+        _customDateRangeError = null;
+        if (_customDateFrom is not null && _customDateTo is not null && _customDateFrom > _customDateTo)
+        {
+            _customDateRangeError = "From date must be earlier than or equal to To date.";
+            return;
+        }
+
+        _dateFrom = _customDateFrom;
+        _dateTo = _customDateTo;
+        _dateRangeFilter = _dateFrom is null && _dateTo is null ? DateRangeAll : DateRangeCustom;
+        _lastAppliedDateRangeFilter = _dateRangeFilter;
+        _showCustomDateRangeModal = false;
+        await ApplyFiltersAsync();
     }
 
     // ── Wallet CRUD ──
@@ -825,7 +907,6 @@ else
     private static string? CleanOptional(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     private static DateOnly ParseDate(string value) => DateOnly.TryParse(value, out var date) ? date : DateOnly.FromDateTime(DateTime.Today);
     private string TypeFilterClass(string type) => _typeFilter == type ? "btn-primary btn-sm" : "btn-secondary btn-sm";
-    private static string DateFilterClass(DateOnly? value, string extra = "") => $"form-input date-filter {extra} {(value == null ? "date-empty" : "")}".Trim();
 
     private string TransactionIcon(TransactionResponse transaction)
     {
@@ -840,10 +921,36 @@ else
 
     private static (string start, string end) CurrentMonthRange()
     {
+        var (start, end) = ResolveDateRange(DateRangeThisMonth);
+        return (start!.Value.ToString("yyyy-MM-dd"), end!.Value.ToString("yyyy-MM-dd"));
+    }
+
+    private void ResetDateRangeToDefault()
+    {
+        _dateRangeFilter = DateRangeThisYear;
+        _lastAppliedDateRangeFilter = DateRangeThisYear;
+        ApplyDateRangePreset(DateRangeThisYear);
+    }
+
+    private void ApplyDateRangePreset(string value)
+    {
+        var (from, to) = ResolveDateRange(value);
+        _dateFrom = from;
+        _dateTo = to;
+    }
+
+    private static (DateOnly? start, DateOnly? end) ResolveDateRange(string value)
+    {
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var start = new DateOnly(today.Year, today.Month, 1);
-        var end = start.AddMonths(1).AddDays(-1);
-        return (start.ToString("yyyy-MM-dd"), end.ToString("yyyy-MM-dd"));
+        var monthStart = new DateOnly(today.Year, today.Month, 1);
+
+        return value switch
+        {
+            DateRangeThisMonth => (monthStart, monthStart.AddMonths(1).AddDays(-1)),
+            DateRangeLastMonth => (monthStart.AddMonths(-1), monthStart.AddDays(-1)),
+            DateRangeLastThreeMonths => (monthStart.AddMonths(-2), monthStart.AddMonths(1).AddDays(-1)),
+            DateRangeThisYear => (new DateOnly(today.Year, 1, 1), new DateOnly(today.Year, 12, 31)),
+            _ => (null, null)
+        };
     }
 }
-
