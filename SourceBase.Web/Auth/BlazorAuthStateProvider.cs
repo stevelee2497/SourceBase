@@ -41,13 +41,12 @@ public class BlazorAuthStateProvider(IJSRuntime js) : AuthenticationStateProvide
         return !string.IsNullOrWhiteSpace(AccessToken);
     }
 
-    // Saves tokens to localStorage and exposes them for AuthHeaderHandler.
+    // Saves tokens to localStorage without dropping the current user snapshot.
     public async Task SetTokensAsync(LoginResponse tokens)
     {
+        _initialized = true;
         AccessToken = tokens.AccessToken;
         RefreshToken = tokens.RefreshToken;
-        UserInfo = null;
-        _currentPrincipal = Anonymous;
 
         await js.InvokeVoidAsync("localStorage.setItem", AccessTokenKey, tokens.AccessToken);
         await js.InvokeVoidAsync("localStorage.setItem", RefreshTokenKey, tokens.RefreshToken);
@@ -64,6 +63,7 @@ public class BlazorAuthStateProvider(IJSRuntime js) : AuthenticationStateProvide
     // Clears all auth state, removes tokens from localStorage, and notifies listeners.
     public async Task SignOutAsync()
     {
+        _initialized = true;
         AccessToken = null;
         RefreshToken = null;
         UserInfo = null;

@@ -119,10 +119,7 @@
     {
         Navigation.LocationChanged += OnLocationChanged;
         AuthProvider.AuthenticationStateChanged += OnAuthStateChanged;
-
-        var userInfo = AuthStateProvider.UserInfo;
-        if (userInfo is not null)
-            _displayName = $"{userInfo.FirstName} {userInfo.LastName}".Trim();
+        _displayName = BuildDisplayName(AuthStateProvider.UserInfo);
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -133,9 +130,7 @@
 
     private void OnAuthStateChanged(Task<AuthenticationState> _) => InvokeAsync(() =>
     {
-        var userInfo = AuthStateProvider.UserInfo;
-        if (userInfo is not null)
-            _displayName = $"{userInfo.FirstName} {userInfo.LastName}".Trim();
+        _displayName = BuildDisplayName(AuthStateProvider.UserInfo);
         StateHasChanged();
     });
 
@@ -174,7 +169,7 @@
         if (userInfo is not null)
         {
             AuthStateProvider.SetUserInfo(userInfo);
-            _displayName = $"{userInfo.FirstName} {userInfo.LastName}".Trim();
+            _displayName = BuildDisplayName(userInfo);
         }
     }
 
@@ -191,4 +186,6 @@
     private static readonly string[] TopBarUrls = ["/", "/todos", "/wallets"];
 
     private static NavLinkMatch GetNavLinkMatch(string url) => url == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix;
+
+    private static string BuildDisplayName(UserInfoResponse? userInfo) => userInfo is null ? string.Empty : $"{userInfo.FirstName} {userInfo.LastName}".Trim();
 }

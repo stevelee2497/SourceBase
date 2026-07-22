@@ -1,6 +1,8 @@
 @page "/"
 @attribute [Authorize]
+@implements IDisposable
 @inject BlazorAuthStateProvider Auth
+@inject AuthenticationStateProvider AuthProvider
 @inject ApiHttpClient Api
 @inject HttpClient Http
 @using System.Globalization
@@ -322,8 +324,19 @@
 
     protected override async Task OnInitializedAsync()
     {
+        AuthProvider.AuthenticationStateChanged += OnAuthStateChanged;
         await Task.Yield();
         await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync(), LoadHabitsAsync(), LoadBtcPriceAsync(), LoadGoldUsdPriceAsync());
+    }
+
+    public void Dispose() => AuthProvider.AuthenticationStateChanged -= OnAuthStateChanged;
+
+    private void OnAuthStateChanged(Task<AuthenticationState> _) => InvokeAsync(RefreshAuthDrivenStateAsync);
+
+    private async Task RefreshAuthDrivenStateAsync()
+    {
+        await LoadDefaultTodosAsync();
+        StateHasChanged();
     }
 
     private async Task LoadHabitsAsync()
@@ -428,6 +441,7 @@
         var defaultId = Auth.UserInfo?.DefaultTodoListId;
         if (defaultId is null)
         {
+            _defaultTodos = [];
             _todosLoading = false;
             return;
         }
