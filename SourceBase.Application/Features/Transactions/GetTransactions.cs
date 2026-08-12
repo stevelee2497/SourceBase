@@ -4,7 +4,7 @@ using SourceBase.Application.Shared.Interfaces;
 
 namespace SourceBase.Application.Features.Transactions;
 
-public record GetTransactionsRequest(Guid? WalletId, Guid[]? WalletIds, TransactionType? Type, Guid? CategoryId, DateOnly? DateFrom, DateOnly? DateTo, TransactionExclude? Exclude = null, int? Page = 1, int? Limit = 10, PagingOrder? Order = PagingOrder.Desc, TransactionOrderBy OrderBy = TransactionOrderBy.Date) : PagingRequest(Page, Limit, Order, OrderBy.ToString());
+public record GetTransactionsRequest(Guid[]? WalletIds, TransactionType? Type, Guid[]? CategoryIds, DateOnly? DateFrom, DateOnly? DateTo, TransactionExclude? Exclude = null, int? Page = 1, int? Limit = 10, PagingOrder? Order = PagingOrder.Desc, TransactionOrderBy OrderBy = TransactionOrderBy.Date) : PagingRequest(Page, Limit, Order, OrderBy.ToString());
 
 public partial record TransactionResponse(Guid Id, decimal Amount, TransactionType Type, DateOnly Date, string? Note, Guid WalletId, string WalletName, Guid? CategoryId, string? CategoryName, bool IsTransfer);
 
@@ -23,10 +23,9 @@ public class GetTransactionsHandler(IDbContext dbContext, ICurrentUser currentUs
     {
         return await dbContext.Transactions
             .Where(t => t.UserId == currentUser.UserId
-                && (request.WalletId == null || t.WalletId == request.WalletId)
                 && (request.WalletIds == null || request.WalletIds.Length == 0 || request.WalletIds.Contains(t.WalletId))
                 && (request.Type == null || t.Type == request.Type)
-                && (request.CategoryId == null || t.CategoryId == request.CategoryId)
+                && (request.CategoryIds == null || request.CategoryIds.Length == 0 || (t.CategoryId != null && request.CategoryIds.Contains(t.CategoryId.Value)))
                 && (request.DateFrom == null || t.Date >= request.DateFrom)
                 && (request.DateTo == null || t.Date <= request.DateTo)
                 && (request.Exclude != TransactionExclude.Transfer || !t.IsTransfer))

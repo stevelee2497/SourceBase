@@ -163,10 +163,10 @@ else
             <div class="mb-4 flex flex-col gap-3">
                 <div class="flex flex-wrap gap-2">
                     <button class="@TypeFilterClass(string.Empty)" @onclick="ResetFiltersAsync">All</button>
-                    <button class="@TypeFilterClass(IncomeType)" @onclick="SelectIncomeType">Income</button>
-                    <button class="@TypeFilterClass(ExpenseType)" @onclick="SelectExpenseType">Expense</button>
-                    <SelectInput @bind-Value="_categoryFilterId" @bind-Value:after="ApplyFiltersAsync" Options="CategoryFilterOptions" />
-                    <SelectInput @bind-Value="_dateRangeFilter" @bind-Value:after="OnDateRangeFilterChangedAsync" Options="DateRangeOptions" />
+                    <button class="@TypeFilterClass(IncomeType)" @onclick="ToggleTypeFilter(IncomeType)">Income</button>
+                    <button class="@TypeFilterClass(ExpenseType)" @onclick="ToggleTypeFilter(ExpenseType)">Expense</button>
+                    <MultiSelectInput @bind-Values="_categoryFilterIds" @bind-Values:after="ApplyFiltersAsync" Options="CategoryFilterOptions" Placeholder="All categories" />
+                    <MultiSelectInput @bind-Values="_dateRangeFilters" @bind-Values:after="OnDateRangeFilterChangedAsync" Options="DateRangeOptions" Placeholder="All time" />
                 </div>
             </div>
 
@@ -464,12 +464,12 @@ else
     private const int _transactionsPageSize = 20;
     private const string IncomeType = "Income";
     private const string ExpenseType = "Expense";
-    private string _typeFilter = string.Empty;
-    private string _dateRangeFilter = DateRangeThisYear;
-    private string _lastAppliedDateRangeFilter = DateRangeThisYear;
+    private HashSet<string> _typeFilters = [];
+    private HashSet<string> _dateRangeFilters = [DateRangeThisYear];
+    private HashSet<string> _lastAppliedDateRangeFilters = [DateRangeThisYear];
     private DateOnly? _dateFrom;
     private DateOnly? _dateTo;
-    private string _categoryFilterId = string.Empty;
+    private HashSet<string> _categoryFilterIds = [];
     private bool _showCustomDateRangeModal;
     private DateOnly? _customDateFrom;
     private DateOnly? _customDateTo;
@@ -507,6 +507,11 @@ else
     // Bar chart data: date -> total expense amount
     private Dictionary<string, decimal> _barChartData = [];
 
+    // A single selected type filters server-side; selecting both (or none) drops the filter, but any type/category selection still hides transfers.
+    private string? SelectedType => _typeFilters.Count == 1 ? _typeFilters.First() : null;
+    private bool HasTypeOrCategoryFilter => _typeFilters.Count > 0 || _categoryFilterIds.Count > 0;
+    private IEnumerable<Guid>? SelectedCategoryIds => _categoryFilterIds.Count == 0 ? null : _categoryFilterIds.Select(ParseGuid).OfType<Guid>().ToList();
+
     private List<CategoryResponse> FilteredTransactionCategories => _categories.Where(c => string.Equals(c.Type, _transactionType, StringComparison.OrdinalIgnoreCase)).ToList();
     private List<WalletResponse> TransferTargets => _wallets.Where(w => w.Id != ParseGuid(_transferFromWalletId)).ToList();
 
@@ -520,7 +525,7 @@ else
         new(DateRangeAll, "All"),
         new(DateRangeCustom, "Custom")
     ];
-    private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).Prepend(new SelectOption("", "All categories")).ToList();
+    private IReadOnlyList<SelectOption> CategoryFilterOptions => _categories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).ToList();
     private IReadOnlyList<SelectOption> TransactionCategoryOptions => FilteredTransactionCategories.Select(c => new SelectOption(c.Id.ToString(), c.Name, c.Icon)).Prepend(new SelectOption("", "Select category")).ToList();
     private IReadOnlyList<SelectOption> TransferFromWalletOptions => _wallets.Where(w => w.Id != ParseGuid(_transferToWalletId)).Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).Prepend(new SelectOption("", "Select wallet")).ToList();
     private IReadOnlyList<SelectOption> TransferWalletOptions => TransferTargets.Select(w => new SelectOption(w.Id.ToString(), $"{w.Name} ({w.Currency})", w.Icon)).Prepend(new SelectOption("", "Select wallet")).ToList();
@@ -562,7 +567,7 @@ else
     {
         _loadingTransactions = true;
         var walletIds = _selectedWalletIds.Count > 0 ? (IEnumerable<Guid>?)_selectedWalletIds : null;
-        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, walletIds, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId), !string.IsNullOrEmpty(_typeFilter));
+        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, walletIds, SelectedType, FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), SelectedCategoryIds, HasTypeOrCategoryFilter);
         if (error is not null)
         {
             _transactions = [];
@@ -612,9 +617,9 @@ else
         if (!_selectedWalletIds.Remove(id))
             _selectedWalletIds.Add(id);
         _transactionsPage = 1;
-        _typeFilter = string.Empty;
+        _typeFilters.Clear();
         ResetDateRangeToDefault();
-        _categoryFilterId = string.Empty;
+        _categoryFilterIds.Clear();
         await Task.WhenAll(LoadTransactionsAsync(), LoadSummaryAsync());
     };
 
@@ -622,16 +627,18 @@ else
     {
         _selectedWalletIds.Clear();
         _transactionsPage = 1;
-        _typeFilter = string.Empty;
+        _typeFilters.Clear();
         ResetDateRangeToDefault();
-        _categoryFilterId = string.Empty;
+        _categoryFilterIds.Clear();
         _summary = null;
         await LoadTransactionsAsync();
     }
 
-    private async Task SelectAllTypes() { _typeFilter = string.Empty; await ApplyFiltersAsync(); }
-    private async Task SelectIncomeType() { _typeFilter = IncomeType; await ApplyFiltersAsync(); }
-    private async Task SelectExpenseType() { _typeFilter = ExpenseType; await ApplyFiltersAsync(); }
+    private Func<Task> ToggleTypeFilter(string type) => async () =>
+    {
+        if (!_typeFilters.Remove(type)) _typeFilters.Add(type);
+        await ApplyFiltersAsync();
+    };
 
     private async Task ApplyFiltersAsync()
     {
@@ -641,22 +648,22 @@ else
 
     private async Task OnDateRangeFilterChangedAsync()
     {
-        if (_dateRangeFilter == DateRangeCustom)
+        if (_dateRangeFilters.Contains(DateRangeCustom) && !_lastAppliedDateRangeFilters.Contains(DateRangeCustom))
         {
             OpenCustomDateRangeModal();
             return;
         }
 
-        _lastAppliedDateRangeFilter = _dateRangeFilter;
-        ApplyDateRangePreset(_dateRangeFilter);
+        _lastAppliedDateRangeFilters = [.._dateRangeFilters];
+        ApplyDateRangeSelection();
         await ApplyFiltersAsync();
     }
 
     private async Task ResetFiltersAsync()
     {
-        _typeFilter = string.Empty;
+        _typeFilters.Clear();
         ResetDateRangeToDefault();
-        _categoryFilterId = string.Empty;
+        _categoryFilterIds.Clear();
         _transactionsPage = 1;
         await LoadTransactionsAsync();
     }
@@ -673,7 +680,7 @@ else
     {
         _customDateRangeError = null;
         _showCustomDateRangeModal = false;
-        _dateRangeFilter = _lastAppliedDateRangeFilter;
+        _dateRangeFilters = [.._lastAppliedDateRangeFilters];
     }
 
     private async Task ApplyCustomDateRangeAsync()
@@ -685,10 +692,8 @@ else
             return;
         }
 
-        _dateFrom = _customDateFrom;
-        _dateTo = _customDateTo;
-        _dateRangeFilter = _dateFrom is null && _dateTo is null ? DateRangeAll : DateRangeCustom;
-        _lastAppliedDateRangeFilter = _dateRangeFilter;
+        _lastAppliedDateRangeFilters = [.._dateRangeFilters];
+        ApplyDateRangeSelection();
         _showCustomDateRangeModal = false;
         await ApplyFiltersAsync();
     }
@@ -901,12 +906,11 @@ else
     private static string SignedAmount(decimal amount, string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? $"+{amount:N0}" : $"-{amount:N0}";
     private static string TransactionAmountClass(string type) => string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase) ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
     private static string FormatDisplayDate(string value) => DateOnly.TryParse(value, out var date) ? date.ToString("dd MMM") : value;
-    private static string? EmptyToNull(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
     private static string? FormatDateFilter(DateOnly? value) => value?.ToString("yyyy-MM-dd");
     private static Guid? ParseGuid(string value) => Guid.TryParse(value, out var parsed) ? parsed : null;
     private static string? CleanOptional(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     private static DateOnly ParseDate(string value) => DateOnly.TryParse(value, out var date) ? date : DateOnly.FromDateTime(DateTime.Today);
-    private string TypeFilterClass(string type) => _typeFilter == type ? "btn-primary btn-sm" : "btn-secondary btn-sm";
+    private string TypeFilterClass(string type) => (string.IsNullOrEmpty(type) ? _typeFilters.Count == 0 : _typeFilters.Contains(type)) ? "btn-primary btn-sm" : "btn-secondary btn-sm";
 
     private string TransactionIcon(TransactionResponse transaction)
     {
@@ -927,16 +931,19 @@ else
 
     private void ResetDateRangeToDefault()
     {
-        _dateRangeFilter = DateRangeThisYear;
-        _lastAppliedDateRangeFilter = DateRangeThisYear;
-        ApplyDateRangePreset(DateRangeThisYear);
+        _dateRangeFilters = [DateRangeThisYear];
+        _lastAppliedDateRangeFilters = [DateRangeThisYear];
+        _customDateFrom = null;
+        _customDateTo = null;
+        ApplyDateRangeSelection();
     }
 
-    private void ApplyDateRangePreset(string value)
+    // Multiple selected ranges collapse into the single span that covers them all; an unbounded end stays unbounded.
+    private void ApplyDateRangeSelection()
     {
-        var (from, to) = ResolveDateRange(value);
-        _dateFrom = from;
-        _dateTo = to;
+        var ranges = _dateRangeFilters.Select(v => v == DateRangeCustom ? (_customDateFrom, _customDateTo) : ResolveDateRange(v)).ToList();
+        _dateFrom = ranges.Count == 0 || ranges.Any(r => r.Item1 is null) ? null : ranges.Min(r => r.Item1);
+        _dateTo = ranges.Count == 0 || ranges.Any(r => r.Item2 is null) ? null : ranges.Max(r => r.Item2);
     }
 
     private static (DateOnly? start, DateOnly? end) ResolveDateRange(string value)

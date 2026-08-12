@@ -1,0 +1,102 @@
+<div class="relative @Class">
+    <button type="button" class="w-full flex items-center justify-between gap-2 rounded-md border bg-white dark:bg-gray-800 px-3 py-2 text-left text-sm shadow-sm transition-colors focus:outline-none @(Disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer") @(_open ? "border-indigo-500 ring-1 ring-indigo-500" : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500")" disabled="@Disabled" @onclick="ToggleOpen">
+        <span class="flex items-center gap-2 truncate min-w-0 @(_selected.Count == 0 ? "text-gray-400 dark:text-gray-500" : "text-gray-900 dark:text-gray-100")">
+            @if (_selected is [{ Icon: { Length: > 0 } selIcon }])
+            {
+                @RenderIcon(selIcon, "w-4 h-4")
+            }
+            <span class="truncate">@SummaryLabel</span>
+        </span>
+        <svg class="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500 transition-transform duration-150 @(_open ? "rotate-180" : "")" fill="none" stroke="currentColor" viewBox="0 0 20 20">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 8l4 4 4-4" />
+        </svg>
+    </button>
+    @if (_open)
+    {
+        <div class="fixed inset-0 z-200" @onclick="Close"></div>
+        <div class="absolute z-201 top-full left-0 mt-1 min-w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg" style="max-height:15rem;overflow-y:auto">
+            @if (_selected.Count > 0)
+            {
+                <button type="button" class="flex w-full items-center gap-2 border-b border-gray-100 dark:border-gray-700 px-3 py-1.5 text-left text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700" @onclick="ClearAll" @onclick:stopPropagation>Clear all</button>
+            }
+            @foreach (var opt in Options)
+            {
+                var isSelected = Values.Contains(opt.Value);
+                <button type="button" class="flex w-full items-center gap-3 px-3 py-2 text-left text-sm transition-colors @(isSelected ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700")" @onclick="OnOptionClick(opt.Value)" @onclick:stopPropagation>
+                    <span class="flex h-4 w-4 shrink-0 items-center justify-center rounded border @(isSelected ? "border-indigo-500 bg-indigo-500 text-white" : "border-gray-300 dark:border-gray-600")">
+                        @if (isSelected)
+                        {
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                            </svg>
+                        }
+                    </span>
+                    <span class="flex items-center gap-2 truncate min-w-0">
+                        @if (!string.IsNullOrEmpty(opt.Icon))
+                        {
+                            @RenderIcon(opt.Icon, "w-4 h-4")
+                        }
+                        <span class="truncate">@opt.Label</span>
+                    </span>
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public HashSet<string> Values { get; set; } = [];
+    [Parameter] public EventCallback<HashSet<string>> ValuesChanged { get; set; }
+    [Parameter] public IReadOnlyList<SelectOption> Options { get; set; } = [];
+    [Parameter] public string Placeholder { get; set; } = "Select…";
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    private bool _open;
+
+    private List<SelectOption> _selected => Options.Where(o => Values.Contains(o.Value)).ToList();
+
+    private string SummaryLabel => _selected switch { [] => Placeholder, [var single] => single.Label, var many => $"{many.Count} selected" };
+
+    private void ToggleOpen() { if (!Disabled) _open = !_open; }
+
+    private void Close() => _open = false;
+
+    private Func<Task> OnOptionClick(string value) => async () =>
+    {
+        var next = new HashSet<string>(Values);
+        if (!next.Remove(value)) next.Add(value);
+        await ValuesChanged.InvokeAsync(next);
+    };
+
+    private Task ClearAll() => ValuesChanged.InvokeAsync([]);
+
+    private RenderFragment RenderIcon(string icon, string sizeClass) => builder =>
+    {
+        if (icon.TrimStart().StartsWith("<"))
+        {
+            builder.OpenElement(0, "svg");
+            builder.AddAttribute(1, "class", $"{sizeClass} shrink-0");
+            builder.AddAttribute(2, "viewBox", "0 0 24 24");
+            builder.AddAttribute(3, "fill", "none");
+            builder.AddAttribute(4, "stroke", "currentColor");
+            builder.AddMarkupContent(5, icon);
+            builder.CloseElement();
+        }
+        else if (icon.StartsWith("http"))
+        {
+            builder.OpenElement(0, "img");
+            builder.AddAttribute(1, "src", icon);
+            builder.AddAttribute(2, "class", $"{sizeClass} shrink-0 object-contain rounded");
+            builder.AddAttribute(3, "alt", "");
+            builder.CloseElement();
+        }
+        else
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "class", "text-base leading-none shrink-0");
+            builder.AddContent(2, icon);
+            builder.CloseElement();
+        }
+    };
+}
