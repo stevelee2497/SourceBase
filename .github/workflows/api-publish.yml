@@ -151,6 +151,19 @@ jobs:
     environment: Production
 
     steps:
+      - uses: actions/checkout@v5
+
+      # Deploy files are shipped from the runner instead of `git pull` on the VPS,
+      # so deploys don't depend on the VPS being able to reach github.com.
+      - name: Copy deploy files to VPS
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: docker-compose.yml,Caddyfile,backup/*
+          target: ${{ vars.VPS_APP_PATH || '~/SourceBase' }}
+
       - name: Pull and restart containers via SSH
         uses: appleboy/ssh-action@v1
         env:
@@ -179,7 +192,6 @@ jobs:
           script: |
             set -e
             cd ${{ vars.VPS_APP_PATH || '~/SourceBase' }}
-            git pull
             IMAGE_TAG=$IMAGE_TAG docker compose pull sourcebase-api
             docker compose build postgres-backup
             output=$(IMAGE_TAG=$IMAGE_TAG docker compose up -d --remove-orphans 2>&1)
