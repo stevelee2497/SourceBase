@@ -20,7 +20,8 @@ namespace SourceBase.Tests.Features.Transactions;
     UseCase = "As an authenticated user, I want to list my transactions with filtering and pagination, so that I can browse and analyse my transaction history.",
     Description = new[]
     {
-        "Client sends optional filters: `walletId`, `type`, `categoryId`, `dateFrom`, `dateTo`, plus paging parameters (`page`, `pageSize`).",
+        "Client sends optional filters: `walletIds`, `type`, `categoryIds`, `dateFrom`, `dateTo`, plus paging parameters (`page`, `pageSize`).",
+        "`walletIds` and `categoryIds` may each be repeated to match transactions in any of the given wallets or categories.",
         "Returns only transactions belonging to the authenticated user.",
         "Results are ordered by `date` descending, then by `CreatedOn` descending.",
         "Each item includes wallet name and category name for display.",
@@ -122,7 +123,7 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = walletB!.Id, amount = 20m, type = "Income", date = "2025-01-12", note = $"Txn_{Guid.NewGuid():N}", categoryId = incomeCategoryId });
 
         // Act
-        var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={walletA.Id}&limit=20");
+        var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletIds={walletA.Id}&limit=20");
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -240,12 +241,50 @@ public class GetTransactionsTests(WebAppFactory factory) : IClassFixture<WebAppF
         await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet.Id, amount = 5m, type = "Expense", date = "2025-01-16", note = $"Txn_{Guid.NewGuid():N}", categoryId = secondCategory!.Id });
 
         // Act
-        var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?categoryId={firstCategory.Id}&limit=20");
+        var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?categoryIds={firstCategory.Id}&limit=20");
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
         body!.Items.ShouldContain(x => x.Id == matching!.Id && x.CategoryId == firstCategory.Id);
+    }
+
+    [Fact(DisplayName = "TXN-GET-ALL-009: multiple category ids filter returns transactions in any of them")]
+    public async Task GetTransactions_WithMultipleCategoryIdsFilter_ReturnsMatchingTransactions()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"transaction_user_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var walletResponse = await client.PostAsJsonAsync(CreateWalletEndpoint.Route, new { name = $"Wallet_{Guid.NewGuid():N}", initialBalance = 0m, currency = "USD", icon = "💳" });
+        var wallet = await walletResponse.Content.ReadFromJsonAsync<CreateWalletResponse>();
+
+        var firstCatResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
+        var firstCategory = await firstCatResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
+
+        var secondCatResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
+        var secondCategory = await secondCatResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
+
+        var thirdCatResponse = await client.PostAsJsonAsync(CreateCategoryEndpoint.Route, new { name = $"Category_{Guid.NewGuid():N}", type = "Expense", icon = "🏷️" });
+        var thirdCategory = await thirdCatResponse.Content.ReadFromJsonAsync<CreateCategoryResponse>();
+
+        var firstTxnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet!.Id, amount = 10m, type = "Expense", date = "2025-01-16", note = $"Txn_{Guid.NewGuid():N}", categoryId = firstCategory!.Id });
+        var firstTxn = await firstTxnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
+
+        var secondTxnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet.Id, amount = 5m, type = "Expense", date = "2025-01-16", note = $"Txn_{Guid.NewGuid():N}", categoryId = secondCategory!.Id });
+        var secondTxn = await secondTxnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
+
+        var excludedTxnResponse = await client.PostAsJsonAsync(CreateTransactionEndpoint.Route, new { walletId = wallet.Id, amount = 7m, type = "Expense", date = "2025-01-16", note = $"Txn_{Guid.NewGuid():N}", categoryId = thirdCategory!.Id });
+        var excludedTxn = await excludedTxnResponse.Content.ReadFromJsonAsync<CreateTransactionResponse>();
+
+        // Act
+        var response = await client.GetAsync($"{GetTransactionsEndpoint.Route}?categoryIds={firstCategory.Id}&categoryIds={secondCategory.Id}&limit=20");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
+        body!.Items.ShouldContain(x => x.Id == firstTxn!.Id);
+        body.Items.ShouldContain(x => x.Id == secondTxn!.Id);
+        body.Items.ShouldNotContain(x => x.Id == excludedTxn!.Id);
     }
 
     [Fact(DisplayName = "TXN-GET-ALL-010: single wallet ids filter returns matching transactions")]

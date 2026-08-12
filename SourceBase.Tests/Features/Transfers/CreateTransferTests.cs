@@ -231,11 +231,11 @@ public class CreateTransferTests(WebAppFactory factory) : IClassFixture<WebAppFa
         var transfer = await transferResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
 
         // Assert
-        var fromTxnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={fromWallet!.Id}&limit=100");
+        var fromTxnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletIds={fromWallet!.Id}&limit=100");
         var fromTxns = await fromTxnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
         fromTxns!.Items.ShouldContain(x => x.Type == TransactionType.Expense && x.IsTransfer);
 
-        var toTxnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={toWallet!.Id}&limit=100");
+        var toTxnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletIds={toWallet!.Id}&limit=100");
         var toTxns = await toTxnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
         toTxns!.Items.ShouldContain(x => x.Type == TransactionType.Income && x.IsTransfer);
     }

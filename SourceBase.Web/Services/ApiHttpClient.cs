@@ -296,7 +296,7 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
 
     // ── Transactions ─────────────────────────────────────────────────────────
 
-    public Task<(PagingResponse<TransactionResponse>? data, ErrorResponse? error)> GetTransactionsAsync(int page, int limit, IEnumerable<Guid>? walletIds = null, string? type = null, string? dateFrom = null, string? dateTo = null, Guid? categoryId = null, bool excludeTransfers = false)
+    public Task<(PagingResponse<TransactionResponse>? data, ErrorResponse? error)> GetTransactionsAsync(int page, int limit, IEnumerable<Guid>? walletIds = null, string? type = null, string? dateFrom = null, string? dateTo = null, IEnumerable<Guid>? categoryIds = null, bool excludeTransfers = false)
     {
         var url = $"/api/transactions?page={page}&limit={limit}";
         if (walletIds != null)
@@ -307,8 +307,8 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
             url += $"&dateFrom={Uri.EscapeDataString(dateFrom)}";
         if (!string.IsNullOrWhiteSpace(dateTo))
             url += $"&dateTo={Uri.EscapeDataString(dateTo)}";
-        if (categoryId.HasValue)
-            url += $"&categoryId={categoryId}";
+        if (categoryIds != null)
+            url += string.Join(string.Empty, categoryIds.Select(id => $"&categoryIds={id}"));
         if (excludeTransfers)
             url += $"&exclude=Transfer";
         return ExecuteAsync<PagingResponse<TransactionResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));

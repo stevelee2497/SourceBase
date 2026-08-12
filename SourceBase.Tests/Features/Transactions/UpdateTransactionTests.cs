@@ -279,7 +279,7 @@ public class UpdateTransactionTests(WebAppFactory factory) : IClassFixture<WebAp
         transferResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var transfer = await transferResponse.Content.ReadFromJsonAsync<CreateTransferResponse>();
 
-        var transferTransactionId = (await (await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={fromWallet!.Id}&limit=100")).Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>())!.Items.Single(x => x.IsTransfer).Id;
+        var transferTransactionId = (await (await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletIds={fromWallet!.Id}&limit=100")).Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>())!.Items.Single(x => x.IsTransfer).Id;
 
         var catResponse = await client.GetAsync($"{GetCategoriesEndpoint.Route}?type=Expense");
         var categories = await catResponse.Content.ReadFromJsonAsync<List<CategoryResponse>>();

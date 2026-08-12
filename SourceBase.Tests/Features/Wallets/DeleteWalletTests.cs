@@ -119,7 +119,7 @@ public class DeleteWalletTests(WebAppFactory factory) : IClassFixture<WebAppFact
         var walletResponse = await client.GetAsync(GetWalletEndpoint.Route.WithId(create!.Id));
         walletResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 
-        var txnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletId={create.Id}&limit=100");
+        var txnsResponse = await client.GetAsync($"{GetTransactionsEndpoint.Route}?walletIds={create.Id}&limit=100");
         var txns = await txnsResponse.Content.ReadFromJsonAsync<PagingResponse<TransactionResponse>>();
         txns!.Total.ShouldBe(0);
     }

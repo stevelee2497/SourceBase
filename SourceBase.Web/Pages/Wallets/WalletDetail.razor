@@ -394,7 +394,7 @@ else
     private async Task LoadTransactionsAsync()
     {
         _loadingTransactions = true;
-        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, new[] { Id }, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ParseGuid(_categoryFilterId), !string.IsNullOrEmpty(_typeFilter));
+        var (data, error) = await Api.GetTransactionsAsync(_transactionsPage, _transactionsPageSize, new[] { Id }, EmptyToNull(_typeFilter), FormatDateFilter(_dateFrom), FormatDateFilter(_dateTo), ToIdList(_categoryFilterId), !string.IsNullOrEmpty(_typeFilter) || !string.IsNullOrEmpty(_categoryFilterId));
         if (error is not null)
         {
             _transactions = [];
@@ -598,6 +598,7 @@ else
     private static string? FormatDateFilter(DateOnly? value) => value?.ToString("yyyy-MM-dd");
 
     private static Guid? ParseGuid(string value) => Guid.TryParse(value, out var parsed) ? parsed : null;
+    private static IEnumerable<Guid>? ToIdList(string value) => ParseGuid(value) is Guid id ? [id] : null;
 
     private static string? CleanOptional(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
