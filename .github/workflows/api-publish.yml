@@ -13,6 +13,8 @@ on:
       - 'backup/**'
       - 'Dockerfile'
       - 'docker-compose.yml'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
       - '.github/workflows/api-publish.yml'
 
 env:
