@@ -87,7 +87,7 @@
                 </button>
                 <h2 class="text-sm  font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">@(_lists.FirstOrDefault(l => l.Id == _selectedListId)?.Name ?? "Todos")</h2>
                 <div class="flex justify-end gap-2 flex-wrap">
-                    <SelectInput @bind-Value="_sortBy" @bind-Value:after="LoadTodosAsync" Options="SortByOptions" Class="w-auto" />
+                    <SelectInput @bind-Value="_sortBy" @bind-Value:after="LoadTodosAsync" Options="SortByOptions" Class="w-auto hidden md:flex" />
                     @if (!string.IsNullOrEmpty(_sortBy))
                     {
                         <button class="btn-secondary btn-sm" @onclick="ToggleSortOrder">
