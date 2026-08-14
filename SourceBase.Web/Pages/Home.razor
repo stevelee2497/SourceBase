@@ -5,6 +5,8 @@
 @inject AuthenticationStateProvider AuthProvider
 @inject ApiHttpClient Api
 @inject HttpClient Http
+@inject UserTimeZoneService TimeZoneService
+@inject IJSRuntime JS
 @using System.Globalization
 @using System.Net.Http.Json
 
@@ -326,6 +328,7 @@
     {
         AuthProvider.AuthenticationStateChanged += OnAuthStateChanged;
         await Task.Yield();
+        await EnsureTimeZoneAsync();
         await Task.WhenAll(LoadStatsAsync(), LoadWalletsAsync(), LoadDefaultTodosAsync(), LoadGoldPricesAsync(), LoadHabitsAsync(), LoadBtcPriceAsync(), LoadGoldUsdPriceAsync());
     }
 
@@ -339,10 +342,18 @@
         StateHasChanged();
     }
 
+    // MainLayout seeds the zone on its first render, which can land after this page starts loading.
+    private async Task EnsureTimeZoneAsync()
+    {
+        if (TimeZoneService.IsInitialized) return;
+        TimeZoneService.SetTimeZone(await JS.InvokeAsync<string>("getBrowserTimeZone"));
+    }
+
     private async Task LoadHabitsAsync()
     {
         _habitsLoading = true;
-        var (data, _) = await Api.GetHabitsAsync(DateTime.Today.ToUniversalTime(), DateTime.Today.AddDays(1).AddTicks(-1).ToUniversalTime());
+        var todayStartUtc = TimeZoneService.ToUtc(TimeZoneService.Today);
+        var (data, _) = await Api.GetHabitsAsync(todayStartUtc, todayStartUtc.AddDays(1).AddTicks(-1));
         _habits = data ?? [];
         _habitsLoading = false;
     }
