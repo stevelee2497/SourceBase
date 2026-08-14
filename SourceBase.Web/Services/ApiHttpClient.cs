@@ -395,8 +395,13 @@ public class ApiHttpClient(HttpClient http, BlazorAuthStateProvider auth, ToastS
 
     // ── Habits ────────────────────────────────────────────────────────────────
 
-    public Task<(List<HabitItemResponse>? data, ErrorResponse? error)> GetHabitsAsync() =>
-        ExecuteAsync<List<HabitItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, "/api/habits"));
+    public Task<(List<HabitItemResponse>? data, ErrorResponse? error)> GetHabitsAsync(DateTime? from = null, DateTime? to = null)
+    {
+        var url = "/api/habits";
+        if (from is not null) url += $"?from={Uri.EscapeDataString(from.Value.ToString("o"))}";
+        if (to is not null) url += $"{(from is null ? "?" : "&")}to={Uri.EscapeDataString(to.Value.ToString("o"))}";
+        return ExecuteAsync<List<HabitItemResponse>>(() => AuthorizedRequest(HttpMethod.Get, url));
+    }
 
     public Task<ErrorResponse?> CreateHabitAsync(string name, string? icon) =>
         ExecuteAsync(() => AuthorizedRequest(HttpMethod.Post, "/api/habits", new { name, icon }));

@@ -342,7 +342,7 @@
     private async Task LoadHabitsAsync()
     {
         _habitsLoading = true;
-        var (data, _) = await Api.GetHabitsAsync();
+        var (data, _) = await Api.GetHabitsAsync(DateTime.Today.ToUniversalTime(), DateTime.Today.AddDays(1).AddTicks(-1).ToUniversalTime());
         _habits = data ?? [];
         _habitsLoading = false;
     }

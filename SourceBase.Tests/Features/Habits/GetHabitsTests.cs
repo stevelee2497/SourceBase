@@ -18,7 +18,8 @@ namespace SourceBase.Tests.Features.Habits;
     {
         "Client calls the endpoint with a valid access token.",
         "Returns the authenticated user's habits, each including a computed `LogCount` (number of associated habit logs).",
-        "Habits are ordered by `LogCount` descending, so the most-logged habits appear first.",
+        "Optional `from`/`to` query parameters restrict `LogCount` to logs whose `OccurredAt` falls inside the range (e.g. today only).",
+        "Habits are ordered by `LogCount` descending then by `Name`, so the most-logged habits appear first.",
     })]
 public class GetHabitsTests(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
@@ -120,5 +121,36 @@ public class GetHabitsTests(WebAppFactory factory) : IClassFixture<WebAppFactory
         userHabits[0].LogCount.ShouldBe(3);
         userHabits[1].Name.ShouldBe("Walk");
         userHabits[1].LogCount.ShouldBe(1);
+    }
+
+    [Fact(DisplayName = "HABITS-GET-005: from/to range counts only logs inside the range")]
+    public async Task GetHabits_WithDateRange_CountsOnlyLogsInRange()
+    {
+        // Arrange
+        var client = await factory.CreateAuthorizedClient($"habits_{Guid.NewGuid():N}@test.com", "Test@1234!");
+
+        var createRes = await client.PostAsJsonAsync(CreateHabitEndpoint.Route, new { name = "Stretch", icon = "🧘" });
+        var habitId = (await createRes.Content.ReadFromJsonAsync<CreateHabitResponse>())!.Id.ToString();
+
+        var today = DateTime.UtcNow;
+        await client.PostAsJsonAsync(CreateHabitLogsEndpoint.Route, new
+        {
+            entries = new[]
+            {
+                new { habitId, habitName = "Stretch", action = "HabitStarted", occurredAt = today },
+                new { habitId, habitName = "Stretch", action = "HabitStarted", occurredAt = today.AddDays(-3) },
+            }
+        });
+
+        var from = today.Date;
+        var to = today.Date.AddDays(1).AddTicks(-1);
+
+        // Act
+        var response = await client.GetAsync($"{GetHabitsEndpoint.Route}?from={Uri.EscapeDataString(from.ToString("o"))}&to={Uri.EscapeDataString(to.ToString("o"))}");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var habits = await response.Content.ReadFromJsonAsync<List<HabitResponse>>();
+        habits!.ShouldContain(h => h.Name == "Stretch" && h.LogCount == 1);
     }
 }
