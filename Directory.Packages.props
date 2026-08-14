@@ -15,7 +15,7 @@
 		<PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
 		<PackageVersion Include="coverlet.collector" Version="10.0.1" />
 		<PackageVersion Include="Shouldly" Version="4.3.0" />
-		<PackageVersion Include="SSH.NET" Version="2025.1.1" />
+		<PackageVersion Include="SSH.NET" Version="2026.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageVersion Include="Serilog.Sinks.OpenTelemetry" Version="4.2.0" />
