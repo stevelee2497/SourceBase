@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sourcebase-workers",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-29",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sourcebase-workers",
+      "database_id": "replace-me",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "ACCESS_TOKEN_EXPIRES_IN": "3600",
+    "REFRESH_TOKEN_EXPIRES_IN": "2592000",
+    "OTP_TOKEN_EXPIRATION_MINUTES": "15",
+    "R2_UPLOAD_EXPIRES_IN": "600"
+  }
+}

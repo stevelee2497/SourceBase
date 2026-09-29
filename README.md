@@ -28,6 +28,11 @@ SourceBase.Infrastructure/
 SourceBase.Api/
 ├── Middlewares/       # GlobalExceptionMiddleware, ValidationEndpointFilter
 └── Program.cs         # Entry point — wires AddApplication() + AddInfrastructure()
+
+SourceBase.Workers/
+├── src/routes/        # Cloudflare Workers rewrite — one TypeScript file per endpoint
+├── migrations/        # D1 / SQLite schema bootstrap
+└── tests/             # Vitest coverage for the Workers port
 ```
 
 ### Key Design Decisions

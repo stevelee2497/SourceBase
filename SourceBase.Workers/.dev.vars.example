@@ -1,0 +1,13 @@
+JWT_SECRET=replace-with-a-long-random-secret
+REFRESH_TOKEN_SECRET=replace-with-a-different-long-random-secret
+ADMIN_EMAIL=admin@yopmail.com
+ADMIN_PASSWORD=ChangeMe123!
+ACCESS_TOKEN_EXPIRES_IN=3600
+REFRESH_TOKEN_EXPIRES_IN=2592000
+OTP_TOKEN_EXPIRATION_MINUTES=15
+R2_ACCESS_KEY_ID=replace-with-r2-access-key-id
+R2_SECRET_ACCESS_KEY=replace-with-r2-secret-access-key
+R2_BUCKET_NAME=sourcebase
+R2_ACCOUNT_ID=replace-with-cloudflare-account-id
+R2_PUBLIC_URL=https://assets.example.com
+R2_UPLOAD_EXPIRES_IN=600
