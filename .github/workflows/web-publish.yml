@@ -61,7 +61,12 @@ jobs:
 
       - name: Inject production settings
         run: |
-          echo '{"ApiBaseUrl":"${{ vars.API_URL }}","AppVersion":"${{ needs.version.outputs.version_number }}"}' > SourceBase.Web/wwwroot/appsettings.Production.json
+          api_url="${{ vars.WORKERS_API_URL }}"
+          if [ -z "$api_url" ]; then
+            api_url="${{ vars.API_URL }}"
+          fi
+
+          echo "{\"ApiBaseUrl\":\"${api_url}\",\"EnableRealtimeNotifications\":false,\"AppVersion\":\"${{ needs.version.outputs.version_number }}\"}" > SourceBase.Web/wwwroot/appsettings.Production.json
 
       - name: Publish WASM
         run: dotnet publish SourceBase.Web/SourceBase.Web.csproj -c Release -o ./web-publish

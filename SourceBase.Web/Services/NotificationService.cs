@@ -24,6 +24,9 @@ public class NotificationService(BlazorAuthStateProvider auth, AppSettings setti
         if (_connection is { State: HubConnectionState.Connected or HubConnectionState.Connecting })
             return;
 
+        if (!settings.EnableRealtimeNotifications)
+            return;
+
         if (string.IsNullOrWhiteSpace(auth.AccessToken))
             return;
 
@@ -69,6 +72,8 @@ public class NotificationService(BlazorAuthStateProvider auth, AppSettings setti
         {
             await _connection.StartAsync();
         }
+        catch (HttpRequestException) { }
+        catch (InvalidOperationException) { }
         catch (TaskCanceledException) { }
         catch (OperationCanceledException) { }
     }

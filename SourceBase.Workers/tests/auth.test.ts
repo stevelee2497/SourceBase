@@ -184,6 +184,24 @@ describe("SourceBase.Workers auth routes", () => {
     });
     expect(refreshResponse.status).toBe(401);
   });
+
+  it("answers browser preflight for register requests", async () => {
+    const app = createApp();
+
+    const response = await send(app, bindings, "http://localhost/api/auth/register", {
+      method: "OPTIONS",
+      headers: {
+        Origin: "http://localhost:3001",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type"
+      }
+    });
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBe("http://localhost:3001");
+    expect(response.headers.get("access-control-allow-methods")).toContain("POST");
+    expect(response.headers.get("access-control-allow-headers")).toContain("Content-Type");
+  });
 });
 
 async function getAdminAccessToken(app: ReturnType<typeof createApp>, bindings: AppBindings) {

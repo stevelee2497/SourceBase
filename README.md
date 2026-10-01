@@ -187,7 +187,7 @@ Images are built by GitHub Actions and pushed to GitHub Container Registry (GHCR
 Browser → Nginx :80 → sourcebase-web :8080 → sourcebase-api :8080 → SQLite (volume)
 ```
 
-The Blazor Web app is web wasm, hosting on static pages of cloudflare pages, and the API is hosted on a separate container. Nginx acts as a reverse proxy to route requests to the appropriate service.
+The Blazor Web app is hosted on Cloudflare Pages and now targets the Cloudflare Workers API URL injected at publish time. Because the Workers port does not expose the old SignalR hub, the web build disables realtime notification wiring and relies on the HTTP notification endpoints instead.
 
 ### CI/CD flow
 

@@ -492,8 +492,11 @@ describe("SourceBase.Workers users, roles, and data routes", () => {
     expect(statsBody.totalBalance).toBe(120);
     expect(statsBody.monthlyIncome).toBe(50);
     expect(statsBody.monthlyExpense).toBe(20);
-    expect(statsBody.allLogged).toBe(true);
-    expect(statsBody.logTimeDetail).toBe(`${weekdaysSoFar.length}/${weekdaysSoFar.length} days this week`);
+    const loggedDatesVisibleToStats = weekdaysSoFar
+      .filter(date => date.getUTCFullYear() === today.getUTCFullYear() && date.getUTCMonth() === today.getUTCMonth());
+
+    expect(statsBody.allLogged).toBe(loggedDatesVisibleToStats.length === weekdaysSoFar.length);
+    expect(statsBody.logTimeDetail).toBe(`${loggedDatesVisibleToStats.length}/${weekdaysSoFar.length} days this week`);
   });
 });
 

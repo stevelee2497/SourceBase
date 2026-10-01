@@ -42,6 +42,8 @@ export interface AppBindings {
   ICON_UPLOAD_BASE_URL?: string;
   ICON_PUBLIC_BASE_URL?: string;
   REDIS_AVAILABLE?: string;
+  ALLOWED_ORIGINS?: string;
+  WEB_URL?: string;
 }
 
 export interface AuthenticatedUser {

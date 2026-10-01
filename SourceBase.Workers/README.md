@@ -34,6 +34,7 @@ Useful vars:
 - `ACCESS_TOKEN_EXPIRES_IN`
 - `REFRESH_TOKEN_EXPIRES_IN`
 - `OTP_TOKEN_EXPIRATION_MINUTES`
+- `ALLOWED_ORIGINS`
 - `R2_BUCKET_NAME`
 - `R2_ACCOUNT_ID`
 - `R2_PUBLIC_URL`
@@ -48,3 +49,4 @@ Required for avatar upload signing:
 
 - Endpoint files are intentionally self-contained: each route keeps its schema, auth handling, query logic, and audit updates nearby.
 - Some duplication is acceptable in this project so each endpoint can be ported independently from the current .NET slice.
+- Browser clients need CORS configured; for local web development set `ALLOWED_ORIGINS=http://localhost:3001`.

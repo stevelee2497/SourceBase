@@ -1,5 +1,7 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import type { AppEnv } from "./types";
+import { ensureDatabaseReady } from "./lib/db";
 import { writeApiError } from "./lib/errors";
 import { buildAuthRouter } from "./routes/auth";
 import { buildCategoriesRouter } from "./routes/categories";
@@ -23,10 +25,25 @@ import { buildWalletsRouter } from "./routes/wallets";
 export function createApp() {
   const app = new Hono<AppEnv>();
 
+  const apiCors = cors({
+    origin: (origin, c) => resolveAllowedOrigin(origin, c.env),
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowHeaders: ["Authorization", "Content-Type"],
+    exposeHeaders: ["x-trace-id"],
+    maxAge: 86400
+  });
+
   app.use("*", async (c, next) => {
     c.set("traceId", crypto.randomUUID());
     await next();
     c.header("x-trace-id", c.get("traceId"));
+  });
+  app.use("/api/*", apiCors);
+  app.options("/api/*", apiCors);
+  app.use("/api/*", async (c, next) => {
+    if (c.req.method === "OPTIONS") return next();
+    await ensureDatabaseReady(c.env);
+    await next();
   });
 
   app.onError((error, c) => writeApiError(c, error));
@@ -56,4 +73,30 @@ export function createApp() {
 
   app.route("/api", api);
   return app;
+}
+
+function resolveAllowedOrigin(origin: string, bindings: AppEnv["Bindings"]) {
+  if (!origin) return "*";
+
+  const allowedOrigins = new Set(
+    [
+      ...splitOrigins(bindings.ALLOWED_ORIGINS),
+      ...splitOrigins(bindings.WEB_URL),
+      "http://localhost:3001",
+      "https://localhost:3001",
+      "http://127.0.0.1:3001",
+      "https://127.0.0.1:3001"
+    ].filter(Boolean)
+  );
+
+  return allowedOrigins.has(origin) ? origin : "null";
+}
+
+function splitOrigins(value?: string) {
+  if (!value) return [];
+  return value
+    .split(",")
+    .map(origin => origin.trim())
+    .filter(Boolean)
+    .map(origin => (origin.startsWith("http") ? origin : `https://${origin}`));
 }

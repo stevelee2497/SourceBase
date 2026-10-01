@@ -25,6 +25,7 @@ Go to **GitHub → repo → Settings → Environments → Production**.
 | `POSTGRES_DB`       | PostgreSQL database name             |
 | `WEB_URL`           | Web app URL (e.g. `app.example.com`) |
 | `API_URL`           | API URL (e.g. `api.example.com`)     |
+| `WORKERS_API_URL`   | Workers API URL for the web app (e.g. `sourcebase-workers.example.workers.dev`) |
 
 **Environment Secrets** (masked — keep these as secrets):
 

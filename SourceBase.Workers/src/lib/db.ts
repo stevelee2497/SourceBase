@@ -6,6 +6,8 @@ export const roles = {
   user: "User"
 } as const;
 
+const databaseBootstrap = new WeakMap<SqlDatabase, Promise<void>>();
+
 export const baseSchemaStatements = [
   `CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
@@ -286,6 +288,19 @@ export async function bootstrapBaseSchema(db: SqlDatabase) {
   await ensureSystemIcons(db);
 }
 
+export function ensureDatabaseReady(bindings: AppBindings) {
+  const existing = databaseBootstrap.get(bindings.DB);
+  if (existing) return existing;
+
+  const setup = (async () => {
+    await bootstrapBaseSchema(bindings.DB);
+    await seedBaseData(bindings.DB, bindings);
+  })();
+
+  databaseBootstrap.set(bindings.DB, setup);
+  return setup;
+}
+
 export async function seedBaseData(db: SqlDatabase, bindings: AppBindings) {
   const now = nowIso();
   await ensureRole(db, roles.admin, "Admin role", now);
@@ -308,12 +323,13 @@ export async function seedBaseData(db: SqlDatabase, bindings: AppBindings) {
     `INSERT INTO users (
         id, user_name, email, email_confirmed, password_hash, security_stamp,
         created_on, created_by
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(email) DO NOTHING`
   )
     .bind(adminId, adminEmail, adminEmail, 1, passwordHash, crypto.randomUUID(), now, adminEmail)
     .run();
 
-  await db.prepare(`INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)`)
+  await db.prepare(`INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)`)
     .bind(adminId, adminRole?.id ?? crypto.randomUUID())
     .run();
 }
