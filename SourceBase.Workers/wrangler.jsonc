@@ -6,8 +6,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "sourcebase-workers",
-      "database_id": "replace-me",
+      "database_name": "jupiter-db",
+      "database_id": "897de57f-6714-465b-9058-f822ff1ed513",
       "migrations_dir": "migrations"
     }
   ],
