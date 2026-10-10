@@ -1,0 +1,4 @@
+# Copy to .dev.vars for `wrangler dev`. Overrides the vars in wrangler.jsonc.
+AUTH0_DOMAIN=your-tenant.eu.auth0.com
+AUTH0_AUDIENCE=https://jupiter-wallet-api
+ALLOWED_ORIGINS=http://localhost:5173

@@ -1,0 +1,26 @@
+{
+  "name": "jupiter-wallet-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:migrate:local": "wrangler d1 migrations apply jupiter-wallet-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply jupiter-wallet-db --remote"
+  },
+  "dependencies": {
+    "hono": "^4.7.0",
+    "jose": "^6.0.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.4.0",
+    "@cloudflare/workers-types": "^5.20261010.1",
+    "@types/node": "^26.6.5",
+    "typescript": "^5.9.0",
+    "vitest": "^4.1.0",
+    "wrangler": "^4.0.0"
+  }
+}

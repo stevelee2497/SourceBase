@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jupiter-wallet-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "d1_databases": [
+    { "binding": "DB", "database_name": "jupiter-wallet-db", "database_id": "replace-me", "migrations_dir": "migrations" }
+  ],
+  "r2_buckets": [
+    { "binding": "ICONS", "bucket_name": "jupiter-wallet-icons" }
+  ],
+  "vars": {
+    "AUTH0_DOMAIN": "your-tenant.eu.auth0.com",
+    "AUTH0_AUDIENCE": "https://jupiter-wallet-api",
+    "ALLOWED_ORIGINS": "http://localhost:5173"
+  }
+}
