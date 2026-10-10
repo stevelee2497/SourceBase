@@ -80,7 +80,7 @@ Tests run inside the real Workers runtime (miniflare) against an in-memory D1 an
 
 ```bash
 cd SourceBase.Wallets/frontend
-cp .env.example .env.local        # then edit the values
+cp env.example .env.local         # then edit the values
 npm run dev                       # http://localhost:5173
 ```
 
