@@ -16,7 +16,8 @@ const FILE_KEY = /^[0-9a-f-]{36}\.(jpg|jpeg|png|gif|webp|svg)$/;
 
 const group = z.enum(["Wallet", "Category", "General"], { error: "Group is required." });
 const nameSchema = required("Name").max(100, "Name must be at most 100 characters.");
-const listSchema = z.object({ group: z.string().transform((g) => g.toLowerCase()).pipe(z.enum(["wallet", "category", "general"])).optional() });
+const GROUPS = ["Wallet", "Category", "General"];
+const listSchema = z.object({ group: z.string().optional() });
 const createSchema = z.object({ value: required("Value"), name: nameSchema, group, sortOrder: z.number().int().default(0) });
 const updateSchema = z.object({ value: required("Value").nullish(), name: nameSchema.nullish(), group: group.nullish(), sortOrder: z.number().int().nullish() });
 
@@ -33,7 +34,7 @@ export const icons = new Hono<AppEnv>();
 
 icons.get("/", async (c) => {
   const { group: g } = parseQuery(c, listSchema);
-  const wanted = g ? g[0].toUpperCase() + g.slice(1) : null;
+  const wanted = GROUPS.find((name) => name.toLowerCase() === g?.toLowerCase()) ?? null;
   const rows = await all<IconRow>(c.env.DB, "SELECT * FROM icons WHERE (is_system = 1 OR user_id = ?) AND (? IS NULL OR grp = ? OR grp = 'General') ORDER BY sort_order, name", c.get("userId"), wanted, wanted);
   return ok(c, rows.map(toIcon));
 });
