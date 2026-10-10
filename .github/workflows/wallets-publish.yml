@@ -1,0 +1,74 @@
+name: Wallets Publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "SourceBase.Wallets/**"
+      - ".github/workflows/wallets-publish.yml"
+  workflow_dispatch:
+
+jobs:
+  backend:
+    name: Test & Deploy Wallet API
+    runs-on: ubuntu-latest
+    environment: Production
+    defaults:
+      run:
+        working-directory: SourceBase.Wallets/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: SourceBase.Wallets/backend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: SourceBase.Wallets/backend
+          command: d1 migrations apply jupiter-wallet-db --remote
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: SourceBase.Wallets/backend
+          command: deploy
+
+  frontend:
+    name: Test & Deploy Wallet Web
+    runs-on: ubuntu-latest
+    environment: Production
+    needs: backend
+    defaults:
+      run:
+        working-directory: SourceBase.Wallets/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: SourceBase.Wallets/frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.WALLET_API_URL }}
+          VITE_AUTH0_DOMAIN: ${{ vars.WALLET_AUTH0_DOMAIN }}
+          VITE_AUTH0_CLIENT_ID: ${{ vars.WALLET_AUTH0_CLIENT_ID }}
+          VITE_AUTH0_AUDIENCE: ${{ vars.WALLET_AUTH0_AUDIENCE }}
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: SourceBase.Wallets/frontend
+          command: pages deploy dist --project-name=${{ vars.WALLET_PAGES_PROJECT }}
