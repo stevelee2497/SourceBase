@@ -1,0 +1,22 @@
+- This directory contains the wallet module
+- This is a standalone project, independent of other modules in the system.
+- This project is temporary put in there for development and migration phase, and will be move to another repository later.
+- The main purpose is to build a standalone website to manage wallets and transactions, migrate all wallets and transactions functionality from SourceBase.Web to this folder.
+- Right now the outer project is .net based from web to api back end, this project will be a cloned and separated version specifically for wallet management, and the technology will be primarily react for front-end, and typescript workers for back-end logic.
+- The main forcus is to migrate the wallet and transaction management functionality from the existing .net based system to this standalone project, and deploy it to cloudflare using free services: pages for front-end hosting and workers for back-end logic, sqlite for database management.
+- The project structure will be organized to separate front-end and back-end logic clearly, with React components and pages in the front-end folder, and TypeScript workers handling the back-end logic and database interactions.
+- The front-end will communicate with the back-end through API endpoints exposed by the TypeScript workers, ensuring a clear separation of concerns and maintainability.
+- The project will also include scripts and configurations to facilitate local development, testing, and deployment to Cloudflare, making it easier for developers to work on the wallet module independently.
+- The README file will provide an overview of the project, its structure, and instructions for setting up the development environment, ensuring that new developers can quickly get started with the wallet module.
+- The development environment will include necessary tools and dependencies for both front-end and back-end development, such as Node.js, npm, and Cloudflare Wrangler for managing workers.
+- Make sure the UI looks exactly the same as the existing .net based system to provide a consistent user experience.
+- As this is only related to wallets and transactions, other modules and functionalities from the existing .net based system will not be included in this standalone project.
+- For fe: no left sidebar needed, the top navigation bar should have 2 icons: home for showing the current wallets page (that include all wallets, transactions, charts and buttons) & categories for managing transaction categories including icons uploading.
+- For be: the TypeScript workers will handle all API requests from the front-end, perform necessary business logic, and interact with the SQLite database to manage wallets and transactions.
+- Ensure migrate all the tests from the existing .net based system to the new standalone project, adapting them to work with the TypeScript workers and SQLite database to maintain existing behavior and coverage.
+- For authorization, use Auth0 instead of the existing .net based system's authentication mechanism.
+- The ultimate rule: always keep the project simple and avoid unnecessary complexity in both front-end and back-end implementations. fetch the rule of ponytail and generate a skill.md file naming "jupiter-wallet" to document the front-end and back-end best practices and guidelines.
+- split into 2 folders:
+  - `frontend`: contains all React components, pages, and front-end logic.
+  - `backend`: contains TypeScript workers, API endpoints, and database interactions with SQLite.
+- generate a step by step guide for setting up the development environment, running the project locally, and deploying it to Cloudflare, especially detail on how to set up pages and workers and db.
